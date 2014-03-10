@@ -3,7 +3,7 @@ Contributors: seanvoss
 Tags: woocommerce, taxes, tax calculation, free tax calculation
 Requires at least: 3.0
 Tested up to: 3.6
-Stable tag: 0.1
+Stable tag: 0.2
 Donate link: https://blog.seanvoss.com/shop/taxjar/
 License: GPLv2 or later
 
@@ -31,6 +31,8 @@ Easy & accurate ECommerce sales tax rate data. Use Taxjar integration to simplif
 
 
 == Changelog ==
+= 0.2 =
+* Move Session_Start Earlier 
 = 0.1 =
 * Initial Commit
 

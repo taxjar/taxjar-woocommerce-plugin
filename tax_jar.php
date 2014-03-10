@@ -3,7 +3,7 @@
 Plugin Name: TaxJar (Tax Jar integration for WooCommerce)
 Plugin URI: http://seanvoss.com/taxjar
 Description: TaxJar integration to lookup rates.
-Version: 0.1
+Version: 0.2
 Author: Sean Voss
 Author URI: http://blog.seanvoss.com/
 
@@ -18,6 +18,8 @@ Author URI: http://blog.seanvoss.com/
 
 function sv_taxjar_init() 
 {
+
+    session_start();
     include_once('sv_taxjar.php');
 }
 
