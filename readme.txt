@@ -24,7 +24,7 @@ Here’s why customers love this plugin:
 
 BE ADVISED: TaxJar for WooCommerce is setup to work for sales in the US only. We do not support international sales at this time.
 
-<a href="http://www.taxjar.com">TaxJar</a> provides easy & accurate ecommerce sales tax reporting in addition to their sales tax calculation.
+[TaxJar](http://www.taxjar.com) provides easy & accurate ecommerce sales tax reporting in addition to their sales tax calculation.
 
 == Installation ==
 
