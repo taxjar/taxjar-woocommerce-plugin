@@ -105,7 +105,7 @@ class TaxJar {
             array(
                 'type'        => 'text',
                 'title'       => __('TaxJar_Api_Key', 'woothemes'),
-                'description' => __('Your TaxJar Api Key', 'woothemes'),
+                'description' => __('Your TaxJar API Token', 'woothemes'),
                 'default'     => __('', 'woothemes')
             ),
             array(
