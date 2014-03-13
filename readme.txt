@@ -1,4 +1,4 @@
-==== Sales Tax Calculations for WooCommerce by TaxJar ====
+==== Sales Tax Calculations for WooCommerce ====
 Contributors: seanvoss, tonkapark
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 3.0
