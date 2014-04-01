@@ -180,8 +180,8 @@ class TaxJar {
 
         global $woocommerce;
         session_start();
-        $from_state = get_option('TaxJar_Store_State');
-        $state    = $woocommerce->customer->get_shipping_state();
+        $from_state = get_option('TaxJar_Store_State', true);
+        $state    = $woocommerce->customer->get_state();
 
         if ($state != $from_state)
             return $that;
@@ -189,8 +189,8 @@ class TaxJar {
         $from_city  = get_option('TaxJar_Store_City');
         $from_zip   = get_option('TaxJar_Store_Zip');
 
-        $postcode = $woocommerce->customer->get_shipping_postcode();
-        $city     = $woocommerce->customer->get_shipping_city();
+        $postcode = $woocommerce->customer->get_postcode();
+        $city     = $woocommerce->customer->get_city();
 
         $amount = $woocommerce->cart->subtotal;
         $shipping = $woocommerce->cart->shipping_total;

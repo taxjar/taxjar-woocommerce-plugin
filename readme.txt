@@ -3,7 +3,7 @@ Contributors: seanvoss, tonkapark
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 3.0
 Tested up to: 3.8.1
-Stable tag: 0.3
+Stable tag: 0.4
 Donate link: https://blog.seanvoss.com/shop/taxjar/
 License: GPLv2 or later
 
@@ -39,6 +39,7 @@ Setting up tax collection with TaxJar is simple. Just follow these steps.
 1. Fill out the rest of your settings. All that TaxJar needs to calculate sales tax is your business address.
 1. Check the box next to “Enable TaxJar”.
 1. Click “Save Changes”.
+1. In WooCommerce Settings / Taxes Enable Display tax totals: "Itemized"
 
 == How It Works ==
 
