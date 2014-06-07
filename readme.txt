@@ -82,6 +82,10 @@ Our pricing is simple. You pay based on the number of times you use the tax calc
 
 == Changelog ==
 
+= 0.5 =
+* Bug Fixes
+= 0.4 =
+* Bug Fixes
 = 0.3 =
 * Documentation cleanup
 
