@@ -3,7 +3,7 @@
 Plugin Name: TaxJar (Sales Tax Calculation for WooCommerce)
 Plugin URI: http://www.taxjar.com/woocommerce-sales-tax-plugin/
 Description: TaxJar for WooCommerce helps you collect <strong>accurate sales tax</strong> with almost no work! Stop uploading and updating rate tables. To get started: 1) <a href="http://www.taxjar.com/api/">Sign up for a TaxJar API token</a>, and 2) Go to your <a href="options-general.php?page=sv_taxjar_plugin">TaxJar settings page</a>, and save your API token and business address.
-Version: 0.4
+Version: 0.5
 Author: Sean Voss
 Author URI: http://blog.seanvoss.com/
 

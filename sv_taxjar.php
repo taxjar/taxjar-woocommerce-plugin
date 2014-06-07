@@ -105,7 +105,7 @@ class TaxJar {
             array(
                 'type'        => 'text',
                 'title'       => __('TaxJar_Api_Key', 'woothemes'),
-                'description' => __('Your TaxJar API Token', 'woothemes'),
+                'description' => __('Your TaxJar Api Key', 'woothemes'),
                 'default'     => __('', 'woothemes')
             ),
             array(
@@ -152,13 +152,11 @@ class TaxJar {
         $tax->calc_tax= 'per_order';
         $tax->formatted_amount = number_format(0,2);
 
-        if ((method_exists($that,'get_total_tax') &&  ! $that->get_total_tax()) || !$this->tax_total)
-            return array('TAX'=> $tax);
 
          if($this->tax_total)
          {
               $tax->amount=   $this->tax_total;
-              $tax->formatted_amount = number_format($that->tax_total,2);
+              $tax->formatted_amount = number_format(intval($that->tax_total,2));
          } else {
               if (method_exists($that,'get_total_tax')) 
               {
@@ -214,6 +212,7 @@ class TaxJar {
         curl_setopt($ch, CURLOPT_HTTPHEADER,$header);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
         $rest = curl_exec($ch);
+        error_log( "Connection");
         curl_close($ch);
 
         $this->rates = json_decode($rest);
