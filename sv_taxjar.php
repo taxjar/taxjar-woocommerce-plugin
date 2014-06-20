@@ -17,6 +17,8 @@ class TaxJar {
 
           add_action( 'woocommerce_calculate_totals', array($this, 'get_tax'), 0, 1);
           add_filter( 'woocommerce_cart_tax_totals',  array($this, 'get_taxes'), 0, 2);
+          add_filter( 'woocommerce_cart_taxes_total',  array($this, 'get_taxes_total'), 0);
+          add_filter( 'woocommerce_cart_get_taxes',  array($this, 'get_taxes'), 0, 2);
           add_filter( 'woocommerce_order_tax_totals', array($this, 'get_taxes'), 0, 2);
 
     }
@@ -140,6 +142,10 @@ class TaxJar {
             ),
         );
     }
+    public function get_taxes_total($total, $compound, $display, $that)
+    {
+      return $this->tax_total;
+    }
 
     public function get_taxes($taxes, $that)
     {
@@ -150,13 +156,13 @@ class TaxJar {
         $tax->shipping = 'yes';
         $tax->compound = 'no';
         $tax->calc_tax= 'per_order';
-        $tax->formatted_amount = number_format(0,2);
+        $tax->formatted_amount = '$' . number_format(0,2);
 
 
          if($this->tax_total)
          {
               $tax->amount=   $this->tax_total;
-              $tax->formatted_amount = number_format(intval($that->tax_total,2));
+              $tax->formatted_amount = '$'. number_format($that->tax_total, 2);
          } else {
               if (method_exists($that,'get_total_tax')) 
               {
@@ -190,7 +196,7 @@ class TaxJar {
         $postcode = $woocommerce->customer->get_postcode();
         $city     = $woocommerce->customer->get_city();
 
-        $amount = $woocommerce->cart->subtotal;
+        $amount = $woocommerce->cart->subtotal - $woocommerce->cart->discount_total;
         $shipping = $woocommerce->cart->shipping_total;
 
         $url = str_replace(' ', '%20', (sprintf('state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s',$state, $amount, $shipping, $from_city, $from_zip, $city, $postcode )));

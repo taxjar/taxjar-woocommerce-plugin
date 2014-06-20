@@ -82,6 +82,8 @@ Our pricing is simple. You pay based on the number of times you use the tax calc
 
 == Changelog ==
 
+= 0.6 =
+* Update to new woocommerce
 = 0.5 =
 * Bug Fixes
 = 0.4 =
