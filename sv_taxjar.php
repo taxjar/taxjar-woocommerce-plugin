@@ -125,7 +125,7 @@ class TaxJar {
             array(
                 'type'        => 'text',
                 'title'       => __('TaxJar_Store_State', 'woothemes'),
-                'description' => __('State', 'woothemes'),
+                'description' => __('State (enter 2 digit abbreviation)', 'woothemes'),
                 'default'     => __('', 'woothemes')
             ),
             array(
