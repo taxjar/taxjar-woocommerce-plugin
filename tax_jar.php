@@ -1,35 +1,52 @@
 <?php
 /*
-Plugin Name: TaxJar (Sales Tax Calculation for WooCommerce)
+Plugin Name: TaxJar - Sales Tax Calculation for WooCommerce
 Plugin URI: http://www.taxjar.com/woocommerce-sales-tax-plugin/
-Description: TaxJar for WooCommerce helps you collect <strong>accurate sales tax</strong> with almost no work! Stop uploading and updating rate tables. To get started: 1) <a href="http://www.taxjar.com/api/">Sign up for a TaxJar API token</a>, and 2) Go to your <a href="options-general.php?page=sv_taxjar_plugin">TaxJar settings page</a>, and save your API token and business address.
-Version: 0.6
-Author: Sean Voss
-Author URI: http://blog.seanvoss.com/
+Description: TaxJar for WooCommerce helps you collect <strong>accurate sales tax</strong> with almost no work! Stop uploading and updating rate tables. To get started: 1) <a href="http://www.taxjar.com/api/">Sign up for a TaxJar API token</a>, and 2) Go to your <a href="admin.php?page=wc-settings&tab=integration">TaxJar settings page</a>, and save your API token and business address.
+Version: 1.0.0
+Author: TaxJar
+Author URI: http://www.taxjar.com/
 
 */
 
-/*
- * Title   : TaxJar for WooCommerce
- * Author  : Sean Voss
- * Url     : http://seanvoss.com/cloudy
- * License : http://seanvoss.com/cloudy/legal
- */
+if ( ! class_exists( 'WC_Taxjar' ) ) :
 
-function sv_taxjar_init() 
-{
+class WC_Taxjar {
 
-    session_start();
-    include_once('sv_taxjar.php');
+  /**
+  * Construct the plugin.
+  */
+  public function __construct() {
+    add_action( 'plugins_loaded', array( $this, 'init' ) );
+  }
+
+  /**
+  * Initialize the plugin.
+  */
+  public function init() {
+
+    // Checks if WooCommerce is installed.
+    if ( class_exists( 'WC_Integration' ) ) {
+      // Include our integration class.
+      include_once 'includes/class-wc-taxjar-integration.php';
+			
+      // Register the integration.
+      add_filter( 'woocommerce_integrations', array( $this, 'add_integration' ) );
+    } else {
+      // throw an admin error if you like
+    }
+  }
+
+  /**
+   * Add a new integration to WooCommerce.
+   */
+  public function add_integration( $integrations ) {
+    $integrations[] = 'WC_Taxjar_Integration';
+    return $integrations;
+  }
+
 }
 
-add_action('plugins_loaded', 'sv_taxjar_init', 0);
+$WC_Taxjar = new WC_Taxjar( __FILE__ );
 
-// Add settings link on plugin page
-function sv_taxjar_settings_link($links) { 
-  $settings_link = '<a href="options-general.php?page=sv_taxjar_plugin">Settings</a>'; 
-  array_unshift($links, $settings_link); 
-  return $links; 
-}
- 
-add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'sv_taxjar_settings_link' );
+endif;
