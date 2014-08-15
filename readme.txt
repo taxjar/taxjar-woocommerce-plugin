@@ -1,10 +1,9 @@
-==== Sales Tax Calculations for WooCommerce ====
-Contributors: seanvoss, tonkapark
+==== TaxJar - Sales Tax Calculation for WooCommerce ====
+Contributors: tonkapark
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 3.0
-Tested up to: 3.8.1
-Stable tag: 0.5
-Donate link: https://blog.seanvoss.com/shop/taxjar/
+Tested up to: 3.9.1
+Stable tag: 1.0.0
 License: GPLv2 or later
 
 TaxJar for WooCommerce helps you collect accurate sales tax with almost no work! Stop uploading and updating rate tables.
@@ -33,13 +32,18 @@ Setting up tax collection with TaxJar is simple. Just follow these steps.
 1. Install the WooCommerce plugin
 1. Install the Sales Tax Calculation Plugin either via the WordPress.org plugin directory (just search for “TaxJar”), or by uploading the files to your server.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. Find TaxJar in your WordPress Settings (left menu bar) 
+1. Find TaxJar in your WooCommerce -> Settings -> Integrations tab.
 1. You’ll need an API Token. If you already have a TaxJar account, click the “Click here to get a TaxJar API Token” link. Then click the button in the “API Token” box of your account page. Copy the API Token. If you don’t have a TaxJar account, you’ll be asked to setup one first. Then follow the simple steps above.
 1. Paste the API Token into the “Your TaxJar API Token” field.
 1. Fill out the rest of your settings. All that TaxJar needs to calculate sales tax is your business address.
 1. Check the box next to “Enable TaxJar”.
 1. Click “Save Changes”.
-1. In WooCommerce Settings / Taxes Enable Display tax totals: "Itemized"
+
+Suggested WooCommerce Tax Settings
+
+1. Enabled taxes and tax calculations
+1. Choose 'No, I will enter prices exclusive of tax'
+1. Set Display tax totals: "As a single total"
 
 == How It Works ==
 
@@ -81,7 +85,10 @@ Our pricing is simple. You pay based on the number of times you use the tax calc
 
 
 == Changelog ==
-
+= 1.0 =
+* Upgrade to 1.0 requires you to re-enter your TaxJar API Token and Business City and Zip.
+* Plugin rewrite to better integrate with WooCommerce
+* Bug Fixes.
 = 0.6 =
 * Update to new woocommerce
 = 0.5 =
