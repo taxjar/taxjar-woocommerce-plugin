@@ -3,8 +3,11 @@ Contributors: tonkapark
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 3.0
 Tested up to: 3.9.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
+=======
+
+#TaxJar - Sales Tax Automation for WooCommerce
 
 TaxJar for WooCommerce helps you collect accurate sales tax with almost no work! Stop uploading and updating rate tables.
 
@@ -85,6 +88,8 @@ Our pricing is simple. You pay based on the number of times you use the tax calc
 
 
 == Changelog ==
+= 1.0.1 =
+* Make sure TaxJar Calculations override other taxes.
 = 1.0 =
 * Upgrade to 1.0 requires you to re-enter your TaxJar API Token and Business City and Zip.
 * Plugin rewrite to better integrate with WooCommerce

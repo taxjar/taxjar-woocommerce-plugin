@@ -57,11 +57,14 @@ class WC_Taxjar_Integration extends WC_Integration {
 	    add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'sanitize_settings' ) );
 	    add_filter( 'woocommerce_cart_tax_totals', array($this, 'display_taxjar_totals'), 0, 2);
 	    add_filter( 'woocommerce_cart_taxes_total', array($this, 'get_taxes_total'), 0, 4);
-	    add_filter( 'woocommerce_cart_get_taxes', array($this, 'display_taxjar_totals'), 0, 2);
+	    //add_filter( 'woocommerce_cart_get_taxes', array($this, 'display_taxjar_totals'), 0, 2);
 	    add_filter( 'woocommerce_order_tax_totals', array($this, 'display_taxjar_totals'), 0, 2);
+	
+			//WP Hooks			
+			add_action('admin_print_styles', array($this, 'load_taxjar_admin_styles'));
 		}
+		
   }
-
 
   /**
    * Initialize integration settings form fields.
@@ -147,9 +150,14 @@ class WC_Taxjar_Integration extends WC_Integration {
   * @return void
   */
   public function get_tax_rate_from_taxjar_and_update_total_tax( $wc_cart_object ) {
+
+		// When no items we can return
+		if(sizeof($wc_cart_object->cart_contents) == 0) 
+			return $wc_cart_object;
+				
 	  global $woocommerce;
 	  $customer = $woocommerce->customer;
-	  $amount_to_collect = 0;
+		$amount_to_collect = 0;
 	  $store_settings   = $this->get_store_settings();
 		if ( ! $customer->is_vat_exempt() ){
 		  if ( ( $customer->get_country() == 'US' ) && ( $customer->get_state() == $store_settings['store_state_setting'] ) ) {
@@ -174,19 +182,38 @@ class WC_Taxjar_Integration extends WC_Integration {
 		      elseif ( 200 == $response['response']['code'] ) {
 		        $this->_log( "Received: " . $response['body'] );
 		        $taxjar_response = json_decode( $response['body'] );
-		        $amount_to_collect = $taxjar_response->amount_to_collect;
-						$rate_collected = $taxjar_response->rate;
+						$amount_to_collect = $taxjar_response->amount_to_collect;
 		        set_transient( $cache_key, $amount_to_collect, $this->cache_time );
 		      }
 		      else {
 		        $this->_log( "Received: " . $response['body'] );
 		      }
+			  }else{
+				$this->_log( "Cached Amount: " . $amount_to_collect );
 		    }
-		    $wc_cart_object->tax_total = $amount_to_collect;
+						
 		    $this->tax_total           = $amount_to_collect;
-				$this->tax_rate            = $rate_collected;
+
+				// Overwrite Cart Tax Totals				
+		    $wc_cart_object->tax_total = $this->tax_total;
+				$wc_cart_object->taxes = array($this->tax_total);		
+				$wc_cart_object->shipping_taxes = array(0);		
+				$wc_cart_object->shipping_tax_total = 0;
+				$wc_cart_object->subtotal_ex_tax = $wc_cart_object->subtotal - $this->tax_total;
+
+				// Fetch cart items to clear any line item taxes.
+				$items = $wc_cart_object->cart_contents;
+				if(is_array($items)) {
+					foreach($items as $key => $data) {
+						$items[$key]['line_tax'] = 0;
+						$items[$key]['line_subtotal_tax'] = 0;
+					}
+					
+					$wc_cart_object->cart_contents = $items;
+				}								
 		  }
-		}    
+		} 
+		return $wc_cart_object;   
   }
 
 
@@ -210,28 +237,33 @@ class WC_Taxjar_Integration extends WC_Integration {
   *
   * @return array
   */
-	public function display_taxjar_totals( $taxes, $order = NULL) {   
-     $tax                   = new stdClass();
-     $tax->rate             = 0;
-     $tax->tax_rate_id      = 'taxjar_live_rate';
-     $tax->is_compound      = true;
-     $tax->label            = 'Sales Tax';
-     $tax->calc_tax         = 'per_order';
-     $tax->formatted_amount = woocommerce_price( 0 );
-     if ( $this->tax_total ) {
-				$tax->rate          		= $this->tax_rate;       
-				$tax->amount            = $this->tax_total;
-       	$tax->formatted_amount  = woocommerce_price( $this->tax_total );
-     }
-     else {
-       if ( method_exists( $order, get_total_tax ) ) {
-         $tax->amount           = $order->get_total_tax();
-         $tax->formatted_amount = woocommerce_price( $order->get_total_tax() );
-       }
-     }
-     $tax_values = array( 'TAX' => $tax );
-     $this->_log( "TAX: " . json_encode($tax_values) );
-     return $tax_values;    
+	public function display_taxjar_totals( $tax_totals, $order = NULL) {   
+		$tax_totals['taxjar_tax'] 									= new stdClass();
+		$tax_totals['taxjar_tax']->amount           = 0;
+		$tax_totals['taxjar_tax']->rate             = '0';
+		$tax_totals['taxjar_tax']->tax_rate_id      = 'taxjar_live_rate';
+		$tax_totals['taxjar_tax']->is_compound      = true;
+		$tax_totals['taxjar_tax']->label            = 'Sales Tax';
+		$tax_totals['taxjar_tax']->calc_tax         = 'per_order';
+		$tax_totals['taxjar_tax']->formatted_amount = woocommerce_price( $tax_totals['taxjar_tax']->amount );
+		if ( $this->tax_total ) {       
+			$tax_totals['taxjar_tax']->amount            = $this->tax_total;
+		  $tax_totals['taxjar_tax']->formatted_amount  = woocommerce_price( $this->tax_total );
+		}
+		else {
+		  if ( method_exists( $order, get_total_tax ) ) {
+		    $tax_totals['taxjar_tax']->amount           = $order->get_total_tax();
+		    $tax_totals['taxjar_tax']->formatted_amount = woocommerce_price( $order->get_total_tax() );
+		  }
+		}
+
+		$this->_log( "TAX: " . json_encode($tax_totals['taxjar_tax']) );
+		
+		// Remove WooCommerce tax row
+		if(isset($tax_totals['TAX']) && $tax_totals['TAX']->amount == 0)
+			unset($tax_totals['TAX']);		
+		
+		return $tax_totals;    
   }
 
   /**
@@ -366,7 +398,7 @@ class WC_Taxjar_Integration extends WC_Integration {
    * 
    */
 	public function output_sections_before(  ) {	
-		echo'<div class="taxjar"><h3>Tax Rates Powdered by <a href="http://www.taxjar.com" target="_blank">TaxJar</a></h3></div>';
+		echo'<div class="taxjar"><h3>Tax Rates Powered by <a href="http://www.taxjar.com" target="_blank">TaxJar</a>. <a href="admin.php?page=wc-settings&tab=integration">Configure TaxJar</a></h3></div>';
 		echo'<div style="display:none;">';		
 	}
 	
@@ -398,6 +430,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}			
 		}
 		return $taxable_amount;
+	}
+
+	/*
+	 * Admin Styles
+	*/
+	public function load_taxjar_admin_styles() {
+		wp_enqueue_style('taxjar-admin-style', plugin_dir_url(__FILE__) .'css/admin.css');
 	}
 
 }
