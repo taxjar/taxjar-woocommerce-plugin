@@ -160,10 +160,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$amount_to_collect = 0;
 	  $store_settings   = $this->get_store_settings();
 		if ( ! $customer->is_vat_exempt() ){
-		  if ( ( $customer->get_country() == 'US' ) && ( $customer->get_state() == $store_settings['store_state_setting'] ) ) {
-		    $postcode         = explode( ',' , $customer->get_postcode() );
+			list( $country, $state, $postcode, $city ) = $customer->get_taxable_address();
+		  if ( ( $country == 'US' ) && ( $state == $store_settings['store_state_setting'] ) ) {
+		    $postcode         = explode( ',' , $postcode );
 		    $to_zip           = $postcode[0];
-		    $to_city          = $customer->get_city();
+		    $to_city          = $city;
 		    $state            = $store_settings['store_state_setting'];
 		    $from_zip         = $store_settings['taxjar_zip_code_setting'];
 		    $from_city        = $store_settings['taxjar_city_setting'];
