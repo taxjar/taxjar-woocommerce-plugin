@@ -5,7 +5,7 @@
  * Description: TaxJar for WooCommerce helps you collect <strong>accurate sales tax</strong> with almost no work! Stop uploading and updating rate tables. To get started: 1) <a href="http://www.taxjar.com/api/">Sign up for a TaxJar API token</a>, and 2) Go to your <a href="admin.php?page=wc-settings&tab=integration">TaxJar settings page</a>, and save your API token and business address.
  * Author: TaxJar
  * Author URI: http://taxjar.com
- * Version: 1.0.1
+ * Version: 1.0.3
  *
  */
 
