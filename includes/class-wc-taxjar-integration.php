@@ -170,7 +170,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		    $from_city        = $store_settings['taxjar_city_setting'];
 		    $amount           = $this->taxjar_taxable_amount($woocommerce->cart);
 		    $shipping_amount  = $woocommerce->cart->shipping_total;
-		    $url              = sprintf( $this->uri . 'sales_tax?state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s', $state, $amount, $shipping_amount, $from_city, $from_zip, $to_city, $to_zip );
+		    $url              = sprintf( $this->uri . 'sales_tax?woo=true&state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s', $state, $amount, $shipping_amount, $from_city, $from_zip, $to_city, $to_zip );
 		    $url              = str_replace( ' ', '%20', $url );
 		    $cache_key        = hash( 'md5', $url );
 				if ( false === ( $amount_to_collect = get_transient( $cache_key ) ) ) {
