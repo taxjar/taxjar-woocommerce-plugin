@@ -160,16 +160,17 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$amount_to_collect = 0;
 	  $store_settings   = $this->get_store_settings();
 		if ( ! $customer->is_vat_exempt() ){
-		  if ( ( $customer->get_country() == 'US' ) && ( $customer->get_state() == $store_settings['store_state_setting'] ) ) {
-		    $postcode         = explode( ',' , $customer->get_postcode() );
+			list( $country, $state, $postcode, $city ) = $customer->get_taxable_address();
+		  if ( ( $country == 'US' ) && ( $state == $store_settings['store_state_setting'] ) ) {
+		    $postcode         = explode( ',' , $postcode );
 		    $to_zip           = $postcode[0];
-		    $to_city          = $customer->get_city();
+		    $to_city          = $city;
 		    $state            = $store_settings['store_state_setting'];
 		    $from_zip         = $store_settings['taxjar_zip_code_setting'];
 		    $from_city        = $store_settings['taxjar_city_setting'];
 		    $amount           = $this->taxjar_taxable_amount($woocommerce->cart);
 		    $shipping_amount  = $woocommerce->cart->shipping_total;
-		    $url              = sprintf( $this->uri . 'sales_tax?state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s', $state, $amount, $shipping_amount, $from_city, $from_zip, $to_city, $to_zip );
+		    $url              = sprintf( $this->uri . 'sales_tax?woo=true&state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s', $state, $amount, $shipping_amount, $from_city, $from_zip, $to_city, $to_zip );
 		    $url              = str_replace( ' ', '%20', $url );
 		    $cache_key        = hash( 'md5', $url );
 				if ( false === ( $amount_to_collect = get_transient( $cache_key ) ) ) {
@@ -195,11 +196,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 		    $this->tax_total           = $amount_to_collect;
 
 				// Overwrite Cart Tax Totals				
+				if ( $wc_cart_object->tax_total ) {
+					$wc_cart_object->remove_taxes();
+				}				
 		    $wc_cart_object->tax_total = $this->tax_total;
 				$wc_cart_object->taxes = array($this->tax_total);		
 				$wc_cart_object->shipping_taxes = array(0);		
 				$wc_cart_object->shipping_tax_total = 0;
-				$wc_cart_object->subtotal_ex_tax = $wc_cart_object->subtotal - $this->tax_total;
 
 				// Fetch cart items to clear any line item taxes.
 				$items = $wc_cart_object->cart_contents;
