@@ -3,7 +3,7 @@ Contributors: tonkapark
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 3.0
 Tested up to: 3.9.1
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 =======
 
@@ -88,6 +88,8 @@ Our pricing is simple. You pay based on the number of times you use the tax calc
 
 
 == Changelog ==
+= 1.0.4 =
+* Bug fix
 = 1.0.3 =
 * api param change for woo
 = 1.0.2 =

@@ -196,11 +196,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 		    $this->tax_total           = $amount_to_collect;
 
 				// Overwrite Cart Tax Totals				
+				if ( $wc_cart_object->tax_total ) {
+					$wc_cart_object->remove_taxes();
+				}				
 		    $wc_cart_object->tax_total = $this->tax_total;
 				$wc_cart_object->taxes = array($this->tax_total);		
 				$wc_cart_object->shipping_taxes = array(0);		
 				$wc_cart_object->shipping_tax_total = 0;
-				$wc_cart_object->subtotal_ex_tax = $wc_cart_object->subtotal - $this->tax_total;
 
 				// Fetch cart items to clear any line item taxes.
 				$items = $wc_cart_object->cart_contents;
