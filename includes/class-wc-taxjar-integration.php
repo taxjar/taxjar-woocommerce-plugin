@@ -283,11 +283,12 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->amount_to_collect = 0;
     $this->freight_taxable = true;
 
-    // Ensure customer is not tax exempt
-    if ( ! $customer->is_vat_exempt() ){
+    // Get all of the required customer params
+    list( $country, $state, $postcode, $city ) = $customer->get_taxable_address();
 
-      // Get all of the required params
-      list( $country, $state, $postcode, $city ) = $customer->get_taxable_address();
+    // Ensure customer is not tax exempt and we have enough information for an API call
+    if ( ! $customer->is_vat_exempt() && isset( $state ) && isset( $postcode ) ){
+
       $postcode         = explode( ',' , $postcode );
       $to_zip           = $postcode[0];
       $to_city          = $city;
