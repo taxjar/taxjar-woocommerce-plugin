@@ -1,3 +1,6 @@
+# 1.0.5.2 (2014-11-13)
+* Fixed a bug where coupons where being applied on the cart twice
+
 # 1.0.5.1 (2014-11-06)
 * Bug fixes
 
