@@ -1,3 +1,6 @@
+# 1.0.6 (2014-11-17)
+* Fixed a bug encountered on some hosting providers
+
 # 1.0.5.2 (2014-11-13)
 * Fixed a bug where coupons where being applied on the cart twice
 

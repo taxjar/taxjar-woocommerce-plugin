@@ -3,7 +3,7 @@ Contributors: tonkapark, ntbnnt
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 3.0
 Tested up to: 4.0
-Stable tag: 1.0.5.2
+Stable tag: 1.0.6
 License: GPLv2 or later
 =======
 
@@ -26,12 +26,12 @@ Here’s why customers love this plugin:
 
 Other Notable Features:
 
-*	Simple install – starting collecting sales tax in minutes
-*	Compatible with Woocommerce 2.0+ and Wordpress 4.0
-*	Avoid sales tax surprises with daily updated on taxes collected by state, county, and city
-*	Automated configuration – all of your tax settings are done automatically!
-*	Supports tax exempt items set by store manager
-*	If you also sell on other platforms, get your sales tax data all in a single place
+* Simple install – starting collecting sales tax in minutes
+* Compatible with Woocommerce 2.0+ and Wordpress 4.0
+* Avoid sales tax surprises with daily updated on taxes collected by state, county, and city
+* Automated configuration – all of your tax settings are done automatically!
+* Supports tax exempt items set by store manager
+* If you also sell on other platforms, get your sales tax data all in a single place
 
 
 [TaxJar](http://www.taxjar.com) provides easy & accurate ecommerce sales tax reporting in addition to their sales tax calculation.
@@ -110,11 +110,15 @@ Yes. The fee is $19.95 per state, per filing.
 
 
 == Changelog ==
-= 1.0.5.2 =
+# 1.0.6 (2014-11-17)
+* Fixed a bug encountered on some hosting providers
+
+# 1.0.5.2 (2014-11-13)
+* Fixed a bug where coupons where being applied on the cart twice
+
+# 1.0.5.1 (2014-11-06)
 * Bug fixes
-= 1.0.5.1 =
-* Bug fixes
-= 1.0.5 =
+
 # 1.0.5 (2014-09-26)
 ## Updated
 * New way of handling taxes on orders compatible with WooCommerce 2.2
@@ -124,31 +128,19 @@ Yes. The fee is $19.95 per state, per filing.
 * Ability to download orders easily into TaxJar
 * Shortcuts to access TaxJar Settings
 * Freezes settings for WooCommerce Tax (we set everything up for your store's sales tax needs)
-= 1.0.4 =
-* Bug fix
-= 1.0.3 =
-* api param change for woo
-= 1.0.2 =
-* Properly use the taxable address of the customer/store.
-= 1.0.1 =
-* Make sure TaxJar Calculations override other taxes.
-= 1.0 =
-* Upgrade to 1.0 requires you to re-enter your TaxJar API Token and Business City and Zip.
-* Plugin rewrite to better integrate with WooCommerce
-* Bug Fixes.
-= 0.6 =
-* Update to new woocommerce
-= 0.5 =
-* Bug Fixes
-= 0.4 =
-* Bug Fixes
-= 0.3 =
-* Documentation cleanup
 
-= 0.2 =
-* Move Session_Start Earlier 
-= 0.1 =
-* Initial Commit
+# 1.0.3 (2014-08-27)
+* Fix api url param for woo
+
+# 1.0.2 (2014-08-26)
+* use taxable_address from wooCommerce customer
+
+# 1.0.1 (2014-08-25)
+* TaxJar calc overrides all other taxes
+* Hide order admin calculate tax button
+
+# 1.0 (2014-08-11)
+* Initial release
 
 == Screenshots ==
 
