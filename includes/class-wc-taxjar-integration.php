@@ -43,7 +43,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->cache_time = HOUR_IN_SECONDS;
 
     // User Agent for WP_Remote
-    $this->ua = 'TaxJarWordPressPlugin/1.0.5.2/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+    $this->ua = 'TaxJarWordPressPlugin/1.0.6/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 
     // TaxJar Config Integration Tab
     add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
@@ -493,11 +493,18 @@ class WC_Taxjar_Integration extends WC_Integration {
           // Unique Username with TaxJar prefix
           $username = uniqid('api_taxjar_', true);
 
-          // Use OPENSSL_RANDOM_PSEDUO if we can for a password
-          try {
-            $password = openssl_random_pseudo_bytes(32);
+          if ( function_exists("openssl_random_pseudo_bytes") ) {
+
+            // Use OPENSSL_RANDOM_PSEDUO if we can for a password
+            try {
+              $password = openssl_random_pseudo_bytes(32);
+            }
+            catch ( Exception $e ) {
+              $password = uniqid('', true);
+            }
+
           }
-          catch ( Exception $e ) {
+          else {
             $password = uniqid('', true);
           }
 
