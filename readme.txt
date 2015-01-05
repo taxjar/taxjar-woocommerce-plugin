@@ -2,8 +2,8 @@
 Contributors: tonkapark, ntbnnt
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 3.0
-Tested up to: 4.0
-Stable tag: 1.0.6
+Tested up to: 4.1
+Stable tag: 1.0.7
 License: GPLv2 or later
 =======
 
@@ -110,6 +110,14 @@ Yes. The fee is $19.95 per state, per filing.
 
 
 == Changelog ==
+# 1.0.7 (2014-12-24)
+## Fixed
+* Fixed a bug encountered when local shipping options were selected for some users
+
+## New
+* Adds tax calculation support to WooCommerce for local shipping options
+* WooCommerce can now calculate taxes for local pickup shipping option
+
 # 1.0.6 (2014-11-17)
 * Fixed a bug encountered on some hosting providers
 

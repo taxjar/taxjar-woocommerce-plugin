@@ -43,7 +43,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->cache_time = HOUR_IN_SECONDS;
 
     // User Agent for WP_Remote
-    $this->ua = 'TaxJarWordPressPlugin/1.0.6/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+    $this->ua = 'TaxJarWordPressPlugin/1.0.7/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 
     // TaxJar Config Integration Tab
     add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
@@ -62,6 +62,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 
       add_filter( 'woocommerce_matched_rates',     array( $this, 'build_matched_rate'    ), 0, 2);
       add_filter( 'woocommerce_rate_code',         array( $this, 'build_matched_rate'    ), 0, 2);
+
+      add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
  
       // WP Hooks     
       add_action( 'admin_print_styles', array( $this, 'load_taxjar_admin_styles' ) );
@@ -366,6 +368,27 @@ class WC_Taxjar_Integration extends WC_Integration {
       $wc_cart_object->tax_total = $this->amount_to_collect;
       $wc_cart_object->taxes = array($rate_id => $this->amount_to_collect);
     }
+  }
+
+  /**
+  * Set customer zip code and state to store if local shipping option set
+  *
+  * @return array
+  */
+  public function append_base_address_to_customer_taxable_address( $address ){
+    $store_settings = $this->get_store_settings();
+    list( $country, $state, $postcode, $city ) = $address;
+    $tax_based_on = '';
+
+    // See WC_Customer get_taxable_address()
+    if ( apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true ) == true && WC()->cart->needs_shipping() && sizeof( array_intersect( WC()->session->get( 'chosen_shipping_methods', array( get_option( 'woocommerce_default_shipping_method' ) ) ), apply_filters( 'woocommerce_local_pickup_methods', array( 'local_pickup' ) ) ) ) > 0 ) {
+      $tax_based_on = 'base';
+    }
+    if ( $tax_based_on == 'base' ) {
+      $postcode  = $store_settings['taxjar_zip_code_setting'];
+      $city = $store_settings['taxjar_city_setting'];
+    }
+    return array( $country, $state, $postcode, $city );
   }
 
   /**

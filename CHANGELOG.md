@@ -1,3 +1,11 @@
+# 1.0.7 (2014-12-24)
+## Fixed
+* Fixed a bug encountered when local shipping options were selected
+
+## New
+* Adds tax calculation support to WooCommerce for local shipping options
+* WooCommerce can now calculate taxes for local pickup shipping option
+
 # 1.0.6 (2014-11-17)
 * Fixed a bug encountered on some hosting providers
 
