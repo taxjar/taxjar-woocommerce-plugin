@@ -1,3 +1,6 @@
+# 1.0.8 (2015-03-10)
+* Bug fixes in the handling of persisted rates
+
 # 1.0.7 (2014-12-24)
 ## Fixed
 * Fixed a bug encountered when local shipping options were selected
