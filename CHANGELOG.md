@@ -1,4 +1,7 @@
 # 1.0.8 (2015-03-10)
+* WooCommerce compatible note 2.3.x is now required
+
+# 1.0.8 (2015-03-10)
 * Bug fixes in the handling of persisted rates
 
 # 1.0.7 (2014-12-24)

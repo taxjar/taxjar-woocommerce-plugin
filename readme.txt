@@ -27,7 +27,7 @@ Here’s why customers love this plugin:
 Other Notable Features:
 
 * Simple install – starting collecting sales tax in minutes
-* Compatible with Woocommerce 2.0+ and Wordpress 4.0
+* Compatible with Woocommerce 2.3+ and Wordpress 4.0
 * Avoid sales tax surprises with daily updated on taxes collected by state, county, and city
 * Automated configuration – all of your tax settings are done automatically!
 * Supports tax exempt items set by store manager
