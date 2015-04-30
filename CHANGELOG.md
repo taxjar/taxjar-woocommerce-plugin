@@ -1,4 +1,4 @@
-# 1.0.8 (2015-03-10)
+# (2015-04-30)
 * WooCommerce compatible note 2.3.x is now required
 
 # 1.0.8 (2015-03-10)
