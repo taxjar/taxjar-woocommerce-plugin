@@ -1,3 +1,7 @@
+# 1.1.0 (2015-06-26)
+* Switch to v2 TaxJar API
+* Bug fixes and code cleanups
+
 # (2015-04-30)
 * WooCommerce compatible note 2.3.x is now required
 
