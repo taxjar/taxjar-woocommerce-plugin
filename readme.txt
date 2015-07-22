@@ -165,6 +165,12 @@ Yes. The fee is $19.95 per state, per filing.
 # 1.0 (2014-08-11)
 * Initial release
 
+== Upgrade Notice ==
+
+= 1.1.1 =
+
+When upgrading we recommend clearning transients under WooCommerce->System Status->Tools
+
 == Screenshots ==
 
 1. TaxJar for WooCommerce Plugin Settings
