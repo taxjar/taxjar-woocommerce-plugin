@@ -43,7 +43,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->cache_time = HOUR_IN_SECONDS;
 
     // User Agent for WP_Remote
-    $this->ua = 'TaxJarWordPressPlugin/1.1.0/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+    $this->ua = 'TaxJarWordPressPlugin/1.1.1/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 
     // TaxJar Config Integration Tab
     add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
@@ -149,7 +149,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     // Build the form array
     $this->form_fields   = array(
       'enabled' => array(
-        'title'             => __( 'Enabled', 'wc-taxjar' ),
+        'title'             => __( 'Sales Tax Calculation', 'wc-taxjar' ),
         'type'              => 'checkbox',
         'label'             => __( 'Enable TaxJar Calculations', 'wc-taxjar' ),
         'default'           => 'no',
@@ -432,8 +432,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 			//delete_transient( 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $to_city, $source_zip, '' ) ) );
 			//$this->_log('DELETING KEY::::'. 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $to_city, implode( ',', $this->_get_wildcard_postcodes( wc_clean( $source_zip ) ) ), '' ) ));
 			
-			delete_transient( 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $to_city, implode( ',', $this->_get_wildcard_postcodes( wc_clean( $source_zip ) ) ), '' ) ) );
-			
+			delete_transient( 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, ($source_city), implode( ',', $this->_get_wildcard_postcodes( wc_clean( $source_zip ) ) ), '' ) ) );
+			$this->_log( $source_city );
 			$wc_rates = WC_Tax::find_rates( array(
         'country' =>        strtoupper($to_country),
         'state' =>          strtoupper($to_state),
@@ -503,8 +503,10 @@ class WC_Taxjar_Integration extends WC_Integration {
       
     // Store the rate ID and the amount on the cart's totals
     $wc_cart_object->tax_total = $this->amount_to_collect;
+    // TaxJar includes shipping taxes in the amount_to_collect already, so zero out shipping_taxes on WooCommerce.
+    $wc_cart_object->shipping_taxes = array(); 
     $wc_cart_object->taxes = array($this->rate_id => $this->amount_to_collect);
-      
+              
   }
 
   
