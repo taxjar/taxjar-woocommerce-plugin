@@ -1,3 +1,8 @@
+# 1.1.1 (2015-07-21)
+* Fix transient key bug with city (suggest to clear transients in WooCommerce)
+* Label text change
+* Improve handling of Shipping taxes
+
 # 1.1.0 (2015-06-26)
 * Switch to v2 TaxJar API
 * Bug fixes and code cleanups
