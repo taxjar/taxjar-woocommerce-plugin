@@ -1,0 +1,14 @@
+/* Remove calculate taxes button */
+#poststuff #woocommerce-order-totals .buttons .calc_line_taxes {
+  display: none !important;
+}
+/* Remove Add Tax Row Button */
+.add_total_row {
+  display: none !important;
+}
+.add-order-tax {
+  display: none !important;
+}
+.calculate-tax-action {
+  /* display: none !important; */
+}
