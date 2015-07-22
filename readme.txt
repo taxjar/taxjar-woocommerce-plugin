@@ -111,6 +111,7 @@ Yes. The fee is $19.95 per state, per filing.
 
 
 == Changelog ==
+
 # 1.1.1 (2015-07-21)
 * Fix transient key bug with city (suggest to clear transients in WooCommerce)
 * Label text change
