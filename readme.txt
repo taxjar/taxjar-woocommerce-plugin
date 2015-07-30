@@ -1,13 +1,10 @@
 ==== TaxJar - Sales Tax Automation for WooCommerce ====
 Contributors: tonkapark, taxjar
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
-Requires at least: 3.0
-Tested up to: 4.2.2
-Stable tag: 1.1.1
+Requires at least: 4.0
+Tested up to: 4.2.3
+Stable tag: 1.1.2
 License: GPLv2 or later
-=======
-
-#TaxJar - Sales Tax Automation for WooCommerce
 
 Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculation, collection, and filing.
 
@@ -58,31 +55,6 @@ Suggested WooCommerce Tax Settings
 1. We automatically setup your store's tax settings to work with our API. There is no need to configure WooCommerce Taxes.
 1. Full reporting of your sales tax collected, AutoFile and more available in your TaxJar account.
 
-== How It Works ==
-
-Here’s how the TaxJar Smart Sales Tax API works.
-
-TaxJar takes the following input from your store:
-
-* Seller’s home state, city, and zip code
-* Transaction amount
-* The city, state, and zip code where item is being shipped
-* Any shipping fees charged
-
-And returns an accurate sales tax rate (including state, county, city, and special taxes) based on
-
-* Seller's nexus based on your WooCommerce ship from settings
-* Any nexus with other addresses stored in your TaxJar account
-* Local sales tax sourcing laws (origin-based or destination-based)
-* Shipping taxability laws (shipping is not taxable in every state)
-
-TaxJar for WooCommerce automatically determines
-
-* Nexus
-* Origin vs. Destination sourcing
-* Shipping taxability
-* Sales tax rate (state county, city, special)
-
 == Frequently Asked Questions ==
 
 = What are the requirements to collect sales tax with TaxJar for WooCommerce? =
@@ -109,68 +81,96 @@ Yes. We can file sales tax returns for you in more than 25 states.
 
 Yes. The fee is $19.95 per state, per filing.
 
+== Screenshots ==
+
+1. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
 
-# 1.1.1 (2015-07-21)
+= 1.1.2 (2015-07-30) =
+* Handling Shipping tax more accurately
+
+= 1.1.1 (2015-07-21) =
 * Fix transient key bug with city (suggest to clear transients in WooCommerce)
 * Label text change
 * Improve handling of Shipping taxes
 
-# 1.1.0 (2015-06-26)
+= 1.1.0 (2015-06-26) =
 * Code cleanup
 * Use new v2 TaxJar API (http://developers.taxjar.com/api/)
 * New TaxJar graphic
 
-# 1.0.8 (2015-03-10)
+= 1.0.8 (2015-03-10) =
 * Bug fixes in the handling of persisted rates
 
-# 1.0.7 (2014-12-24)
-## Fixed
+= 1.0.7 (2014-12-24) =
+* Fixed
 * Fixed a bug encountered when local shipping options were selected for some users
-
-## New
+* New
 * Adds tax calculation support to WooCommerce for local shipping options
 * WooCommerce can now calculate taxes for local pickup shipping option
 
-# 1.0.6 (2014-11-17)
+= 1.0.6 (2014-11-17) =
 * Fixed a bug encountered on some hosting providers
 
-# 1.0.5.2 (2014-11-13)
+= 1.0.5.2 (2014-11-13) =
 * Fixed a bug where coupons where being applied on the cart twice
 
-# 1.0.5.1 (2014-11-06)
+= 1.0.5.1 (2014-11-06) =
 * Bug fixes
 
-# 1.0.5 (2014-09-26)
-## Updated
+= 1.0.5 (2014-09-26) =
+* Updated
 * New way of handling taxes on orders compatible with WooCommerce 2.2
 * Uses new API (with support for Canada): [read the docs](http://www.taxjar.com/api/docs/)
-
-## New
+* New
 * Ability to download orders easily into TaxJar
 * Shortcuts to access TaxJar Settings
 * Freezes settings for WooCommerce Tax (we set everything up for your store's sales tax needs)
 
-# 1.0.3 (2014-08-27)
+= 1.0.3 (2014-08-27) =
 * Fix api url param for woo
 
-# 1.0.2 (2014-08-26)
+= 1.0.2 (2014-08-26) =
 * use taxable_address from wooCommerce customer
 
-# 1.0.1 (2014-08-25)
+= 1.0.1 (2014-08-25) =
 * TaxJar calc overrides all other taxes
 * Hide order admin calculate tax button
 
-# 1.0 (2014-08-11)
+= 1.0 (2014-08-11) =
 * Initial release
 
 == Upgrade Notice ==
 
+= 1.1.2 =
+Please make sure you have PHP 5.3+ installed (goto WooCommerce->System Status to check warnings)
+
 = 1.1.1 =
+When upgrading we recommend clearing transients under WooCommerce->System Status->Tools
 
-When upgrading we recommend clearning transients under WooCommerce->System Status->Tools
+== How It Works ==
 
-== Screenshots ==
+Here’s how the TaxJar Smart Sales Tax API works.
 
-1. TaxJar for WooCommerce Plugin Settings
+TaxJar takes the following input from your store:
+
+* Seller’s home state, city, and zip code
+* Transaction amount
+* The city, state, and zip code where item is being shipped
+* Any shipping fees charged
+
+And returns an accurate sales tax rate (including state, county, city, and special taxes) based on
+
+* Seller's nexus based on your WooCommerce ship from settings
+* Any nexus with other addresses stored in your TaxJar account
+* Local sales tax sourcing laws (origin-based or destination-based)
+* Shipping taxability laws (shipping is not taxable in every state)
+
+TaxJar for WooCommerce automatically determines
+
+* Nexus
+* Origin vs. Destination sourcing
+* Shipping taxability
+* Sales tax rate (state county, city, special)
+
