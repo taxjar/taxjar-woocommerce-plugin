@@ -1,3 +1,6 @@
+# 1.1.2 (2015-07-30)
+* Handling Shipping tax more accurately
+
 # 1.1.1 (2015-07-21)
 * Fix transient key bug with city (suggest to clear transients in WooCommerce)
 * Label text change

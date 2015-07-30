@@ -43,7 +43,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->cache_time = HOUR_IN_SECONDS;
 
     // User Agent for WP_Remote
-    $this->ua = 'TaxJarWordPressPlugin/1.1.1/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+    $this->ua = 'TaxJarWordPressPlugin/1.1.2/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 
     // TaxJar Config Integration Tab
     add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
@@ -294,6 +294,8 @@ class WC_Taxjar_Integration extends WC_Integration {
     
     $this->tax_rate           = 0;
     $this->amount_to_collect  = 0;
+    $this->item_collectable   = 0;
+    $this->shipping_collectable  = 0;
     $this->freight_taxable    = 1;
     $this->has_nexus          = 0;
     $this->tax_source         = 'origin';
@@ -319,7 +321,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->_log(':::: TaxJar API called ::::');
 
     $url              = $this->uri . 'taxes';
-    $body_string      = sprintf('plugin=woo&to_state=%s&from_state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s&from_country=%s&to_country=%s',
+    $body_string      = sprintf('plugin=woo&to_state=%s&from_state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s&from_country=%s&to_country=%s&line_items[][quantity]=1&line_items[][unit_price]=%s',
                           $to_state,
                           $from_state,
                           $amount,
@@ -329,7 +331,8 @@ class WC_Taxjar_Integration extends WC_Integration {
                           $to_city,
                           $to_zip,
                           $from_country,
-                          $to_country
+                          $to_country,
+                          $amount
                         );
 
     // Build the URL and Transient key
@@ -369,11 +372,15 @@ class WC_Taxjar_Integration extends WC_Integration {
         $this->has_nexus          = (int) $taxjar_response->has_nexus;
         $this->tax_source         = empty($taxjar_response->tax_source) ? 'origin' : $taxjar_response->tax_source;
         $this->amount_to_collect  = $taxjar_response->amount_to_collect;
+        if (!empty($taxjar_response->breakdown)) {
+          $this->shipping_collectable  = $taxjar_response->breakdown->shipping->tax_collectable;
+          $this->item_collectable  = $this->amount_to_collect - $this->shipping_collectable;
+        }
         $this->tax_rate           = $taxjar_response->rate;
         $this->freight_taxable    = (int) $taxjar_response->freight_taxable;
         
         // Create cache value
-        $cache_value              = $this->amount_to_collect . '::' . $this->tax_rate . '::' . $this->freight_taxable. '::' . $this->has_nexus . '::' . $this->tax_source;
+        $cache_value              = $this->amount_to_collect . '::' . $this->tax_rate . '::' . $this->freight_taxable. '::' . $this->has_nexus . '::' . $this->tax_source . '::' . $this->item_collectable  . '::' . $this->shipping_collectable;
         
         // Log the new cached value
         $this->_log( "Cache Value: ". $cache_value );
@@ -397,6 +404,8 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->freight_taxable    = $cache_value[2];
       $this->has_nexus 				  = $cache_value[3];
       $this->tax_source 			  = $cache_value[4];
+      $this->item_collectable 	  = $cache_value[5];
+      $this->shipping_collectable = $cache_value[6];
       
       // Log Cached Response
       $this->_log(  "Cached Amount: ".     $this->amount_to_collect  );
@@ -404,6 +413,8 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->_log(  "Cached Source: ".     $this->tax_source         );
       $this->_log(  "Cached Rate: ".       $this->tax_rate           );
       $this->_log(  "Shipping Taxable? ".  $this->freight_taxable    );
+      $this->_log(  "Item Tax to Collect: ".  $this->item_collectable    );
+      $this->_log(  "Shipping Tax to Collect: ".  $this->shipping_collectable);
     }
       
     // Remove taxes if they are set somehow and customer is exempt
@@ -428,10 +439,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			  "tax_rate_class" =>     ''
 			);
 			
-			// Clear the cached rates
-			//delete_transient( 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $to_city, $source_zip, '' ) ) );
-			//$this->_log('DELETING KEY::::'. 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $to_city, implode( ',', $this->_get_wildcard_postcodes( wc_clean( $source_zip ) ) ), '' ) ));
-			
+			// Clear the cached rates			
 			delete_transient( 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, ($source_city), implode( ',', $this->_get_wildcard_postcodes( wc_clean( $source_zip ) ) ), '' ) ) );
 			$this->_log( $source_city );
 			$wc_rates = WC_Tax::find_rates( array(
@@ -502,10 +510,8 @@ class WC_Taxjar_Integration extends WC_Integration {
     ) );
       
     // Store the rate ID and the amount on the cart's totals
-    $wc_cart_object->tax_total = $this->amount_to_collect;
-    // TaxJar includes shipping taxes in the amount_to_collect already, so zero out shipping_taxes on WooCommerce.
-    $wc_cart_object->shipping_taxes = array(); 
-    $wc_cart_object->taxes = array($this->rate_id => $this->amount_to_collect);
+    $wc_cart_object->tax_total = $this->item_collectable;
+    $wc_cart_object->taxes = array($this->rate_id => $this->item_collectable);
               
   }
 
