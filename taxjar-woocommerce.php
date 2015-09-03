@@ -60,6 +60,11 @@ class WC_Taxjar {
   */
   static function plugin_registration_hook() {
     
+    // TaxJar requires at least version 5.3 of PHP
+    if ( version_compare( PHP_VERSION, '5.3', '<' ) ) {
+      exit(sprintf('<strong>TaxJar requires PHP 5.3 or higher. You are currently using %s.</strong>',PHP_VERSION));
+    }
+    
     global $wpdb;
     
     // Clear all transients
