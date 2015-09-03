@@ -65,6 +65,11 @@ class WC_Taxjar {
       exit(sprintf('<strong>TaxJar requires PHP 5.3 or higher. You are currently using %s.</strong>',PHP_VERSION));
     }
     
+    // WooCommerce must be activated for TaxJar to activate
+    if ( !class_exists( 'Woocommerce' ) ) {
+      exit('<strong>Please activate WooCommerce before activating TaxJar.</strong>');
+    }
+
     global $wpdb;
     
     // Clear all transients
