@@ -67,8 +67,8 @@ class WC_Taxjar_Integration extends WC_Integration {
       add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
  
       // WP Hooks
-      add_action( 'admin_print_styles', array( $this, 'load_taxjar_admin_styles' ) );
-      
+      add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
+
       // If TaxJar is enabled and a user disables taxes we renable them
       update_option( 'woocommerce_calc_taxes', 'yes' );
 
@@ -119,6 +119,8 @@ class WC_Taxjar_Integration extends WC_Integration {
    */
   // fix undefined offset for country not set...
   public function init_form_fields( ) {
+    global $woocommerce;
+
     $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
     if ( empty( $default_wc_settings[1] ) ){
       $default_wc_settings[1] = "N/A";
@@ -131,8 +133,20 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->api_user = get_userdata( $user->ID );
       if ( ( $this->api_user ) && ( $this->settings['taxjar_download'] == 'yes' ) && ( $woo_key = $this->api_user->woocommerce_api_consumer_key ) && ( $woo_secret = $this->api_user->woocommerce_api_consumer_secret ) ) {
         $key = hash( 'md5', $woo_key.$woo_secret.get_bloginfo( 'url' ).$this->settings['api_token'] );
+        // Check to see if we are working with WooCommerce version 2.4 or greater
+        if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) )  {
+          $description_for_order_download = "
+            <div class='taxjar-generate-api-key-wrap'>
+              <div class='generate-new-api-key'>
+                <p class='description'>
+                  If you have not yet completed your TaxJar integration <br />please do so by <a href='#' class='js-taxjar-generate-api-key'>Generating a WooCommerce API Key</a>.
+                </p>
+              </div>
+              <p class='taxjar-generate-api-content description'></p>
+            </div>";
+        }
         // Check to see if we have recorded sending these the keys in the last 30 days
-        if ( false === ( $cache_value = get_transient( $key ) ) ) { 
+        elseif ( false === ( $cache_value = get_transient( $key ) ) ) { 
           $description_for_order_download = sprintf( 'Consumer Key: <code>%s</code><br/>Consumer Secret: <code>%s</code><br/>Visit our <a href="%s" target="_blank">WooCommerce Integration</a> page to complete our easy setup!', $woo_key, $woo_secret, $this->integration_uri );
         }
         else {
@@ -911,13 +925,29 @@ class WC_Taxjar_Integration extends WC_Integration {
   }
 
   /*
-   * Admin Styles
+   * Admin Assets
   */
-  public function load_taxjar_admin_styles( ) {
+  public function load_taxjar_admin_assets( ) {
     // Add CSS that hides some elements that are known to cause problems
     wp_enqueue_style( 'taxjar-admin-style', plugin_dir_url(__FILE__) .'css/admin.css' );
-  }
 
+
+    // Load Javascript for WooCommerce 2.4 API generation
+    wp_register_script( 'wc-taxjar-generate-api-keys', plugin_dir_url( __FILE__ ) . '/js/wc-taxjar-generate-api-key.js' );
+    
+    wp_localize_script(
+      'wc-taxjar-generate-api-keys',
+      'woocommerce_taxjar_admin_api_keys',
+      array(
+        'ajax_url'         => admin_url( 'admin-ajax.php' ),
+        'update_api_nonce' => wp_create_nonce( 'update-api-key' ),
+        'current_user'     => get_current_user_id(),
+        'integration_uri'  => $this->integration_uri
+      )
+    );
+    
+    wp_enqueue_script( 'wc-taxjar-generate-api-keys' , array( 'jquery' ) );
+  }
 }
 
 endif;
