@@ -135,15 +135,21 @@ class WC_Taxjar_Integration extends WC_Integration {
         $key = hash( 'md5', $woo_key.$woo_secret.get_bloginfo( 'url' ).$this->settings['api_token'] );
         // Check to see if we are working with WooCommerce version 2.4 or greater
         if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) )  {
-          $description_for_order_download = "
-            <div class='taxjar-generate-api-key-wrap'>
-              <div class='generate-new-api-key'>
-                <p class='description'>
-                  If you have not yet completed your TaxJar integration <br />please do so by <a href='#' class='js-taxjar-generate-api-key'>Generating a WooCommerce API Key</a>.
-                </p>
-              </div>
-              <p class='taxjar-generate-api-content description'></p>
-            </div>";
+          // Check if there is a key with either a description that is like TaxJar or a user that is like TaxJar
+          if( $this-> existing_api_key() ) {
+            $description_for_order_download = sprintf( "A TaxJar API Key has been created. It can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
+          } else {
+            $description_for_order_download = "
+              <div class='taxjar-generate-api-key-wrap'>
+                <div class='generate-new-api-key'>
+                  <p class='description'>
+                    You have not yet granted access to TaxJar for order downloads, <a href='#' class='js-taxjar-generate-api-key'>Generate WooCommerce API Key</a> now. 
+                    <br />Further <a href='http://support.taxjar.com/knowledge_base/topics/how-to-generate-woocommerce-2-dot-4-api-keys' target='_blank'>instructions</a>.
+                  </p>
+                </div>
+                <p class='taxjar-generate-api-content description'></p>
+              </div>";
+          }
         }
         // Check to see if we have recorded sending these the keys in the last 30 days
         elseif ( false === ( $cache_value = get_transient( $key ) ) ) { 
@@ -157,7 +163,11 @@ class WC_Taxjar_Integration extends WC_Integration {
       }
     }
     else {
-      $description_for_order_download = "If enabled, a TaxJar user will be created on your store for WooCommerce Order downloads.<br>We then generate secure tokens to access your store and enable the WooCommerce REST API if it is disabled.";
+      if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) )  {
+        $description_for_order_download = "If enabled, you can then generate secure tokens to grant TaxJar access to your store to download your order history.";
+      } else { 
+        $description_for_order_download = "If enabled, a TaxJar user will be created on your store for WooCommerce Order downloads.<br>We then generate secure tokens to access your store and enable the WooCommerce REST API if it is disabled.";
+      }
     }
 
     // Build the form array
@@ -594,6 +604,22 @@ class WC_Taxjar_Integration extends WC_Integration {
   private function api_user_query( ){
     global $wpdb;
     return $wpdb->get_row( "SELECT * FROM $wpdb->users WHERE user_login LIKE 'api_taxjar_%'" );
+  }
+
+  /** 
+  * Check if there is an existing WooCommerce 2.4 API Key
+  *
+  * @return boolean
+  */
+
+  private function existing_api_key( ) {
+    global $wpdb;
+    $sql = "SELECT count(key_id)
+        FROM {$wpdb->prefix}woocommerce_api_keys
+        LEFT JOIN $wpdb->users
+        ON {$wpdb->prefix}woocommerce_api_keys.user_id={$wpdb->users}.ID
+        WHERE ({$wpdb->users}.user_login LIKE '%taxjar%' OR {$wpdb->prefix}woocommerce_api_keys.description LIKE '%taxjar%');";
+    return ( $wpdb->get_var( $sql ) > 0 );
   }
 
   /**
