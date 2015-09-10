@@ -1,3 +1,7 @@
+* 1.1.3 (2015-09-09)
+* Better support for generating API keys in WooCommerce 2.4+
+* Warnings for PHP version
+
 # 1.1.2 (2015-07-30)
 * Handling Shipping tax more accurately
 
