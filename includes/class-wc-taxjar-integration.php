@@ -170,6 +170,39 @@ class WC_Taxjar_Integration extends WC_Integration {
       }
     }
 
+    // Check if we can post to the API
+    $description_for_enabled = __( 'If enabled, TaxJar will calculate all sales tax for your store.', 'wc-taxjar' );
+    if ( ( $this->settings['enabled'] == 'yes' ) && isset( $user ) && $this->settings['api_token']) {
+      $description_for_enabled .= '<br>';
+
+      $url         = $this->uri . 'verify';
+      $body_string = 'token='. $this->settings['api_token'];
+      $response = wp_remote_post( $url, array(
+        'headers' =>    array(
+                          'Authorization' => 'Token token="' . $this->settings['api_token'] .'"',
+                          'Content-Type' => 'application/x-www-form-urlencoded'
+                        ),
+        'user-agent' => $this->ua,
+        'body' => $body_string
+      ) );
+
+      if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
+        $description_for_enabled .= '<div style="color: #3FAE2A;">';
+        $description_for_enabled .= __( 'Connection to TaxJar servers estblished.', 'wc-taxjar' );
+        $description_for_enabled .= '</>';
+      } else {
+        $description_for_enabled .= '<div style="color: #ff0000;">';
+        $description_for_enabled .= __( 'wp_remote_post() failed. TaxJar could not connect to server. Please Contact your hosting provider.', 'wc-taxjar' );
+        $description_for_enabled .= '<br>';
+        if ( is_wp_error( $response ) ) {
+          $description_for_enabled .= ' ' . sprintf( __( 'Error: %s', 'wc-taxjar' ), wc_clean( $response->get_error_message() ) );
+        } else {
+          $description_for_enabled .= ' ' . sprintf( __( 'Status code: %s', 'wc-taxjar' ), wc_clean( $response['response']['code'] ) );
+        }
+        $description_for_enabled .= '</div>';
+      }
+    }
+
     // Build the form array
     $this->form_fields   = array(
       'enabled' => array(
@@ -177,7 +210,7 @@ class WC_Taxjar_Integration extends WC_Integration {
         'type'              => 'checkbox',
         'label'             => __( 'Enable TaxJar Calculations', 'wc-taxjar' ),
         'default'           => 'no',
-        'description'       => __( 'If enabled, TaxJar will calculate all sales tax for your store.', 'wc-taxjar' ),
+        'description'       => $description_for_enabled,
       ),
       'taxjar_download' => array(
         'title'             => __( 'Sales Tax Reporting', 'wc-taxjar' ),
