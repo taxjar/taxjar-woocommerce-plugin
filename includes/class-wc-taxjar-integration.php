@@ -23,7 +23,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->method_description = __( 'TaxJar is the easiest to use tax reporting and calculation engine for small business owners and sales tax professionals. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), the city, and the zip code from which your store ships to configure your TaxJar for Woocommerce installation.  You may also enable "Order Downloads" to immediately allow access to import the transactions from this store into your TaxJar account, all in one click! For help, email support@taxjar.com or reach out to us via live chat at <a href="http://taxjar.com">TaxJar.com</a>.', 'wc-taxjar' );
     $this->integration_uri  = 'https://app.taxjar.com/account/apps/add/woo';
     $this->app_uri          = 'https://app.taxjar.com/';
-    $this->uri              = 'http://tax-rate-service.dev/v2/';
+    $this->uri              = 'https://api.taxjar.com/v2/';
 
     // Load the settings.
     $this->init_settings();
