@@ -340,19 +340,26 @@ class WC_Taxjar_Integration extends WC_Integration {
     }
   }
 
+
   /**
-  * Direct copy and paste of private function in WC_Tax class file
+  * Slightly altered copy and paste of private function in WC_Tax class file
   */
   public function _get_wildcard_postcodes( $postcode ) {
-		$postcodes         = array( '*', strtoupper( $postcode ) );
-		$postcode_length   = strlen( $postcode );
-		$wildcard_postcode = strtoupper( $postcode );
+    global $woocommerce;
 
-		for ( $i = 0; $i < $postcode_length; $i ++ ) {
-			$wildcard_postcode = substr( $wildcard_postcode, 0, -1 );
-			$postcodes[] = $wildcard_postcode . '*';
-		}
-		return $postcodes;
+    $postcodes = array( '*', strtoupper( $postcode ) );
+    if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) )  {
+      $postcodes = array( '*', strtoupper( $postcode ), strtoupper( $postcode ) . '*' );
+    }
+
+    $postcode_length   = strlen( $postcode );
+    $wildcard_postcode = strtoupper( $postcode );
+
+    for ( $i = 0; $i < $postcode_length; $i ++ ) {
+      $wildcard_postcode = substr( $wildcard_postcode, 0, -1 );
+      $postcodes[] = $wildcard_postcode . '*';
+    }
+    return $postcodes;
 	}
 
 
