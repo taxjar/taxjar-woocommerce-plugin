@@ -23,7 +23,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->method_description = __( 'TaxJar is the easiest to use tax reporting and calculation engine for small business owners and sales tax professionals. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), the city, and the zip code from which your store ships to configure your TaxJar for Woocommerce installation.  You may also enable "Order Downloads" to immediately allow access to import the transactions from this store into your TaxJar account, all in one click! For help, email support@taxjar.com or reach out to us via live chat at <a href="http://taxjar.com">TaxJar.com</a>.', 'wc-taxjar' );
     $this->integration_uri  = 'https://app.taxjar.com/account/apps/add/woo';
     $this->app_uri          = 'https://app.taxjar.com/';
-    $this->uri              = 'https://api.taxjar.com/v2/';
+    $this->uri              = 'http://tax-rate-service.dev/v2/';//= 'https://api.taxjar.com/v2/';
 
     // Load the settings.
     $this->init_settings();
@@ -146,7 +146,7 @@ class WC_Taxjar_Integration extends WC_Integration {
         if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) )  {
           // Check if there is a key with either a description that is like TaxJar or a user that is like TaxJar
           if( $this-> existing_api_key() ) {
-            $description_for_order_download = sprintf( "A TaxJar API Key has been created. It can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
+            $description_for_order_download = sprintf( "A WooCommerce API key for TaxJar has been created. It can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
           } else {
             $description_for_order_download = "
               <div class='taxjar-generate-api-key-wrap'>
@@ -185,12 +185,13 @@ class WC_Taxjar_Integration extends WC_Integration {
     $url         = $this->uri . 'verify';
     $body_string = 'token='. $this->post_or_setting('api_token');
     $response = wp_remote_post( $url, array(
-      'headers' =>    array(
+      'timeout'     => 60,
+      'headers'     => array(
                         'Authorization' => 'Token token="' . $this->post_or_setting('api_token') .'"',
                         'Content-Type' => 'application/x-www-form-urlencoded'
                       ),
-      'user-agent' => $this->ua,
-      'body' => $body_string
+      'user-agent'  => $this->ua,
+      'body'        => $body_string
     ) );
 
     if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
@@ -678,7 +679,7 @@ class WC_Taxjar_Integration extends WC_Integration {
   private function post_or_setting($key) {
     $val = null;
     if( count ( $_POST ) > 0 ) {
-      $val = $_POST['woocommerce_taxjar-integration_'.$key];
+      $val = isset( $_POST['woocommerce_taxjar-integration_'.$key] ) ? $_POST['woocommerce_taxjar-integration_'.$key] : null;
     } else {
       $val = $this->settings[$key];
     }
