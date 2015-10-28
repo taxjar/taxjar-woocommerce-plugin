@@ -27,7 +27,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     // Load the settings.
     $this->init_settings();
-    $this->init_form_fields();
+    
 
     // Define user set variables.
     $this->api_token        = $this->get_option( 'api_token'  );
@@ -42,6 +42,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     // User Agent for WP_Remote
     $this->ua = 'TaxJarWordPressPlugin/1.1.3/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+
+    // Set up form fields
+    $this->init_form_fields();
 
     // TaxJar Config Integration Tab
     add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
@@ -268,14 +271,14 @@ class WC_Taxjar_Integration extends WC_Integration {
         ),
         'store_zip' => array(
           'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
-          'type'              => $api_token_missing ? 'hidden' : 'text',
+          'type'              => 'text',
           'description'       => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
           'desc_tip'          => true,
           'default'           => ''
         ),
         'store_city' => array(
           'title'             => __( 'Ship From City', 'wc-taxjar' ),
-          'type'              => $api_token_missing ? 'hidden' : 'text',
+          'type'              => 'text',
           'description'       => __( 'Enter the city where your store ships from.', 'wc-taxjar' ),
           'desc_tip'          => true,
           'default'           => ''
