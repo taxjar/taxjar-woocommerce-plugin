@@ -197,7 +197,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
       $description_for_status .= '<div style="color: #3FAE2A;">';
       $description_for_status .= __( 'Connection to TaxJar servers established.', 'wc-taxjar' );
-      $description_for_status .= '</>';
+      $description_for_status .= '</div>';
 
       $body = json_decode($response['body']);
       if( isset( $body->enabled ) && $body->enabled === false ) {
@@ -216,7 +216,7 @@ class WC_Taxjar_Integration extends WC_Integration {
       }
     } else {
       $description_for_status .= '<div style="color: #ff0000;">';
-      $description_for_status .= __( 'wp_remote_post() failed. TaxJar could not connect to server. Please Contact your hosting provider.', 'wc-taxjar' );
+      $description_for_status .= __( 'wp_remote_post() failed. TaxJar could not connect to server. Please contact your hosting provider.', 'wc-taxjar' );
       $description_for_status .= '<br>';
       if ( is_wp_error( $response ) ) {
         $description_for_status .= ' ' . sprintf( __( 'Error: %s', 'wc-taxjar' ), wc_clean( $response->get_error_message() ) );
@@ -237,7 +237,8 @@ class WC_Taxjar_Integration extends WC_Integration {
       'api_token' => array(
         'title'             => __( 'API Token', 'wc-taxjar' ),
         'type'              => 'text',
-        'description'       => __( '<a href="'.$this->app_uri.'account#api-access" target="_blank">Click here</a> to get your API token.', 'wc-taxjar' ),        'desc_tip'          => false,
+        'description'       => __( '<a href="'.$this->app_uri.'account#api-access" target="_blank">Click here</a> to get your API token.', 'wc-taxjar' ),
+        'desc_tip'          => false,
         'default'           => ''
       ),
       'taxjar_status' => array(
