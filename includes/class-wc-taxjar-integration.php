@@ -67,9 +67,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 
       add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
 
-      // WP Hooks
-      add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
-
       // If TaxJar is enabled and a user disables taxes we renable them
       update_option( 'woocommerce_calc_taxes', 'yes' );
 
@@ -128,6 +125,9 @@ class WC_Taxjar_Integration extends WC_Integration {
     }
 
     global $woocommerce;
+
+    // WP Hooks
+    add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
 
     $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
     if ( empty( $default_wc_settings[1] ) ){
