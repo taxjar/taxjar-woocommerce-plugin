@@ -27,6 +27,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     // Load the settings.
     $this->init_settings();
+    
 
     // Define user set variables.
     $this->api_token        = $this->get_option( 'api_token'  );
@@ -36,14 +37,14 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->debug            = filter_var( $this->get_option( 'debug' ),           FILTER_VALIDATE_BOOLEAN );
     $this->taxjar_download  = filter_var( $this->get_option( 'taxjar_download' ), FILTER_VALIDATE_BOOLEAN );
 
-    // Build the Admin Form
-    $this->init_form_fields();
-
     // Catch Rates for 1 hour
     $this->cache_time = HOUR_IN_SECONDS;
 
     // User Agent for WP_Remote
     $this->ua = 'TaxJarWordPressPlugin/1.1.3/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+
+    // Set up form fields
+    $this->init_form_fields();
 
     // TaxJar Config Integration Tab
     add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
@@ -65,9 +66,6 @@ class WC_Taxjar_Integration extends WC_Integration {
       add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'sanitize_settings' ) );
 
       add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
-
-      // WP Hooks
-      add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
 
       // If TaxJar is enabled and a user disables taxes we renable them
       update_option( 'woocommerce_calc_taxes', 'yes' );
@@ -103,13 +101,16 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->disable_taxjar_user();
     }
 
-    // Add script that reloads integration page if we have set taxjar_download
+    
+
     if ( isset( $_POST['woocommerce_taxjar-integration_taxjar_download'] ) ) {
-      add_action( 'admin_enqueue_scripts', array( $this, 'reload_page' ) );
       // Enable the WooCommerce API for downloads if it is not enabled
       update_option( 'woocommerce_api_enabled', 'yes' );
-    }
 
+      if( ! $this->taxjar_download ) {
+        add_action( 'admin_enqueue_scripts', array( $this, 'reload_page' ) );
+      }
+    }
   }
 
   /**
@@ -119,25 +120,33 @@ class WC_Taxjar_Integration extends WC_Integration {
    */
   // fix undefined offset for country not set...
   public function init_form_fields( ) {
+    if( ! ( isset( $_GET['page'] ) && $_GET['page'] == 'wc-settings' && isset( $_GET['tab'] ) && $_GET['tab'] == 'integration' ) ) {
+      return;
+    }
+
     global $woocommerce;
+
+    // WP Hooks
+    add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
 
     $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
     if ( empty( $default_wc_settings[1] ) ){
       $default_wc_settings[1] = "N/A";
     }
+
     // Check for the TaxJar user
     $user = $this->api_user_query();
 
     // Display keys if we can
-    if ( ( $this->settings['taxjar_download'] == 'yes' ) && isset( $user ) ) {
+    if ( ( $this->post_or_setting('taxjar_download') ) && isset( $user ) ) {
       $this->api_user = get_userdata( $user->ID );
-      if ( ( $this->api_user ) && ( $this->settings['taxjar_download'] == 'yes' ) && ( $woo_key = $this->api_user->woocommerce_api_consumer_key ) && ( $woo_secret = $this->api_user->woocommerce_api_consumer_secret ) ) {
+      if ( ( $this->api_user ) && ( $this->post_or_setting('taxjar_download') ) && ( $woo_key = $this->api_user->woocommerce_api_consumer_key ) && ( $woo_secret = $this->api_user->woocommerce_api_consumer_secret ) ) {
         $key = hash( 'md5', $woo_key.$woo_secret.get_bloginfo( 'url' ).$this->settings['api_token'] );
         // Check to see if we are working with WooCommerce version 2.4 or greater
         if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) )  {
           // Check if there is a key with either a description that is like TaxJar or a user that is like TaxJar
           if( $this-> existing_api_key() ) {
-            $description_for_order_download = sprintf( "A TaxJar API Key has been created. It can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
+            $description_for_order_download = sprintf( "A WooCommerce API key for TaxJar has been created. It can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
           } else {
             $description_for_order_download = "
               <div class='taxjar-generate-api-key-wrap'>
@@ -170,23 +179,61 @@ class WC_Taxjar_Integration extends WC_Integration {
       }
     }
 
+    // Check if we can post to the API
+    $api_valid = true;
+    $description_for_status = '';
+    $url         = $this->uri . 'verify';
+    $body_string = 'token='. $this->post_or_setting('api_token');
+    $response = wp_remote_post( $url, array(
+      'timeout'     => 60,
+      'headers'     => array(
+                        'Authorization' => 'Token token="' . $this->post_or_setting('api_token') .'"',
+                        'Content-Type' => 'application/x-www-form-urlencoded'
+                      ),
+      'user-agent'  => $this->ua,
+      'body'        => $body_string
+    ) );
+
+    if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
+      $description_for_status .= '<div style="color: #3FAE2A;">';
+      $description_for_status .= __( 'Connection to TaxJar servers established.', 'wc-taxjar' );
+      $description_for_status .= '</div>';
+
+      $body = json_decode($response['body']);
+      if( isset( $body->enabled ) && $body->enabled === false ) {
+        $description_for_status .= '<br><br><div style="color: #ff0000;"><strong>';
+        $description_for_status .= 'There is an issue with your TaxJar subscription.';
+        $description_for_status .= sprintf( '<br><a href="%s" target="_blank">Please review your account.</a>', $this->app_uri.'account/plan' );
+        $description_for_status .='</strong></div>';
+      }
+
+      if( $this->post_or_setting('api_token') && isset( $body->valid ) && $body->valid === false ) {
+        $description_for_status .= '<br><br><div style="color: #ff0000;"><strong>';
+        $description_for_status .= 'It looks like your API token is invalid.';
+        $description_for_status .= sprintf( '<br><a href="%s" target="_blank">Please review your API token.</a>', $this->app_uri.'account#api-access' );
+        $description_for_status .='</strong></div>';
+        $api_valid = false;
+      }
+    } else {
+      $description_for_status .= '<div style="color: #ff0000;">';
+      $description_for_status .= __( 'wp_remote_post() failed. TaxJar could not connect to server. Please contact your hosting provider.', 'wc-taxjar' );
+      $description_for_status .= '<br>';
+      if ( is_wp_error( $response ) ) {
+        $description_for_status .= ' ' . sprintf( __( 'Error: %s', 'wc-taxjar' ), wc_clean( $response->get_error_message() ) );
+      } else {
+        $description_for_status .= ' ' . sprintf( __( 'Status code: %s', 'wc-taxjar' ), wc_clean( $response['response']['code'] ) );
+      }
+      $description_for_status .= '</div>';
+    }
+
     // Build the form array
     $this->form_fields   = array(
-      'enabled' => array(
-        'title'             => __( 'Sales Tax Calculation', 'wc-taxjar' ),
-        'type'              => 'checkbox',
-        'label'             => __( 'Enable TaxJar Calculations', 'wc-taxjar' ),
-        'default'           => 'no',
-        'description'       => __( 'If enabled, TaxJar will calculate all sales tax for your store.', 'wc-taxjar' ),
+      'taxjar_title_step_1' => array(
+        'title'             => __( '<h3>Step 1:</h3>', 'wc-taxjar' ),
+        'type'              => 'hidden',
+        'description'       => '<h3>Activate your TaxJar WooCommerce Plugin</h3>'
       ),
-      'taxjar_download' => array(
-        'title'             => __( 'Sales Tax Reporting', 'wc-taxjar' ),
-        'type'              => 'checkbox',
-        'label'             => __( 'Enable order downloads to TaxJar', 'wc-taxjar' ),
-        'default'           => 'no',
-        'disabled'          => 'disabled',
-        'description'       => __( $description_for_order_download, 'wc-taxjar' ),
-      ),
+
       'api_token' => array(
         'title'             => __( 'API Token', 'wc-taxjar' ),
         'type'              => 'text',
@@ -194,49 +241,80 @@ class WC_Taxjar_Integration extends WC_Integration {
         'desc_tip'          => false,
         'default'           => ''
       ),
-      'store_zip' => array(
-        'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
-        'type'              => 'text',
-        'description'       => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
-        'desc_tip'          => true,
-        'default'           => ''
-      ),
-      'store_city' => array(
-        'title'             => __( 'Ship From City', 'wc-taxjar' ),
-        'type'              => 'text',
-        'description'       => __( 'Enter the city where your store ships from.', 'wc-taxjar' ),
-        'desc_tip'          => true,
-        'default'           => ''
-      ),
-      'store_state' => array(
-        'title'             => __( 'Ship From State', 'wc-taxjar' ),
+      'taxjar_status' => array(
+        'title'             => __( 'TaxJar Status', 'wc-taxjar' ),
         'type'              => 'hidden',
-        'description'       => __( 'We have automatically detected your ship from state as being ' . $default_wc_settings[1] . '.', 'wc-taxjar' ),
+        'description'       => $description_for_status,
         'class'             => 'input-text disabled regular-input',
         'disabled'          => 'disabled',
       ),
-      'store_country' => array(
-        'title'             => __( 'Ship From Country', 'wc-taxjar' ),
-        'type'              => 'hidden',
-        'description'       => __( 'We have automatically detected your ship from country as being ' . $default_wc_settings[0] . '.', 'wc-taxjar' ),
-        'class'             => 'input-text disabled regular-input',
-        'disabled'          => 'disabled'
-      ),
-      'taxjar_addresses' => array(
-        'title'             => __( 'Other Addresses', 'wc-taxjar' ),
-        'type'              => 'hidden',
-        'description'       => __( 'We automatically perform multi-state tax rate determination using all available addresses in your TaxJar account. These addresses are checked in addition to your automatically detected settings above. <a href="'.$this->app_uri.'account#api-access">Click here</a> to see and configure these additional addresses.', 'wc-taxjar' ),
-        'class'             => 'input-text disabled regular-input',
-        'disabled'          => 'disabled'
-      ),
-      'debug' => array(
-        'title'             => __( 'Debug Log', 'wc-taxjar' ),
-        'type'              => 'checkbox',
-        'label'             => __( 'Enable logging', 'wc-taxjar' ),
-        'default'           => 'no',
-        'description'       => __( 'Log events such as API requests.', 'wc-taxjar' ),
-      )
     );
+
+    if( $this->post_or_setting('api_token') && $api_valid ) {
+      $this->form_fields = array_merge($this->form_fields, array(
+        'taxjar_title_step_2' => array(
+          'title'             => __( '<h3>Step 2:</h3>', 'wc-taxjar' ),
+          'type'              => 'hidden',
+          'description'       => '<h3>Configure your sales tax settings</h3>'
+        ),
+        'enabled' => array(
+          'title'             => __( 'Sales Tax Calculation', 'wc-taxjar' ),
+          'type'              => 'checkbox',
+          'label'             => __( 'Enable TaxJar Calculations', 'wc-taxjar' ),
+          'default'           => 'no',
+          'description'       => __( 'If enabled, TaxJar will calculate all sales tax for your store.', 'wc-taxjar' ),
+        ),
+        'taxjar_download' => array(
+          'title'             => __( 'Sales Tax Reporting', 'wc-taxjar' ),
+          'type'              => 'checkbox',
+          'label'             => __( 'Enable order downloads to TaxJar', 'wc-taxjar' ),
+          'default'           => 'no',
+          'description'       => __( $description_for_order_download, 'wc-taxjar' ),
+        ),
+        'store_zip' => array(
+          'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
+          'type'              => 'text',
+          'description'       => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
+          'desc_tip'          => true,
+          'default'           => ''
+        ),
+        'store_city' => array(
+          'title'             => __( 'Ship From City', 'wc-taxjar' ),
+          'type'              => 'text',
+          'description'       => __( 'Enter the city where your store ships from.', 'wc-taxjar' ),
+          'desc_tip'          => true,
+          'default'           => ''
+        ),
+        'store_state' => array(
+          'title'             => __( 'Ship From State', 'wc-taxjar' ),
+          'type'              => 'hidden',
+          'description'       => __( 'We have automatically detected your ship from state as being ' . $default_wc_settings[1] . '.', 'wc-taxjar' ),
+          'class'             => 'input-text disabled regular-input',
+          'disabled'          => 'disabled',
+        ),
+        'store_country' => array(
+          'title'             => __( 'Ship From Country', 'wc-taxjar' ),
+          'type'              => 'hidden',
+          'description'       => __( 'We have automatically detected your ship from country as being ' . $default_wc_settings[0] . '.', 'wc-taxjar' ),
+          'class'             => 'input-text disabled regular-input',
+          'disabled'          => 'disabled'
+        ),
+        'taxjar_addresses' => array(
+          'title'             => __( 'Other Addresses', 'wc-taxjar' ),
+          'type'              => 'hidden',
+          'description'       => __( 'We automatically perform multi-state tax rate determination using all available addresses in your TaxJar account. These addresses are checked in addition to your automatically detected settings above. <a href="'.$this->app_uri.'account#api-access">Click here</a> to see and configure these additional addresses.', 'wc-taxjar' ),
+          'class'             => 'input-text disabled regular-input',
+          'disabled'          => 'disabled'
+        ),
+        'debug' => array(
+          'title'             => __( 'Debug Log', 'wc-taxjar' ),
+          'type'              => 'checkbox',
+          'label'             => __( 'Enable logging', 'wc-taxjar' ),
+          'default'           => 'no',
+          'description'       => __( 'Log events such as API requests.', 'wc-taxjar' ),
+        )
+      ));
+    }
   }
 
   /**
@@ -264,14 +342,6 @@ class WC_Taxjar_Integration extends WC_Integration {
     }
   }
 
-  /**
-  * Load WC-TaxJar.js
-  *
-  * @return void
-  */
-  public function reload_page( ){
-    wp_enqueue_script("wc-taxjar", plugin_dir_url( __FILE__ ) . '/js/wc-taxjar.js', array( 'jquery' ));
-  }
 
   /**
   * Slightly altered copy and paste of private function in WC_Tax class file
@@ -601,6 +671,30 @@ class WC_Taxjar_Integration extends WC_Integration {
     return array( $country, $state, $postcode, $city );
   }
 
+
+  /**
+  * Return either the post value or settings value of a key
+  *
+  * @return MIXED
+  */
+  private function post_or_setting($key) {
+    $val = null;
+    if( count ( $_POST ) > 0 ) {
+      $val = isset( $_POST['woocommerce_taxjar-integration_'.$key] ) ? $_POST['woocommerce_taxjar-integration_'.$key] : null;
+    } else {
+      $val = $this->settings[$key];
+    }
+
+    if($val == 'yes') {
+      $val = 1;
+    }
+
+    if($val == 'no') {
+      $val = 0; 
+    }
+
+    return $val;
+  }
 
   /**
   * Search for the row in DB with the TaxJar user
@@ -956,7 +1050,16 @@ class WC_Taxjar_Integration extends WC_Integration {
     }
   }
 
-  /*
+  /**
+  * Load wc-taxjar-refresh.js
+  *
+  * @return void
+  */
+  public function reload_page( ){
+    wp_enqueue_script("wc-taxjar-refresh", plugin_dir_url( __FILE__ ) . '/js/wc-taxjar-refresh.js', array( 'jquery' ));
+  }
+
+  /**
    * Admin Assets
   */
   public function load_taxjar_admin_assets( ) {
