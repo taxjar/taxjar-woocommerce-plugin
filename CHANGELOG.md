@@ -1,3 +1,6 @@
+* 1.1.4 (2015-10-30)
+* Better warnings about connection errors on plugin panel
+
 * 1.1.3 (2015-09-09)
 * Better support for generating API keys in WooCommerce 2.4+
 * Warnings for PHP version

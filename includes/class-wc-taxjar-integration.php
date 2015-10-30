@@ -27,7 +27,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     // Load the settings.
     $this->init_settings();
-    
+
 
     // Define user set variables.
     $this->api_token        = $this->get_option( 'api_token'  );
@@ -41,7 +41,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->cache_time = HOUR_IN_SECONDS;
 
     // User Agent for WP_Remote
-    $this->ua = 'TaxJarWordPressPlugin/1.1.3/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+    $this->ua = 'TaxJarWordPressPlugin/1.1.4/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 
     // Set up form fields
     $this->init_form_fields();
@@ -101,7 +101,7 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->disable_taxjar_user();
     }
 
-    
+
 
     if ( isset( $_POST['woocommerce_taxjar-integration_taxjar_download'] ) ) {
       // Enable the WooCommerce API for downloads if it is not enabled
@@ -690,7 +690,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     }
 
     if($val == 'no') {
-      $val = 0; 
+      $val = 0;
     }
 
     return $val;
