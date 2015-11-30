@@ -148,8 +148,8 @@ class WC_Taxjar_Integration extends WC_Integration {
           // Check if there is a key with either a description that is like TaxJar or a user that is like TaxJar
           if( $this-> existing_api_key() ) {
             $description_for_order_download = "<p class='taxjar-generate-api-content description'>";
-            $description_for_order_download .= sprintf( "A WooCommerce API key for TaxJar has been created which can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
-            $description_for_order_download .= "<br>If you need a new API key you can <a href='#' class='js-taxjar-regenerate-api-key'>regenerate the WooCommerce API key for TaxJar</a>.";
+            $description_for_order_download .= sprintf( "WooCommerce API keys for TaxJar have been created which can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
+            $description_for_order_download .= "<br>If you need new API keys (consumer key & consumer secret) you can <a href='#' class='js-taxjar-regenerate-api-key'>regenerate the WooCommerce API key for TaxJar</a>.";
             $description_for_order_download .= "</p>";
           } else {
             $description_for_order_download = "
@@ -1074,12 +1074,12 @@ class WC_Taxjar_Integration extends WC_Integration {
     wp_enqueue_style( 'taxjar-admin-style', plugin_dir_url(__FILE__) .'css/admin.css' );
 
 
-    // Load Javascript for WooCommerce 2.4 API generation
-    wp_register_script( 'wc-taxjar-generate-api-keys', plugin_dir_url( __FILE__ ) . '/js/wc-taxjar-generate-api-key.js' );
+    // Load Javascript for TaxJar settings page
+    wp_register_script( 'wc-taxjar-admin', plugin_dir_url( __FILE__ ) . '/js/wc-taxjar-admin.js' );
 
     wp_localize_script(
-      'wc-taxjar-generate-api-keys',
-      'woocommerce_taxjar_admin_api_keys',
+      'wc-taxjar-admin',
+      'woocommerce_taxjar_admin',
       array(
         'ajax_url'         => admin_url( 'admin-ajax.php' ),
         'update_api_nonce' => wp_create_nonce( 'update-api-key' ),
@@ -1088,7 +1088,7 @@ class WC_Taxjar_Integration extends WC_Integration {
       )
     );
 
-    wp_enqueue_script( 'wc-taxjar-generate-api-keys' , array( 'jquery' ) );
+    wp_enqueue_script( 'wc-taxjar-admin' , array( 'jquery' ) );
   }
 }
 

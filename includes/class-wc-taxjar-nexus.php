@@ -22,21 +22,25 @@ class WC_Taxjar_Nexus {
     $desc_text = '';
 
     $desc_text .= '<h3>Nexus Information</h3>';
-    $desc_text .= '<p>The following place are where sales tax will be calculated</p>';
 
-    foreach ($this->nexus as $key => $nexus) {
-      $desc_text .= '<br>';
-      
-      if ( isset( $nexus->region ) && isset ( $nexus->country ) ) {
-        $desc_text .= sprintf( "%s, %s", $nexus->region, $nexus->country );
-      } else {
-        if ( isset ( $nexus->country ) ) {
-          $desc_text .= $nexus->country;
-        }
-      } 
+    if( count($this->nexus) > 0 ) {
+      $desc_text .= '<p>Sales tax will be calculated on orders delivered into the following regions: </p>';
+
+      foreach ($this->nexus as $key => $nexus) {
+        $desc_text .= '<br>';  
+        if ( isset( $nexus->region ) && isset ( $nexus->country ) ) {
+          $desc_text .= sprintf( "%s, %s", $nexus->region, $nexus->country );
+        } else {
+          if ( isset ( $nexus->country ) ) {
+            $desc_text .= $nexus->country;
+          }
+        } 
+      }
+
+      $desc_text .= "<br><br><a href='" . $this->integration->regions_uri . "' target='_blank>Add or update nexus locations</a>";
+    } else {
+      $desc_text .= "<p>TaxJar needs to your business locations in order to calculate sales tax properly. Please add them <a href='" . $this->integration->regions_uri . "' target='_blank>here</a>.<p>";
     }
-
-    $desc_text .= "<br><br><a href='" . $this->integration->regions_uri . "' target='_blank>Add or update nexus locations</a>";
 
     return array(
       'title'             => '',

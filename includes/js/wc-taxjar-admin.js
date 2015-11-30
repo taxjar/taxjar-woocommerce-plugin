@@ -1,16 +1,21 @@
 jQuery(document).ready(function(){
 
 	/*
-	* Javascript module for handling WooCommerce 2.4+ API key generation
+	* Javascript module for TaxJar admin settings page
 	*/
- 	var TaxJarGenerateAPIKeys = (function($, m) {
+ 	var TaxJarAdmin = (function($, m) {
  		var performingRequest = false;
 
 	  var init = function() {
 	  	// Bind generate API button
 	  	$('.js-taxjar-generate-api-key').on('click', generateAPIKeysClicked);
       $('.js-taxjar-regenerate-api-key').on('click', regenerateAPIKeysClicked);
+      $('[name="woocommerce_taxjar-integration_api_token"]').on('blur', clean_api_key)
 	  };
+
+    var clean_api_key = function() {
+      $(this).attr('value', $(this).attr('value').replace(/ /g,''))
+    };
 
     var generateAPIKeysClicked = function(e) {      
       e.preventDefault();
@@ -23,7 +28,7 @@ jQuery(document).ready(function(){
       e.preventDefault();
       if(performingRequest) { return; }
       
-      var confirmed = confirm("By regenerating the WooCommerce API keys for TaxJar you will need go through the steps to connect TaxJar to your website again.");
+      var confirmed = confirm("By regenerating the WooCommerce API keys for TaxJar you will need to go through the steps to connect TaxJar to your website again.");
       if (confirmed == true) {
         regenerateAPIKeys();
       }
@@ -36,13 +41,13 @@ jQuery(document).ready(function(){
 			$.ajax({
 				method:   'POST',
 				dataType: 'json',
-				url:      woocommerce_taxjar_admin_api_keys.ajax_url,
+				url:      woocommerce_taxjar_admin.ajax_url,
 				data:     {
 					action:      'woocommerce_update_api_key',
-					security:    woocommerce_taxjar_admin_api_keys.update_api_nonce,
+					security:    woocommerce_taxjar_admin.update_api_nonce,
 					key_id:      0,
 					description: 'TaxJar',
-					user:        woocommerce_taxjar_admin_api_keys.current_user,
+					user:        woocommerce_taxjar_admin.current_user,
 					permissions: 'read'
 				},
 				success: function( response ) {
@@ -61,7 +66,7 @@ jQuery(document).ready(function(){
 						$container.append('Consumer Secret: <code>'+data.consumer_secret+'</code>');
 						$container.append('<br />');
 						$container.append('<br />');
-						$container.append('<strong>Visit our <a href="'+woocommerce_taxjar_admin_api_keys.integration_uri+'" target="_blank">WooCommerce Integration</a> page to complete our easy setup!</strong>');
+						$container.append('<strong>Visit our <a href="'+woocommerce_taxjar_admin.integration_uri+'" target="_blank">WooCommerce Integration</a> page to complete our easy setup!</strong>');
 						$container.append('<br />');
 						$container.append('<br />');
 						$container.append(data.revoke_url);
@@ -89,7 +94,7 @@ jQuery(document).ready(function(){
       $.ajax({
         method:   'POST',
         dataType: 'json',
-        url:      woocommerce_taxjar_admin_api_keys.ajax_url,
+        url:      woocommerce_taxjar_admin.ajax_url,
         data:     {
           action: 'wc_taxjar_delete_wc_taxjar_keys',
         },
@@ -105,7 +110,7 @@ jQuery(document).ready(function(){
 	    init: init
 	  };
 
-	}(jQuery, TaxJarGenerateAPIKeys || {}));
+	}(jQuery, TaxJarAdmin || {}));
 
-	TaxJarGenerateAPIKeys.init();
+	TaxJarAdmin.init();
 });
