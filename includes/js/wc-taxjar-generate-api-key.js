@@ -8,16 +8,30 @@ jQuery(document).ready(function(){
 
 	  var init = function() {
 	  	// Bind generate API button
-	  	$('.js-taxjar-generate-api-key').on('click', generateAPIKeys);
+	  	$('.js-taxjar-generate-api-key').on('click', generateAPIKeysClicked);
+      $('.js-taxjar-regenerate-api-key').on('click', regenerateAPIKeysClicked);
 	  };
 
-		var generateAPIKeys = function(e) {
-			// Prevent button from submitting
-			e.preventDefault();
+    var generateAPIKeysClicked = function(e) {      
+      e.preventDefault();
+      if(performingRequest) { return; }
 
-			// Prevent people from spamming the button
-			if(performingRequest) { return; }
-			performingRequest = true;
+      generateAPIKeys();
+    };
+
+    var regenerateAPIKeysClicked = function(e) {
+      e.preventDefault();
+      if(performingRequest) { return; }
+      
+      var confirmed = confirm("By regenerating the WooCommerce API keys for TaxJar you will need go through the steps to connect TaxJar to your website again.");
+      if (confirmed == true) {
+        regenerateAPIKeys();
+      }
+    };
+
+		var generateAPIKeys = function() {
+      console.log(generateAPIKeys);
+      performingRequest = true;
 
 			$.ajax({
 				method:   'POST',
@@ -67,6 +81,25 @@ jQuery(document).ready(function(){
 				performingRequest = false;
 			});
 		}
+
+    var regenerateAPIKeys = function() {
+      console.log('destroyAPIKeys');
+      performingRequest = true;
+
+      $.ajax({
+        method:   'POST',
+        dataType: 'json',
+        url:      woocommerce_taxjar_admin_api_keys.ajax_url,
+        data:     {
+          action: 'wc_taxjar_delete_wc_taxjar_keys',
+        },
+        success: function( response ) {
+          generateAPIKeys();
+        }
+      }).done(function(){
+        performingRequest = false;
+      });
+    }
 
 	  return {
 	    init: init

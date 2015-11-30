@@ -33,9 +33,10 @@ class WC_Taxjar_Nexus {
         if ( isset ( $nexus->country ) ) {
           $desc_text .= $nexus->country;
         }
-      }
-      
+      } 
     }
+
+    $desc_text .= "<br><br><a href='" . $this->integration->regions_uri . "' target='_blank>Add or update nexus locations</a>";
 
     return array(
       'title'             => '',

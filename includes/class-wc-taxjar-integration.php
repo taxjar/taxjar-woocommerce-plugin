@@ -21,9 +21,10 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->id                 = 'taxjar-integration';
     $this->method_title       = __( 'TaxJar Integration', 'wc-taxjar' );
     $this->method_description = __( 'TaxJar is the easiest to use tax reporting and calculation engine for small business owners and sales tax professionals. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), the city, and the zip code from which your store ships to configure your TaxJar for Woocommerce installation.  You may also enable "Order Downloads" to immediately allow access to import the transactions from this store into your TaxJar account, all in one click! For help, email support@taxjar.com or reach out to us via live chat at <a href="http://taxjar.com">TaxJar.com</a>.', 'wc-taxjar' );
-    $this->integration_uri  = 'https://app.taxjar.com/account/apps/add/woo';
-    $this->app_uri          = 'https://app.taxjar.com/';
-    $this->uri              = 'http://tax-rate-service.dev/v2/'; //'https://api.taxjar.com/v2/';
+    $this->app_uri            = 'https://app.taxjar.com/';
+    $this->integration_uri    = $this->app_uri. 'account/apps/add/woo';
+    $this->regions_uri        = $this->app_uri. 'account#states';
+    $this->uri                = 'http://tax-rate-service.dev/v2/'; //'https://api.taxjar.com/v2/';
 
     // Load the settings.
     $this->init_settings();
@@ -146,7 +147,10 @@ class WC_Taxjar_Integration extends WC_Integration {
         if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) )  {
           // Check if there is a key with either a description that is like TaxJar or a user that is like TaxJar
           if( $this-> existing_api_key() ) {
-            $description_for_order_download = sprintf( "A WooCommerce API key for TaxJar has been created. It can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
+            $description_for_order_download = "<p class='taxjar-generate-api-content description'>";
+            $description_for_order_download .= sprintf( "A WooCommerce API key for TaxJar has been created which can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
+            $description_for_order_download .= "<br>If you need a new API key you can <a href='#' class='js-taxjar-regenerate-api-key'>regenerate the WooCommerce API key for TaxJar</a>.";
+            $description_for_order_download .= "</p>";
           } else {
             $description_for_order_download = "
               <div class='taxjar-generate-api-key-wrap'>
