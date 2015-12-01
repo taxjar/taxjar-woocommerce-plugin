@@ -37,9 +37,9 @@ class WC_Taxjar_Nexus {
         } 
       }
 
-      $desc_text .= "<br><br><a href='" . $this->integration->regions_uri . "' target='_blank>Add or update nexus locations</a>";
+      $desc_text .= "<br><br><a href='" . $this->integration->regions_uri . "' target='_blank'>Add or update nexus locations</a>";
     } else {
-      $desc_text .= "<p>TaxJar needs to your business locations in order to calculate sales tax properly. Please add them <a href='" . $this->integration->regions_uri . "' target='_blank>here</a>.<p>";
+      $desc_text .= "<p>TaxJar needs to your business locations in order to calculate sales tax properly. Please add them <a href='" . $this->integration->regions_uri . "' target='_blank'>here</a>.<p>";
     }
 
     return array(
@@ -53,7 +53,7 @@ class WC_Taxjar_Nexus {
     $url      = $this->integration->uri . 'nexus/regions';
     $response = wp_remote_get( $url, array(
       'headers' =>    array(
-                        'Authorization' => 'Token token="' . $this->integration->settings['api_token'] .'"',
+                        'Authorization' => 'Token token="' . $this->integration->post_or_setting('api_token') .'"',
                         'Content-Type' => 'application/x-www-form-urlencoded'
                       ),
       'user-agent' => $this->integration->ua

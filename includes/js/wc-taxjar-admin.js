@@ -35,7 +35,6 @@ jQuery(document).ready(function(){
   };
 
 	var generateAPIKeys = function() {
-    console.log(generateAPIKeys);
     performingRequest = true;
 
 		$.ajax({
@@ -77,7 +76,7 @@ jQuery(document).ready(function(){
 
 					// Build error response.
 					$container.empty();
-					$container.append('<strong>An error occured: </strong><br />');
+					$container.append('<strong>An error occurred: </strong><br />');
 					$container.append(data.message);
 				}
 			}
@@ -88,7 +87,6 @@ jQuery(document).ready(function(){
 	}
 
   var regenerateAPIKeys = function() {
-    console.log('destroyAPIKeys');
     performingRequest = true;
 
     $.ajax({

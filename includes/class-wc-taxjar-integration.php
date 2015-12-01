@@ -24,7 +24,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->app_uri            = 'https://app.taxjar.com/';
     $this->integration_uri    = $this->app_uri. 'account/apps/add/woo';
     $this->regions_uri        = $this->app_uri. 'account#states';
-    $this->uri                = 'http://tax-rate-service.dev/v2/'; //'https://api.taxjar.com/v2/';
+    $this->uri                = 'https://api.taxjar.com/v2/';
 
     // Load the settings.
     $this->init_settings();
@@ -684,7 +684,7 @@ class WC_Taxjar_Integration extends WC_Integration {
   *
   * @return MIXED
   */
-  private function post_or_setting($key) {
+  public function post_or_setting($key) {
     $val = null;
     if( count ( $_POST ) > 0 ) {
       $val = isset( $_POST['woocommerce_taxjar-integration_'.$key] ) ? $_POST['woocommerce_taxjar-integration_'.$key] : null;
