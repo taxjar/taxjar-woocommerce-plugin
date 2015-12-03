@@ -651,8 +651,10 @@ class WC_Taxjar_Integration extends WC_Integration {
       'to_country' =>       $country,
       'to_zip' =>           $postcode,
       'amount' =>           $order->order_total,
-      'shipping_amount' =>  null
+      'shipping_amount' =>  $order->shipping_total
     ) );
+
+    $order->update_taxes($this->rate_id, $this->item_collectable, $this->shipping_collectable);
 
     return $items;
   }
