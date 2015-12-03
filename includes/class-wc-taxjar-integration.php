@@ -306,13 +306,6 @@ class WC_Taxjar_Integration extends WC_Integration {
           'class'             => 'input-text disabled regular-input',
           'disabled'          => 'disabled'
         ),
-        'taxjar_addresses' => array(
-          'title'             => __( 'Other Addresses', 'wc-taxjar' ),
-          'type'              => 'hidden',
-          'description'       => __( 'We automatically perform multi-state tax rate determination using all available addresses in your TaxJar account. These addresses are checked in addition to your automatically detected settings above. <a href="'.$this->app_uri.'account#api-access">Click here</a> to see and configure these additional addresses.', 'wc-taxjar' ),
-          'class'             => 'input-text disabled regular-input',
-          'disabled'          => 'disabled'
-        ),
         'debug' => array(
           'title'             => __( 'Debug Log', 'wc-taxjar' ),
           'type'              => 'checkbox',
