@@ -480,8 +480,8 @@ class WC_Taxjar_Integration extends WC_Integration {
         $this->tax_source         = empty($taxjar_response->tax_source) ? 'origin' : $taxjar_response->tax_source;
         $this->amount_to_collect  = $taxjar_response->amount_to_collect;
         if (!empty($taxjar_response->breakdown)) {
-          $this->shipping_collectable  = $taxjar_response->breakdown->shipping->tax_collectable;
-          $this->item_collectable  = $this->amount_to_collect - $this->shipping_collectable;
+          $this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
+          $this->item_collectable     = $this->amount_to_collect - $this->shipping_collectable;
         }
         $this->tax_rate           = $taxjar_response->rate;
         $this->freight_taxable    = (int) $taxjar_response->freight_taxable;
@@ -617,9 +617,9 @@ class WC_Taxjar_Integration extends WC_Integration {
     ) );
 
     // Store the rate ID and the amount on the cart's totals
-    $wc_cart_object->tax_total = $this->item_collectable;
+    $wc_cart_object->tax_total = $this->item_collectable + $this->shipping_collectable;
     $wc_cart_object->taxes = array($this->rate_id => $this->item_collectable);
-
+    $wc_cart_object->shipping_taxes = array($this->rate_id => $this->shipping_collectable);
   }
 
 
