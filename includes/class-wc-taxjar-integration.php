@@ -172,7 +172,7 @@ class WC_Taxjar_Integration extends WC_Integration {
           $description_for_order_download = sprintf( 'Consumer Key: <code>%s</code><br/>Consumer Secret: <code>%s</code><br>Your Store and TaxJar account has been linked.<br>Enroll in AutoFile, see sales tax reports and more on <a target="_blank" href="%sdashboard">your dashboard</a>', $woo_key, $woo_secret, $this->app_uri );
         }
       } else {
-        $description_for_order_download = "There was an error retrieving your keys. Please disable and reenable Order Downloads.";
+        $description_for_order_download = "<span style='color: #ff0000;'>There was an error retrieving your keys. Please disable and re-enable Order Downloads.</span>";
       }
     }
     else {
