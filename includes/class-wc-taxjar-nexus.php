@@ -39,7 +39,7 @@ class WC_Taxjar_Nexus {
 
       $desc_text .= "<br><br><a href='" . $this->integration->regions_uri . "' target='_blank'>Add or update nexus locations</a>";
     } else {
-      $desc_text .= "<p>TaxJar needs to your business locations in order to calculate sales tax properly. Please add them <a href='" . $this->integration->regions_uri . "' target='_blank'>here</a>.<p>";
+      $desc_text .= "<p>TaxJar needs your business locations in order to calculate sales tax properly. Please add them <a href='" . $this->integration->regions_uri . "' target='_blank'>here</a>.<p>";
     }
 
     return array(
