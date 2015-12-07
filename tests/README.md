@@ -18,7 +18,7 @@
 
 Sample usage:
 
-    $ tests/bin/install.sh woocommerce_tests root root
+    $ tests/bin/install.sh taxjar_tests root root
 
 
 ## Running Tests
