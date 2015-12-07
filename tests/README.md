@@ -12,13 +12,13 @@
 
 **Important**: The `<db-name>` database will be created if it doesn't exist and all data will be removed during testing.
 
-3) Set your TaxJar API key as a environment variable with the key of TAXJAR_API_TOKEN.
-
-    $ export TAXJAR_API_TOKEN='123456789abcdef'
-
 Sample usage:
 
     $ tests/bin/install.sh taxjar_tests root root
+
+3) Set your TaxJar API key as a environment variable with the key of TAXJAR_API_TOKEN.
+
+    $ export TAXJAR_API_TOKEN='123456789abcdef'
 
 
 ## Running Tests
