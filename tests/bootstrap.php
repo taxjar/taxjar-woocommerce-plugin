@@ -56,6 +56,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
     );
 
     update_option('woocommerce_default_country', 'US:CO');
+    update_option('woocommerce_calc_shipping', 'yes');
 
     $wc_install = new WC_Install;
     $wc_install->install();
