@@ -691,23 +691,6 @@ class WC_Taxjar_Integration extends WC_Integration {
     return $settings;
   }
 
-
-  /**
-   * Validate the API token
-   * @see validate_settings_fields()
-   */
-  public function validate_api_token_field( $key ) {
-    // get the posted value
-    $value = $this->get_value_from_post( $key );
-    // check if the API token is longer than 32 characters.
-    if ( isset( $value ) &&
-       32 < strlen( $value ) &&
-       $this->api_token_is_not_valid( $key ) ) {
-      $this->errors[] = $key;
-    }
-    return $value;
-  }
-
   /**
    * Validate the option to enable TaxJar order downloads
    * @see validate_settings_fields()
@@ -753,32 +736,6 @@ class WC_Taxjar_Integration extends WC_Integration {
     }
     else {
       return false;
-    }
-  }
-
- /**
- * Checks the validity of the token by making a test call. Returns true if it encouters any errors.
- *
- * @return boolean
- */
-  public function api_token_is_not_valid( $key ) {
-    $url = $this->uri . 'rates/92093';
-    $token = $this->settings['api_token'];
-    $this->_log( "Testing token " . hash( 'md5', substr( $token, 27 ) ) . "." );
-    $headers  = array( 'Authorization' => 'Token token="' . $token .'"');
-    $response = wp_remote_get( $url, array( 'headers' => $headers, 'user-agent' => $this->ua ) );
-    if ( is_wp_error( $response ) ) {
-      new WP_Error( 'request', __( "There was an error checking your API Token. Please check your server configuration." ) );
-    }
-    elseif ( 200 == $response['response']['code'] ) {
-      $this->_log( "Received: " . $response['body'] );
-      $this->_log( "Test passed." );
-      return false;
-    }
-    else {
-      $this->_log( "Received: " . $response['body'] );
-      $this->_log( "Test failed." );
-      return true;
     }
   }
 

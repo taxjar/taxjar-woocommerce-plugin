@@ -140,11 +140,11 @@ class WC_Taxjar_Download_Orders {
     if ( is_wp_error( $response ) ) {
       new WP_Error( 'request', __( "There was an error unlinking this store from your TaxJar account. Please contact support@taxjar.com" ) );
       return false;
-    } else if ( 204 == $response['response']['code'] ) {
+    } else if ( 200 == $response['response']['code'] ) {
       $this->integration->_log('Successfully unlinked shop from TaxJar account');
     } else {
       // Log Response Error
-      $this->integration->_log( "Received (" . $response['response']['code'] . "): " . $response['body'] );
+      $this->integration->_log( "Attempting to unlink account - Received (" . $response['response']['code'] . "): " . $response['body'] );
       return false;
     }
 
