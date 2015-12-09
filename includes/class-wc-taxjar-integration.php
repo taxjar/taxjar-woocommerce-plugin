@@ -24,7 +24,10 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->app_uri            = 'https://app.taxjar.com/';
     $this->integration_uri    = $this->app_uri. 'account/apps/add/woo';
     $this->regions_uri        = $this->app_uri. 'account#states';
-    $this->uri                = 'https://api.taxjar.com/v2/';
+    $this->uri                = 'http://tax-rate-service.dev/v2/';
+    $this->ua                 = 'TaxJarWordPressPlugin/1.1.4/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+    $this->debug              = filter_var( $this->get_option( 'debug' ),           FILTER_VALIDATE_BOOLEAN );
+    $this->download_orders    = new WC_Taxjar_Download_Orders($this);
 
     // Load the settings.
     $this->init_settings();
@@ -35,14 +38,9 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->store_zip        = $this->get_option( 'store_zip'  );
     $this->store_city       = $this->get_option( 'store_city' );
     $this->enabled          = filter_var( $this->get_option( 'enabled' ),         FILTER_VALIDATE_BOOLEAN );
-    $this->debug            = filter_var( $this->get_option( 'debug' ),           FILTER_VALIDATE_BOOLEAN );
-    $this->taxjar_download  = filter_var( $this->get_option( 'taxjar_download' ), FILTER_VALIDATE_BOOLEAN );
 
     // Catch Rates for 1 hour
     $this->cache_time = HOUR_IN_SECONDS;
-
-    // User Agent for WP_Remote
-    $this->ua = 'TaxJarWordPressPlugin/1.1.4/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 
     // Set up form fields
     $this->init_form_fields();
@@ -96,22 +94,6 @@ class WC_Taxjar_Integration extends WC_Integration {
       update_option( 'woocommerce_tax_total_display', 'single' );
 
     }
-
-    // Anytime TaxJar Download is off, disable the TaxJar user
-    if ( $this->taxjar_download == 0 ) {
-      $this->disable_taxjar_user();
-    }
-
-
-
-    if ( isset( $_POST['woocommerce_taxjar-integration_taxjar_download'] ) ) {
-      // Enable the WooCommerce API for downloads if it is not enabled
-      update_option( 'woocommerce_api_enabled', 'yes' );
-
-      if( ! $this->taxjar_download ) {
-        add_action( 'admin_enqueue_scripts', array( $this, 'reload_page' ) );
-      }
-    }
   }
 
   /**
@@ -129,59 +111,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     // WP Hooks
     add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
-
-    $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
-    if ( empty( $default_wc_settings[1] ) ){
-      $default_wc_settings[1] = "N/A";
-    }
-
-    // Check for the TaxJar user
-    $user = $this->api_user_query();
-
-    // Display keys if we can
-    if ( ( $this->post_or_setting('taxjar_download') ) && isset( $user ) ) {
-      $this->api_user = get_userdata( $user->ID );
-      if ( ( $this->api_user ) && ( $this->post_or_setting('taxjar_download') ) && ( $woo_key = $this->api_user->woocommerce_api_consumer_key ) && ( $woo_secret = $this->api_user->woocommerce_api_consumer_secret ) ) {
-        $key = hash( 'md5', $woo_key.$woo_secret.get_bloginfo( 'url' ).$this->settings['api_token'] );
-        // Check to see if we are working with WooCommerce version 2.4 or greater
-        if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) )  {
-          // Check if there is a key with either a description that is like TaxJar or a user that is like TaxJar
-          if( $this-> existing_api_key() ) {
-            $description_for_order_download = "<p class='taxjar-generate-api-content description'>";
-            $description_for_order_download .= sprintf( "WooCommerce API keys for TaxJar have been created which can be managed <a href='%s'>here</a>.", admin_url('admin.php?page=wc-settings&tab=api&section=keys'));
-            $description_for_order_download .= "<br>If you need new API keys (consumer key & consumer secret) you can <a href='#' class='js-taxjar-regenerate-api-key'>regenerate the WooCommerce API key for TaxJar</a>.";
-            $description_for_order_download .= "</p>";
-          } else {
-            $description_for_order_download = "
-              <div class='taxjar-generate-api-key-wrap'>
-                <div class='generate-new-api-key'>
-                  <p class='description'>
-                    You have not yet granted access to TaxJar for order downloads, <a href='#' class='js-taxjar-generate-api-key'>Generate WooCommerce API Key</a> now.
-                    <br />Further <a href='http://support.taxjar.com/knowledge_base/topics/how-to-generate-woocommerce-2-dot-4-api-keys' target='_blank'>instructions</a>.
-                  </p>
-                </div>
-                <p class='taxjar-generate-api-content description'></p>
-              </div>";
-          }
-        }
-        // Check to see if we have recorded sending these the keys in the last 30 days
-        elseif ( false === ( $cache_value = get_transient( $key ) ) ) {
-          $description_for_order_download = sprintf( 'Consumer Key: <code>%s</code><br/>Consumer Secret: <code>%s</code><br/>Visit our <a href="%s" target="_blank">WooCommerce Integration</a> page to complete our easy setup!', $woo_key, $woo_secret, $this->integration_uri );
-        }
-        else {
-          $description_for_order_download = sprintf( 'Consumer Key: <code>%s</code><br/>Consumer Secret: <code>%s</code><br>Your Store and TaxJar account has been linked.<br>Enroll in AutoFile, see sales tax reports and more on <a target="_blank" href="%sdashboard">your dashboard</a>', $woo_key, $woo_secret, $this->app_uri );
-        }
-      } else {
-        $description_for_order_download = "<span style='color: #ff0000;'>There was an error retrieving your keys. Please disable and re-enable Order Downloads.</span>";
-      }
-    }
-    else {
-      if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) )  {
-        $description_for_order_download = "If enabled, you can then generate secure tokens to grant TaxJar access to your store to download your order history.";
-      } else {
-        $description_for_order_download = "If enabled, a TaxJar user will be created on your store for WooCommerce Order downloads.<br>We then generate secure tokens to access your store and enable the WooCommerce REST API if it is disabled.";
-      }
-    }
 
     // Check if we can post to the API
     $api_valid = true;
@@ -256,6 +185,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     if( $this->post_or_setting('api_token') && $api_valid ) {
       $tj_nexus = new WC_Taxjar_Nexus ( $this );
+      $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
+      if ( empty( $default_wc_settings[1] ) ){
+        $default_wc_settings[1] = "N/A";
+      }
 
       $this->form_fields = array_merge($this->form_fields, array(
         'taxjar_title_step_2' => array(
@@ -271,13 +204,7 @@ class WC_Taxjar_Integration extends WC_Integration {
           'description'       => __( 'If enabled, TaxJar will calculate all sales tax for your store.', 'wc-taxjar' ),
         ),
         'nexus' => $tj_nexus->get_form_settings_field(),
-        'taxjar_download' => array(
-          'title'             => __( 'Sales Tax Reporting', 'wc-taxjar' ),
-          'type'              => 'checkbox',
-          'label'             => __( 'Enable order downloads to TaxJar', 'wc-taxjar' ),
-          'default'           => 'no',
-          'description'       => __( $description_for_order_download, 'wc-taxjar' ),
-        ),
+        'taxjar_download' => $this->download_orders->get_form_settings_field(),
         'store_zip' => array(
           'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
           'type'              => 'text',
@@ -322,7 +249,7 @@ class WC_Taxjar_Integration extends WC_Integration {
   *
   * @return void
   */
-  private function _log( $message ) {
+  public function _log( $message ) {
     if ( WP_DEBUG === true ) {
       if ( is_array( $message ) || is_object( $message ) ) {
         error_log( print_r( $message, true ) );
@@ -699,16 +626,6 @@ class WC_Taxjar_Integration extends WC_Integration {
   }
 
   /**
-  * Search for the row in DB with the TaxJar user
-  *
-  * @return OBJECT
-  */
-  private function api_user_query( ){
-    global $wpdb;
-    return $wpdb->get_row( "SELECT * FROM $wpdb->users WHERE user_login LIKE 'api_taxjar_%'" );
-  }
-
-  /**
   * Check if there is an existing WooCommerce 2.4 API Key
   *
   * @return boolean
@@ -797,88 +714,7 @@ class WC_Taxjar_Integration extends WC_Integration {
    */
   public function validate_taxjar_download_field( $key ) {
     // Validate the value and perform work for taxjar_download option
-    $value = $this->get_value_from_post( $key );
-    // Check that we can create users and we have a value set
-    if ( isset( $value ) && current_user_can( 'create_users' ) ) {
-      // Get the User object
-      $user = $this->api_user_query();
-      if ( isset( $user ) ) {
-        // User found! Generate and keys
-        $user_id = $user->ID;
-        $this->generate_v1_api_keys( $user_id );
-      }
-      else {
-        if ( isset( $value ) ) {
-
-          // Unique Username with TaxJar prefix
-          $username = uniqid('api_taxjar_', true);
-
-          if ( function_exists("openssl_random_pseudo_bytes") ) {
-
-            // Use OPENSSL_RANDOM_PSEDUO if we can for a password
-            try {
-              $password = openssl_random_pseudo_bytes(32);
-            }
-            catch ( Exception $e ) {
-              $password = uniqid('', true);
-            }
-
-          }
-          else {
-            $password = uniqid('', true);
-          }
-
-          // User is created with role shop manager and strong password
-          $user_id  = wp_insert_user( array( "user_login" => $username, "user_pass" => $password, "user_nicename" => "TaxJar API User", "user_url" => "http://taxjar.com", "nickname" => "TaxJar", "description" => "User account created by TaxJar for downloading orders.", "role" => "shop_manager" ) );
-          if ( is_wp_error( $user_id ) ) {
-            new WP_Error( 'general_failure', __( "There was an error creating the new user TaxJar uses to access your store. Please check your server configuration or try to create your keys <a href='profile.php'>here</a>." ) );
-          }
-          else {
-            $this->generate_v1_api_keys( $user_id );
-          }
-
-        }
-      }
-    }
-    else {
-      new WP_Error( 'permission', __( "Sorry, it looks like you cannot create users. You must be able to create users to use this feature. You may try to try to create your keys <a href='profile.php'>here</a> if you believe this is an error." ) );
-    }
-    // Return out option's value
-    if ( isset( $value ) && $value ) {
-      return 'yes';
-    }
-    else {
-      return 'no';
-    }
-  }
-
-  /**
-  * Deletes the TaxJar user and stores keys for 45 days
-  *
-  * @return array|void
-  */
-  private function disable_taxjar_user( ) {
-    // If we cannot delete users, do nothing
-    if ( current_user_can( 'delete_users' ) ) {
-      $user = $this->api_user_query();
-      if ( isset( $user ) ) {
-        $key = hash( 'md5', $this->id );
-        // If the keys don't exisit
-        if ( false === ( $cache_value = get_transient( $key ) ) ) {
-          $userdata = get_userdata( $user->ID );
-          $consumer_key = $userdata->woocommerce_api_consumer_key;
-          $consumer_secret = $userdata->woocommerce_api_consumer_secret;
-          // Store the keys
-          set_transient( $key, $consumer_key . '%' . $consumer_secret, 45 * DAY_IN_SECONDS );
-          // Must include user.php to use this method
-          wp_delete_user( $user->ID );
-        }
-        else {
-          // Only delete the user if the keys are stored
-          wp_delete_user( $user->ID );
-        }
-      }
-    }
+    return $value = $this->download_orders->validate_taxjar_download_field( $key ); 
   }
 
   /**
@@ -892,46 +728,6 @@ class WC_Taxjar_Integration extends WC_Integration {
     $taxjar_city_setting     = $this->settings['store_city'];
     $store_settings          = array( 'taxjar_zip_code_setting' => $taxjar_zip_code_setting , 'store_state_setting' => $default_wc_settings[1], 'store_country_setting' => $default_wc_settings[0], 'taxjar_city_setting' => $taxjar_city_setting );
     return $store_settings;
-  }
-
-  /**
-  * Generates v1 WooCommerce API keys just as implemented in WC 2.1
-  *
-  * @param int
-  * @return void
-  */
-  private function generate_v1_api_keys( $user_id ) {
-    // Get userdata and hash for our transient
-    $user = get_userdata( $user_id );
-    $key = hash( 'md5', $this->id );
-
-    // Check for existing < 45 day old keys
-    if ( false === ( $cache_value = get_transient( $key ) ) ) {
-      // Generate them if they don't exist
-      $consumer_key = 'ck_' . hash( 'md5', $user->user_login . date( 'U' ) . mt_rand() );
-      $consumer_secret = 'cs_' . hash( 'md5', $user->ID . date( 'U' ) . mt_rand() );
-    }
-    else {
-      // Read them from the transient if they do exist
-      $cache_value = explode( '%', $cache_value );
-      $consumer_key = $cache_value[0];
-      $consumer_secret = $cache_value[1];
-      // Delete the transient since it served its purpose
-      delete_transient( $key );
-    }
-
-    // If the user does not have keys, add them
-    if ( (empty( $user->woocommerce_api_consumer_key ) ) && (empty( $user->woocommerce_api_consumer_secret ) ) ) {
-      $permissions = 'read';
-      update_user_meta( $user_id, 'woocommerce_api_consumer_key', $consumer_key );
-      update_user_meta( $user_id, 'woocommerce_api_consumer_secret', $consumer_secret );
-      update_user_meta( $user_id, 'woocommerce_api_key_permissions', $permissions );
-    }
-    else {
-      // Set the keys if the user already has them
-      $consumer_key = $user->woocommerce_api_consumer_key;
-      $consumer_secret = $user->woocommerce_api_consumer_secret;
-    }
   }
 
 
@@ -951,7 +747,7 @@ class WC_Taxjar_Integration extends WC_Integration {
   * @param mixed $key
   * @return mixed $value
   */
-  private function get_value_from_post( $key ) {
+  public function get_value_from_post( $key ) {
     if ( isset( $_POST[ $this->plugin_id . $this->id . '_' . $key ] ) ){
       return $_POST[ $this->plugin_id . $this->id . '_' . $key ];
     }
