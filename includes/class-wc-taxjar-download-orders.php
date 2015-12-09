@@ -22,11 +22,13 @@ class WC_Taxjar_Download_Orders {
       $this->disable_taxjar_user();
     }
 
-    if ( isset( $_POST['woocommerce_taxjar-integration_taxjar_download'] ) ) {
+    if ( isset( $_POST['woocommerce_taxjar-integration_taxjar_download'] ) && 
+      isset( $_POST['woocommerce_taxjar-integration_api_token'] ) &&
+      $_POST['woocommerce_taxjar-integration_api_token'] != '' ) {
       // Enable the WooCommerce API for downloads if it is not enabled
       update_option( 'woocommerce_api_enabled', 'yes' );
 
-      if( ! $this->taxjar_download ) {
+      if( ! $this->taxjar_download ) {  // then a user just enabled order downloads
         // Get/generate the WooCommerce API information and link this store to TaxJar
         $keys = $this->get_or_create_woocommerce_api_keys();
         $success = false;
@@ -48,7 +50,7 @@ class WC_Taxjar_Download_Orders {
         }
       }
     } else {
-      if( count ( $_POST ) > 0 && $this->taxjar_download) {
+      if( count ( $_POST ) > 0 && $this->taxjar_download ) {  // the user just disabled enable order downloads or removed their api key
         $success = $this->unlink_provider( site_url() );
 
         // Force a page resfresh
