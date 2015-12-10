@@ -20,6 +20,7 @@ Sample usage:
 
     $ export TAXJAR_API_TOKEN='123456789abcdef'
 
+4) Make sure you have the WooCommerce plugin downloaded to your plugins directory.
 
 ## Running Tests
 
