@@ -67,6 +67,11 @@ class WC_Taxjar_Download_Orders {
     }
   }
 
+  /**
+  * Called by the integration to show on the TaxJar settings page
+  *
+  * @return array
+  */
   public function get_form_settings_field( ) {
     global $woocommerce;
 
@@ -143,6 +148,7 @@ class WC_Taxjar_Download_Orders {
   /**
   * Disconnect this store from the user's Taxjar account
   *
+  * @return boolean
   */
   private function unlink_provider($store_url) {
     $url = $this->integration->uri . 'plugins/woo/deregister';
@@ -232,6 +238,11 @@ class WC_Taxjar_Download_Orders {
     }
   }
 
+  /**
+  * Creates a new TaxJar user or returns the existing one
+  *
+  * @return WordPress User
+  */
   private function get_or_create_taxjar_user() {
     // Get the User object
     $user = $this->api_user_query();
@@ -329,6 +340,11 @@ class WC_Taxjar_Download_Orders {
     return array('consumer_key' => $consumer_key, 'consumer_secret' => $consumer_secret);
   }
 
+  /**
+  * Direct copy of how API keys are generated via AJAX in WooCommerce
+  *
+  * @return boolean
+  */
   private function generate_v2_api_keys ( $user_id ) {
     global $wpdb;
 
@@ -362,6 +378,11 @@ class WC_Taxjar_Download_Orders {
     return array('consumer_key' => $consumer_key, 'consumer_secret' => $consumer_secret);
   }
 
+  /**
+  * Compares WooCommerce version and returns the appropriate API key
+  *
+  * @return array
+  */
   private function get_or_create_woocommerce_api_keys() {
     global $woocommerce;
 
@@ -382,6 +403,11 @@ class WC_Taxjar_Download_Orders {
     }
   }
 
+  /**
+  * Deletes any existing TaxJar WooCommerce API keys
+  *
+  * @return void
+  */
   private function delete_wc_taxjar_keys() {
     global $wpdb;
 
