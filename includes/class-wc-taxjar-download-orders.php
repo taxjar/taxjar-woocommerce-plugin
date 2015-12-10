@@ -16,23 +16,27 @@ class WC_Taxjar_Download_Orders {
   public function __construct( $integration ) {
     $this->integration      = $integration;
     $this->taxjar_download  = filter_var( $this->integration->get_option( 'taxjar_download' ), FILTER_VALIDATE_BOOLEAN );
+  }
 
-    if ( (!count( $_POST ) > 0) || !isset( $_POST['_wpnonce'] ) || !wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-settings' ) ) {
-      return;
+  /**
+   * Validate the option to enable TaxJar order downloads and link or unlink shop
+   * @see validate_settings_fields()
+   */
+  public function validate_taxjar_download_field( $key ) {
+    $value = $this->integration->get_value_from_post( $key );
+    $previous_value = $this->integration->get_option( 'taxjar_download' );
+
+    if ( isset( $value ) && $value ) {
+      $value = 'yes';
+    } else {
+      $value = 'no';
     }
 
-    // Anytime TaxJar Download is off, disable the TaxJar user
-    if ( $this->taxjar_download == 0) {
-      $this->disable_taxjar_user();
-    }
+    if ( ($value != $previous_value ) ) {
+      if ( $value == 'yes' ) {
+        // Enable the WooCommerce API for downloads if it is not enabled
+        update_option( 'woocommerce_api_enabled', 'yes' );
 
-    if ( isset( $_POST['woocommerce_taxjar-integration_taxjar_download'] ) && 
-      isset( $_POST['woocommerce_taxjar-integration_api_token'] ) &&
-      $_POST['woocommerce_taxjar-integration_api_token'] != '' ) {
-      // Enable the WooCommerce API for downloads if it is not enabled
-      update_option( 'woocommerce_api_enabled', 'yes' );
-
-      if( ! $this->taxjar_download ) {  // then a user just enabled order downloads
         // Get/generate the WooCommerce API information and link this store to TaxJar
         $keys = $this->get_or_create_woocommerce_api_keys();
         $success = false;
@@ -41,30 +45,28 @@ class WC_Taxjar_Download_Orders {
           $consumer_key     = $keys['consumer_key'];
           $consumer_secret  = $keys['consumer_secret'];
           $store_url        = site_url();
-          $success = $this->link_provider($consumer_key, $consumer_secret, $store_url);
+          $success = $this->link_provider( $consumer_key, $consumer_secret, $store_url );
 
-          // Force a page resfresh
           if ( $success ) {
-            add_action( 'admin_enqueue_scripts', array( $this->integration, 'reload_page' ) );
+            return 'yes';
           }        
         }
-
+    
         if ( !$success ) {
           $this->taxjar_download = false;
+          $this->integration->errors[] = 'shop_not_linked';
+          return 'no';
         }
-      }
-    } else {
-      if( $this->taxjar_download ) {  // the user just disabled enable order downloads or removed their api key
-        $success = $this->unlink_provider( site_url() );
-
-        // Force a page resfresh
-        if ( $success ) {
-          add_action( 'admin_enqueue_scripts', array( $this->integration, 'reload_page' ) );
-        } else {
-          $this->taxjar_download = true;
-        }
+      } else {
+        echo 'UNLINKED!';
+        $this->unlink_provider( site_url() );
+        return 'no';
       }
     }
+
+
+
+    return $value;
   }
 
   /**
@@ -77,8 +79,7 @@ class WC_Taxjar_Download_Orders {
 
     $description_for_order_download = "If enabled, TaxJar will download your orders for reporting.";
 
-    if ( $this->integration->post_or_setting('taxjar_download') ) {
-      $description_for_order_download = "TaxJar will download completed and refunded orders for reporting.";
+    if ( $this->taxjar_download ) {
       $error = false;
 
       if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) ) {
@@ -113,7 +114,7 @@ class WC_Taxjar_Download_Orders {
   *
   * @return boolean
   */
-  private function link_provider($consumer_key, $consumer_secret, $store_url) {
+  private function link_provider( $consumer_key, $consumer_secret, $store_url ) {
     $url = $this->integration->uri . 'plugins/woo/register';
     $body_string =  sprintf('consumer_key=%s&consumer_secret=%s&store_url=%s',
                       $consumer_key,
@@ -135,13 +136,12 @@ class WC_Taxjar_Download_Orders {
       new WP_Error( 'request', __( "There was an error linking this store to your TaxJar account. Please contact support@taxjar.com" ) );
       return false;
     } else if ( 201 == $response['response']['code'] ) {
-      $this->integration->_log('Successfully linked shop to TaxJar account');
+      $this->integration->_log( 'Successfully linked shop to TaxJar account' );
     } else {
       // Log Response Error
       $this->integration->_log( "Received (" . $response['response']['code'] . "): " . $response['body'] );
       return false;
     }
-
     return true;
   }
 
@@ -150,7 +150,9 @@ class WC_Taxjar_Download_Orders {
   *
   * @return boolean
   */
-  private function unlink_provider($store_url) {
+  public function unlink_provider( $store_url ) {
+    $this->disable_taxjar_user();
+    
     $url = $this->integration->uri . 'plugins/woo/deregister';
     $body_string =  sprintf( 'store_url=%s', $store_url );
 
@@ -164,16 +166,14 @@ class WC_Taxjar_Download_Orders {
       'method'      => 'DELETE'
     ) );
 
-    // Fail loudly if we get an error from wp_remote_post
     if ( is_wp_error( $response ) ) {
-      new WP_Error( 'request', __( "There was an error unlinking this store from your TaxJar account. Please contact support@taxjar.com" ) );
+      new WP_Error( 'request', __( "There was an error unlinking this store to your TaxJar account. Please contact support@taxjar.com" ) );
       return false;
     } else if ( 200 == $response['response']['code'] ) {
-      $this->integration->_log('Successfully unlinked shop from TaxJar account');
+      $this->integration->_log( 'Successfully unlinked shop to TaxJar account' );
     } else {
       // Log Response Error
-      $this->integration->_log( "Attempting to unlink account - Received (" . $response['response']['code'] . "): " . $response['body'] );
-      return false;
+      $this->integration->_log( "Received (" . $response['response']['code'] . "): " . $response['body'] );
     }
 
     return true;
@@ -220,30 +220,11 @@ class WC_Taxjar_Download_Orders {
   }
 
   /**
-   * Validate the option to enable TaxJar order downloads
-   * @see validate_settings_fields()
-   */
-  public function validate_taxjar_download_field( $key ) {
-    global $woocommerce;
-
-    // Validate the value and perform work for taxjar_download option
-    $value = $this->integration->get_value_from_post( $key );
-
-    // Return out option's value
-    if ( isset( $value ) && $value ) {
-      return 'yes';
-    }
-    else {
-      return 'no';
-    }
-  }
-
-  /**
   * Creates a new TaxJar user or returns the existing one
   *
   * @return WordPress User
   */
-  private function get_or_create_taxjar_user() {
+  private function get_or_create_taxjar_user( ) {
     // Get the User object
     $user = $this->api_user_query();
 
@@ -337,7 +318,7 @@ class WC_Taxjar_Download_Orders {
       $consumer_secret = $user->woocommerce_api_consumer_secret;
     }
 
-    return array('consumer_key' => $consumer_key, 'consumer_secret' => $consumer_secret);
+    return array( 'consumer_key' => $consumer_key, 'consumer_secret' => $consumer_secret );
   }
 
   /**
@@ -383,7 +364,7 @@ class WC_Taxjar_Download_Orders {
   *
   * @return array
   */
-  private function get_or_create_woocommerce_api_keys() {
+  private function get_or_create_woocommerce_api_keys( ) {
     global $woocommerce;
 
     if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) ) {
@@ -408,7 +389,7 @@ class WC_Taxjar_Download_Orders {
   *
   * @return void
   */
-  private function delete_wc_taxjar_keys() {
+  private function delete_wc_taxjar_keys( ) {
     global $wpdb;
 
     $key_ids = $wpdb->get_results("SELECT key_id
@@ -420,7 +401,6 @@ class WC_Taxjar_Download_Orders {
     foreach ( $key_ids as $row ) {
       $wpdb->delete( $wpdb->prefix . 'woocommerce_api_keys', array( 'key_id' => $row->key_id ), array( '%d' ) );
     }
-
   }
 
 } // WC_Taxjar_Download_Orders

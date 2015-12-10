@@ -24,9 +24,9 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->app_uri            = 'https://app.taxjar.com/';
     $this->integration_uri    = $this->app_uri. 'account/apps/add/woo';
     $this->regions_uri        = $this->app_uri. 'account#states';
-    $this->uri                = 'http://tax-rate-service.dev/v2/';
+    $this->uri                = 'https://api.taxjar.com/v2/';
     $this->ua                 = 'TaxJarWordPressPlugin/1.1.4/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
-    $this->debug              = filter_var( $this->get_option( 'debug' ),           FILTER_VALIDATE_BOOLEAN );
+    $this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
     $this->download_orders    = new WC_Taxjar_Download_Orders($this);
 
     // Load the settings.
@@ -34,10 +34,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 
     // Define user set variables.
-    $this->api_token        = $this->get_option( 'api_token'  );
-    $this->store_zip        = $this->get_option( 'store_zip'  );
+    $this->api_token        = $this->get_option( 'api_token' );
+    $this->store_zip        = $this->get_option( 'store_zip' );
     $this->store_city       = $this->get_option( 'store_city' );
-    $this->enabled          = filter_var( $this->get_option( 'enabled' ),         FILTER_VALIDATE_BOOLEAN );
+    $this->enabled          = filter_var( $this->get_option( 'enabled' ), FILTER_VALIDATE_BOOLEAN );
 
     // Catch Rates for 1 hour
     $this->cache_time = HOUR_IN_SECONDS;
@@ -116,11 +116,11 @@ class WC_Taxjar_Integration extends WC_Integration {
     $api_valid = true;
     $description_for_status = '';
     $url         = $this->uri . 'verify';
-    $body_string = 'token='. $this->post_or_setting('api_token');
+    $body_string = 'token='. $this->post_or_setting( 'api_token' );
     $response = wp_remote_post( $url, array(
       'timeout'     => 60,
       'headers'     => array(
-                        'Authorization' => 'Token token="' . $this->post_or_setting('api_token') .'"',
+                        'Authorization' => 'Token token="' . $this->post_or_setting( 'api_token' ) .'"',
                         'Content-Type' => 'application/x-www-form-urlencoded'
                       ),
       'user-agent'  => $this->ua,
@@ -159,6 +159,11 @@ class WC_Taxjar_Integration extends WC_Integration {
       $description_for_status .= '</div>';
     }
 
+    $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
+    if ( empty( $default_wc_settings[1] ) ){
+      $default_wc_settings[1] = "N/A";
+    }
+
     // Build the form array
     $this->form_fields   = array(
       'taxjar_title_step_1' => array(
@@ -166,7 +171,6 @@ class WC_Taxjar_Integration extends WC_Integration {
         'type'              => 'hidden',
         'description'       => '<h3>Activate your TaxJar WooCommerce Plugin</h3>'
       ),
-
       'api_token' => array(
         'title'             => __( 'API Token', 'wc-taxjar' ),
         'type'              => 'text',
@@ -184,11 +188,6 @@ class WC_Taxjar_Integration extends WC_Integration {
     );
 
     if( $this->post_or_setting('api_token') && $api_valid ) {
-      $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
-      if ( empty( $default_wc_settings[1] ) ){
-        $default_wc_settings[1] = "N/A";
-      }
-
       $this->form_fields = array_merge($this->form_fields, 
         array(
           'taxjar_title_step_2' => array(
@@ -206,7 +205,7 @@ class WC_Taxjar_Integration extends WC_Integration {
         )
       );
 
-      if ( $this->post_or_setting('enabled') ) {
+      if ( $this->post_or_setting( 'enabled' ) ) {
         $tj_nexus = new WC_Taxjar_Nexus ( $this );
         $this->form_fields = array_merge($this->form_fields, 
           array(
@@ -215,7 +214,7 @@ class WC_Taxjar_Integration extends WC_Integration {
         );
       }
 
-      $this->form_fields = array_merge($this->form_fields, 
+      $this->form_fields = array_merge( $this->form_fields, 
         array(
           'taxjar_download' => $this->download_orders->get_form_settings_field(),
           'store_zip' => array(
@@ -315,10 +314,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     global $woocommerce;
 
-    $this->_log(':::: TaxJar Plugin requested ::::');
+    $this->_log( ':::: TaxJar Plugin requested ::::' );
 
     // Process $options array and turn them into varibables
-    $options = is_array($options) ? $options : array();
+    $options = is_array( $options ) ? $options : array();
     extract( array_replace_recursive(array(
         'to_country' =>       null,
         'to_state' =>         null,
@@ -359,10 +358,10 @@ class WC_Taxjar_Integration extends WC_Integration {
     $from_zip         = $store_settings[ 'taxjar_zip_code_setting' ];
     $from_city        = $store_settings[ 'taxjar_city_setting' ];
 
-    $this->_log(':::: TaxJar API called ::::');
+    $this->_log( ':::: TaxJar API called ::::' );
 
     $url              = $this->uri . 'taxes';
-    $body_string      = sprintf('plugin=woo&to_state=%s&from_state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s&from_country=%s&to_country=%s&line_items[][quantity]=1&line_items[][unit_price]=%s',
+    $body_string      = sprintf( 'plugin=woo&to_state=%s&from_state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s&from_country=%s&to_country=%s&line_items[][quantity]=1&line_items[][unit_price]=%s',
                           $to_state,
                           $from_state,
                           $amount,
@@ -449,13 +448,13 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->shipping_collectable = $cache_value[6];
 
       // Log Cached Response
-      $this->_log(  "Cached Amount: ".     $this->amount_to_collect  );
-      $this->_log(  "Cached Nexus: ".      $this->has_nexus          );
-      $this->_log(  "Cached Source: ".     $this->tax_source         );
-      $this->_log(  "Cached Rate: ".       $this->tax_rate           );
-      $this->_log(  "Shipping Taxable? ".  $this->freight_taxable    );
-      $this->_log(  "Item Tax to Collect: ".  $this->item_collectable    );
-      $this->_log(  "Shipping Tax to Collect: ".  $this->shipping_collectable);
+      $this->_log( "Cached Amount: ".            $this->amount_to_collect     );
+      $this->_log( "Cached Nexus: ".             $this->has_nexus             );
+      $this->_log( "Cached Source: ".            $this->tax_source            );
+      $this->_log( "Cached Rate: ".              $this->tax_rate              );
+      $this->_log( "Shipping Taxable? ".         $this->freight_taxable       );
+      $this->_log( "Item Tax to Collect: ".      $this->item_collectable      );
+      $this->_log( "Shipping Tax to Collect: ".  $this->shipping_collectable  );
     }
 
     // Remove taxes if they are set somehow and customer is exempt
@@ -498,7 +497,7 @@ class WC_Taxjar_Integration extends WC_Integration {
         $this->_log( $wc_rates );
 
   		  // Get the existing ID
-        $rate_id = key($wc_rates);
+        $rate_id = key( $wc_rates );
 
         // Update Tax Rates with TaxJar rates ( rates might be coming from a cached taxjar rate )
         $this->_log( ':: UPDATING TAX RATES TO ::' );
@@ -515,7 +514,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
       }
 
-      $this->_log('Tax Rate ID Set: '. $rate_id);
+      $this->_log( 'Tax Rate ID Set: '. $rate_id );
 
       $this->rate_id = $rate_id;
     }
@@ -535,10 +534,10 @@ class WC_Taxjar_Integration extends WC_Integration {
     $taxable_address = $woocommerce->customer->get_taxable_address(); // returns unassociated array
     $taxable_address = is_array($taxable_address) ? $taxable_address : array();
 
-    $to_country = isset($taxable_address[0]) && !empty($taxable_address[0]) ? $taxable_address[0] : false;
-    $to_state = isset($taxable_address[1]) && !empty($taxable_address[1]) ? $taxable_address[1] : false;
-    $to_zip = isset($taxable_address[2]) && !empty($taxable_address[2]) ? $taxable_address[2] : false;
-    $to_city = isset($taxable_address[3]) && !empty($taxable_address[3]) ? $taxable_address[3] : false;
+    $to_country = isset( $taxable_address[0] ) && !empty( $taxable_address[0] ) ? $taxable_address[0] : false;
+    $to_state = isset( $taxable_address[1] ) && !empty( $taxable_address[1] ) ? $taxable_address[1] : false;
+    $to_zip = isset( $taxable_address[2] ) && !empty( $taxable_address[2] ) ? $taxable_address[2] : false;
+    $to_city = isset( $taxable_address[3] ) && !empty( $taxable_address[3] ) ? $taxable_address[3] : false;
 
     $this->taxjar_api_call( array(
       'to_city' =>          $to_city,
@@ -560,14 +559,14 @@ class WC_Taxjar_Integration extends WC_Integration {
   public function admin_ajax_calculate_taxes( $items, $order_id, $country, $post ){
     global $woocommerce;
 
-    $post = is_array($post) ? $post : array();
+    $post = is_array( $post ) ? $post : array();
 
-    extract( array_replace_recursive(array(
+    extract( array_replace_recursive( array(
         'country' =>    null,
         'state' =>      null,
         'postcode' =>   null,
         'city' =>       null
-    ), $post), EXTR_SKIP );
+    ), $post ), EXTR_SKIP );
 
     if(
          empty( $country )
@@ -587,7 +586,7 @@ class WC_Taxjar_Integration extends WC_Integration {
       'shipping_amount' =>  $order->shipping_total
     ) );
 
-    $order->update_taxes($this->rate_id, $this->item_collectable, $this->shipping_collectable);
+    $order->update_taxes( $this->rate_id, $this->item_collectable, $this->shipping_collectable );
 
     return $items;
   }
@@ -714,6 +713,19 @@ class WC_Taxjar_Integration extends WC_Integration {
   }
 
   /**
+   * Validate the API token
+   * @see validate_settings_fields()
+   */
+  public function validate_api_token_field( $key ) {
+    $value = $this->get_value_from_post( $key );
+    if ( !$value && $value == '' && $this->download_orders->taxjar_download ) {
+      $this->download_orders->unlink_provider( site_url() );
+    }
+
+    return $value;
+  }
+
+  /**
   * Gets the store's settings and returns them
   *
   * @return array
@@ -757,13 +769,13 @@ class WC_Taxjar_Integration extends WC_Integration {
   * @see display_errors()
   */
   public function display_errors( ) {
-    // loop through each error and display it
+    $error_key_values = array(
+      'shop_not_linked' => 'There was an error linking this store to your TaxJar account. Please contact support@taxjar.com'
+    );
+
     foreach ( $this->errors as $key => $value ) {
-      ?>
-      <div class="error">
-        <p><?php _e( 'Looks like you might have made a mistake with the ' . $value . ' field. Make sure it isn&apos;t longer than 32 characters and that the API key is valid.', 'wc-taxjar' ); ?></p>
-      </div>
-      <?php
+      $message = $error_key_values[$value];
+      echo"<div class=\"error\"> <p>$message</p></div>";
     }
   }
 
@@ -819,20 +831,11 @@ class WC_Taxjar_Integration extends WC_Integration {
   }
 
   /**
-  * Load wc-taxjar-refresh.js
-  *
-  * @return void
-  */
-  public function reload_page( ){
-    wp_enqueue_script("wc-taxjar-refresh", plugin_dir_url( __FILE__ ) . '/js/wc-taxjar-refresh.js', array( 'jquery' ));
-  }
-
-  /**
   * Checks if currently on the TaxJar settings page
   *
   * @return boolean
   */
-  public function on_settings_page() {
+  public function on_settings_page( ) {
     return ( isset( $_GET['page'] ) && $_GET['page'] == 'wc-settings' && isset( $_GET['tab'] ) && $_GET['tab'] == 'integration' );
   }
 
@@ -861,5 +864,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     wp_enqueue_script( 'wc-taxjar-admin' , array( 'jquery' ) );
   }
 }
+
+
 
 endif;
