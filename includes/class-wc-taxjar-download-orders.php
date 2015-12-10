@@ -70,12 +70,29 @@ class WC_Taxjar_Download_Orders {
   public function get_form_settings_field( ) {
     global $woocommerce;
 
-    $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
-    if ( empty( $default_wc_settings[1] ) ){
-      $default_wc_settings[1] = "N/A";
-    }
-
     $description_for_order_download = "If enabled, TaxJar will download your orders for reporting.";
+
+    if ( $this->integration->post_or_setting('taxjar_download') ) {
+      $description_for_order_download = "TaxJar will download completed and refunded orders for reporting.";
+      $error = false;
+
+      if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) ) {
+        if ( !$this->existing_api_key() ) {
+          $error = true;
+        }
+      } else {
+        $user = $this->api_user_query();
+        $user = get_userdata( $user->ID );
+
+        if ( !isset( $user ) || !isset( $user->woocommerce_api_consumer_key ) || !isset( $user->woocommerce_api_consumer_secret ) ) {
+          $error = true;
+        }
+      }
+
+      if ( $error ) {
+        $description_for_order_download = "<span style='color: #ff0000;'>There was an error retrieving your keys. Please disable and re-enable Order Downloads.</span>";
+      }
+    }
 
     return array(
       'title'             => __( 'Sales Tax Reporting', 'wc-taxjar' ),
@@ -98,7 +115,6 @@ class WC_Taxjar_Download_Orders {
                       $consumer_secret,
                       $store_url
                     );
-
 
     $response = wp_remote_post( $url, array(
       'headers' =>    array(

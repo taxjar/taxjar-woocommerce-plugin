@@ -184,63 +184,77 @@ class WC_Taxjar_Integration extends WC_Integration {
     );
 
     if( $this->post_or_setting('api_token') && $api_valid ) {
-      $tj_nexus = new WC_Taxjar_Nexus ( $this );
       $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
       if ( empty( $default_wc_settings[1] ) ){
         $default_wc_settings[1] = "N/A";
       }
 
-      $this->form_fields = array_merge($this->form_fields, array(
-        'taxjar_title_step_2' => array(
-          'title'             => __( '<h3>Step 2:</h3>', 'wc-taxjar' ),
-          'type'              => 'hidden',
-          'description'       => '<h3>Configure your sales tax settings</h3>'
-        ),
-        'enabled' => array(
-          'title'             => __( 'Sales Tax Calculation', 'wc-taxjar' ),
-          'type'              => 'checkbox',
-          'label'             => __( 'Enable TaxJar Calculations', 'wc-taxjar' ),
-          'default'           => 'no',
-          'description'       => __( 'If enabled, TaxJar will calculate all sales tax for your store.', 'wc-taxjar' ),
-        ),
-        'nexus' => $tj_nexus->get_form_settings_field(),
-        'taxjar_download' => $this->download_orders->get_form_settings_field(),
-        'store_zip' => array(
-          'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
-          'type'              => 'text',
-          'description'       => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
-          'desc_tip'          => true,
-          'default'           => ''
-        ),
-        'store_city' => array(
-          'title'             => __( 'Ship From City', 'wc-taxjar' ),
-          'type'              => 'text',
-          'description'       => __( 'Enter the city where your store ships from.', 'wc-taxjar' ),
-          'desc_tip'          => true,
-          'default'           => ''
-        ),
-        'store_state' => array(
-          'title'             => __( 'Ship From State', 'wc-taxjar' ),
-          'type'              => 'hidden',
-          'description'       => __( 'We have automatically detected your ship from state as being ' . $default_wc_settings[1] . '.', 'wc-taxjar' ),
-          'class'             => 'input-text disabled regular-input',
-          'disabled'          => 'disabled',
-        ),
-        'store_country' => array(
-          'title'             => __( 'Ship From Country', 'wc-taxjar' ),
-          'type'              => 'hidden',
-          'description'       => __( 'We have automatically detected your ship from country as being ' . $default_wc_settings[0] . '.', 'wc-taxjar' ),
-          'class'             => 'input-text disabled regular-input',
-          'disabled'          => 'disabled'
-        ),
-        'debug' => array(
-          'title'             => __( 'Debug Log', 'wc-taxjar' ),
-          'type'              => 'checkbox',
-          'label'             => __( 'Enable logging', 'wc-taxjar' ),
-          'default'           => 'no',
-          'description'       => __( 'Log events such as API requests.', 'wc-taxjar' ),
+      $this->form_fields = array_merge($this->form_fields, 
+        array(
+          'taxjar_title_step_2' => array(
+            'title'             => __( '<h3>Step 2:</h3>', 'wc-taxjar' ),
+            'type'              => 'hidden',
+            'description'       => '<h3>Configure your sales tax settings</h3>'
+          ),
+          'enabled' => array(
+            'title'             => __( 'Sales Tax Calculation', 'wc-taxjar' ),
+            'type'              => 'checkbox',
+            'label'             => __( 'Enable TaxJar Calculations', 'wc-taxjar' ),
+            'default'           => 'no',
+            'description'       => __( 'If enabled, TaxJar will calculate all sales tax for your store.', 'wc-taxjar' ),
+          )
         )
-      ));
+      );
+
+      if ( $this->post_or_setting('enabled') ) {
+        $tj_nexus = new WC_Taxjar_Nexus ( $this );
+        $this->form_fields = array_merge($this->form_fields, 
+          array(
+            'nexus' => $tj_nexus->get_form_settings_field()
+          )
+        );
+      }
+
+      $this->form_fields = array_merge($this->form_fields, 
+        array(
+          'taxjar_download' => $this->download_orders->get_form_settings_field(),
+          'store_zip' => array(
+            'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
+            'type'              => 'text',
+            'description'       => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
+            'desc_tip'          => true,
+            'default'           => ''
+          ),
+          'store_city' => array(
+            'title'             => __( 'Ship From City', 'wc-taxjar' ),
+            'type'              => 'text',
+            'description'       => __( 'Enter the city where your store ships from.', 'wc-taxjar' ),
+            'desc_tip'          => true,
+            'default'           => ''
+          ),
+          'store_state' => array(
+            'title'             => __( 'Ship From State', 'wc-taxjar' ),
+            'type'              => 'hidden',
+            'description'       => __( 'We have automatically detected your ship from state as being ' . $default_wc_settings[1] . '.', 'wc-taxjar' ),
+            'class'             => 'input-text disabled regular-input',
+            'disabled'          => 'disabled',
+          ),
+          'store_country' => array(
+            'title'             => __( 'Ship From Country', 'wc-taxjar' ),
+            'type'              => 'hidden',
+            'description'       => __( 'We have automatically detected your ship from country as being ' . $default_wc_settings[0] . '.', 'wc-taxjar' ),
+            'class'             => 'input-text disabled regular-input',
+            'disabled'          => 'disabled'
+          ),
+          'debug' => array(
+            'title'             => __( 'Debug Log', 'wc-taxjar' ),
+            'type'              => 'checkbox',
+            'label'             => __( 'Enable logging', 'wc-taxjar' ),
+            'default'           => 'no',
+            'description'       => __( 'Log events such as API requests.', 'wc-taxjar' ),
+          )
+        )
+      );
     }
   }
 
