@@ -58,7 +58,6 @@ class WC_Taxjar_Download_Orders {
           return 'no';
         }
       } else {
-        echo 'UNLINKED!';
         $this->unlink_provider( site_url() );
         return 'no';
       }
@@ -152,7 +151,7 @@ class WC_Taxjar_Download_Orders {
   */
   public function unlink_provider( $store_url ) {
     $this->disable_taxjar_user();
-    
+
     $url = $this->integration->uri . 'plugins/woo/deregister';
     $body_string =  sprintf( 'store_url=%s', $store_url );
 
