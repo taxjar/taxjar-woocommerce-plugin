@@ -103,7 +103,7 @@ class WC_Taxjar_Integration extends WC_Integration {
    */
   // fix undefined offset for country not set...
   public function init_form_fields( ) {
-    if( ! ( isset( $_GET['page'] ) && $_GET['page'] == 'wc-settings' && isset( $_GET['tab'] ) && $_GET['tab'] == 'integration' ) ) {
+    if( ! $this->on_settings_page() ) {
       return;
     }
 
@@ -812,6 +812,15 @@ class WC_Taxjar_Integration extends WC_Integration {
   */
   public function reload_page( ){
     wp_enqueue_script("wc-taxjar-refresh", plugin_dir_url( __FILE__ ) . '/js/wc-taxjar-refresh.js', array( 'jquery' ));
+  }
+
+  /**
+  * Checks if currently on the TaxJar settings page
+  *
+  * @return boolean
+  */
+  public function on_settings_page() {
+    return ( isset( $_GET['page'] ) && $_GET['page'] == 'wc-settings' && isset( $_GET['tab'] ) && $_GET['tab'] == 'integration' );
   }
 
   /**

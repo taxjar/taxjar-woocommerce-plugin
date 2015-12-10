@@ -17,8 +17,12 @@ class WC_Taxjar_Download_Orders {
     $this->integration      = $integration;
     $this->taxjar_download  = filter_var( $this->integration->get_option( 'taxjar_download' ), FILTER_VALIDATE_BOOLEAN );
 
+    if ( (!count( $_POST ) > 0) || !isset( $_POST['_wpnonce'] ) || !wp_verify_nonce( $_POST['_wpnonce'], 'woocommerce-settings' ) ) {
+      return;
+    }
+
     // Anytime TaxJar Download is off, disable the TaxJar user
-    if ( $this->taxjar_download == 0 ) {
+    if ( $this->taxjar_download == 0) {
       $this->disable_taxjar_user();
     }
 
@@ -50,7 +54,7 @@ class WC_Taxjar_Download_Orders {
         }
       }
     } else {
-      if( count ( $_POST ) > 0 && $this->taxjar_download ) {  // the user just disabled enable order downloads or removed their api key
+      if( $this->taxjar_download ) {  // the user just disabled enable order downloads or removed their api key
         $success = $this->unlink_provider( site_url() );
 
         // Force a page resfresh
@@ -276,7 +280,7 @@ class WC_Taxjar_Download_Orders {
   private function get_or_generate_v1_api_keys( $user_id ) {
     // Get userdata and hash for our transient
     $user = get_userdata( $user_id );
-    $key = hash( 'md5', $this->id );
+    $key = hash( 'md5', $this->integration->id );
 
     // Check for existing < 45 day old keys
     if ( false === ( $cache_value = get_transient( $key ) ) ) {
