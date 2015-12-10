@@ -544,7 +544,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 
   public function admin_ajax_calculate_taxes( $items, $order_id, $country, $post ){
-
     global $woocommerce;
 
     $post = is_array($post) ? $post : array();

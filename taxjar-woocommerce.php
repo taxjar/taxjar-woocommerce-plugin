@@ -45,7 +45,6 @@ class WC_Taxjar {
 
       // Register the integration.
       add_filter( 'woocommerce_integrations', array( $this, 'add_integration' ), 20 );
-
     }
   }
 

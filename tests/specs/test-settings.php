@@ -5,7 +5,7 @@ class TJ_WC_Settings extends WP_UnitTestCase {
     $tj = new WC_Taxjar_Integration();
     $this->assertNotNull($tj->api_token);
     $this->assertTrue($tj->enabled == 'yes');
-    $this->assertTrue($tj->taxjar_download == 'yes');
+    $this->assertTrue($tj->download_orders->taxjar_download == 'yes');
   }
 }
 

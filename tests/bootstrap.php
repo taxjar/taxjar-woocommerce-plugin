@@ -26,10 +26,8 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
   }
 
   public function includes() {
-    // load test function so tests_add_filter() is available
-    require_once( $this->wp_tests_dir . 'includes/functions.php' );
-
     // load the WP testing environment
+    require_once( $this->wp_tests_dir . 'includes/functions.php' );
     require_once( $this->wp_tests_dir . 'includes/bootstrap.php' );
 
     // load woocommerce core
