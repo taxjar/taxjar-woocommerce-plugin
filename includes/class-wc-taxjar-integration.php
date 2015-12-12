@@ -54,7 +54,7 @@ class WC_Taxjar_Integration extends WC_Integration {
       // Calculate Taxes
       add_action( 'woocommerce_calculate_totals', array( $this, 'use_taxjar_total' ), 20 );
 
-      add_filter( 'woocommerce_ajax_calc_line_taxes', array( $this, 'admin_ajax_calculate_taxes' ), 1, 4 );
+      add_filter( 'woocommerce_ajax_calc_line_taxes', array( $this, 'admin_ajax_calculate_taxes' ), 99, 4 );
 
       // Settings Page
       add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
@@ -467,6 +467,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$source_zip = $this->tax_source == 'destination' ? $to_zip : $from_zip;
 			$source_city = $this->tax_source == 'destination' ? $to_city : $from_city;
 
+      if ( strtoupper( $to_city ) == strtoupper( $from_city ) ) {
+        $source_city = $to_city;
+      }
+
       // Setup Tax Rates
       $tax_rates = array(
 			  "tax_rate_country" =>   $to_country,
@@ -480,13 +484,16 @@ class WC_Taxjar_Integration extends WC_Integration {
 			);
 
 			// Clear the cached rates
-			delete_transient( 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, ($source_city), implode( ',', $this->_get_wildcard_postcodes( wc_clean( $source_zip ) ) ), '' ) ) );
+      $valid_postcodes = $this->_get_wildcard_postcodes( wc_clean( $source_zip ) );
+      $rates_transient_key = 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $source_city, implode( ',', $valid_postcodes), '' ) );
+      delete_transient( $rates_transient_key );
+
 			$this->_log( $source_city );
 			$wc_rates = WC_Tax::find_rates( array(
-        'country' =>        strtoupper($to_country),
-        'state' =>          strtoupper($to_state),
-        'postcode' =>       strtoupper($source_zip),
-        'city' =>           strtoupper($source_city),
+        'country' =>        $to_country,
+        'state' =>          $to_state,
+        'postcode' =>       $source_zip,
+        'city' =>           $source_city,
         'tax_class' =>      ''
       ) );
 
@@ -518,6 +525,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
       $this->rate_id = $rate_id;
     }
+
   }
 
 
@@ -583,10 +591,8 @@ class WC_Taxjar_Integration extends WC_Integration {
       'to_country' =>       $country,
       'to_zip' =>           $postcode,
       'amount' =>           $order->order_total,
-      'shipping_amount' =>  $order->shipping_total
+      'shipping_amount' =>  null
     ) );
-
-    $order->update_taxes( $this->rate_id, $this->item_collectable, $this->shipping_collectable );
 
     return $items;
   }
@@ -607,7 +613,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     }
     if ( $tax_based_on == 'base' ) {
       $postcode  = $store_settings['taxjar_zip_code_setting'];
-      $city = $store_settings['taxjar_city_setting'];
+      $city = strtoupper($store_settings['taxjar_city_setting']);
     }
     return array( $country, $state, $postcode, $city );
   }
@@ -863,6 +869,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     wp_enqueue_script( 'wc-taxjar-admin' , array( 'jquery' ) );
   }
+
 }
 
 
