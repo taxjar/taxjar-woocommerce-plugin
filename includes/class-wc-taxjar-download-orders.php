@@ -122,12 +122,13 @@ class WC_Taxjar_Download_Orders {
                     );
 
     $response = wp_remote_post( $url, array(
-      'headers' =>    array(
+      'timeout'     => 60,
+      'headers'     => array(
                         'Authorization' => 'Token token="' . $this->integration->settings['api_token'] .'"',
                         'Content-Type' => 'application/x-www-form-urlencoded'
                       ),
-      'user-agent' => $this->integration->ua,
-      'body' => $body_string
+      'user-agent'  => $this->integration->ua,
+      'body'        => $body_string
     ) );
 
     // Fail loudly if we get an error from wp_remote_post
@@ -156,7 +157,8 @@ class WC_Taxjar_Download_Orders {
     $body_string =  sprintf( 'store_url=%s', $store_url );
 
     $response = wp_remote_request( $url, array(
-      'headers'     =>    array(
+      'timeout'     => 60,
+      'headers'     => array(
                         'Authorization' => 'Token token="' . $this->integration->settings['api_token'] .'"',
                         'Content-Type' => 'application/x-www-form-urlencoded'
                       ),
