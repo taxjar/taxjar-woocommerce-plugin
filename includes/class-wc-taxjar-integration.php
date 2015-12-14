@@ -412,8 +412,11 @@ class WC_Taxjar_Integration extends WC_Integration {
         $this->has_nexus          = (int) $taxjar_response->has_nexus;
         $this->tax_source         = empty($taxjar_response->tax_source) ? 'origin' : $taxjar_response->tax_source;
         $this->amount_to_collect  = $taxjar_response->amount_to_collect;
-        if (!empty($taxjar_response->breakdown)) {
-          $this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
+        if ( !empty( $taxjar_response->breakdown ) ) {
+          if ( !empty( $taxjar_response->breakdown->shipping ) ) {
+            $this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
+          }
+          
           $this->item_collectable     = $this->amount_to_collect - $this->shipping_collectable;
         }
         $this->tax_rate           = $taxjar_response->rate;
