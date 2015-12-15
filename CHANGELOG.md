@@ -1,3 +1,8 @@
+* 1.1.5 (2015-12-14)
+* Display Nexus States/Region list on TaxJar panel
+* Allow 1-Click TaxJar connection setup
+* Bug fixes around order editing in order admin screens.
+
 * 1.1.4 (2015-10-30)
 * Better warnings about connection errors on plugin panel
 
