@@ -107,59 +107,9 @@ class WC_Taxjar_Integration extends WC_Integration {
       return;
     }
 
-    global $woocommerce;
-
-    // WP Hooks
-    add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
-
-    // Check if we can post to the API
-    $api_valid = true;
-    $description_for_status = '';
-    $url         = $this->uri . 'verify';
-    $body_string = 'token='. $this->post_or_setting( 'api_token' );
-    $response = wp_remote_post( $url, array(
-      'timeout'     => 60,
-      'headers'     => array(
-                        'Authorization' => 'Token token="' . $this->post_or_setting( 'api_token' ) .'"',
-                        'Content-Type' => 'application/x-www-form-urlencoded'
-                      ),
-      'user-agent'  => $this->ua,
-      'body'        => $body_string
-    ) );
-
-    if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
-      $description_for_status .= '<div style="color: #3FAE2A;">';
-      $description_for_status .= __( 'Connection to TaxJar servers established.', 'wc-taxjar' );
-      $description_for_status .= '</div>';
-
-      $body = json_decode($response['body']);
-      if( isset( $body->enabled ) && $body->enabled === false ) {
-        $description_for_status .= '<br><br><div style="color: #ff0000;"><strong>';
-        $description_for_status .= 'There is an issue with your TaxJar subscription.';
-        $description_for_status .= sprintf( '<br><a href="%s" target="_blank">Please review your account.</a>', $this->app_uri.'account/plan' );
-        $description_for_status .='</strong></div>';
-      }
-
-      if( $this->post_or_setting('api_token') && isset( $body->valid ) && $body->valid === false ) {
-        $description_for_status .= '<br><br><div style="color: #ff0000;"><strong>';
-        $description_for_status .= 'It looks like your API token is invalid.';
-        $description_for_status .= sprintf( '<br><a href="%s" target="_blank">Please review your API token.</a>', $this->app_uri.'account#api-access' );
-        $description_for_status .='</strong></div>';
-        $api_valid = false;
-      }
-    } else {
-      $description_for_status .= '<div style="color: #ff0000;">';
-      $description_for_status .= __( 'wp_remote_post() failed. TaxJar could not connect to server. Please contact your hosting provider.', 'wc-taxjar' );
-      $description_for_status .= '<br>';
-      if ( is_wp_error( $response ) ) {
-        $description_for_status .= ' ' . sprintf( __( 'Error: %s', 'wc-taxjar' ), wc_clean( $response->get_error_message() ) );
-      } else {
-        $description_for_status .= ' ' . sprintf( __( 'Status code: %s', 'wc-taxjar' ), wc_clean( $response['response']['code'] ) );
-      }
-      $description_for_status .= '</div>';
-    }
-
     $default_wc_settings = explode( ':', get_option('woocommerce_default_country') );
+    add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
+    $tj_connection = new WC_TaxJar_Connection ( $this );
     if ( empty( $default_wc_settings[1] ) ){
       $default_wc_settings[1] = "N/A";
     }
@@ -177,18 +127,19 @@ class WC_Taxjar_Integration extends WC_Integration {
         'description'       => __( '<a href="'.$this->app_uri.'account#api-access" target="_blank">Click here</a> to get your API token.', 'wc-taxjar' ),
         'desc_tip'          => false,
         'default'           => ''
-      ),
-      'taxjar_status' => array(
-        'title'             => __( 'TaxJar Status', 'wc-taxjar' ),
-        'type'              => 'hidden',
-        'description'       => $description_for_status,
-        'class'             => 'input-text disabled regular-input',
-        'disabled'          => 'disabled',
-      ),
+      )
     );
 
-    if( $this->post_or_setting('api_token') && $api_valid ) {
-      $this->form_fields = array_merge($this->form_fields, 
+    if ( !$tj_connection->can_connect || !$tj_connection->api_token_valid ) {
+      $this->form_fields = array_merge( $this->form_fields,
+        array(
+          'taxjar_status' => $tj_connection->get_form_settings_field()
+        )
+      );
+    }
+
+    if( $this->post_or_setting('api_token') && $tj_connection->api_token_valid ) {
+      $this->form_fields = array_merge( $this->form_fields,
         array(
           'taxjar_title_step_2' => array(
             'title'             => __( '<h3>Step 2:</h3>', 'wc-taxjar' ),
@@ -207,14 +158,14 @@ class WC_Taxjar_Integration extends WC_Integration {
 
       if ( $this->post_or_setting( 'enabled' ) ) {
         $tj_nexus = new WC_Taxjar_Nexus ( $this );
-        $this->form_fields = array_merge($this->form_fields, 
+        $this->form_fields = array_merge($this->form_fields,
           array(
             'nexus' => $tj_nexus->get_form_settings_field()
           )
         );
       }
 
-      $this->form_fields = array_merge( $this->form_fields, 
+      $this->form_fields = array_merge( $this->form_fields,
         array(
           'taxjar_download' => $this->download_orders->get_form_settings_field(),
           'store_zip' => array(
@@ -416,7 +367,7 @@ class WC_Taxjar_Integration extends WC_Integration {
           if ( !empty( $taxjar_response->breakdown->shipping ) ) {
             $this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
           }
-          
+
           $this->item_collectable     = $this->amount_to_collect - $this->shipping_collectable;
         }
         $this->tax_rate           = $taxjar_response->rate;
@@ -718,7 +669,7 @@ class WC_Taxjar_Integration extends WC_Integration {
    */
   public function validate_taxjar_download_field( $key ) {
     // Validate the value and perform work for taxjar_download option
-    return $value = $this->download_orders->validate_taxjar_download_field( $key ); 
+    return $value = $this->download_orders->validate_taxjar_download_field( $key );
   }
 
   /**

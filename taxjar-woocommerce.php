@@ -41,6 +41,7 @@ class WC_Taxjar {
       include_once ABSPATH.'wp-admin/includes/user.php';
       include_once 'includes/class-wc-taxjar-nexus.php';
       include_once 'includes/class-wc-taxjar-download-orders.php';
+      include_once 'includes/class-wc-taxjar-connection.php';
       include_once 'includes/class-wc-taxjar-integration.php';
 
       // Register the integration.
