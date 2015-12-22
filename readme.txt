@@ -3,14 +3,14 @@ Contributors: tonkapark, taxjar
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 4.0
 Tested up to: 4.3.1
-Stable tag: 1.1.5
+Stable tag: 1.1.6
 License: GPLv2 or later
 
 Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculation, collection, and filing.
 
 == Description ==
 
-[TaxJar](http://www.taxjar.com) eliminates the need for you to even think about sales tax with your Woocommerce store. This powerful extension calculates how much sales tax should be collected at checkout. Then we update your sales tax collected by state, county, and city on a daily basis for you to view at any time. Finally, we’ll file what you owe to the states for you.
+[TaxJar](http://www.taxjar.com) eliminates the need for you to even think about sales tax with your WooCommerce store. This powerful extension calculates how much sales tax should be collected at checkout. Then we update your sales tax collected by state, county, and city on a daily basis for you to view at any time. Finally, we’ll file what you owe to the states for you.
 
 Here’s why customers love this plugin:
 
@@ -86,6 +86,9 @@ Yes. The fee is $19.95 per state, per filing.
 1. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+= 1.1.6 (2015-12-22) =
+* Change wording for connection
+
 = 1.1.5 (2015-12-14) =
 * Display Nexus States/Region list on TaxJar panel
 * Allow 1-Click TaxJar connection setup

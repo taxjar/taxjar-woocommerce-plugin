@@ -1,12 +1,15 @@
-* 1.1.5 (2015-12-14)
+# 1.1.6 (2015-12-22)
+* Change wording for connection
+
+# 1.1.5 (2015-12-14)
 * Display Nexus States/Region list on TaxJar panel
 * Allow 1-Click TaxJar connection setup
 * Bug fixes around order editing in order admin screens.
 
-* 1.1.4 (2015-10-30)
+# 1.1.4 (2015-10-30)
 * Better warnings about connection errors on plugin panel
 
-* 1.1.3 (2015-09-09)
+# 1.1.3 (2015-09-09)
 * Better support for generating API keys in WooCommerce 2.4+
 * Warnings for PHP version
 
