@@ -1,3 +1,6 @@
+# 1.1.7 (2015-12-23)
+* Bump version, wordpress.org failed to create 1.1.6 zip file
+
 # 1.1.6 (2015-12-22)
 * Change wording for connection
 
