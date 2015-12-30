@@ -512,7 +512,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     ) );
 
     // Store the rate ID and the amount on the cart's totals
-    $wc_cart_object->tax_total = $this->item_collectable + $this->shipping_collectable;
+    $wc_cart_object->tax_total = $this->item_collectable;
     $wc_cart_object->taxes = array($this->rate_id => $this->item_collectable);
     $wc_cart_object->shipping_taxes = array($this->rate_id => $this->shipping_collectable);
   }

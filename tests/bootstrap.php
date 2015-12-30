@@ -43,13 +43,14 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
   }
 
   public function setup() {
-    update_option('woocommerce_taxjar-integration_settings', 
+    update_option('woocommerce_taxjar-integration_settings',
       array(
-        'api_token' => $this->api_token, 
-        'enabled' => 'yes', 
+        'api_token' => $this->api_token,
+        'enabled' => 'yes',
         'taxjar_download' => 'yes',
         'store_zip' => '80111',
-        'store_city' => 'Greenwood Village'
+        'store_city' => 'Greenwood Village',
+        'debug' => 'yes'
       )
     );
 
