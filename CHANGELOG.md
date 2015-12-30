@@ -1,3 +1,6 @@
+# 1.1.8 (2015-12-30)
+* Shipping tax bugfix
+
 # 1.1.7 (2015-12-23)
 * Bump version, wordpress.org failed to create 1.1.6 zip file
 
