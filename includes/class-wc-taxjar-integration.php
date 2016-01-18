@@ -482,12 +482,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 
   public function clear_wc_tax_cache( $to_country, $to_state, $source_city, $source_zip ) {
     global $woocommerce;
-    $valid_postcodes = $this->_get_wildcard_postcodes( wc_clean( $source_zip ) );
 
     if ( version_compare( $woocommerce->version, '2.5.0', '>=' ) )  {
-      $cache_key         = WC_Cache_Helper::get_cache_prefix( 'taxes' ) . 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $source_city, implode( ',', $valid_postcodes), '' ) );
+      $cache_key         = WC_Cache_Helper::get_cache_prefix( 'taxes' ) . 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $source_city, wc_clean( $source_zip ), '' ) );
       wp_cache_delete( $cache_key, 'taxes' );
     } else {
+      $valid_postcodes = $this->_get_wildcard_postcodes( wc_clean( $source_zip ) );
       $rates_transient_key = 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $source_city, implode( ',', $valid_postcodes), '' ) );
       delete_transient( $rates_transient_key );
     }
