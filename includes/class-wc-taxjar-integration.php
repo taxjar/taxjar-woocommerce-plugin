@@ -25,7 +25,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->integration_uri    = $this->app_uri. 'account/apps/add/woo';
     $this->regions_uri        = $this->app_uri. 'account#states';
     $this->uri                = 'https://api.taxjar.com/v2/';
-    $this->ua                 = 'TaxJarWordPressPlugin/1.1.8/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+    $this->ua                 = 'TaxJarWordPressPlugin/1.1.9/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
     $this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
     $this->download_orders    = new WC_Taxjar_Download_Orders($this);
 
@@ -334,7 +334,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $taxjar_response = false;
 
     // Make sure we don't have a cached rate
-    if ( false === ( $cache_value = get_transient( $cache_key ) ) ) {
+    if ( false === ( $cache_value = wp_cache_get( $cache_key, 'taxjar' ) ) ) {
       // Log this request
       $this->_log( "Requesting: " . $url );
 
@@ -380,7 +380,7 @@ class WC_Taxjar_Integration extends WC_Integration {
         $this->_log( "Cache Value: ". $cache_value );
 
         // Set Cache
-        set_transient( $cache_key, $cache_value, $this->cache_time );
+        wp_cache_set( $cache_key, $cache_value, 'taxjar', $this->cache_time );
 
       } else {
         // Log Response Error
@@ -438,9 +438,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			);
 
 			// Clear the cached rates
-      $valid_postcodes = $this->_get_wildcard_postcodes( wc_clean( $source_zip ) );
-      $rates_transient_key = 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $source_city, implode( ',', $valid_postcodes), '' ) );
-      delete_transient( $rates_transient_key );
+      $this->clear_wc_tax_cache( $to_country, $to_state, $source_city, $source_zip );
 
 			$this->_log( $source_city );
 			$wc_rates = WC_Tax::find_rates( array(
@@ -482,6 +480,18 @@ class WC_Taxjar_Integration extends WC_Integration {
 
   }
 
+  public function clear_wc_tax_cache( $to_country, $to_state, $source_city, $source_zip ) {
+    global $woocommerce;
+
+    if ( version_compare( $woocommerce->version, '2.5.0', '>=' ) )  {
+      $cache_key         = WC_Cache_Helper::get_cache_prefix( 'taxes' ) . 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $source_city, wc_clean( $source_zip ), '' ) );
+      wp_cache_delete( $cache_key, 'taxes' );
+    } else {
+      $valid_postcodes = $this->_get_wildcard_postcodes( wc_clean( $source_zip ) );
+      $rates_transient_key = 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $source_city, implode( ',', $valid_postcodes), '' ) );
+      delete_transient( $rates_transient_key );
+    }
+  }
 
   /**
   * Ensure use of the TaxJar amount_to_collect and API data
