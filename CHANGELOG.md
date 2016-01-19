@@ -1,3 +1,6 @@
+# 1.2.0 (2016-01-19)
+* Changes for WooCommerce 2.5 compatibility around transients
+
 # 1.1.8 (2015-12-30)
 * Shipping tax bugfix
 
