@@ -44,21 +44,21 @@ class WC_Taxjar_Download_Orders {
         if ( $keys ) {
           $consumer_key     = $keys['consumer_key'];
           $consumer_secret  = $keys['consumer_secret'];
-          $store_url        = site_url();
+          $store_url        = home_url();
           $success = $this->link_provider( $consumer_key, $consumer_secret, $store_url );
 
           if ( $success ) {
             return 'yes';
-          }        
+          }
         }
-    
+
         if ( !$success ) {
           $this->taxjar_download = false;
           $this->integration->errors[] = 'shop_not_linked';
           return 'no';
         }
       } else {
-        $this->unlink_provider( site_url() );
+        $this->unlink_provider( home_url() );
         return 'no';
       }
     }
