@@ -1,3 +1,7 @@
+# 1.2.1 (2016-06-27)
+* Fix bug causing sales tax to not be calculated when shipping is disabled
+* Pass home_url rather than site_url when linking to TaxJar
+
 # 1.2.0 (2016-01-19)
 * Changes for WooCommerce 2.5 compatibility around transients
 
