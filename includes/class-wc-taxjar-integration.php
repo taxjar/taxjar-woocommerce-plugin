@@ -308,6 +308,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $from_state       = $store_settings[ 'store_state_setting' ];
     $from_zip         = $store_settings[ 'taxjar_zip_code_setting' ];
     $from_city        = $store_settings[ 'taxjar_city_setting' ];
+    $shipping_amount  = is_null($shipping_amount) ? 0.0 : $shipping_amount;
 
     $this->_log( ':::: TaxJar API called ::::' );
 
