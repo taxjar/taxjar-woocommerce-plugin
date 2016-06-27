@@ -2,7 +2,7 @@
 Contributors: tonkapark, taxjar
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 4.0
-Tested up to: 4.4.0
+Tested up to: 4.4.1
 Stable tag: 1.2.0
 License: GPLv2 or later
 
