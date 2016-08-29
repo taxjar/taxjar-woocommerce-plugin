@@ -61,6 +61,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
     $wc_install->install();
 
     do_action('plugins_loaded');
+    do_action('woocommerce_init');
   }
 
   public static function instance() {
