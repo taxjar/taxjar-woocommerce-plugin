@@ -3,7 +3,7 @@ Contributors: tonkapark, taxjar
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar
 Requires at least: 4.0
 Tested up to: 4.5.3
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 
 Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculation, collection, and filing.
@@ -86,6 +86,9 @@ Yes. The fee is $19.95 per state, per filing.
 1. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+= 1.2.2 (2016-08-29) =
+* Fix issue where uncached shipping tax was not displayed
+
 = 1.2.1 (2016-06-27) =
 * Fix bug causing sales tax to not be calculated when shipping is disabled
 * Pass home_url rather than site_url when linking to TaxJar
