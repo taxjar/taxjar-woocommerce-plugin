@@ -25,7 +25,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->integration_uri    = $this->app_uri. 'account/apps/add/woo';
     $this->regions_uri        = $this->app_uri. 'account#states';
     $this->uri                = 'https://api.taxjar.com/v2/';
-    $this->ua                 = 'TaxJarWordPressPlugin/1.2.1/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+    $this->ua                 = 'TaxJarWordPressPlugin/1.2.2/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
     $this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
     $this->download_orders    = new WC_Taxjar_Download_Orders($this);
 
@@ -283,14 +283,14 @@ class WC_Taxjar_Integration extends WC_Integration {
     $store_settings           = $this->get_store_settings();
     $customer                 = $woocommerce->customer;
 
-    $this->tax_rate           = 0;
-    $this->amount_to_collect  = 0;
-    $this->item_collectable   = 0;
-    $this->shipping_collectable  = 0;
-    $this->freight_taxable    = 1;
-    $this->has_nexus          = 0;
-    $this->tax_source         = 'origin';
-    $this->rate_id            = null;
+    $this->tax_rate             = 0;
+    $this->amount_to_collect    = 0;
+    $this->item_collectable     = 0;
+    $this->shipping_collectable = 0;
+    $this->freight_taxable      = 1;
+    $this->has_nexus            = 0;
+    $this->tax_source           = 'origin';
+    $this->rate_id              = null;
 
     // Strict conditions to be met before API call can be conducted
     if(
@@ -368,9 +368,8 @@ class WC_Taxjar_Integration extends WC_Integration {
           if ( !empty( $taxjar_response->breakdown->shipping ) ) {
             $this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
           }
-
-          $this->item_collectable     = $this->amount_to_collect - $this->shipping_collectable;
         }
+        $this->item_collectable   = $this->amount_to_collect - $this->shipping_collectable;
         $this->tax_rate           = $taxjar_response->rate;
         $this->freight_taxable    = (int) $taxjar_response->freight_taxable;
 
@@ -524,6 +523,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     // Store the rate ID and the amount on the cart's totals
     $wc_cart_object->tax_total = $this->item_collectable;
+    $wc_cart_object->shipping_tax_total = $this->shipping_collectable;
     $wc_cart_object->taxes = array($this->rate_id => $this->item_collectable);
     $wc_cart_object->shipping_taxes = array($this->rate_id => $this->shipping_collectable);
   }

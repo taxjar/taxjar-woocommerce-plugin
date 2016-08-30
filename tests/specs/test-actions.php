@@ -6,8 +6,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
     $tj = new WC_Taxjar_Integration();
 
-    $this->assertTrue($woocommerce->cart->get_taxes_total() == 0);
-
     do_action('woocommerce_calculate_totals', $woocommerce->cart);
 
     $this->assertTrue($woocommerce->cart->get_taxes_total() != 0);
@@ -21,8 +19,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
     $woocommerce->shipping->shipping_total = 5;
 
     do_action('woocommerce_calculate_totals', $woocommerce->cart);
-
     $this->assertEquals($woocommerce->cart->tax_total, 0.73, '', 0.001);
+    $this->assertEquals($woocommerce->cart->shipping_tax_total, 0.36, '', 0.001);
     $this->assertEquals(array_values($woocommerce->cart->shipping_taxes)[0], 0.36, '', 0.001);
     $this->assertEquals($woocommerce->cart->get_taxes_total(), 1.09, '', 0.001);
   }

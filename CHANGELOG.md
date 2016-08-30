@@ -1,3 +1,6 @@
+# 1.2.2 (2016-08-29)
+* Fix issue where uncached shipping tax was not displayed
+
 # 1.2.1 (2016-06-27)
 * Fix bug causing sales tax to not be calculated when shipping is disabled
 * Pass home_url rather than site_url when linking to TaxJar
