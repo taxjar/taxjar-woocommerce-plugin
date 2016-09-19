@@ -300,6 +300,13 @@ class WC_Taxjar_Integration extends WC_Integration {
       || $customer->is_vat_exempt()
     ) return false;
 
+    $taxjar_nexus = new WC_Taxjar_Nexus($this);
+    if (!$taxjar_nexus->has_nexus_check($to_country, $to_state)) {
+      $this->_log( ':::: TaxJar User does not have nexus ::::' );
+      return false;
+    }
+
+
     // Setup Vars for API call
     $to_zip           = explode( ',' , $to_zip );
     $to_zip           = array_shift( $to_zip );

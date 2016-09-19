@@ -6,19 +6,19 @@ jQuery(document).ready(function(){
 	var TaxJarAdmin = (function($, m) {
 		var performingRequest = false;
 
-  var init = function() {
-    $('[name="woocommerce_taxjar-integration_api_token"]').on('blur', clean_api_key)
-  };
+    var init = function() {
+      $('[name="woocommerce_taxjar-integration_api_token"]').on('blur', clean_api_key)
+    };
 
-  var clean_api_key = function() {
-    $(this).attr('value', $(this).attr('value').replace(/ /g,''))
-  };
+    var clean_api_key = function() {
+      $(this).attr('value', $(this).attr('value').replace(/ /g,''))
+    };
 
-  return {
-    init: init
-  };
+    return {
+      init: init
+    };
 
-}(jQuery, TaxJarAdmin || {}));
+  }(jQuery, TaxJarAdmin || {}));
 
-TaxJarAdmin.init();
+  TaxJarAdmin.init();
 });

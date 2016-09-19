@@ -39,6 +39,7 @@ class WC_Taxjar {
     if ( class_exists( 'WC_Integration' ) ) {
       // Include our integration class and WP_User for wp_delete_user()
       include_once ABSPATH.'wp-admin/includes/user.php';
+      include_once 'includes/class-wc-taxjar-ajax.php';
       include_once 'includes/class-wc-taxjar-nexus.php';
       include_once 'includes/class-wc-taxjar-download-orders.php';
       include_once 'includes/class-wc-taxjar-connection.php';
