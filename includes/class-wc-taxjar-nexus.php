@@ -22,7 +22,6 @@ class WC_Taxjar_Nexus {
     $desc_text = '';
 
     $desc_text .= '<h3>Nexus Information</h3>';
-    $desc_text .= "<button class='js-wc-taxjar-sync-nexus-addresses'>Sync Nexus Addresses</button><br>";
 
     if( count($this->nexus) > 0 ) {
       $desc_text .= '<p>Sales tax will be calculated on orders delivered into the following regions: </p>';
@@ -37,12 +36,11 @@ class WC_Taxjar_Nexus {
           }
         }
       }
-
-      $desc_text .= "<br><br><a href='" . $this->integration->regions_uri . "' target='_blank'>Add or update nexus locations</a>";
     } else {
       $desc_text .= "<p>TaxJar needs your business locations in order to calculate sales tax properly. Please add them <a href='" . $this->integration->regions_uri . "' target='_blank'>here</a>.<p>";
     }
 
+    $desc_text .= "<p><br><button class='button js-wc-taxjar-sync-nexus-addresses'>Sync Nexus Addresses</button>&nbsp; or &nbsp;<a href='" . $this->integration->regions_uri . "' target='_blank'>Manage Nexus Locations</a></p>";
 
 
     return array(
