@@ -37,12 +37,12 @@ class WC_Taxjar_Nexus {
         }
       }
 
-      $desc_text .= "<br><br><a href='" . $this->integration->regions_uri . "' target='_blank'>Add or update nexus locations</a> - ";
+      $desc_text .= "<br><br><a href='" . $this->integration->regions_uri . "' target='_blank'>Add or update nexus locations</a>";
     } else {
       $desc_text .= "<p>TaxJar needs your business locations in order to calculate sales tax properly. Please add them <a href='" . $this->integration->regions_uri . "' target='_blank'>here</a>.<p>";
     }
 
-    $desc_text .= "<p><a href='#'>Sync Nexus Addresses</a></p>";
+    $desc_text .= "<p><a href='#' class='js-wc-taxjar-sync-nexus-addresses'>Sync Nexus Addresses</a></p>";
 
     return array(
       'title'             => '',
@@ -52,7 +52,6 @@ class WC_Taxjar_Nexus {
   }
 
   public function has_nexus_check( $country, $state = nil ) {
-    echo $country . " " . $state;
     foreach ( $this->get_or_update_cached_nexus() as $key => $nexus ) {
       if ( $country == 'US' && isset( $nexus->region_code ) && isset ( $nexus->country_code ) ) {
         if ($country == $nexus->country_code && $state == $nexus->region_code) {
@@ -72,6 +71,7 @@ class WC_Taxjar_Nexus {
     if ( $force_update || $nexus_list === false ) {
     	$nexus_list = $this->get_nexus_from_api();
     	set_transient( 'wc_taxjar_nexus_list', $nexus_list, 1 * DAY_IN_SECONDS);
+      $this->integration->_log( ':::: Nexus addresses updated ::::' );
     }
     return $nexus_list;
   }

@@ -302,7 +302,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     $taxjar_nexus = new WC_Taxjar_Nexus($this);
     if (!$taxjar_nexus->has_nexus_check($to_country, $to_state)) {
-      $this->_log( ':::: TaxJar User does not have nexus ::::' );
+      $this->_log( ':::: Order not shipping to nexus area ::::' );
       return false;
     }
 
