@@ -22,6 +22,7 @@ class WC_Taxjar_Nexus {
     $desc_text = '';
 
     $desc_text .= '<h3>Nexus Information</h3>';
+    $desc_text .= "<button class='js-wc-taxjar-sync-nexus-addresses'>Sync Nexus Addresses</button><br>";
 
     if( count($this->nexus) > 0 ) {
       $desc_text .= '<p>Sales tax will be calculated on orders delivered into the following regions: </p>';
@@ -42,7 +43,7 @@ class WC_Taxjar_Nexus {
       $desc_text .= "<p>TaxJar needs your business locations in order to calculate sales tax properly. Please add them <a href='" . $this->integration->regions_uri . "' target='_blank'>here</a>.<p>";
     }
 
-    $desc_text .= "<p><a href='#' class='js-wc-taxjar-sync-nexus-addresses'>Sync Nexus Addresses</a></p>";
+
 
     return array(
       'title'             => '',
@@ -69,7 +70,7 @@ class WC_Taxjar_Nexus {
   public function get_or_update_cached_nexus( $force_update = false ) {
     $nexus_list = get_transient( 'wc_taxjar_nexus_list' );
 
-    if ( $force_update || $nexus_list === false || count($nexus_list) == 0) {
+    if ( $force_update || $nexus_list === false) { //  || count($nexus_list) == 0
     	$nexus_list = $this->get_nexus_from_api();
     	set_transient( 'wc_taxjar_nexus_list', $nexus_list, 1 * DAY_IN_SECONDS);
       $this->integration->_log( ':::: Nexus addresses updated ::::' );
@@ -81,7 +82,6 @@ class WC_Taxjar_Nexus {
 
   private function get_nexus_from_api( ) {
     $url = $this->integration->uri . 'nexus/regions';
-    $this->integration->_log( ':::: TaxJar getting nexus list from API ::::' );
 
     $response = wp_remote_get( $url, array(
       'headers' =>    array(

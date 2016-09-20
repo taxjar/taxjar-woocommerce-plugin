@@ -20,8 +20,9 @@ jQuery(document).ready(function(){
 				dataType: 'json',
 				url:      woocommerce_taxjar_admin.ajax_url,
 				data:     {
-					action:      'wc_taxjar_update_nexus_cache',
-					security:    woocommerce_taxjar_admin.update_api_nonce,
+					action:     'wc_taxjar_update_nexus_cache',
+					security:   woocommerce_taxjar_admin.update_api_nonce,
+          'woocommerce_taxjar-integration_api_token':  woocommerce_taxjar_admin.api_token
 				},
 			}).done(function(){
         alert('Nexus Addresses Synced');

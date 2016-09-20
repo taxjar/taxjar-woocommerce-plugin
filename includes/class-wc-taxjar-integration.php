@@ -835,7 +835,8 @@ class WC_Taxjar_Integration extends WC_Integration {
         'ajax_url'         => admin_url( 'admin-ajax.php' ),
         'update_api_nonce' => wp_create_nonce( 'update-api-key' ),
         'current_user'     => get_current_user_id(),
-        'integration_uri'  => $this->integration_uri
+        'integration_uri'  => $this->integration_uri,
+        'api_token'        => $this->post_or_setting('api_token')
       )
     );
 
