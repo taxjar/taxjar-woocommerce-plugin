@@ -1,3 +1,6 @@
+# 1.2.3 (2016-09-21)
+* Limit API calls for tax calculations to nexus areas.
+
 # 1.2.2 (2016-08-29)
 * Fix issue where uncached shipping tax was not displayed
 
