@@ -51,13 +51,27 @@ class WC_Taxjar_Nexus {
   }
 
   public function has_nexus_check( $country, $state = nil ) {
-    foreach ( $this->get_or_update_cached_nexus() as $key => $nexus ) {
-      if ( $country == 'US' && isset( $nexus->region_code ) && isset ( $nexus->country_code ) ) {
+    $store_settings   = $this->integration->get_store_settings();
+    $from_country     = $store_settings[ 'store_country_setting' ];
+    $from_state       = $store_settings[ 'store_state_setting' ];
+
+    $nexus_areas = $this->get_or_update_cached_nexus();
+
+    array_push(
+      $nexus_areas,
+      (object) array(
+        "country_code" => $store_settings[ 'store_country_setting' ],
+        "region_code" => $store_settings[ 'store_state_setting' ],
+      )
+    );
+
+    foreach ( $nexus_areas as $key => $nexus ) {
+      if ( isset ( $nexus->country_code ) && isset( $nexus->region_code ) ) {
         if ($country == $nexus->country_code && $state == $nexus->region_code) {
           return true;
         }
-      } else {
-        if ( isset ( $nexus->country_code ) && $country == $nexus->country_code ) {
+      } elseif ( isset ( $nexus->country_code ) ) {
+        if ( $country == $nexus->country_code ) {
           return true;
         }
       }

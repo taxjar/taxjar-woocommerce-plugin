@@ -294,8 +294,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     // Strict conditions to be met before API call can be conducted
     if(
-         empty( $to_state )
-      || empty( $to_country )
+        empty( $to_country )
       || empty( $to_zip )
       || $customer->is_vat_exempt()
     ) return false;
@@ -708,7 +707,7 @@ class WC_Taxjar_Integration extends WC_Integration {
   *
   * @return array
   */
-  private function get_store_settings( ) {
+  public function get_store_settings( ) {
     $default_wc_settings     = explode( ':', get_option('woocommerce_default_country') );
     $taxjar_zip_code_setting = $this->settings['store_zip'];
     $taxjar_city_setting     = $this->settings['store_city'];
