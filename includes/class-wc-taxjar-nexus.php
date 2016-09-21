@@ -50,7 +50,7 @@ class WC_Taxjar_Nexus {
     );
   }
 
-  public function has_nexus_check( $country, $state = nil ) {
+  public function has_nexus_check( $country, $state = null ) {
     $store_settings   = $this->integration->get_store_settings();
     $from_country     = $store_settings[ 'store_country_setting' ];
     $from_state       = $store_settings[ 'store_state_setting' ];
