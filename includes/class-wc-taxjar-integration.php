@@ -168,6 +168,13 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->form_fields = array_merge( $this->form_fields,
         array(
           'taxjar_download' => $this->download_orders->get_form_settings_field(),
+          'store_city' => array(
+            'title'             => __( 'Ship From City', 'wc-taxjar' ),
+            'type'              => 'text',
+            'description'       => __( 'Enter the city where your store ships from.', 'wc-taxjar' ),
+            'desc_tip'          => true,
+            'default'           => ''
+          ),
           'store_state' => array(
             'title'             => __( 'Ship From State', 'wc-taxjar' ),
             'type'              => 'hidden',
@@ -179,13 +186,6 @@ class WC_Taxjar_Integration extends WC_Integration {
             'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
             'type'              => 'text',
             'description'       => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
-            'desc_tip'          => true,
-            'default'           => ''
-          ),
-          'store_city' => array(
-            'title'             => __( 'Ship From City', 'wc-taxjar' ),
-            'type'              => 'text',
-            'description'       => __( 'Enter the city where your store ships from.', 'wc-taxjar' ),
             'desc_tip'          => true,
             'default'           => ''
           ),
@@ -711,7 +711,10 @@ class WC_Taxjar_Integration extends WC_Integration {
     $default_wc_settings     = explode( ':', get_option('woocommerce_default_country') );
     $taxjar_zip_code_setting = $this->settings['store_zip'];
     $taxjar_city_setting     = $this->settings['store_city'];
-    $store_settings          = array( 'taxjar_zip_code_setting' => $taxjar_zip_code_setting , 'store_state_setting' => $default_wc_settings[1], 'store_country_setting' => $default_wc_settings[0], 'taxjar_city_setting' => $taxjar_city_setting );
+    $store_settings          = array( 'taxjar_zip_code_setting' => $taxjar_zip_code_setting, 'store_state_setting' => null, 'store_country_setting' => $default_wc_settings[0], 'taxjar_city_setting' => $taxjar_city_setting );
+    if ( isset( $default_wc_settings[1] ) ) {
+      $store_settings['store_state_setting'] = $default_wc_settings[1];
+    }
     return $store_settings;
   }
 
