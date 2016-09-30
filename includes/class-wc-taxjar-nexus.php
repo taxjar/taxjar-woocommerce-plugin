@@ -66,7 +66,7 @@ class WC_Taxjar_Nexus {
     );
 
     foreach ( $nexus_areas as $key => $nexus ) {
-      if ( isset ( $nexus->country_code ) && isset( $nexus->region_code ) ) {
+      if ( isset ( $nexus->country_code ) && isset( $nexus->region_code ) && $nexus->country_code == 'US' ) {
         if ($country == $nexus->country_code && $state == $nexus->region_code) {
           return true;
         }

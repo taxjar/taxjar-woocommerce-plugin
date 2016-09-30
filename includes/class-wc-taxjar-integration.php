@@ -168,6 +168,13 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->form_fields = array_merge( $this->form_fields,
         array(
           'taxjar_download' => $this->download_orders->get_form_settings_field(),
+          'store_state' => array(
+            'title'             => __( 'Ship From State', 'wc-taxjar' ),
+            'type'              => 'hidden',
+            'description'       => __( 'We have automatically detected your ship from state as being ' . $default_wc_settings[1] . '.<br>You can change this setting at <a href="' . get_admin_url(null, 'admin.php?page=wc-settings').'">Woo->Settings->General->Base Location</a>', 'wc-taxjar' ),
+            'class'             => 'input-text disabled regular-input',
+            'disabled'          => 'disabled',
+          ),
           'store_zip' => array(
             'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
             'type'              => 'text',
@@ -182,17 +189,10 @@ class WC_Taxjar_Integration extends WC_Integration {
             'desc_tip'          => true,
             'default'           => ''
           ),
-          'store_state' => array(
-            'title'             => __( 'Ship From State', 'wc-taxjar' ),
-            'type'              => 'hidden',
-            'description'       => __( 'We have automatically detected your ship from state as being ' . $default_wc_settings[1] . '.', 'wc-taxjar' ),
-            'class'             => 'input-text disabled regular-input',
-            'disabled'          => 'disabled',
-          ),
           'store_country' => array(
             'title'             => __( 'Ship From Country', 'wc-taxjar' ),
             'type'              => 'hidden',
-            'description'       => __( 'We have automatically detected your ship from country as being ' . $default_wc_settings[0] . '.', 'wc-taxjar' ),
+            'description'       => __( 'We have automatically detected your ship from country as being ' . $default_wc_settings[0] . '.<br>You can change this setting at <a href="' . get_admin_url(null, 'admin.php?page=wc-settings').'">Woo->Settings->General->Base Location</a>', 'wc-taxjar' ),
             'class'             => 'input-text disabled regular-input',
             'disabled'          => 'disabled'
           ),
