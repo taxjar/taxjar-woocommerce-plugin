@@ -25,7 +25,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->integration_uri    = $this->app_uri. 'account/apps/add/woo';
     $this->regions_uri        = $this->app_uri. 'account#states';
     $this->uri                = 'https://api.taxjar.com/v2/';
-    $this->ua                 = 'TaxJarWordPressPlugin/1.2.2/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+    $this->ua                 = 'TaxJarWordPressPlugin/1.2.3/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
     $this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
     $this->download_orders    = new WC_Taxjar_Download_Orders($this);
 
@@ -168,13 +168,6 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->form_fields = array_merge( $this->form_fields,
         array(
           'taxjar_download' => $this->download_orders->get_form_settings_field(),
-          'store_zip' => array(
-            'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
-            'type'              => 'text',
-            'description'       => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
-            'desc_tip'          => true,
-            'default'           => ''
-          ),
           'store_city' => array(
             'title'             => __( 'Ship From City', 'wc-taxjar' ),
             'type'              => 'text',
@@ -185,14 +178,21 @@ class WC_Taxjar_Integration extends WC_Integration {
           'store_state' => array(
             'title'             => __( 'Ship From State', 'wc-taxjar' ),
             'type'              => 'hidden',
-            'description'       => __( 'We have automatically detected your ship from state as being ' . $default_wc_settings[1] . '.', 'wc-taxjar' ),
+            'description'       => __( 'We have automatically detected your ship from state as being ' . $default_wc_settings[1] . '.<br>You can change this setting at <a href="' . get_admin_url(null, 'admin.php?page=wc-settings').'">Woo->Settings->General->Base Location</a>', 'wc-taxjar' ),
             'class'             => 'input-text disabled regular-input',
             'disabled'          => 'disabled',
+          ),
+          'store_zip' => array(
+            'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
+            'type'              => 'text',
+            'description'       => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
+            'desc_tip'          => true,
+            'default'           => ''
           ),
           'store_country' => array(
             'title'             => __( 'Ship From Country', 'wc-taxjar' ),
             'type'              => 'hidden',
-            'description'       => __( 'We have automatically detected your ship from country as being ' . $default_wc_settings[0] . '.', 'wc-taxjar' ),
+            'description'       => __( 'We have automatically detected your ship from country as being ' . $default_wc_settings[0] . '.<br>You can change this setting at <a href="' . get_admin_url(null, 'admin.php?page=wc-settings').'">Woo->Settings->General->Base Location</a>', 'wc-taxjar' ),
             'class'             => 'input-text disabled regular-input',
             'disabled'          => 'disabled'
           ),
@@ -294,11 +294,17 @@ class WC_Taxjar_Integration extends WC_Integration {
 
     // Strict conditions to be met before API call can be conducted
     if(
-         empty( $to_state )
-      || empty( $to_country )
+        empty( $to_country )
       || empty( $to_zip )
       || $customer->is_vat_exempt()
     ) return false;
+
+    $taxjar_nexus = new WC_Taxjar_Nexus($this);
+    if (!$taxjar_nexus->has_nexus_check($to_country, $to_state)) {
+      $this->_log( ':::: Order not shipping to nexus area ::::' );
+      return false;
+    }
+
 
     // Setup Vars for API call
     $to_zip           = explode( ',' , $to_zip );
@@ -701,11 +707,14 @@ class WC_Taxjar_Integration extends WC_Integration {
   *
   * @return array
   */
-  private function get_store_settings( ) {
+  public function get_store_settings( ) {
     $default_wc_settings     = explode( ':', get_option('woocommerce_default_country') );
     $taxjar_zip_code_setting = $this->settings['store_zip'];
     $taxjar_city_setting     = $this->settings['store_city'];
-    $store_settings          = array( 'taxjar_zip_code_setting' => $taxjar_zip_code_setting , 'store_state_setting' => $default_wc_settings[1], 'store_country_setting' => $default_wc_settings[0], 'taxjar_city_setting' => $taxjar_city_setting );
+    $store_settings          = array( 'taxjar_zip_code_setting' => $taxjar_zip_code_setting, 'store_state_setting' => null, 'store_country_setting' => $default_wc_settings[0], 'taxjar_city_setting' => $taxjar_city_setting );
+    if ( isset( $default_wc_settings[1] ) ) {
+      $store_settings['store_state_setting'] = $default_wc_settings[1];
+    }
     return $store_settings;
   }
 
@@ -828,7 +837,8 @@ class WC_Taxjar_Integration extends WC_Integration {
         'ajax_url'         => admin_url( 'admin-ajax.php' ),
         'update_api_nonce' => wp_create_nonce( 'update-api-key' ),
         'current_user'     => get_current_user_id(),
-        'integration_uri'  => $this->integration_uri
+        'integration_uri'  => $this->integration_uri,
+        'api_token'        => $this->post_or_setting('api_token')
       )
     );
 

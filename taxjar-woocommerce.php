@@ -5,7 +5,7 @@
  * Description: Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculation, collection, and filing.
  * Author: TaxJar
  * Author URI: http://www.taxjar.com
- * Version: 1.2.2
+ * Version: 1.2.3
  *
  */
 
@@ -39,6 +39,7 @@ class WC_Taxjar {
     if ( class_exists( 'WC_Integration' ) ) {
       // Include our integration class and WP_User for wp_delete_user()
       include_once ABSPATH.'wp-admin/includes/user.php';
+      include_once 'includes/class-wc-taxjar-ajax.php';
       include_once 'includes/class-wc-taxjar-nexus.php';
       include_once 'includes/class-wc-taxjar-download-orders.php';
       include_once 'includes/class-wc-taxjar-connection.php';
