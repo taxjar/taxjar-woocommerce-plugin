@@ -370,7 +370,7 @@ class WC_Taxjar_Download_Orders {
 
     if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) ) {
       global $current_user;
-      get_currentuserinfo();
+      wp_get_current_user();
 
       $this->delete_wc_taxjar_keys();
       return $this->generate_v2_api_keys( $current_user->ID );
