@@ -57,7 +57,7 @@ class WC_Taxjar_Nexus {
 
     $nexus_areas = $this->get_or_update_cached_nexus();
 
-    if ( count($nexus_list) == 0 ) {
+    if ( count( $nexus_areas ) == 0 ) {
       return true;
     }
 
