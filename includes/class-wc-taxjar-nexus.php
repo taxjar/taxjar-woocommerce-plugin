@@ -86,7 +86,7 @@ class WC_Taxjar_Nexus {
   public function get_or_update_cached_nexus( $force_update = false ) {
     $nexus_list = get_transient( 'wc_taxjar_nexus_list' );
 
-    if ( $force_update || $nexus_list === false || ( $nexus_list != null && count( $nexus_list ) == 0 ) ) {
+    if ( $force_update || $nexus_list === false || $nexus_list === null || ( is_array( $nexus_list ) && count( $nexus_list ) == 0 ) ) {
     	$nexus_list = $this->get_nexus_from_api();
     	set_transient( 'wc_taxjar_nexus_list', $nexus_list, 0.5 * DAY_IN_SECONDS );
       $this->integration->_log( ':::: Nexus addresses updated ::::' );

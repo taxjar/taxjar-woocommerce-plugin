@@ -9,6 +9,11 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
     $this->assertEquals(get_transient('wc_taxjar_nexus_list'), false);
     $tj_nexus->get_or_update_cached_nexus();
     $this->assertTrue(count(get_transient('wc_taxjar_nexus_list')) > 0);
+
+    set_transient( 'wc_taxjar_nexus_list', [] );
+    $this->assertEquals(get_transient('wc_taxjar_nexus_list'), []);
+    $tj_nexus->get_or_update_cached_nexus();
+    $this->assertTrue(count(get_transient('wc_taxjar_nexus_list')) > 0);
   }
 
   function test_has_nexus_check_uses_base_address() {
