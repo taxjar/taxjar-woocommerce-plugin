@@ -22,6 +22,16 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
     $this->assertEquals($transient, time() + 0.5 * DAY_IN_SECONDS );
   }
 
+  function test_or_get_update_cached_nexus_expiration() {
+    delete_transient('wc_taxjar_nexus_list');
+    $this->assertEquals(get_transient('wc_taxjar_nexus_list'), false);
+    set_transient('wc_taxjar_nexus_list', array(), -0.5 * DAY_IN_SECONDS);
+    $this->tj_nexus->get_or_update_cached_nexus();
+    $transient = get_transient('timeout_wc_taxjar_nexus_list');
+    $this->assertEquals($transient, time() + 0.5 * DAY_IN_SECONDS );
+    $this->assertTrue(count(get_transient('wc_taxjar_nexus_list')) > 0);
+  }
+
   function test_has_nexus_check_uses_base_address() {
     update_option('woocommerce_default_country', 'US:XO');
     $this->assertTrue($this->tj_nexus->has_nexus_check('US', 'XO'));
