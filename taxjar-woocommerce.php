@@ -5,7 +5,7 @@
  * Description: Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculation, collection, and filing.
  * Author: TaxJar
  * Author URI: http://www.taxjar.com
- * Version: 1.2.3
+ * Version: 1.2.4
  *
  */
 

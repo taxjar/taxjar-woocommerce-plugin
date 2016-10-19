@@ -1,3 +1,6 @@
+# 1.2.4 (2016-10-19)
+* Add fallbacks to still calculate sales tax if nexus list is not populated.
+
 # 1.2.3 (2016-09-21)
 * Limit API calls for tax calculations to nexus areas.
 
