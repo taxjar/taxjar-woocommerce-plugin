@@ -37,10 +37,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$this->store_city       = $this->get_option( 'store_city' );
 		$this->enabled          = filter_var( $this->get_option( 'enabled' ), FILTER_VALIDATE_BOOLEAN );
 
-		// Catch Rates for 1 hour
+		// Cache rates for 1 hour.
 		$this->cache_time = HOUR_IN_SECONDS;
 
-		// Set up form fields
+		// Set up form fields.
 		$this->init_form_fields();
 
 		// TaxJar Config Integration Tab
@@ -65,7 +65,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			update_option( 'woocommerce_calc_taxes', 'yes' );
 
 			// Users can set either billing or shipping address for tax rates but not shop
-			update_option( 'woocommerce_tax_based_on', "shipping" );
+			update_option( 'woocommerce_tax_based_on', 'shipping' );
 
 			// Rate calculations assume tax not inlcuded
 			update_option( 'woocommerce_prices_include_tax', 'no' );
@@ -106,7 +106,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$tj_connection = new WC_TaxJar_Connection( $this );
 
 		if ( empty( $default_wc_settings[1] ) ) {
-			$default_wc_settings[1] = "N/A";
+			$default_wc_settings[1] = 'N/A';
 		}
 
 		// Build the form array
@@ -256,7 +256,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		$this->_log( ':::: TaxJar Plugin requested ::::' );
 
-		// Process $options array and turn them into varibables
+		// Process $options array and turn them into variables
 		$options = is_array( $options ) ? $options : array();
 
 		extract( array_replace_recursive(array(
@@ -344,23 +344,26 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			// Fail loudly if we get an error from wp_remote_post
 			if ( is_wp_error( $response ) ) {
-				new WP_Error( 'request', __( "There was an error retrieving the tax rates. Please check your server configuration." ) );
+				new WP_Error( 'request', __( 'There was an error retrieving the tax rates. Please check your server configuration.' ) );
 			} elseif ( 200 == $response['response']['code'] ) {
 				// Log the response
-				$this->_log( "Received: " . $response['body'] );
+				$this->_log( 'Received: ' . $response['body'] );
 
 				// Decode Response
 				$taxjar_response          = json_decode( $response['body'] );
-				$taxjar_response = $taxjar_response->tax;
+				$taxjar_response          = $taxjar_response->tax;
+
 				// Update Properties based on Response
 				$this->has_nexus          = (int) $taxjar_response->has_nexus;
 				$this->tax_source         = empty($taxjar_response->tax_source) ? 'origin' : $taxjar_response->tax_source;
 				$this->amount_to_collect  = $taxjar_response->amount_to_collect;
-				if ( !empty( $taxjar_response->breakdown ) ) {
-					if ( !empty( $taxjar_response->breakdown->shipping ) ) {
-					$this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
+
+				if ( ! empty( $taxjar_response->breakdown ) ) {
+					if ( ! empty( $taxjar_response->breakdown->shipping ) ) {
+						$this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
 					}
 				}
+
 				$this->item_collectable   = $this->amount_to_collect - $this->shipping_collectable;
 				$this->tax_rate           = $taxjar_response->rate;
 				$this->freight_taxable    = (int) $taxjar_response->freight_taxable;
@@ -369,13 +372,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$cache_value              = $this->amount_to_collect . '::' . $this->tax_rate . '::' . $this->freight_taxable . '::' . $this->has_nexus . '::' . $this->tax_source . '::' . $this->item_collectable . '::' . $this->shipping_collectable;
 
 				// Log the new cached value
-				$this->_log( "Cache Value: " . $cache_value );
+				$this->_log( 'Cache Value: ' . $cache_value );
 
 				// Set Cache
 				wp_cache_set( $cache_key, $cache_value, 'taxjar', $this->cache_time );
 			} else {
 				// Log Response Error
-				$this->_log( "Received (" . $response['response']['code'] . "): " . $response['body'] );
+				$this->_log( 'Received (' . $response['response']['code'] . '): ' . $response['body'] );
 			}
 		} else {
 			// Read the cached value based on our delimiter
