@@ -31,7 +31,7 @@ class WC_Taxjar_Download_Orders {
 		}
 
 		if ( ($value != $previous_value ) ) {
-			if ( $value == 'yes' ) {
+			if ( 'yes' == $value ) {
 				// Enable the WooCommerce API for downloads if it is not enabled
 				update_option( 'woocommerce_api_enabled', 'yes' );
 
@@ -62,7 +62,7 @@ class WC_Taxjar_Download_Orders {
 		}
 
 		return $value;
-  	}
+		}
 
 	/**
 	 * Called by the integration to show on the TaxJar settings page
@@ -151,23 +151,23 @@ class WC_Taxjar_Download_Orders {
 		$this->disable_taxjar_user();
 
 		$url = $this->integration->uri . 'plugins/woo/deregister';
-		$body_string =  sprintf( 'store_url=%s', $store_url );
+		$body_string = sprintf( 'store_url=%s', $store_url );
 
 		$response = wp_remote_request( $url, array(
 			'timeout'     => 60,
 			'headers'     => array(
-							'Authorization' => 'Token token="' . $this->integration->settings['api_token'] .'"',
-							'Content-Type' => 'application/x-www-form-urlencoded'
-							),
+												'Authorization' => 'Token token="' . $this->integration->settings['api_token'] . '"',
+												'Content-Type' => 'application/x-www-form-urlencoded',
+											 ),
 			'user-agent'  => $this->integration->ua,
 			'body'        => $body_string,
-			'method'      => 'DELETE'
+			'method'      => 'DELETE',
 		) );
 
 		if ( is_wp_error( $response ) ) {
 			new WP_Error( 'request', __( "There was an error unlinking this store to your TaxJar account. Please contact support@taxjar.com" ) );
 			return false;
-		} else if ( 200 == $response['response']['code'] ) {
+		} elseif ( 200 == $response['response']['code'] ) {
 			$this->integration->_log( 'Successfully unlinked shop to TaxJar account' );
 		} else {
 			// Log Response Error
@@ -224,7 +224,7 @@ class WC_Taxjar_Download_Orders {
 		// Get the User object
 		$user = $this->api_user_query();
 
-		if ( !isset( $user ) && current_user_can( 'create_users' ) ) {
+		if ( ! isset( $user ) && current_user_can( 'create_users' ) ) {
 			// Unique Username with TaxJar prefix
 			$username = uniqid( 'api_taxjar_', true );
 

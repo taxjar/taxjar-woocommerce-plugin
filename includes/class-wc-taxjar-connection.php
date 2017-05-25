@@ -78,7 +78,7 @@ class WC_Taxjar_Connection {
 
 			$description .= '</div>';
 			$this->can_connect = false;
-    	}
+    	} // End if().
 
 		$this->description = $description;
 	} // End check_status().

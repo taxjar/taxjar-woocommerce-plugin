@@ -355,7 +355,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 				// Update Properties based on Response
 				$this->has_nexus          = (int) $taxjar_response->has_nexus;
-				$this->tax_source         = empty($taxjar_response->tax_source) ? 'origin' : $taxjar_response->tax_source;
+				$this->tax_source         = empty( $taxjar_response->tax_source ) ? 'origin' : $taxjar_response->tax_source;
 				$this->amount_to_collect  = $taxjar_response->amount_to_collect;
 
 				if ( ! empty( $taxjar_response->breakdown ) ) {
@@ -379,7 +379,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			} else {
 				// Log Response Error
 				$this->_log( 'Received (' . $response['response']['code'] . '): ' . $response['body'] );
-			}
+			} // End if().
 		} else {
 			// Read the cached value based on our delimiter
 			$cache_value = explode( '::', $cache_value );
@@ -501,7 +501,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_state' => $to_state,
 			'to_country' => $to_country,
 			'to_zip' => $to_zip,
-			'amount' => $this->taxjar_taxable_amount($woocommerce->cart),
+			'amount' => $this->taxjar_taxable_amount( $woocommerce->cart ),
 			'shipping_amount' => $woocommerce->shipping->shipping_total,
 			'customer' => $woocommerce->customer,
 		) );
@@ -523,10 +523,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$post = is_array( $post ) ? $post : array();
 
 		extract( array_replace_recursive( array(
-			'country' =>    null,
-			'state' =>      null,
-			'postcode' =>   null,
-			'city' =>       null
+			'country' => null,
+			'state' => null,
+			'postcode' => null,
+			'city' => null,
 		), $post ), EXTR_SKIP );
 
 		if ( empty( $country ) || empty( $state ) || empty( $postcode ) || empty( $city ) ) {
@@ -573,7 +573,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 *
 	 * @return MIXED
 	 */
-	public function post_or_setting($key) {
+	public function post_or_setting( $key ) {
 		$val = null;
 
 		if ( count( $_POST ) > 0 ) {
@@ -798,13 +798,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return boolean
 	 */
 	public function on_settings_page() {
-		return ( isset( $_GET['page'] ) && $_GET['page'] == 'wc-settings' && isset( $_GET['tab'] ) && 'integration' == $_GET['tab'] );
+		return ( isset( $_GET['page'] ) && 'wc-settings' == $_GET['page'] && isset( $_GET['tab'] ) && 'integration' == $_GET['tab'] );
 	}
 
 	/**
 	 * Admin Assets
 	 */
-	public function load_taxjar_admin_assets( ) {
+	public function load_taxjar_admin_assets() {
 		// Add CSS that hides some elements that are known to cause problems
 		wp_enqueue_style( 'taxjar-admin-style', plugin_dir_url( __FILE__ ) . 'css/admin.css' );
 
