@@ -37,6 +37,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $this->api_token        = $this->get_option( 'api_token' );
     $this->store_zip        = $this->get_option( 'store_zip' );
     $this->store_city       = $this->get_option( 'store_city' );
+    $this->store_street       = $this->get_option( 'store_street' );
     $this->enabled          = filter_var( $this->get_option( 'enabled' ), FILTER_VALIDATE_BOOLEAN );
 
     // Catch Rates for 1 hour
@@ -170,6 +171,13 @@ class WC_Taxjar_Integration extends WC_Integration {
       $this->form_fields = array_merge( $this->form_fields,
         array(
           'taxjar_download' => $this->download_orders->get_form_settings_field(),
+          'store_street' => array(
+            'title'             => __( 'Ship From Street Address', 'wc-taxjar' ),
+            'type'              => 'text',
+            'description'       => __( 'Enter the street address where your store ships from.', 'wc-taxjar' ),
+            'desc_tip'          => true,
+            'default'           => ''
+          ),
           'store_city' => array(
             'title'             => __( 'Ship From City', 'wc-taxjar' ),
             'type'              => 'text',
@@ -317,7 +325,7 @@ class WC_Taxjar_Integration extends WC_Integration {
     $from_state       = $store_settings[ 'store_state_setting' ];
     $from_zip         = $store_settings[ 'taxjar_zip_code_setting' ];
     $from_city        = $store_settings[ 'taxjar_city_setting' ];
-    $from_street        = ''; // no from street is stored in WooCommerce
+    $from_street      = $store_settings[ 'taxjar_street_setting' ];
     $shipping_amount  = is_null($shipping_amount) ? 0.0 : $shipping_amount;
 
     $this->_log( ':::: TaxJar API called ::::' );
@@ -432,6 +440,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			// Use Woo core to find matching rates for taxable address
 			$source_zip = $this->tax_source == 'destination' ? $to_zip : $from_zip;
 			$source_city = $this->tax_source == 'destination' ? $to_city : $from_city;
+      $source_street = $this->tax_source == 'destination' ? $to_street : $from_street;
 
       if ( strtoupper( $to_city ) == strtoupper( $from_city ) ) {
         $source_city = $to_city;
@@ -725,10 +734,12 @@ class WC_Taxjar_Integration extends WC_Integration {
     if ( isset( $settings ) &&
          isset( $settings['api_token'] ) &&
          isset( $settings['store_zip'] ) &&
-         isset( $settings['store_city'] ) ) {
+         isset( $settings['store_city'] ) &&
+         isset( $settings['store_street'] ) ) {
       $settings['api_token']  = strtolower( wc_clean( $settings['api_token'] ) );
       $settings['store_zip']  = wc_clean( $settings['store_zip'] );
       $settings['store_city'] = wc_clean( $settings['store_city'] );
+      $settings['store_street'] = wc_clean( $settings['store_street'] );
     }
     return $settings;
   }
@@ -764,7 +775,8 @@ class WC_Taxjar_Integration extends WC_Integration {
     $default_wc_settings     = explode( ':', get_option('woocommerce_default_country') );
     $taxjar_zip_code_setting = $this->settings['store_zip'];
     $taxjar_city_setting     = $this->settings['store_city'];
-    $store_settings          = array( 'taxjar_zip_code_setting' => $taxjar_zip_code_setting, 'store_state_setting' => null, 'store_country_setting' => $default_wc_settings[0], 'taxjar_city_setting' => $taxjar_city_setting );
+    $taxjar_street_setting   = $this->settings['store_street'];
+    $store_settings          = array( 'taxjar_zip_code_setting' => $taxjar_zip_code_setting, 'store_state_setting' => null, 'store_country_setting' => $default_wc_settings[0], 'taxjar_city_setting' => $taxjar_city_setting, 'taxjar_street_setting' => $taxjar_street_setting );
     if ( isset( $default_wc_settings[1] ) ) {
       $store_settings['store_state_setting'] = $default_wc_settings[1];
     }
