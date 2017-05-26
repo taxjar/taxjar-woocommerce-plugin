@@ -13,28 +13,31 @@ Save hours every month by putting your sales tax on autopilot. Automated, multi-
 
 == Description ==
 
-[TaxJar](http://www.taxjar.com) eliminates the need for you to even think about sales tax with your WooCommerce store. This powerful extension calculates how much sales tax should be collected at checkout. Then we update your sales tax collected by state, county, and city on a daily basis for you to view at any time. Finally, we’ll file what you owe to the states for you.
+Painless sales tax calculations, reporting & filing for WooCommerce:
 
-Here’s why customers love this plugin:
+Get accurate sales tax calculations and return-ready reports. [TaxJar](https://www.taxjar.com/) for WooCommerce takes care of all your sales tax needs. Trusted by over 8,000 eCommerce businesses each month.
 
-* Rates are never out-of-date - TaxJar maintains more than 10,000 tax rates, updated monthly. No more manually uploading rate tables. Ever.
+*Why WooCommerce Customers Love TaxJar:*
+
+* Rates are never out-of-date - TaxJar maintains more than 10,000 tax rates, updated monthly and all of your tax settings are updated automatically!
+* With TaxJar, you can prepare and file sales tax returns in minutes, not hours. View your sales and sales tax collected by state, city, county, and local jurisdictions. Exactly what you need to file.
 * US and Canada Support - Not only do you get US tax rates, this powerful extension also supports Canadian tax collection as well.
-* Multi-state sales tax collection - Collect sales tax accurately in not just the state where you’re based, but in every state you have nexus.
-* Daily tax preparation to avoid surprises - Every day we’ll download your sales and compile it by state, county, city, and special tax – exactly what you need to be able to file sales tax returns. No more last minute scrambling to get the data you need.
-* AutoFile – automated sales tax filing - As deadlines approach, we’ll even file your returns and make your payments to the states you enroll in. No more forgetting and annoying penalties.
-* Dead Simple pricing – No contracts. No activations fees. No credit card required. Use it as much as you want for 30 days for free. Beyond 30 days, pay based on the number of API calls you make each month.
+* Automatic filing - For an additional fee, let TaxJar handle your sales tax filings for you and we'll automatically submit your returns to the state. Enroll once, never miss a due date again! Learn more at [www.taxjar.com/autofile](https://www.taxjar.com/autofile)
 
-Other Notable Features:
+*Pricing:*
+
+* No contracts. No activations fees. Ever.
+* Enjoy a free 30-Day trial with no credit card required.
+* After your trial, pay based on the number of API calls you make each month. You only make API calls in the states where you need to calculate sales tax!
+
+*Other Notable Features:*
 
 * Simple install – starting collecting sales tax in minutes
-* Compatible with Woocommerce 2.3+ and Wordpress 4.2+
-* Avoid sales tax surprises
-* Automated configuration – all of your tax settings are done automatically!
+* Compatible with WooCommerce 2.3+ and WordPress 4.2+
 * Supports tax exempt items set by store manager
 * If you also sell on other platforms, get your sales tax data all in a single place
 
-
-[TaxJar](http://www.taxjar.com) provides easy & accurate ecommerce sales tax reporting in addition to their sales tax calculation.
+[TaxJar](https://www.taxjar.com) provides easy & accurate ecommerce sales tax reporting in addition to their sales tax calculation.
 
 == Installation ==
 
@@ -50,7 +53,7 @@ Or you can follow these steps to install the plugin:
 1. Paste the API Token into the “API Token” field.
 1. Fill out the rest of your settings. All that TaxJar needs to calculate sales tax is the zip code and city from which you ship products. We automatically detect your country and state based on your WooCommerce configuration.
 1. Check the box next to “Enable TaxJar Calculations”.
-1. If you have a TaxJar Reporting subscription, you may check the box next to "Enable order downloads to TaxJar" to allow TaxJar to connect and download the transactions on your store for TaxJar's [AutoFile](http://www.taxjar.com/autofile/) and Reporting features.
+1. If you have a TaxJar Reporting subscription, you may check the box next to "Enable order downloads to TaxJar" to allow TaxJar to connect and download the transactions on your store for TaxJar's [AutoFile](https://www.taxjar.com/autofile/) and Reporting features.
 1. Click “Save Changes”.
 
 Suggested WooCommerce Tax Settings
@@ -135,7 +138,7 @@ Yes. The fee is $19.95 per state, per filing.
 
 = 1.1.0 (2015-06-26) =
 * Code cleanup
-* Use new v2 TaxJar API (http://developers.taxjar.com/api/)
+* Use new v2 TaxJar API (https://developers.taxjar.com/api/)
 * New TaxJar graphic
 
 = 1.0.8 (2015-03-10) =
@@ -160,7 +163,7 @@ Yes. The fee is $19.95 per state, per filing.
 = 1.0.5 (2014-09-26) =
 * Updated
 * New way of handling taxes on orders compatible with WooCommerce 2.2
-* Uses new API (with support for Canada): [read the docs](http://www.taxjar.com/api/docs/)
+* Uses new API (with support for Canada): [read the docs](https://www.taxjar.com/api/docs/)
 * New
 * Ability to download orders easily into TaxJar
 * Shortcuts to access TaxJar Settings
