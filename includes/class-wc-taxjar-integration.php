@@ -51,7 +51,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			// Calculate Taxes
 			add_action( 'woocommerce_calculate_totals', array( $this, 'use_taxjar_total' ), 20 );
-			add_filter( 'woocommerce_ajax_calc_line_taxes', array( $this, 'admin_ajax_calculate_taxes' ), 99, 4 );
 
 			// Settings Page
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
@@ -515,36 +514,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$wc_cart_object->shipping_taxes = array(
 			$this->rate_id => $this->shipping_collectable,
 		);
-	}
-
-	public function admin_ajax_calculate_taxes( $items, $order_id, $country, $post ) {
-		global $woocommerce;
-
-		$post = is_array( $post ) ? $post : array();
-
-		extract( array_replace_recursive( array(
-			'country' => null,
-			'state' => null,
-			'postcode' => null,
-			'city' => null,
-		), $post ), EXTR_SKIP );
-
-		if ( empty( $country ) || empty( $state ) || empty( $postcode ) || empty( $city ) ) {
-			return false;
-		}
-
-		$order = wc_get_order( $order_id );
-
-		$this->taxjar_api_call( array(
-			'to_city' => $city,
-			'to_state' => $state,
-			'to_country' => $country,
-			'to_zip' => $postcode,
-			'amount' => $order->order_total,
-			'shipping_amount' => null,
-		) );
-
-		return $items;
 	}
 
 	/**
