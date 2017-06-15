@@ -11,6 +11,6 @@ class TaxJar_Woocommerce_helper {
     $woocommerce->cart = new WC_Cart();
 
     $woocommerce->customer = TaxJar_Customer_helper::get_test_customer();
-    $woocommerce->cart->add_to_cart(TaxJar_Helper_Product::get_test_product()->id);
+    $woocommerce->cart->add_to_cart( TaxJar_Helper_Product::get_test_product()->get_id() );
   }
 }
