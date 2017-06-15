@@ -54,6 +54,9 @@ final class WC_Taxjar {
 
 			// Register the integration.
 			add_filter( 'woocommerce_integrations', array( $this, 'add_integration' ), 20 );
+
+			// Display notices if applicable.
+			add_action( 'admin_notices', array( $this, 'maybe_display_admin_notices' ) );
 		}
 	}
 
@@ -221,6 +224,35 @@ final class WC_Taxjar {
 		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rates' );
 		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rate_locations' );
 	} // End plugin_registration_hook().
+
+	/**
+	 * Display an admin notice, if not on the integration screen and if the account isn't yet connected.
+	 */
+	public function maybe_display_admin_notices() {
+		if ( isset( $_GET['page'] ) && 'wc-settings' == $_GET['page'] && isset( $_GET['section'] ) && 'taxjar-integration' == $_GET['section'] ) {
+			return;
+		}
+
+		$api_token = WC()->integrations->integrations['taxjar-integration']->get_option( 'api_token' );
+
+		if ( '' == $api_token ) {
+			$url = $this->get_settings_url();
+			// translators: Installation admin notice
+			echo '<div class="updated fade"><p>' . sprintf( __( '%1$sTaxJar for WooCommerce is almost ready. %2$sTo get started, %3$sconnect your TaxJar account%4$s.', 'wc-taxjar' ), '<strong>', '</strong>', '<a href="' . esc_url( $url ) . '">', '</a>' ) . '</p></div>' . "\n";
+		}
+	}
+
+	/**
+	 * Generate a URL to our specific settings screen.
+	 */
+	public function get_settings_url() {
+		$url = admin_url( 'admin.php' );
+		$url = add_query_arg( 'page', 'wc-settings', $url );
+		$url = add_query_arg( 'tab', 'integration', $url );
+		$url = add_query_arg( 'section', 'taxjar-integration', $url );
+
+		return $url;
+	}
 
 } // End WC_Taxjar.
 
