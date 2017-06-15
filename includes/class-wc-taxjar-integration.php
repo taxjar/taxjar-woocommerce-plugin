@@ -554,17 +554,20 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 */
 	public function append_base_address_to_customer_taxable_address( $address ) {
 		$store_settings = $this->get_store_settings();
-		list( $country, $state, $postcode, $city ) = $address;
 		$tax_based_on = '';
 
+		list( $country, $state, $postcode, $city ) = $address;
+
 		// See WC_Customer get_taxable_address()
-		if ( apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true ) == true && WC()->cart->needs_shipping() && sizeof( array_intersect( WC()->session->get( 'chosen_shipping_methods', array( get_option( 'woocommerce_default_shipping_method' ) ) ), apply_filters( 'woocommerce_local_pickup_methods', array( 'local_pickup' ) ) ) ) > 0 ) {
+		if ( true === apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true ) && sizeof( array_intersect( wc_get_chosen_shipping_method_ids(), apply_filters( 'woocommerce_local_pickup_methods', array( 'local_pickup' ) ) ) ) > 0 ) {
 			$tax_based_on = 'base';
 		}
+
 		if ( 'base' == $tax_based_on ) {
 			$postcode  = $store_settings['taxjar_zip_code_setting'];
 			$city = strtoupper( $store_settings['taxjar_city_setting'] );
 		}
+
 		return array( $country, $state, $postcode, $city );
 	}
 
