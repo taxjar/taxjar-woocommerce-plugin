@@ -33,10 +33,13 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
     // load woocommerce core
     require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
-    //load taxjar core
+    // load taxjar core
     require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
 
-    //load framework
+	// load tlc-transients
+	require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/tlc-transients/tlc-transients.php';
+
+    // load framework
     require_once $this->tests_dir . '/framework/woocommerce-helper.php';
     require_once $this->tests_dir . '/framework/customer-helper.php';
     require_once $this->tests_dir . '/framework/product-helper.php';
