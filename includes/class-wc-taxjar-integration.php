@@ -50,7 +50,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		if ( ( 'yes' == $this->settings['enabled'] ) ) {
 
 			// Calculate Taxes
-			add_action( 'woocommerce_calculate_totals', array( $this, 'use_taxjar_total' ), 20 );
+			add_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 
 			// Settings Page
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
@@ -246,11 +246,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	/**
-	 * TaxJar API call
+	 * Calculate sales tax using SmartCalcs
 	 *
 	 * @return void
 	 */
-	public function taxjar_api_call( $options = array() ) {
+	public function calculate_tax( $options = array() ) {
 		global $woocommerce;
 
 		$this->_log( ':::: TaxJar Plugin requested ::::' );
@@ -319,88 +319,31 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'plugin' => 'woo',
 		);
 
-		// Build the transient key
-		$cache_key = hash( 'md5', $url . '/' . wp_json_encode( $body ) );
+		$response = $this->smartcalcs_cache_request( wp_json_encode( $body ) );
 
-		// To check to see if we hit the API or not
-		$taxjar_response = false;
-		$cache_value = wp_cache_get( $cache_key, 'taxjar' );
+		if ( isset( $response ) ) {
+			// Log the response
+			$this->_log( 'Received: ' . $response['body'] );
 
-		// Make sure we don't have a cached rate
-		if ( false === $cache_value ) {
-			// Log this request
-			$this->_log( "Requesting: " . $url . ' - ' . wp_json_encode( $body ) );
+			// Decode Response
+			$taxjar_response          = json_decode( $response['body'] );
+			$taxjar_response          = $taxjar_response->tax;
 
-			// Make API call with API token in header
-			$response = wp_remote_post( $url, array(
-				'headers' => array(
-								'Authorization' => 'Token token="' . $this->settings['api_token'] . '"',
-								'Content-Type' => 'application/json',
-							),
-				'user-agent' => $this->ua,
-				'body' => wp_json_encode( $body ),
-			) );
+			// Update Properties based on Response
+			$this->has_nexus          = (int) $taxjar_response->has_nexus;
+			$this->tax_source         = empty( $taxjar_response->tax_source ) ? 'origin' : $taxjar_response->tax_source;
+			$this->amount_to_collect  = $taxjar_response->amount_to_collect;
 
-			// Fail loudly if we get an error from wp_remote_post
-			if ( is_wp_error( $response ) ) {
-				new WP_Error( 'request', __( 'There was an error retrieving the tax rates. Please check your server configuration.' ) );
-			} elseif ( 200 == $response['response']['code'] ) {
-				// Log the response
-				$this->_log( 'Received: ' . $response['body'] );
-
-				// Decode Response
-				$taxjar_response          = json_decode( $response['body'] );
-				$taxjar_response          = $taxjar_response->tax;
-
-				// Update Properties based on Response
-				$this->has_nexus          = (int) $taxjar_response->has_nexus;
-				$this->tax_source         = empty( $taxjar_response->tax_source ) ? 'origin' : $taxjar_response->tax_source;
-				$this->amount_to_collect  = $taxjar_response->amount_to_collect;
-
-				if ( ! empty( $taxjar_response->breakdown ) ) {
-					if ( ! empty( $taxjar_response->breakdown->shipping ) ) {
-						$this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
-					}
+			if ( ! empty( $taxjar_response->breakdown ) ) {
+				if ( ! empty( $taxjar_response->breakdown->shipping ) ) {
+					$this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
 				}
+			}
 
-				$this->item_collectable   = $this->amount_to_collect - $this->shipping_collectable;
-				$this->tax_rate           = $taxjar_response->rate;
-				$this->freight_taxable    = (int) $taxjar_response->freight_taxable;
-
-				// Create cache value
-				$cache_value              = $this->amount_to_collect . '::' . $this->tax_rate . '::' . $this->freight_taxable . '::' . $this->has_nexus . '::' . $this->tax_source . '::' . $this->item_collectable . '::' . $this->shipping_collectable;
-
-				// Log the new cached value
-				$this->_log( 'Cache Value: ' . $cache_value );
-
-				// Set Cache
-				wp_cache_set( $cache_key, $cache_value, 'taxjar', $this->cache_time );
-			} else {
-				// Log Response Error
-				$this->_log( 'Received (' . $response['response']['code'] . '): ' . $response['body'] );
-			} // End if().
-		} else {
-			// Read the cached value based on our delimiter
-			$cache_value = explode( '::', $cache_value );
-
-			// Set properties to the cached values
-			$this->amount_to_collect    = $cache_value[0];
-			$this->tax_rate             = $cache_value[1];
-			$this->freight_taxable      = $cache_value[2];
-			$this->has_nexus 		    = $cache_value[3];
-			$this->tax_source 			= $cache_value[4];
-			$this->item_collectable 	= $cache_value[5];
-			$this->shipping_collectable = $cache_value[6];
-
-			// Log Cached Response
-			$this->_log( 'Cached Amount: ' . $this->amount_to_collect );
-			$this->_log( 'Cached Nexus: ' . $this->has_nexus );
-			$this->_log( 'Cached Source:  ' . $this->tax_source );
-			$this->_log( 'Cached Rate: ' . $this->tax_rate );
-			$this->_log( 'Shipping Taxable? ' . $this->freight_taxable );
-			$this->_log( 'Item Tax to Collect: ' . $this->item_collectable );
-			$this->_log( 'Shipping Tax to Collect: ' . $this->shipping_collectable );
-		} // End if().
+			$this->item_collectable   = $this->amount_to_collect - $this->shipping_collectable;
+			$this->tax_rate           = $taxjar_response->rate;
+			$this->freight_taxable    = (int) $taxjar_response->freight_taxable;
+		}
 
 		// Remove taxes if they are set somehow and customer is exempt
 		if ( $customer->is_vat_exempt() ) {
@@ -425,11 +368,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 				'tax_rate' => $this->tax_rate * 100,
 				'tax_rate_class' => '',
 			);
-
-			// Clear the cached rates
-			$this->clear_wc_tax_cache( $to_country, $to_state, $source_city, $source_zip );
-
-			$this->_log( $source_city );
 
 			$wc_rates = WC_Tax::find_rates( array(
 				'country' => $to_country,
@@ -463,19 +401,36 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$this->_log( 'Tax Rate ID Set: ' . $rate_id );
 			$this->rate_id = $rate_id;
 		} // End if().
-	} // End taxjar_api_call().
+	} // End calculate_tax().
 
-	public function clear_wc_tax_cache( $to_country, $to_state, $source_city, $source_zip ) {
-		global $woocommerce;
+	public function smartcalcs_request( $json ) {
+		$url = $this->uri . 'taxes';
 
-		if ( version_compare( $woocommerce->version, '2.5.0', '>=' ) ) {
-			$cache_key = WC_Cache_Helper::get_cache_prefix( 'taxes' ) . 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $source_city, wc_clean( $source_zip ), '' ) );
-			wp_cache_delete( $cache_key, 'taxes' );
+		$this->_log( 'Requesting: ' . $this->uri . 'taxes - ' . $json );
+
+		$response = wp_remote_post( $url, array(
+			'headers' => array(
+							'Authorization' => 'Token token="' . $this->settings['api_token'] . '"',
+							'Content-Type' => 'application/json',
+						),
+			'user-agent' => $this->ua,
+			'body' => $json,
+		) );
+
+		if ( is_wp_error( $response ) ) {
+			new WP_Error( 'request', __( 'There was an error retrieving the tax rates. Please check your server configuration.' ) );
+		} elseif ( 200 == $response['response']['code'] ) {
+			return $response;
 		} else {
-			$valid_postcodes = $this->_get_wildcard_postcodes( wc_clean( $source_zip ) );
-			$rates_transient_key = 'wc_tax_rates_' . md5( sprintf( '%s+%s+%s+%s+%s', $to_country, $to_state, $source_city, implode( ',', $valid_postcodes ), '' ) );
-			delete_transient( $rates_transient_key );
+			$this->_log( 'Received (' . $response['response']['code'] . '): ' . $response['body'] );
 		}
+	}
+
+	public function smartcalcs_cache_request( $json ) {
+		return tlc_transient( __FUNCTION__ . hash( 'md5', $json ) )
+				->updates_with( array( $this, 'smartcalcs_request' ), array( $json ) )
+				->expires_in( $this->cache_time )
+				->get();
 	}
 
 	/**
@@ -483,7 +438,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 *
 	 * @return void
 	 */
-	public function use_taxjar_total( $wc_cart_object ) {
+	public function calculate_totals( $wc_cart_object ) {
 		global $woocommerce;
 
 		// Get all of the required customer params
@@ -519,7 +474,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 		}
 
-		$this->taxjar_api_call( array(
+		$this->calculate_tax( array(
 			'to_city' => $to_city,
 			'to_state' => $to_state,
 			'to_country' => $to_country,
