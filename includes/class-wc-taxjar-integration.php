@@ -501,7 +501,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$id = $product->get_id();
 			$quantity = $values['quantity'];
 			$unit_price = $product->get_price();
-			$discount = $unit_price - $wc_cart_object->get_discounted_price( $values, $unit_price );
+			$discount = ( $unit_price - $wc_cart_object->get_discounted_price( $values, $unit_price ) ) * $quantity;
 			$tax_code = '';
 
 			if ( ! $product->is_taxable() ) {
