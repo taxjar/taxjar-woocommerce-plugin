@@ -56,7 +56,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_after' ),  11 );
 
-			// Filters.
+			// Filters
 			add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'sanitize_settings' ) );
 			add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
 
@@ -263,8 +263,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_state' => null,
 			'to_zip' => null,
 			'to_city' => null,
-			'amount' => null, // $this->taxjar_taxable_amount($woocommerce->cart);
 			'shipping_amount' => null, // $woocommerce->shipping->shipping_total
+			'line_items' => null
 		), $options) );
 
 		// Initalize some variables & properties
@@ -304,41 +304,41 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		$this->_log( ':::: TaxJar API called ::::' );
 
-		$url              = $this->uri . 'taxes';
-		$body_string      = sprintf( 'plugin=woo&to_state=%s&from_state=%s&amount=%s&shipping=%s&from_city=%s&from_zip=%s&to_city=%s&to_zip=%s&from_country=%s&to_country=%s&line_items[][quantity]=1&line_items[][unit_price]=%s',
-								$to_state,
-								$from_state,
-								$amount,
-								$shipping_amount,
-								$from_city,
-								$from_zip,
-								$to_city,
-								$to_zip,
-								$from_country,
-								$to_country,
-								$amount
-							);
+		$url = $this->uri . 'taxes';
+		$body = array(
+			'from_country' => $from_country,
+			'from_state' => $from_state,
+			'from_city' => $from_city,
+			'from_zip' => $from_zip,
+			'to_country' => $to_country,
+			'to_state' => $to_state,
+			'to_city' => $to_city,
+			'to_zip' => $to_zip,
+			'shipping' => $shipping_amount,
+			'line_items' => $line_items,
+			'plugin' => 'woo',
+		);
 
-		// Build the URL and Transient key
-		$url              = str_replace( ' ', '%20', $url );
-		$cache_key        = hash( 'md5', $url . '/' . $body_string );
+		// Build the transient key
+		$cache_key = hash( 'md5', $url . '/' . wp_json_encode( $body ) );
 
 		// To check to see if we hit the API or not
 		$taxjar_response = false;
+		$cache_value = wp_cache_get( $cache_key, 'taxjar' );
 
 		// Make sure we don't have a cached rate
-		if ( false === ( $cache_value = wp_cache_get( $cache_key, 'taxjar' ) ) ) {
+		if ( false === $cache_value ) {
 			// Log this request
-			$this->_log( "Requesting: " . $url );
+			$this->_log( "Requesting: " . $url . ' - ' . wp_json_encode( $body ) );
 
 			// Make API call with API token in header
 			$response = wp_remote_post( $url, array(
 				'headers' => array(
 								'Authorization' => 'Token token="' . $this->settings['api_token'] . '"',
-								'Content-Type' => 'application/x-www-form-urlencoded',
+								'Content-Type' => 'application/json',
 							),
 				'user-agent' => $this->ua,
-				'body' => $body_string,
+				'body' => wp_json_encode( $body ),
 			) );
 
 			// Fail loudly if we get an error from wp_remote_post
@@ -494,14 +494,38 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$to_state = isset( $taxable_address[1] ) && ! empty( $taxable_address[1] ) ? $taxable_address[1] : false;
 		$to_zip = isset( $taxable_address[2] ) && ! empty( $taxable_address[2] ) ? $taxable_address[2] : false;
 		$to_city = isset( $taxable_address[3] ) && ! empty( $taxable_address[3] ) ? $taxable_address[3] : false;
+		$line_items = array();
+
+		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $values ) {
+			$product = $values['data'];
+			$id = $product->get_id();
+			$quantity = $values['quantity'];
+			$unit_price = $product->get_price();
+			$discount = $unit_price - $wc_cart_object->get_discounted_price( $values, $unit_price );
+			$tax_code = '';
+
+			if ( ! $product->is_taxable() ) {
+				$tax_code = '99999';
+			}
+
+			if ( $unit_price ) {
+				array_push($line_items, array(
+					'id' => $id,
+					'quantity' => $quantity,
+					'product_tax_code' => $tax_code,
+					'unit_price' => $unit_price,
+					'discount' => $discount,
+				));
+			}
+		}
 
 		$this->taxjar_api_call( array(
 			'to_city' => $to_city,
 			'to_state' => $to_state,
 			'to_country' => $to_country,
 			'to_zip' => $to_zip,
-			'amount' => $this->taxjar_taxable_amount( $woocommerce->cart ),
 			'shipping_amount' => $woocommerce->shipping->shipping_total,
+			'line_items' => $line_items,
 			'customer' => $woocommerce->customer,
 		) );
 
@@ -724,41 +748,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 */
 	public function output_sections_after() {
 		echo '</div>';
-	}
-
-	/**
-	 * Determine taxable amount for items in cart
-	 * @return float || void
-	 */
-	private function taxjar_taxable_amount( $wc_cart_object, $process_line_items = false ) {
-		// Setup variable
-		$taxable_amount = 0;
-
-		foreach ( $wc_cart_object->cart_contents as $key => $item ) {
-			$_product = $item['data'];
-			// Future use, If we have a tax rate to apply and we have passed in $process_line_items
-			if ( $process_line_items && isset( $this->tax_rate ) ) {
-			$tax_rate = $this->tax_rate * 100;
-			$item['line_tax'] = round( $tax_rate * $item['line_total'] / 100, 2 );
-			$item['line_subtotal_tax'] = round( $tax_rate * $item['line_subtotal'] / 100, 2 );
-			}
-			// If the product is taxable
-			if ( $_product->is_taxable() ) {
-			// Get the price
-			$base_price = $_product->get_price();
-			$price = $_product->get_price() * $item['quantity'];
-			// Get any discounts and apply them
-			$discounted_price = $wc_cart_object->get_discounted_price( $item, $base_price, false );
-			// Our final taxable amount
-			$taxable_amount += $discounted_price * $item['quantity'];
-			}
-		}
-
-		if ( ! $process_line_items ) {
-			return $taxable_amount;
-		} else {
-			return $wc_cart_object;
-		}
 	}
 
 	/**
