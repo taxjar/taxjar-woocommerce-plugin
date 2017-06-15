@@ -1,6 +1,7 @@
 <?php
 
 class TaxJar_Woocommerce_helper {
+
   public static function prepare_woocommerce() {
     global $woocommerce;
 
@@ -13,4 +14,5 @@ class TaxJar_Woocommerce_helper {
     $woocommerce->customer = TaxJar_Customer_helper::get_test_customer();
     $woocommerce->cart->add_to_cart( TaxJar_Helper_Product::get_test_product()->get_id() );
   }
+
 }
