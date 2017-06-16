@@ -81,36 +81,41 @@ class WC_Taxjar_Nexus {
 	}
 
 	public function get_or_update_cached_nexus( $force_update = false ) {
-		$nexus_list = get_transient( 'wc_taxjar_nexus_list' );
+		$nexus_list = $this->get_nexus_from_cache();
 
 		if ( $force_update || false === $nexus_list || null === $nexus_list || ( is_array( $nexus_list ) && count( $nexus_list ) == 0 ) ) {
-			$nexus_list = $this->get_nexus_from_api();
-			set_transient( 'wc_taxjar_nexus_list', $nexus_list, 0.5 * DAY_IN_SECONDS );
-			$this->integration->_log( ':::: Nexus addresses updated ::::' );
-		} else {
-			$this->integration->_log( ':::: Using nexus addresses from cache ::::' );
+			delete_transient( 'tlc__' . md5( 'get_nexus_from_cache' ) );
+			$nexus_list = $this->get_nexus_from_cache();
 		}
 
 		return $nexus_list;
 	}
 
-	private function get_nexus_from_api() {
+	public function get_nexus_from_api() {
 		$url = $this->integration->uri . 'nexus/regions';
 
 		$response = wp_remote_get( $url, array(
 			'headers' => array(
-							'Authorization' => 'Token token="' . $this->integration->post_or_setting( 'api_token' ) . '"',
-							'Content-Type' => 'application/x-www-form-urlencoded',
-						),
+				'Authorization' => 'Token token="' . $this->integration->post_or_setting( 'api_token' ) . '"',
+				'Content-Type' => 'application/json',
+			),
 			'user-agent' => $this->integration->ua,
 		) );
 
 		if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
+			$this->integration->_log( ':::: Nexus addresses updated ::::' );
 			$body = json_decode( $response['body'] );
 			return $body->regions;
 		}
 
 		return array();
+	}
+
+	public function get_nexus_from_cache() {
+		return tlc_transient( __FUNCTION__ )
+				->updates_with( array( $this, 'get_nexus_from_api' ) )
+				->expires_in( 0.5 * DAY_IN_SECONDS )
+				->get();
 	}
 
 } // End WC_Taxjar_Nexus.
