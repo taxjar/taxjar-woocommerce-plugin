@@ -3,7 +3,7 @@ Contributors: tonkapark, taxjar
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar, sales tax compliance, automation, accounting, sales tax filing
 Requires at least: 4.2
 Tested up to: 4.7.5
-Stable tag: 1.2.4
+Stable tag: 1.3.0
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 2.3
@@ -92,6 +92,13 @@ Yes. The fee is $19.95 per state, per filing.
 1. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+= 1.3.0 (2017-06-16) =
+* Product taxability support for exemptions such as clothing.
+* Line item taxability with support for recurring subscriptions.
+* Fully exempt non-taxable items when tax status is set to "None".
+* Fix calculations to use shipping origin when local pickup selected.
+* Fix caching issues with API requests.
+
 = 1.2.4 (2016-10-19) =
 * Add fallbacks to still calculate sales tax if nexus list is not populated.
 
