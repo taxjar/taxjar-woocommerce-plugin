@@ -12,10 +12,13 @@ class TaxJar_Woocommerce_Helper {
 
 		// Start with an empty cart
 		$woocommerce->cart->empty_cart();
+		$woocommerce->cart->remove_coupons();
 		$woocommerce->shipping->shipping_total = 0;
 
 		// Reset shipping origin
 		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+			'store_country' => 'US',
+			'store_state' => 'CO',
 			'store_zip' => '80111',
 			'store_city' => 'Greenwood Village',
 		) );
@@ -27,7 +30,13 @@ class TaxJar_Woocommerce_Helper {
 	public static function set_shipping_origin( $opts = array() ) {
 		$current_settings = get_option( 'woocommerce_taxjar-integration_settings' );
 		$new_settings = array_replace_recursive( $current_settings, $opts );
+
 		update_option( 'woocommerce_taxjar-integration_settings', $new_settings );
+
+		if ( isset( $opts['store_country'] ) && isset( $opts['store_state'] ) ) {
+			update_option( 'woocommerce_default_country', $opts['store_country'] . ':' . $opts['store_state'] );
+			$tj = new WC_Taxjar_Integration();
+		}
 	}
 
 }

@@ -8,7 +8,7 @@ class TaxJar_Customer_Helper {
 			'country' => 'US',
 			'state' => 'CO',
 			'zip' => '80111',
-			'city' => 'Greenwood Village'
+			'city' => 'Greenwood Village',
 		);
 		$params = extract( array_replace_recursive( $defaults, $opts ) );
 

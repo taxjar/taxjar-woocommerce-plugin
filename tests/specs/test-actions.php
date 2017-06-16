@@ -5,7 +5,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		global $woocommerce;
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 		$tj = new WC_Taxjar_Integration();
-
 		$this->wc = $woocommerce;
 	}
 
@@ -68,6 +67,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			'tax_status' => 'none',
 		) )->get_id();
 
+		$this->wc->cart->add_to_cart( $exempt_product );
+
 		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
 
 		$this->assertEquals( $this->wc->cart->tax_total, 0, '', 0.001 );
@@ -76,6 +77,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 	function test_correct_taxes_for_product_exemptions() {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+			'store_country' => 'US',
+			'store_state' => 'NY',
 			'store_zip' => '10001',
 			'store_city' => 'New York City',
 		) );
@@ -135,6 +138,81 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $this->wc->cart->tax_total, 2.4, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2.4, '', 0.001 );
+	}
+
+	function test_correct_taxes_for_canada() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+			'store_country' => 'CA',
+			'store_state' => 'BC',
+			'store_zip' => 'V6G 3E2',
+			'store_city' => 'Vancouver',
+		) );
+
+		// CA shipping address
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'country' => 'CA',
+			'state' => 'ON',
+			'zip' => 'M5V 2T6',
+			'city' => 'Toronto',
+		) );
+
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		$this->wc->cart->add_to_cart( $product );
+
+		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 1.3, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 1.3, '', 0.001 );
+	}
+
+	function test_correct_taxes_for_au() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+			'store_country' => 'AU',
+			'store_state' => 'NSW',
+			'store_zip' => 'NSW 2000',
+			'store_city' => 'Sydney',
+		) );
+
+		// AU shipping address
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'country' => 'AU',
+			'state' => 'VIC',
+			'zip' => 'VIC 3002',
+			'city' => 'Richmond',
+		) );
+
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		$this->wc->cart->add_to_cart( $product );
+
+		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 1, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 1, '', 0.001 );
+	}
+
+	function test_correct_taxes_for_eu() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+			'store_country' => 'FR',
+			'store_state' => '',
+			'store_zip' => '75008',
+			'store_city' => 'Paris',
+		) );
+
+		// EU shipping address
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'country' => 'FR',
+			'state' => '',
+			'zip' => '13281',
+			'city' => 'Marseille',
+		) );
+
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		$this->wc->cart->add_to_cart( $product );
+
+		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 2, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2, '', 0.001 );
 	}
 
 }
