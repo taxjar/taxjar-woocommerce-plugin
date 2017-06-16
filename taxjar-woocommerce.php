@@ -24,7 +24,7 @@ if ( ! class_exists( 'WC_Taxjar' ) ) :
  * Main TaxJar WooCommerce Class.
  *
  * @class WC_Taxjar
- * @version	1.2.4
+ * @version	1.3.0
  */
 final class WC_Taxjar {
 
