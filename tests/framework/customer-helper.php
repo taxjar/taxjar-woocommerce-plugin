@@ -1,14 +1,21 @@
 <?php
+class TaxJar_Customer_Helper {
 
-class TaxJar_Customer_helper {
+	public static function create_customer( $opts = array() ) {
+		global $woocommerce;
 
-  public static function get_test_customer( $country = 'US', $state = 'CO', $zip = '80111', $city = 'Greenwood Village' ) {
-    global $woocommerce;
+		$defaults = array(
+			'country' => 'US',
+			'state' => 'CO',
+			'zip' => '80111',
+			'city' => 'Greenwood Village'
+		);
+		$params = extract( array_replace_recursive( $defaults, $opts ) );
 
-    $customer = new WC_Customer();
-    $customer->set_shipping_location( $country, $state, $zip, $city );
+		$customer = new WC_Customer();
+		$customer->set_shipping_location( $country, $state, $zip, $city );
 
-    return $customer;
-  }
+		return $customer;
+	}
 
 }
