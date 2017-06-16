@@ -29,8 +29,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( array_values( $this->wc->cart->shipping_taxes )[0], 0.2, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.6, '', 0.001 );
 
-		$this->wc->cart->calculate_totals();
-
 		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
 			$this->assertEquals( $item['line_tax'], 0.4, '', 0.001 );
 		}
@@ -50,8 +48,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $this->wc->cart->tax_total, 2.4, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2.4, '', 0.001 );
-
-		$this->wc->cart->calculate_totals();
 
 		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
 			$product = $item['data'];
@@ -106,8 +102,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( $this->wc->cart->tax_total, 0.89, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.89, '', 0.001 );
 
-		$this->wc->cart->calculate_totals();
-
 		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
 			$product = $item['data'];
 			$sku = $product->get_sku();
@@ -117,7 +111,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			}
 
 			if ( 'SIMPLE1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 0.8875, '', 0.001 );
+				$this->assertEquals( $item['line_tax'], 0.89, '', 0.001 );
 			}
 		}
 	}

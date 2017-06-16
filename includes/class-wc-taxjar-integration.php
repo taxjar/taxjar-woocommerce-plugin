@@ -276,6 +276,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$this->item_collectable     = 0;
 		$this->shipping_collectable = 0;
 		$this->freight_taxable      = 1;
+		$this->line_items           = array();
 		$this->has_nexus            = 0;
 		$this->tax_source           = 'origin';
 		$this->rate_id              = null;
@@ -337,6 +338,14 @@ class WC_Taxjar_Integration extends WC_Integration {
 			if ( ! empty( $taxjar_response->breakdown ) ) {
 				if ( ! empty( $taxjar_response->breakdown->shipping ) ) {
 					$this->shipping_collectable = $taxjar_response->breakdown->shipping->tax_collectable;
+				}
+
+				if ( ! empty( $taxjar_response->breakdown->line_items ) ) {
+					$line_items = array();
+					foreach ( $taxjar_response->breakdown->line_items as $line_item ) {
+						$line_items[ $line_item->id ] = $line_item;
+					}
+					$this->line_items = $line_items;
 				}
 			}
 
@@ -451,12 +460,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$to_city = isset( $taxable_address[3] ) && ! empty( $taxable_address[3] ) ? $taxable_address[3] : false;
 		$line_items = array();
 
-		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $values ) {
-			$product = $values['data'];
+		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
+			$product = $cart_item['data'];
 			$id = $product->get_id();
-			$quantity = $values['quantity'];
+			$quantity = $cart_item['quantity'];
 			$unit_price = $product->get_price();
-			$discount = ( $unit_price - $wc_cart_object->get_discounted_price( $values, $unit_price ) ) * $quantity;
+			$discount = ( $unit_price - $wc_cart_object->get_discounted_price( $cart_item, $unit_price ) ) * $quantity;
 			$tax_class = explode( '-', $product->get_tax_class() );
 			$tax_code = '';
 
@@ -498,6 +507,14 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$wc_cart_object->shipping_taxes = array(
 			$this->rate_id => $this->shipping_collectable,
 		);
+
+		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
+			$product = $cart_item['data'];
+
+			if ( isset( $this->line_items[ $product->get_id() ] ) ) {
+				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $product->get_id() ]->tax_collectable;
+			}
+		}
 	}
 
 	/**
