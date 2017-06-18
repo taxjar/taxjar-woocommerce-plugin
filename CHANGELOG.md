@@ -1,3 +1,6 @@
+# 1.3.1 (2017-06-18)
+* Include tlc_transient hotfix
+
 # 1.3.0 (2017-06-16)
 * Product taxability support for exemptions such as clothing.
 * Line item taxability with support for recurring subscriptions.
