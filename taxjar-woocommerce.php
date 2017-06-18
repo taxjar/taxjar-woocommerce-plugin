@@ -45,6 +45,7 @@ final class WC_Taxjar {
 		// Checks if WooCommerce is installed.
 		if ( class_exists( 'WC_Integration' ) ) {
 			// Include our integration class and WP_User for wp_delete_user()
+			include_once 'includes/tlc-transients/tlc-transients.php';
 			include_once ABSPATH . 'wp-admin/includes/user.php';
 			include_once 'includes/class-wc-taxjar-ajax.php';
 			include_once 'includes/class-wc-taxjar-nexus.php';
