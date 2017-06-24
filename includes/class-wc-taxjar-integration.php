@@ -49,8 +49,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		if ( ( 'yes' == $this->settings['enabled'] ) ) {
 
-			// Calculate Taxes
+			// Calculate Taxes at Cart / Checkout
 			add_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
+
+			// Calculate Taxes for Backend Orders (Woo 2.6+)
+			add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
 
 			// Settings Page
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
@@ -513,6 +516,80 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			if ( isset( $this->line_items[ $product->get_id() ] ) ) {
 				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $product->get_id() ]->tax_collectable;
+			}
+		}
+	}
+
+	public function calculate_backend_totals( $order_id ) {
+		$order = wc_get_order( $order_id );
+		$to_country = isset( $_POST['country'] ) ? strtoupper( wc_clean( $_POST['country'] ) ) : false;
+		$to_state = isset( $_POST['state'] ) ? strtoupper( wc_clean( $_POST['state'] ) ) : false;
+		$to_zip = isset( $_POST['postcode'] ) ? strtoupper( wc_clean( $_POST['postcode'] ) ) : false;
+		$to_city = isset( $_POST['city'] ) ? strtoupper( wc_clean( $_POST['city'] ) ) : false;
+		$line_items = array();
+
+		if ( method_exists( $order, 'get_shipping_total' ) ) {
+			$shipping = $order->get_shipping_total();
+		} else {
+			$shipping = $order->get_total_shipping();
+		}
+
+		foreach ( $order->get_items() as $item ) {
+			if ( is_object( $item ) ) { // Woo 3.0+
+				$id = $item->get_product_id();
+				$quantity = $item->get_quantity();
+				$discount = floatval( wc_format_decimal( ( $item->get_subtotal() - $item->get_total() ) / $quantity ) );
+				$tax_class = explode( '-', $item->get_tax_class() );
+			} else { // Woo 2.6
+				$id = $item['product_id'];
+				$quantity = $item['qty'];
+				$discount = floatval( wc_format_decimal( ( $item['line_subtotal'] - $item['line_total'] ) / $quantity ) );
+				$tax_class = explode( '-', $item['tax_class'] );
+			}
+
+			$product = wc_get_product( $id );
+			$unit_price = $product->get_price();
+			$tax_code = '';
+
+			if ( ! $product->is_taxable() ) {
+				$tax_code = '99999';
+			}
+
+			if ( isset( $tax_class[1] ) && is_numeric( $tax_class[1] ) ) {
+				$tax_code = $tax_class[1];
+			}
+
+			if ( $unit_price ) {
+				array_push($line_items, array(
+					'id' => $id,
+					'quantity' => $quantity,
+					'product_tax_code' => $tax_code,
+					'unit_price' => $unit_price,
+					'discount' => $discount,
+				));
+			}
+		}
+
+		$this->calculate_tax( array(
+			'to_city' => $to_city,
+			'to_state' => $to_state,
+			'to_country' => $to_country,
+			'to_zip' => $to_zip,
+			'shipping_amount' => $shipping,
+			'line_items' => $line_items,
+		) );
+
+		foreach ( $order->get_items() as $item ) {
+			if ( is_object( $item ) ) { // Woo 3.0+
+				$product_id = $item->get_product_id();
+				if ( isset( $this->line_items[ $product_id ] ) ) {
+					$item->set_total_tax( $this->line_items[ $product_id ]->tax_collectable );
+				}
+			} else { // Woo 2.6
+				$product_id = $item['product_id'];
+				if ( isset( $this->line_items[ $product_id ] ) ) {
+					$item['line_tax'] = $this->line_items[ $product_id ]->tax_collectable;
+				}
 			}
 		}
 	}
