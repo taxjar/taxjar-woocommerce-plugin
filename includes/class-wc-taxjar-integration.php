@@ -498,7 +498,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_zip' => $to_zip,
 			'shipping_amount' => $woocommerce->shipping->shipping_total,
 			'line_items' => $line_items,
-			'customer' => $woocommerce->customer,
 		) );
 
 		// Store the rate ID and the amount on the cart's totals
