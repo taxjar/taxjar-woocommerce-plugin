@@ -528,9 +528,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$line_items = array();
 
 		if ( method_exists( $order, 'get_shipping_total' ) ) {
-			$shipping = $order->get_shipping_total();
+			$shipping = $order->get_shipping_total(); // Woo 3.0+
 		} else {
-			$shipping = $order->get_total_shipping();
+			$shipping = $order->get_total_shipping(); // Woo 2.6
 		}
 
 		foreach ( $order->get_items() as $item ) {
