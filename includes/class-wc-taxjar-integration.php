@@ -534,7 +534,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		if ( 'base' == $tax_based_on ) {
-			$postcode  = $store_settings['taxjar_zip_code_setting'];
+			$postcode = $store_settings['taxjar_zip_code_setting'];
 			$city = strtoupper( $store_settings['taxjar_city_setting'] );
 		}
 
