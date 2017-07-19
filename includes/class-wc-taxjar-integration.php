@@ -529,8 +529,15 @@ class WC_Taxjar_Integration extends WC_Integration {
 		list( $country, $state, $postcode, $city ) = $address;
 
 		// See WC_Customer get_taxable_address()
-		if ( true === apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true ) && sizeof( array_intersect( wc_get_chosen_shipping_method_ids(), apply_filters( 'woocommerce_local_pickup_methods', array( 'legacy_local_pickup', 'local_pickup' ) ) ) ) > 0 ) {
-			$tax_based_on = 'base';
+		// wc_get_chosen_shipping_method_ids() available since Woo 2.6.2+
+		if ( function_exists( 'wc_get_chosen_shipping_method_ids' ) ) {
+			if ( true === apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true ) && sizeof( array_intersect( wc_get_chosen_shipping_method_ids(), apply_filters( 'woocommerce_local_pickup_methods', array( 'legacy_local_pickup', 'local_pickup' ) ) ) ) > 0 ) {
+				$tax_based_on = 'base';
+			}
+		} else {
+			if ( true === apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true ) && sizeof( array_intersect( WC()->session->get( 'chosen_shipping_methods', array() ), apply_filters( 'woocommerce_local_pickup_methods', array( 'legacy_local_pickup', 'local_pickup' ) ) ) ) > 0 ) {
+				$tax_based_on = 'base';
+			}
 		}
 
 		if ( 'base' == $tax_based_on ) {
