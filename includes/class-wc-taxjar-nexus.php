@@ -25,10 +25,10 @@ class WC_Taxjar_Nexus {
 
 			foreach ( $this->nexus as $key => $nexus ) {
 				$desc_text .= '<br>';
-				if ( isset( $nexus->region ) && isset ( $nexus->country ) ) {
+				if ( isset( $nexus->region ) && isset( $nexus->country ) ) {
 					$desc_text .= sprintf( "%s, %s", $nexus->region, $nexus->country );
 				} else {
-					if ( isset ( $nexus->country ) ) {
+					if ( isset( $nexus->country ) ) {
 						$desc_text .= $nexus->country;
 					}
 				}
@@ -66,11 +66,11 @@ class WC_Taxjar_Nexus {
 		);
 
 		foreach ( $nexus_areas as $key => $nexus ) {
-			if ( isset ( $nexus->country_code ) && isset( $nexus->region_code ) && 'US' == $nexus->country_code ) {
+			if ( isset( $nexus->country_code ) && isset( $nexus->region_code ) && 'US' == $nexus->country_code ) {
 				if ( $country == $nexus->country_code && $state == $nexus->region_code ) {
 					return true;
 				}
-			} elseif ( isset ( $nexus->country_code ) ) {
+			} elseif ( isset( $nexus->country_code ) ) {
 					if ( $country == $nexus->country_code ) {
 						return true;
 					}
