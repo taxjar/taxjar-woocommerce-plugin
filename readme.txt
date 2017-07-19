@@ -194,6 +194,9 @@ Yes. The fee is $19.95 per state, per filing.
 
 == Upgrade Notice ==
 
+= 1.3.1 =
+1.3 is a major update to our plugin and requires WooCommerce 2.6+. After upgrading, please test your checkout process to ensure sales tax is calculated properly. If you run into any issues, email [TaxJar support](mailto:support@taxjar.com) for help.
+
 = 1.1.2 =
 Please make sure you have PHP 5.3+ installed (goto WooCommerce->System Status to check warnings)
 
