@@ -1,3 +1,6 @@
+# 1.3.2 (2017-07-20)
+* Fix local pickup error for WooCommerce < 2.6.2
+
 # 1.3.1 (2017-06-18)
 * Include tlc_transient hotfix
 
