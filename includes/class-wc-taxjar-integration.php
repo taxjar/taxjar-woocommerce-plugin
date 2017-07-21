@@ -465,6 +465,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$id = $product->get_id();
 			$quantity = $cart_item['quantity'];
 			$unit_price = $product->get_price();
+			$line_subtotal = $cart_item['line_subtotal'];
 			$discount = ( $unit_price - $wc_cart_object->get_discounted_price( $cart_item, $unit_price ) ) * $quantity;
 			$tax_class = explode( '-', $product->get_tax_class() );
 			$tax_code = '';
@@ -477,7 +478,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$tax_code = $tax_class[1];
 			}
 
-			if ( $unit_price ) {
+			if ( $unit_price && $line_subtotal ) {
 				array_push($line_items, array(
 					'id' => $id,
 					'quantity' => $quantity,
