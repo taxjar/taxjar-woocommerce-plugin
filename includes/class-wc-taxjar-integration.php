@@ -567,6 +567,43 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	/**
+	 * Get taxable address.
+	 * @return array
+	 */
+	public function get_taxable_address() {
+		$tax_based_on = get_option( 'woocommerce_tax_based_on' );
+
+		global $woocommerce;
+
+		// Check shipping method at this point to see if we need special handling
+		if ( true === apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true ) && sizeof( array_intersect( wc_get_chosen_shipping_method_ids(), apply_filters( 'woocommerce_local_pickup_methods', array( 'legacy_local_pickup', 'local_pickup' ) ) ) ) > 0 ) {
+			$tax_based_on = 'base';
+		}
+
+		if ( 'base' === $tax_based_on ) {
+			$country  = WC()->countries->get_base_country();
+			$state    = WC()->countries->get_base_state();
+			$postcode = WC()->countries->get_base_postcode();
+			$city     = WC()->countries->get_base_city();
+			$street   = $this->store_street;
+		} elseif ( 'billing' === $tax_based_on ) {
+			$country  = $woocommerce->customer->get_billing_country();
+			$state    = $woocommerce->customer->get_billing_state();
+			$postcode = $woocommerce->customer->get_billing_postcode();
+			$city     = $woocommerce->customer->get_billing_city();
+			$street   = $woocommerce->customer->get_billing_address_1();
+		} else {
+			$country  = $woocommerce->customer->get_shipping_country();
+			$state    = $woocommerce->customer->get_shipping_state();
+			$postcode = $woocommerce->customer->get_shipping_postcode();
+			$city     = $woocommerce->customer->get_shipping_city();
+			$street   = $woocommerce->customer->get_shipping_address_1();
+		}
+
+		return apply_filters( 'woocommerce_customer_taxable_address', array( $country, $state, $postcode, $city, $street ) );
+	}
+
+	/**
 	 * Return either the post value or settings value of a key
 	 *
 	 * @return MIXED
@@ -701,43 +738,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$store_settings['store_state_setting'] = $default_wc_settings[1];
 		}
 		return $store_settings;
-	}
-
-	/**
-	 * Get taxable address.
-	 * @return array
-	 */
-	public function get_taxable_address() {
-		$tax_based_on = get_option( 'woocommerce_tax_based_on' );
-
-		global $woocommerce;
-
-		// Check shipping method at this point to see if we need special handling
-		if ( true === apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true ) && sizeof( array_intersect( wc_get_chosen_shipping_method_ids(), apply_filters( 'woocommerce_local_pickup_methods', array( 'legacy_local_pickup', 'local_pickup' ) ) ) ) > 0 ) {
-			$tax_based_on = 'base';
-		}
-
-		if ( 'base' === $tax_based_on ) {
-			$country  = WC()->countries->get_base_country();
-			$state    = WC()->countries->get_base_state();
-			$postcode = WC()->countries->get_base_postcode();
-			$city     = WC()->countries->get_base_city();
-			$street   = $this->store_street;
-		} elseif ( 'billing' === $tax_based_on ) {
-			$country  = $woocommerce->customer->get_billing_country();
-			$state    = $woocommerce->customer->get_billing_state();
-			$postcode = $woocommerce->customer->get_billing_postcode();
-			$city     = $woocommerce->customer->get_billing_city();
-			$street   = $woocommerce->customer->get_billing_address_1();
-		} else {
-			$country  = $woocommerce->customer->get_shipping_country();
-			$state    = $woocommerce->customer->get_shipping_state();
-			$postcode = $woocommerce->customer->get_shipping_postcode();
-			$city     = $woocommerce->customer->get_shipping_city();
-			$street   = $woocommerce->customer->get_shipping_address_1();
-		}
-
-		return apply_filters( 'woocommerce_customer_taxable_address', array( $country, $state, $postcode, $city, $street ) );
 	}
 
 	/**
