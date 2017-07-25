@@ -167,7 +167,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 						'type'              => 'text',
 						'description'       => __( 'Enter the street address where your store ships from.', 'wc-taxjar' ),
 						'desc_tip'          => true,
-						'default'           => ''
+						'default'           => '',
 					),
 					'store_city' => array(
 						'title'             => __( 'Ship From City', 'wc-taxjar' ),
@@ -273,7 +273,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_city' => null,
 			'to_street' => null,
 			'shipping_amount' => null, // $woocommerce->shipping->shipping_total
-			'line_items' => null
+			'line_items' => null,
 		), $options) );
 
 		// Initalize some variables & properties
