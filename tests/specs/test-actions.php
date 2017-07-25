@@ -140,6 +140,49 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2.4, '', 0.001 );
 	}
 
+	function test_correct_taxes_for_rooftop_address() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+			'store_country' => 'US',
+			'store_state' => 'NC',
+			'store_zip' => '27601',
+			'store_city' => 'Raleigh',
+			'store_street' => '11 W Jones St',
+		) );
+
+		// NY shipping address
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NC',
+			'zip' => '28036',
+			'city' => 'Davidson',
+		) );
+
+		$this->wc->customer->set_shipping_address( '10876 Tailwater St.' );
+
+		$taxable_product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+
+		$this->wc->cart->add_to_cart( $taxable_product );
+
+		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 0.7, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.7, '', 0.001 );
+
+		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
+			$this->assertEquals( $item['line_tax'], 0.7, '', 0.001 );
+		}
+
+		$this->wc->customer->set_shipping_address( '123 Test St.' );
+
+		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 0.73, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.73, '', 0.001 );
+
+		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
+			$this->assertEquals( $item['line_tax'], 0.73, '', 0.001 );
+		}
+	}
+
 	function test_correct_taxes_for_canada() {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
 			'store_country' => 'CA',
