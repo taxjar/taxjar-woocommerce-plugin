@@ -369,7 +369,59 @@ class WC_Taxjar_Integration extends WC_Integration {
 		// Remove taxes if they are set somehow and customer is exempt
 		if ( $customer->is_vat_exempt() ) {
 			$wc_cart_object->remove_taxes();
-		}
+		} elseif ( $this->has_nexus ) {
+			// Use Woo core to find matching rates for taxable address
+			$source_zip = 'destination' == $this->tax_source  ? $to_zip : $from_zip;
+			$source_city = 'destination' == $this->tax_source ? $to_city : $from_city;
+
+			if ( strtoupper( $to_city ) == strtoupper( $from_city ) ) {
+				$source_city = $to_city;
+			}
+
+			// Setup Tax Rates
+			$tax_rates = array(
+				'tax_rate_country' => $to_country,
+				'tax_rate_state' => $to_state,
+				'tax_rate_name' => sprintf( "%s Tax", $to_state ),
+				'tax_rate_priority' => 1,
+				'tax_rate_compound' => false,
+				'tax_rate_shipping' => $this->freight_taxable,
+				'tax_rate' => $this->tax_rate * 100,
+				'tax_rate_class' => '',
+			);
+
+			$wc_rates = WC_Tax::find_rates( array(
+				'country' => $to_country,
+				'state' => $to_state,
+				'postcode' => $source_zip,
+				'city' => $source_city,
+				'tax_class' => '',
+			) );
+
+			// If we have rates, use those, but if no rates returned create one to link with, or use the first rate returned.
+			if ( ! empty( $wc_rates ) ) {
+				$this->_log( '::: TAX RATES FOUND :::' );
+				$this->_log( $wc_rates );
+
+				// Get the existing ID
+				$rate_id = key( $wc_rates );
+
+				// Update Tax Rates with TaxJar rates ( rates might be coming from a cached taxjar rate )
+				$this->_log( ':: UPDATING TAX RATES TO ::' );
+				$this->_log( $tax_rates );
+
+				WC_TAX::_update_tax_rate( $rate_id, $tax_rates );
+			} else {
+				// Insert a rate if we did not find one
+				$this->_log( ':: Adding New Tax Rate ::' );
+				$rate_id = WC_Tax::_insert_tax_rate( $tax_rates );
+				WC_Tax::_update_tax_rate_postcodes( $rate_id, wc_clean( $source_zip ) );
+				WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $source_city ) );
+			}
+
+			$this->_log( 'Tax Rate ID Set: ' . $rate_id );
+			$this->rate_id = $rate_id;
+		} // End if().
 	} // End calculate_tax().
 
 	public function smartcalcs_request( $json ) {
