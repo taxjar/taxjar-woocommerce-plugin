@@ -559,7 +559,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$city = strtoupper( $store_settings['taxjar_city_setting'] );
 		}
 
-		return array( $country, $state, $postcode, $city, $street );
+		if ( '' != $street ) {
+			return array( $country, $state, $postcode, $city, $street );
+		} else {
+			return array( $country, $state, $postcode, $city );
+		}
 	}
 
 	/**
