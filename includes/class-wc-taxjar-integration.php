@@ -24,7 +24,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/1.3.2/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = 'TaxJarWordPressPlugin/1.3.3/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 
@@ -478,6 +478,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$id = $product->get_id();
 			$quantity = $cart_item['quantity'];
 			$unit_price = $product->get_price();
+			$line_subtotal = $cart_item['line_subtotal'];
 			$discount = ( $unit_price - $wc_cart_object->get_discounted_price( $cart_item, $unit_price ) ) * $quantity;
 			$tax_class = explode( '-', $product->get_tax_class() );
 			$tax_code = '';
@@ -490,7 +491,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$tax_code = $tax_class[1];
 			}
 
-			if ( $unit_price ) {
+			if ( $unit_price && $line_subtotal ) {
 				array_push($line_items, array(
 					'id' => $id,
 					'quantity' => $quantity,
