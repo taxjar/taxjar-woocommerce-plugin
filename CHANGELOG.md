@@ -1,3 +1,9 @@
+# 1.3.3 (2017-08-01)
+* Fix initial calculation for recurring subscriptions with a trial period
+
+# 1.3.2 (2017-07-20)
+* Fix local pickup error for WooCommerce < 2.6.2
+
 # 1.3.1 (2017-06-18)
 * Include tlc_transient hotfix
 

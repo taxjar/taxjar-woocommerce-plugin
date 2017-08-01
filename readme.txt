@@ -3,11 +3,11 @@ Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar, sales tax compliance, automation, accounting, sales tax filing
 Requires at least: 4.2
 Tested up to: 4.7.5
-Stable tag: 1.3.1
+Stable tag: 1.3.3
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 2.6
-WC tested up to: 3.1.0
+WC tested up to: 3.1.1
 
 Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculation, collection, and filing.
 
@@ -92,6 +92,13 @@ Yes. The fee is $19.95 per state, per filing.
 1. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+
+= 1.3.3 (2017-08-01) =
+* Fix initial calculation for recurring subscriptions with a trial period
+
+= 1.3.2 (2017-07-20) =
+* Fix local pickup error for WooCommerce < 2.6.2
+
 = 1.3.1 (2017-06-18) =
 * Include tlc_transient hotfix
 
@@ -193,6 +200,12 @@ Yes. The fee is $19.95 per state, per filing.
 * Initial release
 
 == Upgrade Notice ==
+
+= 1.3.3 =
+1.3.3 is a minor update to ensure sales tax isn't collected upfront for recurring subscriptions with a trial period. After upgrading, please test your checkout process to ensure sales tax is calculated properly. If you run into any issues, email [TaxJar support](mailto:support@taxjar.com) for help.
+
+= 1.3.2 =
+1.3.2 is a minor compatibility update for WooCommerce < 2.6.2. After upgrading, please test your checkout process to ensure sales tax is calculated properly. If you run into any issues, email [TaxJar support](mailto:support@taxjar.com) for help.
 
 = 1.3.1 =
 1.3 is a major update to our plugin and requires WooCommerce 2.6+. After upgrading, please test your checkout process to ensure sales tax is calculated properly. If you run into any issues, email [TaxJar support](mailto:support@taxjar.com) for help.
