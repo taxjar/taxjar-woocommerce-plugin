@@ -600,13 +600,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$state    = $woocommerce->customer->get_billing_state();
 			$postcode = $woocommerce->customer->get_billing_postcode();
 			$city     = $woocommerce->customer->get_billing_city();
-			$street   = $woocommerce->customer->get_billing_address_1();
+			$street   = $woocommerce->customer->get_billing_address();
 		} else {
 			$country  = $woocommerce->customer->get_shipping_country();
 			$state    = $woocommerce->customer->get_shipping_state();
 			$postcode = $woocommerce->customer->get_shipping_postcode();
 			$city     = $woocommerce->customer->get_shipping_city();
-			$street   = $woocommerce->customer->get_shipping_address_1();
+			$street   = $woocommerce->customer->get_shipping_address();
 		}
 
 		return apply_filters( 'woocommerce_customer_taxable_address', array( $country, $state, $postcode, $city, $street ) );
