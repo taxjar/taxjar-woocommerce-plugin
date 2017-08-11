@@ -384,7 +384,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	} // End calculate_tax().
 
 	/**
-	 * Add a native tax rate to WooCommerce
+	 * Add or update a native WooCommerce tax rate
 	 *
 	 * @return void
 	 */
@@ -463,7 +463,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	/**
-	 * Ensure use of the TaxJar amount_to_collect and API data
+	 * Calculate tax / totals using TaxJar at checkout
 	 *
 	 * @return void
 	 */
@@ -537,6 +537,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 	}
 
+	/**
+	 * Calculate tax / totals using TaxJar for backend orders
+	 *
+	 * @return void
+	 */
 	public function calculate_backend_totals( $order_id ) {
 		$order = wc_get_order( $order_id );
 		$to_country = isset( $_POST['country'] ) ? strtoupper( wc_clean( $_POST['country'] ) ) : false;
