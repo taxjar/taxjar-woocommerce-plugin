@@ -275,8 +275,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$customer                 = $woocommerce->customer;
 
 		$this->tax_rate             = 0;
-		$this->amount_to_collect    = 0;
-		$this->item_collectable     = 0;
 		$this->shipping_collectable = 0;
 		$this->freight_taxable      = 1;
 		$this->line_items           = array();
@@ -336,7 +334,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 			// Update Properties based on Response
 			$this->has_nexus          = (int) $taxjar_response->has_nexus;
 			$this->tax_source         = empty( $taxjar_response->tax_source ) ? 'origin' : $taxjar_response->tax_source;
-			$this->amount_to_collect  = $taxjar_response->amount_to_collect;
+			$this->tax_rate           = $taxjar_response->rate;
+			$this->freight_taxable    = (int) $taxjar_response->freight_taxable;
 
 			if ( ! empty( $taxjar_response->breakdown ) ) {
 				if ( ! empty( $taxjar_response->breakdown->shipping ) ) {
@@ -351,10 +350,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 					$this->line_items = $line_items;
 				}
 			}
-
-			$this->item_collectable   = $this->amount_to_collect - $this->shipping_collectable;
-			$this->tax_rate           = $taxjar_response->rate;
-			$this->freight_taxable    = (int) $taxjar_response->freight_taxable;
 		}
 
 		// Remove taxes if they are set somehow and customer is exempt
@@ -362,7 +357,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$wc_cart_object->remove_taxes();
 		} elseif ( $this->has_nexus ) {
 			// Use Woo core to find matching rates for taxable address
-			$source_zip = 'destination' == $this->tax_source  ? $to_zip : $from_zip;
+			$source_zip = 'destination' == $this->tax_source ? $to_zip : $from_zip;
 			$source_city = 'destination' == $this->tax_source ? $to_city : $from_city;
 
 			if ( strtoupper( $to_city ) == strtoupper( $from_city ) ) {
@@ -533,22 +528,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		// Store the rate ID and the amount on the cart's totals
-		$wc_cart_object->tax_total = $this->item_collectable;
-		$wc_cart_object->shipping_tax_total = $this->shipping_collectable;
 		$wc_cart_object->taxes = $cart_taxes;
 
 		if ( isset( $this->rate_ids['shipping'] ) ) {
 			$wc_cart_object->shipping_taxes = array(
 				$this->rate_ids['shipping'] => $this->shipping_collectable,
 			);
-		}
-
-		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
-			$product = $cart_item['data'];
-
-			if ( isset( $this->line_items[ $product->get_id() ] ) ) {
-				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $product->get_id() ]->tax_collectable;
-			}
 		}
 	}
 
