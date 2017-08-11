@@ -282,7 +282,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$this->line_items           = array();
 		$this->has_nexus            = 0;
 		$this->tax_source           = 'origin';
-		$this->rate_id              = null;
+		$this->rate_ids             = array();
 
 		// Strict conditions to be met before API call can be conducted
 		if ( empty( $to_country ) || empty( $to_zip ) || $customer->is_vat_exempt() ) {
@@ -369,51 +369,73 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$source_city = $to_city;
 			}
 
-			// Setup Tax Rates
-			$tax_rates = array(
-				'tax_rate_country' => $to_country,
-				'tax_rate_state' => $to_state,
-				'tax_rate_name' => sprintf( "%s Tax", $to_state ),
-				'tax_rate_priority' => 1,
-				'tax_rate_compound' => false,
-				'tax_rate_shipping' => $this->freight_taxable,
-				'tax_rate' => $this->tax_rate * 100,
-				'tax_rate_class' => '',
+			$location = array(
+				'to_country' => $to_country,
+				'to_state' => $to_state,
+				'to_zip' => $source_zip,
+				'to_city' => $source_city,
 			);
 
-			$wc_rates = WC_Tax::find_rates( array(
-				'country' => $to_country,
-				'state' => $to_state,
-				'postcode' => $source_zip,
-				'city' => $source_city,
-				'tax_class' => '',
-			) );
-
-			// If we have rates, use those, but if no rates returned create one to link with, or use the first rate returned.
-			if ( ! empty( $wc_rates ) ) {
-				$this->_log( '::: TAX RATES FOUND :::' );
-				$this->_log( $wc_rates );
-
-				// Get the existing ID
-				$rate_id = key( $wc_rates );
-
-				// Update Tax Rates with TaxJar rates ( rates might be coming from a cached taxjar rate )
-				$this->_log( ':: UPDATING TAX RATES TO ::' );
-				$this->_log( $tax_rates );
-
-				WC_TAX::_update_tax_rate( $rate_id, $tax_rates );
-			} else {
-				// Insert a rate if we did not find one
-				$this->_log( ':: Adding New Tax Rate ::' );
-				$rate_id = WC_Tax::_insert_tax_rate( $tax_rates );
-				WC_Tax::_update_tax_rate_postcodes( $rate_id, wc_clean( $source_zip ) );
-				WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $source_city ) );
+			// Add line item tax rates
+			foreach ( $this->line_items as $product_id => $line_item ) {
+				$product = wc_get_product( $product_id );
+				$tax_class = $product->get_tax_class();
+				$this->create_or_update_tax_rate( $product_id, $location, $line_item->combined_tax_rate * 100, $tax_class );
 			}
 
-			$this->_log( 'Tax Rate ID Set: ' . $rate_id );
-			$this->rate_id = $rate_id;
+			// Add shipping tax rate
+			$this->create_or_update_tax_rate( 'shipping', $location, $this->tax_rate * 100 );
 		} // End if().
 	} // End calculate_tax().
+
+	/**
+	 * Add a native tax rate to WooCommerce
+	 *
+	 * @return void
+	 */
+	public function create_or_update_tax_rate( $product_id, $location, $rate, $tax_class = '' ) {
+		$tax_rate = array(
+			'tax_rate_country' => $location['to_country'],
+			'tax_rate_state' => $location['to_state'],
+			'tax_rate_name' => sprintf( "%s Tax", $location['to_state'] ),
+			'tax_rate_priority' => 1,
+			'tax_rate_compound' => false,
+			'tax_rate_shipping' => $this->freight_taxable,
+			'tax_rate' => $rate,
+			'tax_rate_class' => $tax_class,
+		);
+
+		$wc_rate = WC_Tax::find_rates( array(
+			'country' => $location['to_country'],
+			'state' => $location['to_state'],
+			'postcode' => $location['to_zip'],
+			'city' => $location['to_city'],
+			'tax_class' => $tax_class,
+		) );
+
+		if ( ! empty( $wc_rate ) ) {
+			$this->_log( ':: Tax Rate Found ::' );
+			$this->_log( $wc_rate );
+
+			// Get the existing ID
+			$rate_id = key( $wc_rate );
+
+			// Update Tax Rates with TaxJar rates ( rates might be coming from a cached taxjar rate )
+			$this->_log( ':: Updating Tax Rate To ::' );
+			$this->_log( $tax_rate );
+
+			WC_Tax::_update_tax_rate( $rate_id, $tax_rate );
+		} else {
+			// Insert a rate if we did not find one
+			$this->_log( ':: Adding New Tax Rate ::' );
+			$rate_id = WC_Tax::_insert_tax_rate( $tax_rate );
+			WC_Tax::_update_tax_rate_postcodes( $rate_id, wc_clean( $location['to_zip'] ) );
+			WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $location['to_city'] ) );
+		}
+
+		$this->_log( 'Tax Rate ID Set for ' . $product_id . ': ' . $rate_id );
+		$this->rate_ids[ $product_id ] = $rate_id;
+	}
 
 	public function smartcalcs_request( $json ) {
 		$url = $this->uri . 'taxes';
@@ -462,6 +484,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$to_zip = isset( $taxable_address[2] ) && ! empty( $taxable_address[2] ) ? $taxable_address[2] : false;
 		$to_city = isset( $taxable_address[3] ) && ! empty( $taxable_address[3] ) ? $taxable_address[3] : false;
 		$line_items = array();
+		$cart_taxes = array();
 
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
@@ -501,15 +524,24 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'line_items' => $line_items,
 		) );
 
+		foreach ( $this->line_items as $product_id => $line_item ) {
+			if ( isset( $cart_taxes[ $this->rate_ids[ $product_id ] ] ) ) {
+				$cart_taxes[ $this->rate_ids[ $product_id ] ] += $line_item->tax_collectable;
+			} else {
+				$cart_taxes[ $this->rate_ids[ $product_id ] ] = $line_item->tax_collectable;
+			}
+		}
+
 		// Store the rate ID and the amount on the cart's totals
 		$wc_cart_object->tax_total = $this->item_collectable;
 		$wc_cart_object->shipping_tax_total = $this->shipping_collectable;
-		$wc_cart_object->taxes = array(
-			$this->rate_id => $this->item_collectable,
-		);
-		$wc_cart_object->shipping_taxes = array(
-			$this->rate_id => $this->shipping_collectable,
-		);
+		$wc_cart_object->taxes = $cart_taxes;
+
+		if ( isset( $this->rate_ids['shipping'] ) ) {
+			$wc_cart_object->shipping_taxes = array(
+				$this->rate_ids['shipping'] => $this->shipping_collectable,
+			);
+		}
 
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
