@@ -24,7 +24,7 @@ Sample usage:
 
 ## Running Tests
 
-Simply change to the plugin root directory and type:
+Go to the `/tests` directory in the command line and type:
 
     $ phpunit
 
