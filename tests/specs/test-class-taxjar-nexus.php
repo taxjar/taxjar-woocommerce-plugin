@@ -8,6 +8,14 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		$this->tj_nexus = new WC_Taxjar_Nexus( $this->tj );
 		$this->cache_key = 'tlc__' . md5( 'get_nexus_from_cache' );
 
+		// Reset shipping origin
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'CO',
+			'store_zip' => '80111',
+			'store_city' => 'Greenwood Village',
+		) );
+
 		parent::setUp();
 	}
 
