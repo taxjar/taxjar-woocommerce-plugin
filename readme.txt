@@ -33,7 +33,7 @@ Get accurate sales tax calculations and return-ready reports. [TaxJar](https://w
 *Other Notable Features:*
 
 * Simple install – starting collecting sales tax in minutes
-* Compatible with WooCommerce 2.3+ and WordPress 4.2+
+* Compatible with WooCommerce 2.6+ and WordPress 4.2+
 * Supports tax exempt items set by store manager
 * If you also sell on other platforms, get your sales tax data all in a single place
 
@@ -81,7 +81,7 @@ Nope. The cost is the same no matter if you have nexus in one state or 40 states
 
 = Can TaxJar file my sales tax returns automatically for me? =
 
-Yes. We can file sales tax returns for you in more than 25 states.
+Yes. We can file sales tax returns for you in any US state.
 
 = Is there a separate fee to file my sales tax returns for me? =
 
@@ -218,7 +218,7 @@ When upgrading we recommend clearing transients under WooCommerce->System Status
 
 == How It Works ==
 
-Here’s how the TaxJar Smart Sales Tax API works.
+Here’s how the TaxJar SmartCalcs Sales Tax API works.
 
 TaxJar takes the following input from your store:
 
@@ -227,14 +227,14 @@ TaxJar takes the following input from your store:
 * The city, state, and zip code where item is being shipped
 * Any shipping fees charged
 
-And returns an accurate sales tax rate (including state, county, city, and special taxes) based on
+And returns an accurate sales tax rate (including state, county, city, and special taxes) based on...
 
 * Seller's nexus based on your WooCommerce ship from settings
 * Any nexus with other addresses stored in your TaxJar account
 * Local sales tax sourcing laws (origin-based or destination-based)
 * Shipping taxability laws (shipping is not taxable in every state)
 
-TaxJar for WooCommerce automatically determines
+TaxJar for WooCommerce automatically determines:
 
 * Nexus
 * Origin vs. Destination sourcing
