@@ -13,7 +13,7 @@ To get started, check out our [TaxJar for WooCommerce](https://docs.woocommerce.
 ## Getting Started
 
 1. Download the TaxJar for WooCommerce .zip file from [WordPress.org](https://wordpress.org/plugins/taxjar-simplified-taxes-for-woocommerce/).
-2. Go to: **WordPress Admin > Plugins > Add New** and **Upload Plugin** with the file you downloaded with Choose File.
+2. Go to **WordPress Admin > Plugins > Add New** and **Upload Plugin** with the zip file.
 3. **Install Now** and **Activate** the plugin.
 
 ## Tests
@@ -22,7 +22,7 @@ Review our [testing README](https://github.com/taxjar/taxjar-woocommerce-plugin/
 
 ## Support
 
-If you find a bug in our plugin, [open a new issue]((https://github.com/taxjar/taxjar-woocommerce-plugin/issues/new) right here in GitHub. For general questions about TaxJar or specific issues with your store, please [contact us](http://www.taxjar.com/contact/) after going through our extension guide.
+If you find a bug in our plugin, [open a new issue](https://github.com/taxjar/taxjar-woocommerce-plugin/issues/new) right here in GitHub. For general questions about TaxJar or specific issues with your store, please [contact us](http://www.taxjar.com/contact/) after going through our extension guide.
 
 ## Contributing
 
