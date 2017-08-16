@@ -3,6 +3,7 @@ class TaxJar_Woocommerce_Helper {
 
 	public static function prepare_woocommerce() {
 		global $woocommerce;
+		global $wpdb;
 
 		$woocommerce->product_factory = new WC_Product_Factory();
 		$woocommerce->order_factory = new WC_Order_Factory();
@@ -15,19 +16,15 @@ class TaxJar_Woocommerce_Helper {
 		$woocommerce->cart->remove_coupons();
 		$woocommerce->shipping->shipping_total = 0;
 
-		// Reset shipping origin
-		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
-			'store_country' => 'US',
-			'store_state' => 'CO',
-			'store_zip' => '80111',
-			'store_city' => 'Greenwood Village',
-		) );
+		// Reset tax rates
+		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rates' );
+		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rate_locations' );
 
 		// Create a default customer shipping address
 		$woocommerce->customer = TaxJar_Customer_Helper::create_customer();
 	}
 
-	public static function set_shipping_origin( $opts = array() ) {
+	public static function set_shipping_origin( $integration, $opts = array() ) {
 		$current_settings = get_option( 'woocommerce_taxjar-integration_settings' );
 		$new_settings = array_replace_recursive( $current_settings, $opts );
 
@@ -35,7 +32,7 @@ class TaxJar_Woocommerce_Helper {
 
 		if ( isset( $opts['store_country'] ) && isset( $opts['store_state'] ) ) {
 			update_option( 'woocommerce_default_country', $opts['store_country'] . ':' . $opts['store_state'] );
-			$tj = new WC_Taxjar_Integration();
+			$integration->init_settings();
 		}
 	}
 
