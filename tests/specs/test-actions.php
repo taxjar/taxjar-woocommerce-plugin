@@ -155,7 +155,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_rooftop_address() {
-		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'NC',
 			'store_zip' => '27601',

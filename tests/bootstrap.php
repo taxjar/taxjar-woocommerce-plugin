@@ -50,6 +50,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 				'taxjar_download' => 'yes',
 				'store_zip' => '80111',
 				'store_city' => 'Greenwood Village',
+				'store_street' => '6060 S Quebec St',
 				'debug' => 'yes',
 			)
 		);
