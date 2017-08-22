@@ -4,8 +4,22 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	function setUp() {
 		global $woocommerce;
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
-		$tj = new WC_Taxjar_Integration();
+		$this->tj = new WC_Taxjar_Integration();
 		$this->wc = $woocommerce;
+
+		// Reset shipping origin
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'CO',
+			'store_zip' => '80111',
+			'store_city' => 'Greenwood Village',
+		) );
+	}
+
+	function tearDown() {
+		// Prevent duplicate action callbacks
+		remove_action( 'woocommerce_calculate_totals', array( $this->tj, 'calculate_totals' ), 20 );
+		remove_action( 'woocommerce_before_save_order_items', array( $this->tj, 'calculate_backend_totals' ), 20 );
 	}
 
 	function test_taxjar_calculate_totals() {
@@ -76,7 +90,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_product_exemptions() {
-		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'NY',
 			'store_zip' => '10001',
@@ -184,7 +198,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_canada() {
-		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'CA',
 			'store_state' => 'BC',
 			'store_zip' => 'V6G 3E2',
@@ -209,7 +223,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_au() {
-		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'AU',
 			'store_state' => 'NSW',
 			'store_zip' => 'NSW 2000',
@@ -234,7 +248,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_eu() {
-		TaxJar_Woocommerce_Helper::set_shipping_origin( array(
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'FR',
 			'store_state' => '',
 			'store_zip' => '75008',

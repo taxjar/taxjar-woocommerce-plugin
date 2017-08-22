@@ -24,7 +24,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/1.3.3/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = 'TaxJarWordPressPlugin/1.4.0/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 
@@ -50,8 +50,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		if ( ( 'yes' == $this->settings['enabled'] ) ) {
 
-			// Calculate Taxes
+			// Calculate Taxes at Cart / Checkout
 			add_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
+
+			// Calculate Taxes for Backend Orders (Woo 2.6+)
+			add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
 
 			// Settings Page
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
@@ -288,7 +291,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$this->line_items           = array();
 		$this->has_nexus            = 0;
 		$this->tax_source           = 'origin';
-		$this->rate_id              = null;
+		$this->rate_ids             = array();
 
 		// Strict conditions to be met before API call can be conducted
 		if ( empty( $to_country ) || empty( $to_zip ) || $customer->is_vat_exempt() ) {
@@ -346,6 +349,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$this->has_nexus          = (int) $taxjar_response->has_nexus;
 			$this->tax_source         = empty( $taxjar_response->tax_source ) ? 'origin' : $taxjar_response->tax_source;
 			$this->amount_to_collect  = $taxjar_response->amount_to_collect;
+			$this->tax_rate           = $taxjar_response->rate;
+			$this->freight_taxable    = (int) $taxjar_response->freight_taxable;
 
 			if ( ! empty( $taxjar_response->breakdown ) ) {
 				if ( ! empty( $taxjar_response->breakdown->shipping ) ) {
@@ -361,9 +366,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 				}
 			}
 
-			$this->item_collectable   = $this->amount_to_collect - $this->shipping_collectable;
-			$this->tax_rate           = $taxjar_response->rate;
-			$this->freight_taxable    = (int) $taxjar_response->freight_taxable;
+			$this->item_collectable = $this->amount_to_collect - $this->shipping_collectable;
 		}
 
 		// Remove taxes if they are set somehow and customer is exempt
@@ -371,58 +374,80 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$wc_cart_object->remove_taxes();
 		} elseif ( $this->has_nexus ) {
 			// Use Woo core to find matching rates for taxable address
-			$source_zip = 'destination' == $this->tax_source  ? $to_zip : $from_zip;
+			$source_zip = 'destination' == $this->tax_source ? $to_zip : $from_zip;
 			$source_city = 'destination' == $this->tax_source ? $to_city : $from_city;
 
 			if ( strtoupper( $to_city ) == strtoupper( $from_city ) ) {
 				$source_city = $to_city;
 			}
 
-			// Setup Tax Rates
-			$tax_rates = array(
-				'tax_rate_country' => $to_country,
-				'tax_rate_state' => $to_state,
-				'tax_rate_name' => sprintf( "%s Tax", $to_state ),
-				'tax_rate_priority' => 1,
-				'tax_rate_compound' => false,
-				'tax_rate_shipping' => $this->freight_taxable,
-				'tax_rate' => $this->tax_rate * 100,
-				'tax_rate_class' => '',
+			$location = array(
+				'to_country' => $to_country,
+				'to_state' => $to_state,
+				'to_zip' => $source_zip,
+				'to_city' => $source_city,
 			);
 
-			$wc_rates = WC_Tax::find_rates( array(
-				'country' => $to_country,
-				'state' => $to_state,
-				'postcode' => $source_zip,
-				'city' => $source_city,
-				'tax_class' => '',
-			) );
-
-			// If we have rates, use those, but if no rates returned create one to link with, or use the first rate returned.
-			if ( ! empty( $wc_rates ) ) {
-				$this->_log( '::: TAX RATES FOUND :::' );
-				$this->_log( $wc_rates );
-
-				// Get the existing ID
-				$rate_id = key( $wc_rates );
-
-				// Update Tax Rates with TaxJar rates ( rates might be coming from a cached taxjar rate )
-				$this->_log( ':: UPDATING TAX RATES TO ::' );
-				$this->_log( $tax_rates );
-
-				WC_TAX::_update_tax_rate( $rate_id, $tax_rates );
-			} else {
-				// Insert a rate if we did not find one
-				$this->_log( ':: Adding New Tax Rate ::' );
-				$rate_id = WC_Tax::_insert_tax_rate( $tax_rates );
-				WC_Tax::_update_tax_rate_postcodes( $rate_id, wc_clean( $source_zip ) );
-				WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $source_city ) );
+			// Add line item tax rates
+			foreach ( $this->line_items as $product_id => $line_item ) {
+				$product = wc_get_product( $product_id );
+				$tax_class = $product->get_tax_class();
+				$this->create_or_update_tax_rate( $product_id, $location, $line_item->combined_tax_rate * 100, $tax_class );
 			}
 
-			$this->_log( 'Tax Rate ID Set: ' . $rate_id );
-			$this->rate_id = $rate_id;
+			// Add shipping tax rate
+			$this->create_or_update_tax_rate( 'shipping', $location, $this->tax_rate * 100 );
 		} // End if().
 	} // End calculate_tax().
+
+	/**
+	 * Add or update a native WooCommerce tax rate
+	 *
+	 * @return void
+	 */
+	public function create_or_update_tax_rate( $product_id, $location, $rate, $tax_class = '' ) {
+		$tax_rate = array(
+			'tax_rate_country' => $location['to_country'],
+			'tax_rate_state' => $location['to_state'],
+			'tax_rate_name' => sprintf( "%s Tax", $location['to_state'] ),
+			'tax_rate_priority' => 1,
+			'tax_rate_compound' => false,
+			'tax_rate_shipping' => $this->freight_taxable,
+			'tax_rate' => $rate,
+			'tax_rate_class' => $tax_class,
+		);
+
+		$wc_rate = WC_Tax::find_rates( array(
+			'country' => $location['to_country'],
+			'state' => $location['to_state'],
+			'postcode' => $location['to_zip'],
+			'city' => $location['to_city'],
+			'tax_class' => $tax_class,
+		) );
+
+		if ( ! empty( $wc_rate ) ) {
+			$this->_log( ':: Tax Rate Found ::' );
+			$this->_log( $wc_rate );
+
+			// Get the existing ID
+			$rate_id = key( $wc_rate );
+
+			// Update Tax Rates with TaxJar rates ( rates might be coming from a cached taxjar rate )
+			$this->_log( ':: Updating Tax Rate To ::' );
+			$this->_log( $tax_rate );
+
+			WC_Tax::_update_tax_rate( $rate_id, $tax_rate );
+		} else {
+			// Insert a rate if we did not find one
+			$this->_log( ':: Adding New Tax Rate ::' );
+			$rate_id = WC_Tax::_insert_tax_rate( $tax_rate );
+			WC_Tax::_update_tax_rate_postcodes( $rate_id, wc_clean( $location['to_zip'] ) );
+			WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $location['to_city'] ) );
+		}
+
+		$this->_log( 'Tax Rate ID Set for ' . $product_id . ': ' . $rate_id );
+		$this->rate_ids[ $product_id ] = $rate_id;
+	}
 
 	public function smartcalcs_request( $json ) {
 		$url = $this->uri . 'taxes';
@@ -455,7 +480,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	/**
-	 * Ensure use of the TaxJar amount_to_collect and API data
+	 * Calculate tax / totals using TaxJar at checkout
 	 *
 	 * @return void
 	 */
@@ -472,6 +497,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$to_city = isset( $taxable_address[3] ) && ! empty( $taxable_address[3] ) ? $taxable_address[3] : false;
 		$to_street = isset( $taxable_address[4] ) && ! empty( $taxable_address[4] ) ? $taxable_address[4] : false;
 		$line_items = array();
+		$cart_taxes = array();
 
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
@@ -510,24 +536,115 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_zip' => $to_zip,
 			'shipping_amount' => $woocommerce->shipping->shipping_total,
 			'line_items' => $line_items,
-			'customer' => $woocommerce->customer,
 		) );
+
+		foreach ( $this->line_items as $product_id => $line_item ) {
+			if ( isset( $cart_taxes[ $this->rate_ids[ $product_id ] ] ) ) {
+				$cart_taxes[ $this->rate_ids[ $product_id ] ] += $line_item->tax_collectable;
+			} else {
+				$cart_taxes[ $this->rate_ids[ $product_id ] ] = $line_item->tax_collectable;
+			}
+		}
 
 		// Store the rate ID and the amount on the cart's totals
 		$wc_cart_object->tax_total = $this->item_collectable;
 		$wc_cart_object->shipping_tax_total = $this->shipping_collectable;
-		$wc_cart_object->taxes = array(
-			$this->rate_id => $this->item_collectable,
-		);
-		$wc_cart_object->shipping_taxes = array(
-			$this->rate_id => $this->shipping_collectable,
-		);
+		$wc_cart_object->taxes = $cart_taxes;
+
+		if ( isset( $this->rate_ids['shipping'] ) ) {
+			$wc_cart_object->shipping_taxes = array(
+				$this->rate_ids['shipping'] => $this->shipping_collectable,
+			);
+		}
 
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
-
 			if ( isset( $this->line_items[ $product->get_id() ] ) ) {
 				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $product->get_id() ]->tax_collectable;
+			}
+		}
+	}
+
+	/**
+	 * Calculate tax / totals using TaxJar for backend orders
+	 *
+	 * @return void
+	 */
+	public function calculate_backend_totals( $order_id ) {
+		$order = wc_get_order( $order_id );
+		$to_country = isset( $_POST['country'] ) ? strtoupper( wc_clean( $_POST['country'] ) ) : false;
+		$to_state = isset( $_POST['state'] ) ? strtoupper( wc_clean( $_POST['state'] ) ) : false;
+		$to_zip = isset( $_POST['postcode'] ) ? strtoupper( wc_clean( $_POST['postcode'] ) ) : false;
+		$to_city = isset( $_POST['city'] ) ? strtoupper( wc_clean( $_POST['city'] ) ) : false;
+		$line_items = array();
+
+		if ( method_exists( $order, 'get_shipping_total' ) ) {
+			$shipping = $order->get_shipping_total(); // Woo 3.0+
+		} else {
+			$shipping = $order->get_total_shipping(); // Woo 2.6
+		}
+
+		foreach ( $order->get_items() as $item ) {
+			if ( is_object( $item ) ) { // Woo 3.0+
+				$id = $item->get_product_id();
+				$quantity = $item->get_quantity();
+				$discount = floatval( wc_format_decimal( ( $item->get_subtotal() - $item->get_total() ) / $quantity ) );
+				$tax_class = explode( '-', $item->get_tax_class() );
+			} else { // Woo 2.6
+				$id = $item['product_id'];
+				$quantity = $item['qty'];
+				$discount = floatval( wc_format_decimal( ( $item['line_subtotal'] - $item['line_total'] ) / $quantity ) );
+				$tax_class = explode( '-', $item['tax_class'] );
+			}
+
+			$product = wc_get_product( $id );
+			$unit_price = $product->get_price();
+			$tax_code = '';
+
+			if ( ! $product->is_taxable() ) {
+				$tax_code = '99999';
+			}
+
+			if ( isset( $tax_class[1] ) && is_numeric( $tax_class[1] ) ) {
+				$tax_code = $tax_class[1];
+			}
+
+			if ( $unit_price ) {
+				array_push($line_items, array(
+					'id' => $id,
+					'quantity' => $quantity,
+					'product_tax_code' => $tax_code,
+					'unit_price' => $unit_price,
+					'discount' => $discount,
+				));
+			}
+		}
+
+		$this->calculate_tax( array(
+			'to_city' => $to_city,
+			'to_state' => $to_state,
+			'to_country' => $to_country,
+			'to_zip' => $to_zip,
+			'shipping_amount' => $shipping,
+			'line_items' => $line_items,
+		) );
+
+		// Add tax rates manually for Woo 3.0+
+		// Woo 2.6 adds the rates automatically
+		foreach ( $order->get_items() as $item ) {
+			if ( is_object( $item ) ) { // Woo 3.0+
+				$product_id = $item->get_product_id();
+			}
+
+			if ( isset( $this->rate_ids[ $product_id ] ) ) {
+				$rate_id = $this->rate_ids[ $product_id ];
+
+				if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Woo 3.0+
+					$item_tax = new WC_Order_Item_Tax();
+					$item_tax->set_rate( $rate_id );
+					$item_tax->set_order_id( $order_id );
+					$item_tax->save();
+				}
 			}
 		}
 	}
