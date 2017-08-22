@@ -163,7 +163,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			'store_street' => '11 W Jones St',
 		) );
 
-		// NY shipping address
+		// NC shipping address
 		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
 			'state' => 'NC',
 			'zip' => '28036',
