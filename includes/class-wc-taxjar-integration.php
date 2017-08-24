@@ -500,8 +500,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$tax_code = '99999';
 			}
 
-			if ( isset( $tax_class[1] ) && is_numeric( $tax_class[1] ) ) {
-				$tax_code = $tax_class[1];
+			if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
+				$tax_code = end( $tax_class );
 			}
 
 			if ( $unit_price && $line_subtotal ) {
