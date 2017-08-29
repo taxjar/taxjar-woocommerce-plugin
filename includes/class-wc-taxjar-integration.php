@@ -486,6 +486,14 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$line_items = array();
 		$cart_taxes = array();
 
+		foreach ( $wc_cart_object->coupons as $coupon ) {
+			$limit_usage_qty = get_post_meta( $coupon->get_id(), 'limit_usage_to_x_items', true );
+
+			if ( $limit_usage_qty ) {
+				$coupon->set_limit_usage_to_x_items( $limit_usage_qty );
+			}
+		}
+
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
 			$id = $product->get_id();
