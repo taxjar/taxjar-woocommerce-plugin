@@ -487,10 +487,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$cart_taxes = array();
 
 		foreach ( $wc_cart_object->coupons as $coupon ) {
-			$limit_usage_qty = get_post_meta( $coupon->get_id(), 'limit_usage_to_x_items', true );
+			if ( method_exists( $coupon, 'get_id' ) ) { // Woo 3.0+
+				$limit_usage_qty = get_post_meta( $coupon->get_id(), 'limit_usage_to_x_items', true );
 
-			if ( $limit_usage_qty ) {
-				$coupon->set_limit_usage_to_x_items( $limit_usage_qty );
+				if ( $limit_usage_qty ) {
+					$coupon->set_limit_usage_to_x_items( $limit_usage_qty );
+				}
 			}
 		}
 
