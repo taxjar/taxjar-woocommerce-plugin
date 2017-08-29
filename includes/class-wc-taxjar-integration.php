@@ -499,6 +499,16 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$line_items = array();
 		$cart_taxes = array();
 
+		foreach ( $wc_cart_object->coupons as $coupon ) {
+			if ( method_exists( $coupon, 'get_id' ) ) { // Woo 3.0+
+				$limit_usage_qty = get_post_meta( $coupon->get_id(), 'limit_usage_to_x_items', true );
+
+				if ( $limit_usage_qty ) {
+					$coupon->set_limit_usage_to_x_items( $limit_usage_qty );
+				}
+			}
+		}
+
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
 			$id = $product->get_id();
@@ -513,8 +523,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$tax_code = '99999';
 			}
 
-			if ( isset( $tax_class[1] ) && is_numeric( $tax_class[1] ) ) {
-				$tax_code = $tax_class[1];
+			if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
+				$tax_code = end( $tax_class );
 			}
 
 			if ( $unit_price && $line_subtotal ) {

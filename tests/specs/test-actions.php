@@ -108,7 +108,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
 			'price' => '25',
 			'sku' => 'EXEMPT1',
-			'tax_class' => 'clothing-20010',
+			'tax_class' => 'clothing-rate-20010',
 		) )->get_id();
 
 		$this->wc->cart->add_to_cart( $taxable_product );
