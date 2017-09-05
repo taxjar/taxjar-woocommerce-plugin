@@ -28,7 +28,7 @@ Get accurate sales tax calculations and return-ready reports. [TaxJar](https://w
 
 * No contracts. No activations fees. Ever.
 * Enjoy a free 30-Day trial with no credit card required.
-* After your trial, pay based on the number of API calls you make each month. You only make API calls in the states where you need to calculate sales tax!
+* After your trial, pay based on the number of API calls you make starting at $19 per month. You only make API calls in the states where you need to calculate sales tax!
 
 *Other Notable Features:*
 
