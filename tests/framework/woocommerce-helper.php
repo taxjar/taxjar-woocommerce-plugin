@@ -23,7 +23,7 @@ class TaxJar_Woocommerce_Helper {
 		// Create a default customer shipping address
 		$woocommerce->customer = TaxJar_Customer_Helper::create_customer();
 
-		// Set default customer tax classes
+		// Set default tax classes
 		// WooCommerce 3.2 checks for a valid class
 		update_option( 'woocommerce_tax_classes', "Reduced rate\nZero Rate\nClothing Rate - 20010" );
 	}
