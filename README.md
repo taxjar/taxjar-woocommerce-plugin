@@ -22,7 +22,7 @@ Review our [testing README](https://github.com/taxjar/taxjar-woocommerce-plugin/
 
 ## Support
 
-If you find a bug in our plugin, [open a new issue](https://github.com/taxjar/taxjar-woocommerce-plugin/issues/new) right here in GitHub. For general questions about TaxJar or specific issues with your store, please [contact us](http://www.taxjar.com/contact/) after going through our extension guide.
+If you find a bug in our plugin, [open a new issue](https://github.com/taxjar/taxjar-woocommerce-plugin/issues/new) right here in GitHub. For general questions about TaxJar or specific issues with your store, please [contact us](https://www.taxjar.com/contact/) after going through our extension guide.
 
 ## Contributing
 
