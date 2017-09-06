@@ -20,6 +20,9 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		// Prevent duplicate action callbacks
 		remove_action( 'woocommerce_calculate_totals', array( $this->tj, 'calculate_totals' ), 20 );
 		remove_action( 'woocommerce_before_save_order_items', array( $this->tj, 'calculate_backend_totals' ), 20 );
+
+		// Empty the cart
+		$this->wc->cart->empty_cart();
 	}
 
 	function test_taxjar_calculate_totals() {
