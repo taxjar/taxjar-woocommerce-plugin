@@ -194,6 +194,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 						'default'           => 'no',
 						'description'       => __( 'Log events such as API requests.', 'wc-taxjar' ),
 					),
+					'rate' => array(
+						'type'              => 'title',
+						'description'       => __( 'If you find TaxJar for WooCommerce useful, please rate us <a href="https://wordpress.org/support/plugin/taxjar-simplified-taxes-for-woocommerce/reviews/#new-post" target="_blank">&#9733;&#9733;&#9733;&#9733;&#9733;</a>. Thank you!', 'wc-taxjar' ),
+					),
 				)
 			);
 		} // End if().
