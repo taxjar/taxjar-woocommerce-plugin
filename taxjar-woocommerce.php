@@ -8,7 +8,7 @@
  * Author URI: https://www.taxjar.com
  *
  * Copyright: © 2014-2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc.
- * License: GNU General Public License v2.0
+ * License: GNU General Public License v2.0 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  *
  * @package WC_Taxjar_Integration
