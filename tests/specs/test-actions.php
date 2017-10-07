@@ -42,7 +42,13 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $this->wc->cart->tax_total, 0.4, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->shipping_tax_total, 0.2, '', 0.001 );
-		$this->assertEquals( array_values( $this->wc->cart->shipping_taxes )[0], 0.2, '', 0.001 );
+
+		if ( method_exists( $this->wc->cart, 'get_shipping_taxes' ) ) {
+			$this->assertEquals( array_values( $this->wc->cart->get_shipping_taxes() )[0], 0.2, '', 0.001 );
+		} else {
+			$this->assertEquals( array_values( $this->wc->cart->shipping_taxes )[0], 0.2, '', 0.001 );
+		}
+
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.6, '', 0.001 );
 
 		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
