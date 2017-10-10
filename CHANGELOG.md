@@ -93,7 +93,7 @@
 # 1.0.5 (2014-09-26)
 ## Updated
 * New way of handling taxes on orders compatible with WooCommerce 2.2
-* Uses new API (with support for Canada): [read the docs](http://www.taxjar.com/api/docs/)
+* Uses new API (with support for Canada): [read the docs](https://www.taxjar.com/api/docs/)
 
 ## New
 * Ability to download orders easily into TaxJar

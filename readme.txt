@@ -6,8 +6,8 @@ Tested up to: 4.7.5
 Stable tag: 1.4.0
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
-WC requires at least: 2.6
-WC tested up to: 3.1.1
+WC requires at least: 2.6.0
+WC tested up to: 3.2.0
 
 Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculation, collection, and filing.
 
@@ -28,7 +28,7 @@ Get accurate sales tax calculations and return-ready reports. [TaxJar](https://w
 
 * No contracts. No activations fees. Ever.
 * Enjoy a free 30-Day trial with no credit card required.
-* After your trial, pay based on the number of API calls you make each month. You only make API calls in the states where you need to calculate sales tax!
+* After your trial, pay based on the number of API calls you make starting at $19 per month. You only make API calls in the states where you need to calculate sales tax!
 
 *Other Notable Features:*
 

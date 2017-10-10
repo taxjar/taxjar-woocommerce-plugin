@@ -19,7 +19,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		$this->id                 = 'taxjar-integration';
 		$this->method_title       = __( 'TaxJar Integration', 'wc-taxjar' );
-		$this->method_description = __( 'TaxJar is the easiest to use tax reporting and calculation engine for small business owners and sales tax professionals. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), the city, and the zip code from which your store ships to configure your TaxJar for Woocommerce installation.  You may also enable "Order Downloads" to immediately allow access to import the transactions from this store into your TaxJar account, all in one click! For help, email support@taxjar.com or reach out to us via live chat at <a href="http://taxjar.com">TaxJar.com</a>.', 'wc-taxjar' );
+		$this->method_description = __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), city, and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable order downloads to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>. We\'ll get back to you within hours.</b>', 'wc-taxjar' );
 		$this->app_uri            = 'https://app.taxjar.com/';
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
@@ -31,12 +31,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		// Load the settings.
 		$this->init_settings();
 
-		// Define user set variables.
-		$this->api_token        = $this->get_option( 'api_token' );
-		$this->store_zip        = $this->get_option( 'store_zip' );
-		$this->store_city       = $this->get_option( 'store_city' );
-		$this->store_street     = $this->get_option( 'store_street' );
-		$this->enabled          = filter_var( $this->get_option( 'enabled' ), FILTER_VALIDATE_BOOLEAN );
+		$this->store_street = $this->get_option( 'store_street' );
 
 		// Cache rates for 1 hour.
 		$this->cache_time = HOUR_IN_SECONDS;
@@ -105,8 +100,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		$default_wc_settings = explode( ':', get_option( 'woocommerce_default_country' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
 		$tj_connection = new WC_TaxJar_Connection( $this );
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
 
 		if ( empty( $default_wc_settings[1] ) ) {
 			$default_wc_settings[1] = 'N/A';
@@ -206,6 +202,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 						'label'             => __( 'Enable logging', 'wc-taxjar' ),
 						'default'           => 'no',
 						'description'       => __( 'Log events such as API requests.', 'wc-taxjar' ),
+					),
+					'rate' => array(
+						'type'              => 'title',
+						'description'       => __( 'If you find TaxJar for WooCommerce useful, please rate us <a href="https://wordpress.org/support/plugin/taxjar-simplified-taxes-for-woocommerce/reviews/#new-post" target="_blank">&#9733;&#9733;&#9733;&#9733;&#9733;</a>. Thank you!', 'wc-taxjar' ),
 					),
 				)
 			);
@@ -513,9 +513,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$product = $cart_item['data'];
 			$id = $product->get_id();
 			$quantity = $cart_item['quantity'];
-			$unit_price = $product->get_price();
-			$line_subtotal = $cart_item['line_subtotal'];
-			$discount = ( $unit_price - $wc_cart_object->get_discounted_price( $cart_item, $unit_price ) ) * $quantity;
+			$unit_price = wc_format_decimal( $product->get_price() );
+			$line_subtotal = wc_format_decimal( $cart_item['line_subtotal'] );
+			$discount = wc_format_decimal( $cart_item['line_subtotal'] - $cart_item['line_total'] );
 			$tax_class = explode( '-', $product->get_tax_class() );
 			$tax_code = '';
 
@@ -598,12 +598,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 			if ( is_object( $item ) ) { // Woo 3.0+
 				$id = $item->get_product_id();
 				$quantity = $item->get_quantity();
-				$discount = floatval( wc_format_decimal( ( $item->get_subtotal() - $item->get_total() ) / $quantity ) );
+				$discount = wc_format_decimal( $item->get_subtotal() - $item->get_total() );
 				$tax_class = explode( '-', $item->get_tax_class() );
 			} else { // Woo 2.6
 				$id = $item['product_id'];
 				$quantity = $item['qty'];
-				$discount = floatval( wc_format_decimal( ( $item['line_subtotal'] - $item['line_total'] ) / $quantity ) );
+				$discount = wc_format_decimal( $item['line_subtotal'] - $item['line_total'] );
 				$tax_class = explode( '-', $item['tax_class'] );
 			}
 
@@ -920,8 +920,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 *
 	 */
 	public function output_sections_before() {
-		echo '<div class="taxjar"><h3>Tax Rates Powered by <a href="http://www.taxjar.com" target="_blank">TaxJar</a>. <a href="admin.php?page=wc-settings&tab=integration">Configure TaxJar</a></h3></div>';
-		echo '<div style="display:none;">';
+		echo '<div class="updated taxjar-notice"><p><b>Powered by <a href="https://www.taxjar.com" target="_blank">TaxJar</a></b> ― Your tax rates and settings are automatically configured.</p><p><a href="admin.php?page=wc-settings&tab=integration" class="button-primary">Configure TaxJar</a> &nbsp; <a href="https://www.taxjar.com/contact/" class="button" target="_blank">Help &amp; Support</a></p></div>';
+		echo '<div style="display: none">';
 	}
 
 	/**
