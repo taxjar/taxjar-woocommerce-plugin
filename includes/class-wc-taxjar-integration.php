@@ -44,6 +44,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		if ( ( 'yes' == $this->settings['enabled'] ) ) {
 
 			// Calculate Taxes at Cart / Checkout
+			add_action( 'woocommerce_before_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 			add_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 
 			// Calculate Taxes for Backend Orders (Woo 2.6+)
@@ -500,8 +501,15 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$id = $product->get_id();
 			$quantity = $cart_item['quantity'];
 			$unit_price = wc_format_decimal( $product->get_price() );
-			$line_subtotal = wc_format_decimal( $cart_item['line_subtotal'] );
-			$discount = wc_format_decimal( $cart_item['line_subtotal'] - $cart_item['line_total'] );
+
+			if ( isset( $cart_item['line_subtotal'] ) ) {
+				$line_subtotal = wc_format_decimal( $cart_item['line_subtotal'] );
+				$discount = wc_format_decimal( $cart_item['line_subtotal'] - $cart_item['line_total'] );
+			} else {
+				$line_subtotal = wc_add_number_precision_deep( $cart_item['data']->get_price() ) * $cart_item['quantity'];
+				$discount = 0;
+			}
+
 			$tax_class = explode( '-', $product->get_tax_class() );
 			$tax_code = '';
 
@@ -529,7 +537,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_state' => $to_state,
 			'to_country' => $to_country,
 			'to_zip' => $to_zip,
-			'shipping_amount' => $woocommerce->shipping->shipping_total,
+			'shipping_amount' => wc_format_decimal( $woocommerce->shipping->shipping_total ),
 			'line_items' => $line_items,
 		) );
 
