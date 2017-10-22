@@ -1,3 +1,7 @@
+# 1.5.1 (2017-10-22)
+* Fix totals calculation issue with WooCommerce 3.2
+* Fix plugin action links filter issue with conflicting plugins
+
 # 1.5.0 (2017-10-10)
 * WooCommerce 3.2 compatibility
 * Improve tax rate override notice under WooCommerce > Settings > Tax
