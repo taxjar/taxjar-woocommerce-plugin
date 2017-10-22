@@ -567,8 +567,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return float
 	 */
 	public function calculated_total( $total, $cart ) {
-		if ( method_exists( $cart, 'get_subtotal' ) ) { // Woo 3.2+
-			if ( $cart->get_subtotal() == $total && $this->amount_to_collect > 0 ) {
+		if ( method_exists( $cart, 'get_total_tax' ) ) { // Woo 3.2+
+			if ( $cart->get_total_tax() < $this->amount_to_collect && $this->amount_to_collect > 0 ) {
 				$total += $this->amount_to_collect;
 			}
 		}
