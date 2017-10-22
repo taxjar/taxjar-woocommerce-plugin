@@ -56,6 +56,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			// Filters
 			add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'sanitize_settings' ) );
 			add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
+			add_filter( 'woocommerce_calculated_total', array( $this, 'calculated_total' ), 10, 2 );
 
 			// If TaxJar is enabled and a user disables taxes we renable them
 			update_option( 'woocommerce_calc_taxes', 'yes' );
@@ -558,6 +559,21 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $product->get_id() ]->tax_collectable;
 			}
 		}
+	}
+
+	/**
+	 * Modify total if missing tax for WooCommerce 3.2+
+	 *
+	 * @return float
+	 */
+	public function calculated_total( $total, $cart ) {
+		if ( method_exists( $cart, 'get_total_tax' ) ) { // Woo 3.2+
+			if ( $cart->get_total_tax() < $this->amount_to_collect && $this->amount_to_collect > 0 ) {
+				$total += $this->amount_to_collect;
+			}
+		}
+
+		return $total;
 	}
 
 	/**
