@@ -58,7 +58,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
 			add_filter( 'woocommerce_calculated_total', array( $this, 'calculated_total' ), 10, 2 );
 
-			// If TaxJar is enabled and a user disables taxes we renable them
+			// If TaxJar is enabled and user disables taxes we re-enable them
 			update_option( 'woocommerce_calc_taxes', 'yes' );
 
 			// Users can set either billing or shipping address for tax rates but not shop
