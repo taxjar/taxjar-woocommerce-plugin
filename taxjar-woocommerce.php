@@ -33,6 +33,7 @@ final class WC_Taxjar {
 	 */
 	public function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'plugin_settings_link' ) );
 		register_activation_hook( __FILE__, array( 'WC_Taxjar', 'plugin_registration_hook' ) );
 	}
 
@@ -255,18 +256,16 @@ final class WC_Taxjar {
 		return $url;
 	}
 
+	/**
+	 * Adds settings link to the plugins page
+	 */
+	public function plugin_settings_link( $links ) {
+		$settings_link = '<a href="admin.php?page=wc-settings&tab=integration&section=taxjar-integration">Settings</a>';
+		array_unshift( $links, $settings_link );
+		return $links;
+	}
+
 } // End WC_Taxjar.
-
-/**
- * Adds settings link to the plugins page
- */
-function plugin_settings_link( $links ) {
-	$settings_link = '<a href="admin.php?page=wc-settings&tab=integration&section=taxjar-integration">Settings</a>';
-	array_unshift( $links, $settings_link );
-	return $links;
-}
-
-add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'plugin_settings_link' );
 
 $WC_Taxjar = new WC_Taxjar( __FILE__ );
 
