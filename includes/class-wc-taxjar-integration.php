@@ -163,7 +163,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 				array(
 					'taxjar_download' => $this->download_orders->get_form_settings_field(),
 					'store_street' => array(
-						'title'             => __( 'Ship From Street Address', 'wc-taxjar' ),
+						'title'             => __( 'Ship From Address', 'wc-taxjar' ),
 						'type'              => 'text',
 						'description'       => __( 'Enter the street address where your store ships from.', 'wc-taxjar' ),
 						'desc_tip'          => true,
