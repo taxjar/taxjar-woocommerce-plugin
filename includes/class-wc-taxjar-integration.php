@@ -60,6 +60,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 			add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
 			add_filter( 'woocommerce_calculated_total', array( $this, 'calculated_total' ), 10, 2 );
 
+			// Scripts / Stylesheets
+			add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_new_order_assets' ) );
+
 			// If TaxJar is enabled and user disables taxes we re-enable them
 			update_option( 'woocommerce_calc_taxes', 'yes' );
 
@@ -602,6 +605,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$to_state = isset( $_POST['state'] ) ? strtoupper( wc_clean( $_POST['state'] ) ) : false;
 		$to_zip = isset( $_POST['postcode'] ) ? strtoupper( wc_clean( $_POST['postcode'] ) ) : false;
 		$to_city = isset( $_POST['city'] ) ? strtoupper( wc_clean( $_POST['city'] ) ) : false;
+		$to_street = isset( $_POST['street'] ) ? strtoupper( wc_clean( $_POST['street'] ) ) : false;
+
 		$line_items = array();
 
 		if ( method_exists( $order, 'get_shipping_total' ) ) {
@@ -647,6 +652,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		$this->calculate_tax( array(
+			'to_street' => $to_street,
 			'to_city' => $to_city,
 			'to_state' => $to_state,
 			'to_country' => $to_country,
@@ -949,6 +955,16 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	/**
+	 * Checks if currently on the WooCommerce new order page
+	 *
+	 * @return boolean
+	 */
+	public function on_order_page() {
+		global $pagenow;
+		return ( in_array( $pagenow, array( 'post-new.php' ) ) && isset( $_GET['post_type'] ) && 'shop_order' == $_GET['post_type'] );
+	}
+
+	/**
 	 * Checks if currently on the TaxJar settings page
 	 *
 	 * @return boolean
@@ -982,6 +998,18 @@ class WC_Taxjar_Integration extends WC_Integration {
 		wp_enqueue_script( 'wc-taxjar-admin' , array( 'jquery' ) );
 	}
 
+	/**
+	 * Admin New Order Assets
+	 */
+	public function load_taxjar_admin_new_order_assets() {
+		if ( ! $this->on_order_page() ) {
+			return;
+		}
+
+		// Load Javascript for WooCommerce new order page
+		wp_register_script( 'wc-taxjar-order', plugin_dir_url( __FILE__ ) . '/js/wc-taxjar-order.js' );
+		wp_enqueue_script( 'wc-taxjar-order' , array( 'jquery' ) );
+	}
 }
 
 endif;
