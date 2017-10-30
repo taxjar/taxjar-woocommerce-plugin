@@ -2,7 +2,7 @@
 Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar, sales tax compliance, automation, accounting, sales tax filing
 Requires at least: 4.2
-Tested up to: 4.7.5
+Tested up to: 4.8.2
 Stable tag: 1.5.1
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
