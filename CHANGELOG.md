@@ -1,3 +1,15 @@
+# 1.5.1 (2017-10-22)
+* Fix totals calculation issue with WooCommerce 3.2
+* Fix plugin action links filter issue with conflicting plugins
+
+# 1.5.0 (2017-10-10)
+* WooCommerce 3.2 compatibility
+* Improve tax rate override notice under WooCommerce > Settings > Tax
+* Improve plugin intro copy for support under "TaxJar Integration"
+* Fix "limit usage to X items" discounts in WooCommerce 3.1
+* Fix `get_id` method error for discounts in WooCommerce 2.6
+* Fix product tax class parsing for multi-word categories such as "Food & Groceries"
+
 # 1.4.0 (2017-08-17)
 * Support backend order calculations for both WooCommerce 2.6.x and 3.x
 * Fix backend rate display for orders with multiple tax classes
