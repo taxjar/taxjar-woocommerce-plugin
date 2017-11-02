@@ -103,13 +103,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 			return;
 		}
 
-		$default_wc_settings = explode( ':', get_option( 'woocommerce_default_country' ) );
+		$store_settings = $this->get_store_settings();
 		$tj_connection = new WC_TaxJar_Connection( $this );
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
 
-		if ( empty( $default_wc_settings[1] ) ) {
-			$default_wc_settings[1] = 'N/A';
+		if ( empty( $store_settings['state'] ) ) {
+			$store_settings['state'] = 'N/A';
 		}
 
 		// Build the form array
@@ -162,9 +162,18 @@ class WC_Taxjar_Integration extends WC_Integration {
 				);
 			}
 
-			$this->form_fields = array_merge( $this->form_fields,
-				array(
-					'taxjar_download' => $this->download_orders->get_form_settings_field(),
+			if ( get_option( 'woocommerce_store_address' ) || get_option( 'woocommerce_store_city' ) || get_option( 'woocommerce_store_postcode' ) ) {
+				$store_address_fields = array(
+					'store_address' => array(
+						'title'             => __( 'Ship From Address', 'wc-taxjar' ),
+						'type'              => 'hidden',
+						'description'       => __( 'We have automatically detected your ship from address:<br><br>' . $store_settings['street'] . '<br>' . $store_settings['city'] . ', ' . $store_settings['state'] . ' ' . $store_settings['postcode'] . '<br>' . WC()->countries->countries[ $store_settings['country'] ] . '<br><br>You can change this setting at:<br><a href="' . get_admin_url( null, 'admin.php?page=wc-settings' ) . '">WooCommerce -> Settings -> General -> Store Address</a>', 'wc-taxjar' ),
+						'class'             => 'input-text disabled regular-input',
+						'disabled'          => 'disabled',
+					),
+				);
+			} else {
+				$store_address_fields = array(
 					'store_street' => array(
 						'title'             => __( 'Ship From Address', 'wc-taxjar' ),
 						'type'              => 'text',
@@ -182,12 +191,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 					'store_state' => array(
 						'title'             => __( 'Ship From State', 'wc-taxjar' ),
 						'type'              => 'hidden',
-						'description'       => __( 'We have automatically detected your ship from state as being ' . $default_wc_settings[1] . '.<br>You can change this setting at <a href="' . get_admin_url( null, 'admin.php?page=wc-settings' ) . '">Woo->Settings->General->Base Location</a>', 'wc-taxjar' ),
+						'description'       => __( 'We have automatically detected your ship from state as being ' . $store_settings['state'] . '.<br>You can change this setting at <a href="' . get_admin_url( null, 'admin.php?page=wc-settings' ) . '">WooCommerce -> Settings -> General -> Base Location</a>', 'wc-taxjar' ),
 						'class'             => 'input-text disabled regular-input',
 						'disabled'          => 'disabled',
 					),
-					'store_zip' => array(
-						'title'             => __( 'Ship From Zip Code', 'wc-taxjar' ),
+					'store_postcode' => array(
+						'title'             => __( 'Ship From Postcode / ZIP', 'wc-taxjar' ),
 						'type'              => 'text',
 						'description'       => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
 						'desc_tip'          => true,
@@ -196,10 +205,19 @@ class WC_Taxjar_Integration extends WC_Integration {
 					'store_country' => array(
 						'title'             => __( 'Ship From Country', 'wc-taxjar' ),
 						'type'              => 'hidden',
-						'description'       => __( 'We have automatically detected your ship from country as being ' . $default_wc_settings[0] . '.<br>You can change this setting at <a href="' . get_admin_url( null, 'admin.php?page=wc-settings' ) . '">Woo->Settings->General->Base Location</a>', 'wc-taxjar' ),
+						'description'       => __( 'We have automatically detected your ship from country as being ' . $store_settings['country'] . '.<br>You can change this setting at <a href="' . get_admin_url( null, 'admin.php?page=wc-settings' ) . '">WooCommerce -> Settings -> General -> Base Location</a>', 'wc-taxjar' ),
 						'class'             => 'input-text disabled regular-input',
 						'disabled'          => 'disabled',
 					),
+				);
+			}
+
+			$this->form_fields = array_merge( $this->form_fields,
+				array(
+					'taxjar_download' => $this->download_orders->get_form_settings_field(),
+				),
+				$store_address_fields,
+				array(
 					'debug' => array(
 						'title'             => __( 'Debug Log', 'wc-taxjar' ),
 						'type'              => 'checkbox',
@@ -313,11 +331,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$to_zip           = explode( ',' , $to_zip );
 		$to_zip           = array_shift( $to_zip );
 
-		$from_country     = $store_settings['store_country_setting'];
-		$from_state       = $store_settings['store_state_setting'];
-		$from_zip         = $store_settings['taxjar_zip_code_setting'];
-		$from_city        = $store_settings['taxjar_city_setting'];
-		$from_street      = $store_settings['taxjar_street_setting'];
+		$from_country     = $store_settings['country'];
+		$from_state       = $store_settings['state'];
+		$from_zip         = $store_settings['postcode'];
+		$from_city        = $store_settings['city'];
+		$from_street      = $store_settings['street'];
 		$shipping_amount  = is_null( $shipping_amount ) ? 0.0 : $shipping_amount;
 
 		$this->_log( ':::: TaxJar API called ::::' );
@@ -705,8 +723,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		if ( 'base' == $tax_based_on ) {
-			$postcode = $store_settings['taxjar_zip_code_setting'];
-			$city = strtoupper( $store_settings['taxjar_city_setting'] );
+			$postcode = $store_settings['postcode'];
+			$city = strtoupper( $store_settings['city'] );
 		}
 
 		if ( '' != $street ) {
@@ -842,11 +860,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 		// We're going to make the api token all lower case characters and clean input
 		if ( isset( $settings ) &&
 				isset( $settings['api_token'] ) &&
-				isset( $settings['store_zip'] ) &&
+				isset( $settings['store_postcode'] ) &&
 				isset( $settings['store_city'] ) &&
 				isset( $settings['store_street'] ) ) {
 			$settings['api_token']  = strtolower( wc_clean( $settings['api_token'] ) );
-			$settings['store_zip']  = wc_clean( $settings['store_zip'] );
+			$settings['store_postcode']  = wc_clean( $settings['store_postcode'] );
 			$settings['store_city'] = wc_clean( $settings['store_city'] );
 			$settings['store_street'] = wc_clean( $settings['store_street'] );
 		}
@@ -881,20 +899,23 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return array
 	 */
 	public function get_store_settings() {
-		$default_wc_settings     = explode( ':', get_option( 'woocommerce_default_country' ) );
-		$taxjar_zip_code_setting = $this->settings['store_zip'];
-		$taxjar_city_setting     = $this->settings['store_city'];
-		$taxjar_street_setting   = $this->settings['store_street'];
-		$store_settings          = array(
-			'taxjar_zip_code_setting' => $taxjar_zip_code_setting,
-			'store_state_setting' => null,
-			'store_country_setting' => $default_wc_settings[0],
-			'taxjar_city_setting' => $taxjar_city_setting,
-			'taxjar_street_setting' => $taxjar_street_setting,
+		$store_address = get_option( 'woocommerce_store_address' ) ? get_option( 'woocommerce_store_address' ) : $this->settings['store_street'];
+		$store_city = get_option( 'woocommerce_store_city' ) ? get_option( 'woocommerce_store_city' ) : $this->settings['store_city'];
+		$store_country = explode( ':', get_option( 'woocommerce_default_country' ) );
+		$store_postcode = get_option( 'woocommerce_store_postcode' ) ? get_option( 'woocommerce_store_postcode' ) : $this->settings['store_postcode'];
+
+		$store_settings = array(
+			'street' => $store_address,
+			'city' => $store_city,
+			'state' => null,
+			'country' => $store_country[0],
+			'postcode' => $store_postcode,
 		);
-		if ( isset( $default_wc_settings[1] ) ) {
-			$store_settings['store_state_setting'] = $default_wc_settings[1];
+
+		if ( isset( $store_country[1] ) ) {
+			$store_settings['state'] = $store_country[1];
 		}
+
 		return $store_settings;
 	}
 

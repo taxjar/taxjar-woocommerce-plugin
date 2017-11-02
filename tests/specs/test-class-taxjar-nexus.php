@@ -12,7 +12,7 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'CO',
-			'store_zip' => '80111',
+			'store_postcode' => '80111',
 			'store_city' => 'Greenwood Village',
 		) );
 

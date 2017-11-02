@@ -15,7 +15,7 @@ class TJ_WC_Filters extends WP_UnitTestCase {
 		$address = array( 'US', 'CO', '81210', 'Denver' );
 		$address = apply_filters( 'woocommerce_customer_taxable_address', $address );
 
-		$this->assertEquals( strtoupper( $address[2] ), strtoupper( $tj->settings['store_zip'] ) );
+		$this->assertEquals( strtoupper( $address[2] ), strtoupper( $tj->settings['store_postcode'] ) );
 		$this->assertEquals( strtoupper( $address[3] ), strtoupper( $tj->settings['store_city'] ) );
 	}
 

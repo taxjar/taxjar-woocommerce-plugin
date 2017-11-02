@@ -11,7 +11,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'CO',
-			'store_zip' => '80111',
+			'store_postcode' => '80111',
 			'store_city' => 'Greenwood Village',
 		) );
 	}
@@ -102,7 +102,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'NY',
-			'store_zip' => '10001',
+			'store_postcode' => '10001',
 			'store_city' => 'New York City',
 		) );
 
@@ -167,7 +167,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'NC',
-			'store_zip' => '27601',
+			'store_postcode' => '27601',
 			'store_city' => 'Raleigh',
 			'store_street' => '11 W Jones St',
 		) );
@@ -210,7 +210,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'CA',
 			'store_state' => 'BC',
-			'store_zip' => 'V6G 3E2',
+			'store_postcode' => 'V6G 3E2',
 			'store_city' => 'Vancouver',
 		) );
 
@@ -235,7 +235,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'AU',
 			'store_state' => 'NSW',
-			'store_zip' => 'NSW 2000',
+			'store_postcode' => 'NSW 2000',
 			'store_city' => 'Sydney',
 		) );
 
@@ -260,7 +260,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'FR',
 			'store_state' => '',
-			'store_zip' => '75008',
+			'store_postcode' => '75008',
 			'store_city' => 'Paris',
 		) );
 
