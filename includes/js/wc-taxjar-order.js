@@ -5,7 +5,7 @@ jQuery( document ).ready( function() {
 	var TaxJarOrder = ( function( $, m ) {
 		$( document ).ajaxSend( function( event, request, settings ) {
 			if ( settings.data ) {
-				var data = JSON.parse( '{"' + decodeURI( settings.data.replace( /&/g, '","' ).replace( /=/g, '":"' ) ) + '"}' );
+				var data = JSON.parse( '{"' + decodeURIComponent( settings.data.replace( /&/g, '","' ).replace( /=/g, '":"' ) ) + '"}' );
 
 				if ( data.action === 'woocommerce_calc_line_taxes' ) {
 					var street = '';
