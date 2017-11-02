@@ -64,7 +64,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			// Users can set either billing or shipping address for tax rates but not shop
 			update_option( 'woocommerce_tax_based_on', 'shipping' );
 
-			// Rate calculations assume tax not inlcuded
+			// Rate calculations assume tax not included
 			update_option( 'woocommerce_prices_include_tax', 'no' );
 
 			// Don't ever set a default customer address
@@ -92,7 +92,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 *
 	 * @return void
 	 */
-	// fix undefined offset for country not set...
 	public function init_form_fields() {
 		if ( ! $this->on_settings_page() ) {
 			return;
