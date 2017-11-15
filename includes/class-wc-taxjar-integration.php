@@ -18,13 +18,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 		global $woocommerce;
 
 		$this->id                 = 'taxjar-integration';
-		$this->method_title       = __( 'TaxJar Integration', 'wc-taxjar' );
+		$this->method_title       = __( 'TaxJar', 'wc-taxjar' );
 		$this->method_description = __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), city, and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable order downloads to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>. We\'ll get back to you within hours.</b>', 'wc-taxjar' );
 		$this->app_uri            = 'https://app.taxjar.com/';
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/1.5.1/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = 'TaxJarWordPressPlugin/1.5.2/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 
@@ -46,7 +46,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 		if ( ( 'yes' == $this->settings['enabled'] ) ) {
 
 			// Calculate Taxes at Cart / Checkout
-			add_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
+			if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
+				add_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
+			} else {
+				add_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
+			}
 
 			// Calculate Taxes for Backend Orders (Woo 2.6+)
 			add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
@@ -58,7 +62,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 			// Filters
 			add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'sanitize_settings' ) );
 			add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
-			add_filter( 'woocommerce_calculated_total', array( $this, 'calculated_total' ), 10, 2 );
 
 			// Scripts / Stylesheets
 			add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_new_order_assets' ) );
@@ -69,7 +72,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			// Users can set either billing or shipping address for tax rates but not shop
 			update_option( 'woocommerce_tax_based_on', 'shipping' );
 
-			// Rate calculations assume tax not inlcuded
+			// Rate calculations assume tax not included
 			update_option( 'woocommerce_prices_include_tax', 'no' );
 
 			// Don't ever set a default customer address
@@ -97,7 +100,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 *
 	 * @return void
 	 */
-	// fix undefined offset for country not set...
 	public function init_form_fields() {
 		if ( ! $this->on_settings_page() ) {
 			return;
@@ -570,6 +572,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'line_items' => $line_items,
 		) );
 
+		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
+			new WC_Cart_Totals( $wc_cart_object );
+		}
+
 		foreach ( $this->line_items as $product_id => $line_item ) {
 			if ( isset( $cart_taxes[ $this->rate_ids[ $product_id ] ] ) ) {
 				$cart_taxes[ $this->rate_ids[ $product_id ] ] += $line_item->tax_collectable;
@@ -595,21 +601,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $product->get_id() ]->tax_collectable;
 			}
 		}
-	}
-
-	/**
-	 * Modify total if missing tax for WooCommerce 3.2+
-	 *
-	 * @return float
-	 */
-	public function calculated_total( $total, $cart ) {
-		if ( method_exists( $cart, 'get_total_tax' ) ) { // Woo 3.2+
-			if ( $cart->get_total_tax() < $this->amount_to_collect && $this->amount_to_collect > 0 ) {
-				$total += $this->amount_to_collect;
-			}
-		}
-
-		return $total;
 	}
 
 	/**
