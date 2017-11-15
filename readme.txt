@@ -3,7 +3,7 @@ Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxes, tax calculation, free tax calculation, sales tax, taxjar, sales tax compliance, automation, accounting, sales tax filing
 Requires at least: 4.2
 Tested up to: 4.8.2
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 2.6.0
@@ -92,6 +92,11 @@ Yes. The fee is $19.95 per state, per filing.
 1. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+ 
+= 1.5.2 (2017-11-14) =
+* Recalculate totals in WooCommerce 3.2 instead of updating grand total
+* Update "tested up to" for WordPress 4.8.2
+* Update integration title
 
 = 1.5.1 (2017-10-22) =
 * Fix totals calculation issue with WooCommerce 3.2
