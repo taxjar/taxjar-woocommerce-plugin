@@ -1,3 +1,8 @@
+# 1.5.2 (2017-11-14)
+* Recalculate totals in WooCommerce 3.2 instead of updating grand total
+* Update "tested up to" for WordPress 4.8.2
+* Update integration title
+
 # 1.5.1 (2017-10-22)
 * Fix totals calculation issue with WooCommerce 3.2
 * Fix plugin action links filter issue with conflicting plugins

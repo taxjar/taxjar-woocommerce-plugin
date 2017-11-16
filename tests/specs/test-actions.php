@@ -14,11 +14,17 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			'store_zip' => '80111',
 			'store_city' => 'Greenwood Village',
 		) );
+
+		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
+			$this->action = 'woocommerce_after_calculate_totals';
+		} else {
+			$this->action = 'woocommerce_calculate_totals';
+		}
 	}
 
 	function tearDown() {
 		// Prevent duplicate action callbacks
-		remove_action( 'woocommerce_calculate_totals', array( $this->tj, 'calculate_totals' ), 20 );
+		remove_action( $this->action, array( $this->tj, 'calculate_totals' ), 20 );
 		remove_action( 'woocommerce_before_save_order_items', array( $this->tj, 'calculate_backend_totals' ), 20 );
 
 		// Empty the cart
@@ -28,7 +34,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	function test_taxjar_calculate_totals() {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		$this->wc->cart->add_to_cart( $product );
-		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+		do_action( $this->action, $this->wc->cart );
 		$this->assertTrue( $this->wc->cart->get_taxes_total() != 0 );
 	}
 
@@ -38,7 +44,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->wc->shipping->shipping_total = 5;
 		$this->wc->cart->add_to_cart( $product );
 
-		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+		do_action( $this->action, $this->wc->cart );
 
 		$this->assertEquals( $this->wc->cart->tax_total, 0.4, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->shipping_tax_total, 0.2, '', 0.001 );
@@ -66,7 +72,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->wc->cart->add_to_cart( $product );
 		$this->wc->cart->add_to_cart( $extra_product, 2 );
 
-		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+		do_action( $this->action, $this->wc->cart );
 
 		$this->assertEquals( $this->wc->cart->tax_total, 2.4, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2.4, '', 0.001 );
@@ -92,7 +98,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->wc->cart->add_to_cart( $exempt_product );
 
-		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+		do_action( $this->action, $this->wc->cart );
 
 		$this->assertEquals( $this->wc->cart->tax_total, 0, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0, '', 0.001 );
@@ -123,7 +129,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->wc->cart->add_to_cart( $taxable_product );
 		$this->wc->cart->add_to_cart( $exempt_product, 2 );
 
-		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+		do_action( $this->action, $this->wc->cart );
 
 		$this->assertEquals( $this->wc->cart->tax_total, 0.89, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.89, '', 0.001 );
@@ -138,6 +144,54 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 			if ( 'SIMPLE1' == $sku ) {
 				$this->assertEquals( $item['line_tax'], 0.89, '', 0.001 );
+			}
+		}
+	}
+
+	function test_correct_taxes_for_product_exemption_thresholds() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'NY',
+			'store_zip' => '10001',
+			'store_city' => 'New York City',
+		) );
+
+		// NY shipping address
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NY',
+			'zip' => '10001',
+			'city' => 'New York City',
+		) );
+
+		$taxable_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '150', // Over $110 threshold
+			'sku' => 'EXEMPTOVER1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '25',
+			'sku' => 'EXEMPT1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+
+		$this->wc->cart->add_to_cart( $taxable_product );
+		$this->wc->cart->add_to_cart( $exempt_product, 2 );
+
+		do_action( $this->action, $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 13.31, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 13.31, '', 0.001 );
+
+		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'EXEMPT1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0, '', 0.001 );
+			}
+
+			if ( 'EXEMPTOVER1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 13.31, '', 0.001 );
 			}
 		}
 	}
@@ -157,7 +211,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->wc->cart->add_to_cart( $product2, 2 );
 		$this->wc->cart->add_discount( $coupon );
 
-		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+		do_action( $this->action, $this->wc->cart );
 
 		$this->assertEquals( $this->wc->cart->tax_total, 2.4, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2.4, '', 0.001 );
@@ -182,7 +236,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		$this->wc->cart->add_to_cart( $product );
 
-		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+		do_action( $this->action, $this->wc->cart );
 
 		$this->assertEquals( $this->wc->cart->tax_total, 1.3, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 1.3, '', 0.001 );
@@ -207,7 +261,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		$this->wc->cart->add_to_cart( $product );
 
-		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+		do_action( $this->action, $this->wc->cart );
 
 		$this->assertEquals( $this->wc->cart->tax_total, 1, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 1, '', 0.001 );
@@ -232,7 +286,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		$this->wc->cart->add_to_cart( $product );
 
-		do_action( 'woocommerce_calculate_totals', $this->wc->cart );
+		do_action( $this->action, $this->wc->cart );
 
 		$this->assertEquals( $this->wc->cart->tax_total, 2, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2, '', 0.001 );
