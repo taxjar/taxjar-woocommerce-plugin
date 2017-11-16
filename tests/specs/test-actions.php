@@ -89,6 +89,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 				$this->assertEquals( $item['line_tax'], 0.4, '', 0.001 );
 			}
 		}
+
+		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 62.4, '', 0.001 );
 	}
 
 	function test_correct_taxes_for_exempt_products() {
@@ -146,6 +148,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 				$this->assertEquals( $item['line_tax'], 0.89, '', 0.001 );
 			}
 		}
+
+		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 60.89, '', 0.001 );
 	}
 
 	function test_correct_taxes_for_product_exemption_thresholds() {
@@ -215,6 +219,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $this->wc->cart->tax_total, 2.4, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2.4, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 62.4, '', 0.001 );
 	}
 
 	function test_correct_taxes_for_intrastate_origin_state() {
