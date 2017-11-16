@@ -217,6 +217,57 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2.4, '', 0.001 );
 	}
 
+	function test_correct_taxes_for_intrastate_origin_state() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'TX',
+			'store_zip' => '76082',
+			'store_city' => 'Agnes',
+		) );
+
+		// TX shipping address
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'TX',
+			'zip' => '73301',
+			'city' => 'Austin',
+		) );
+
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		$this->wc->cart->add_to_cart( $product );
+
+		do_action( $this->action, $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 0.68, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.68, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 10.68, '', 0.001 );
+	}
+
+	function test_correct_taxes_for_interstate_origin_state() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'NC',
+			'store_zip' => '27545',
+			'store_city' => 'Raleigh',
+		) );
+
+		// TX shipping address
+		// Make sure your test account has nexus in TX
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'TX',
+			'zip' => '73301',
+			'city' => 'Austin',
+		) );
+
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		$this->wc->cart->add_to_cart( $product );
+
+		do_action( $this->action, $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 0.83, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.83, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 10.83, '', 0.001 );
+	}
+
 	function test_correct_taxes_for_canada() {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'CA',
