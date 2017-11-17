@@ -1,3 +1,6 @@
+# 1.5.3 (2017-11-17)
+* Fix total calculations for origin and modified-origin based states
+
 # 1.5.2 (2017-11-14)
 * Recalculate totals in WooCommerce 3.2 instead of updating grand total
 * Update "tested up to" for WordPress 4.8.2
