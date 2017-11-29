@@ -370,10 +370,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			);
 
 			// Add line item tax rates
-			foreach ( $this->line_items as $product_id => $line_item ) {
+			foreach ( $this->line_items as $line_item_key => $line_item ) {
+				$product_id = explode( '-', $line_item_key )[0];
 				$product = wc_get_product( $product_id );
 				$tax_class = $product->get_tax_class();
-				$this->create_or_update_tax_rate( $product_id, $location, $line_item->combined_tax_rate * 100, $tax_class );
+				$this->create_or_update_tax_rate( $line_item_key, $location, $line_item->combined_tax_rate * 100, $tax_class );
 			}
 
 			// Add shipping tax rate
@@ -509,7 +510,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			if ( $unit_price && $line_subtotal ) {
 				array_push($line_items, array(
-					'id' => $id,
+					'id' => $id . '-' . $cart_item_key,
 					'quantity' => $quantity,
 					'product_tax_code' => $tax_code,
 					'unit_price' => $unit_price,
@@ -577,7 +578,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$shipping = $order->get_total_shipping(); // Woo 2.6
 		}
 
-		foreach ( $order->get_items() as $item ) {
+		foreach ( $order->get_items() as $item_key => $item ) {
 			if ( is_object( $item ) ) { // Woo 3.0+
 				$id = $item->get_product_id();
 				$quantity = $item->get_quantity();
@@ -604,7 +605,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			if ( $unit_price ) {
 				array_push($line_items, array(
-					'id' => $id,
+					'id' => $id . '-' . $item_key,
 					'quantity' => $quantity,
 					'product_tax_code' => $tax_code,
 					'unit_price' => $unit_price,
