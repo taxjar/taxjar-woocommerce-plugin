@@ -528,6 +528,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 		) );
 
 		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
+			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
+			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );
 			new WC_Cart_Totals( $wc_cart_object );
 		}
 
