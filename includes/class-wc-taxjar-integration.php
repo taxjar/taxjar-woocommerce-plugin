@@ -468,6 +468,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 	public function calculate_totals( $wc_cart_object ) {
 		global $woocommerce;
 
+		// Skip calculations for WC Subscription recurring totals, tax rate already available
+		if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
+			if ( 'recurring_total' == WC_Subscriptions_Cart::get_calculation_type() ) {
+				return;
+			}
+		}
+
 		// Get all of the required customer params
 		$taxable_address = $woocommerce->customer->get_taxable_address(); // returns unassociated array
 		$taxable_address = is_array( $taxable_address ) ? $taxable_address : array();
@@ -522,13 +529,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 					'unit_price' => $unit_price,
 					'discount' => $discount,
 				));
-			}
-		}
-
-		// Skip calculations for WC Subscription recurring totals, tax rate already available
-		if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
-			if ( 'recurring_total' == WC_Subscriptions_Cart::get_calculation_type() ) {
-				return;
 			}
 		}
 
