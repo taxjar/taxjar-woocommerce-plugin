@@ -507,6 +507,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$tax_code = end( $tax_class );
 			}
 
+			// Get WC Subscription sign-up fees for calculations
+			if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
+				if ( 'none' == WC_Subscriptions_Cart::get_calculation_type() ) {
+					$unit_price = WC_Subscriptions_Cart::set_subscription_prices_for_calculation( $unit_price, $product );
+				}
+			}
+
 			if ( $unit_price && $line_subtotal ) {
 				array_push($line_items, array(
 					'id' => $id,
@@ -515,6 +522,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 					'unit_price' => $unit_price,
 					'discount' => $discount,
 				));
+			}
+		}
+
+		// Skip calculations for WC Subscription recurring totals, tax rate already available
+		if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
+			if ( 'recurring_total' == WC_Subscriptions_Cart::get_calculation_type() ) {
+				return;
 			}
 		}
 
