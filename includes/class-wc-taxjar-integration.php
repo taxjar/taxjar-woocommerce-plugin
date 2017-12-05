@@ -387,7 +387,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 *
 	 * @return void
 	 */
-	public function create_or_update_tax_rate( $product_id, $location, $rate, $tax_class = '' ) {
+	public function create_or_update_tax_rate( $line_item_key, $location, $rate, $tax_class = '' ) {
 		$tax_rate = array(
 			'tax_rate_country' => $location['to_country'],
 			'tax_rate_state' => $location['to_state'],
@@ -427,8 +427,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 			WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $location['to_city'] ) );
 		}
 
-		$this->_log( 'Tax Rate ID Set for ' . $product_id . ': ' . $rate_id );
-		$this->rate_ids[ $product_id ] = $rate_id;
+		$this->_log( 'Tax Rate ID Set for ' . $line_item_key . ': ' . $rate_id );
+		$this->rate_ids[ $line_item_key ] = $rate_id;
 	}
 
 	public function smartcalcs_request( $json ) {
@@ -532,11 +532,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			new WC_Cart_Totals( $wc_cart_object );
 		}
 
-		foreach ( $this->line_items as $product_id => $line_item ) {
-			if ( isset( $cart_taxes[ $this->rate_ids[ $product_id ] ] ) ) {
-				$cart_taxes[ $this->rate_ids[ $product_id ] ] += $line_item->tax_collectable;
+		foreach ( $this->line_items as $line_item_key => $line_item ) {
+			if ( isset( $cart_taxes[ $this->rate_ids[ $line_item_key ] ] ) ) {
+				$cart_taxes[ $this->rate_ids[ $line_item_key ] ] += $line_item->tax_collectable;
 			} else {
-				$cart_taxes[ $this->rate_ids[ $product_id ] ] = $line_item->tax_collectable;
+				$cart_taxes[ $this->rate_ids[ $line_item_key ] ] = $line_item->tax_collectable;
 			}
 		}
 
@@ -553,8 +553,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
-			if ( isset( $this->line_items[ $product->get_id() ] ) ) {
-				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $product->get_id() ]->tax_collectable;
+			$line_item_key = $product->get_id() . '-' . $cart_item_key;
+
+			if ( isset( $this->line_items[ $line_item_key ] ) ) {
+				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $line_item_key ]->tax_collectable;
 			}
 		}
 	}
@@ -625,13 +627,15 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		// Add tax rates manually for Woo 3.0+
 		// Woo 2.6 adds the rates automatically
-		foreach ( $order->get_items() as $item ) {
+		foreach ( $order->get_items() as $item_key => $item ) {
 			if ( is_object( $item ) ) { // Woo 3.0+
 				$product_id = $item->get_product_id();
 			}
 
-			if ( isset( $this->rate_ids[ $product_id ] ) ) {
-				$rate_id = $this->rate_ids[ $product_id ];
+			$line_item_key = $product_id . '-' . $item_key;
+
+			if ( isset( $this->rate_ids[ $line_item_key ] ) ) {
+				$rate_id = $this->rate_ids[ $line_item_key ];
 
 				if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Woo 3.0+
 					$item_tax = new WC_Order_Item_Tax();
