@@ -280,7 +280,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		$this->tax_rate             = 0;
 		$this->amount_to_collect    = 0;
-		$this->item_collectable     = 0;
 		$this->shipping_collectable = 0;
 		$this->freight_taxable      = 1;
 		$this->line_items           = array();
@@ -355,8 +354,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 					$this->line_items = $line_items;
 				}
 			}
-
-			$this->item_collectable = $this->amount_to_collect - $this->shipping_collectable;
 		}
 
 		// Remove taxes if they are set somehow and customer is exempt
@@ -488,6 +485,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$to_city = isset( $taxable_address[3] ) && ! empty( $taxable_address[3] ) ? $taxable_address[3] : false;
 		$line_items = array();
 		$cart_taxes = array();
+		$cart_tax_total = 0;
 
 		foreach ( $wc_cart_object->coupons as $coupon ) {
 			if ( method_exists( $coupon, 'get_id' ) ) { // Woo 3.0+
@@ -559,10 +557,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 			} else {
 				$cart_taxes[ $this->rate_ids[ $line_item_key ] ] = $line_item->tax_collectable;
 			}
+
+			$cart_tax_total += $line_item->tax_collectable;
 		}
 
 		// Store the rate ID and the amount on the cart's totals
-		$wc_cart_object->tax_total = $this->item_collectable;
+		$wc_cart_object->tax_total = $cart_tax_total;
 		$wc_cart_object->shipping_tax_total = $this->shipping_collectable;
 		$wc_cart_object->taxes = $cart_taxes;
 
