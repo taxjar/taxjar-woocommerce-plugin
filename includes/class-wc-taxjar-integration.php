@@ -220,7 +220,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 		}
 		if ( $this->debug ) {
-			$this->log = new WC_Logger();
+			if ( ! isset( $this->log ) ) {
+			    $this->log = new WC_Logger();
+			}
 			if ( is_array( $message ) || is_object( $message ) ) {
 				$this->log->add( 'taxjar', print_r( $message, true ) );
 			} else {
