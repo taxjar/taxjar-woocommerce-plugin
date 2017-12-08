@@ -93,6 +93,19 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 62.4, '', 0.001 );
 	}
 
+	function test_correct_taxes_for_duplicate_line_items() {
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+
+		$this->wc->cart->add_to_cart( $product );
+		$this->wc->cart->add_to_cart( $product, 1, 0, [], [ 'duplicate' => true ] );
+
+		do_action( $this->action, $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 0.8, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.8, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 20.8, '', 0.001 );
+	}
+
 	function test_correct_taxes_for_exempt_products() {
 		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
 			'tax_status' => 'none',
@@ -186,7 +199,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( $this->wc->cart->tax_total, 13.31, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 13.31, '', 0.001 );
 
-		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
+		foreach ( $this->wc->cart->get_cart() as $item_key => $item ) {
 			$product = $item['data'];
 			$sku = $product->get_sku();
 
