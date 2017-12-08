@@ -517,6 +517,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 			// Get WC Subscription sign-up fees for calculations
 			if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
 				if ( 'none' == WC_Subscriptions_Cart::get_calculation_type() ) {
+					if ( class_exists( 'WC_Subscriptions_Synchroniser' ) ) {
+						WC_Subscriptions_Synchroniser::maybe_set_free_trial();
+					}
 					$unit_price = WC_Subscriptions_Cart::set_subscription_prices_for_calculation( $unit_price, $product );
 				}
 			}
