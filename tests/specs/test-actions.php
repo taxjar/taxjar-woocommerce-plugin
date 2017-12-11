@@ -119,6 +119,19 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0, '', 0.001 );
 	}
 
+	function test_correct_taxes_for_zero_rate_exempt_products() {
+		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'tax_class' => 'zero-rate',
+		) )->get_id();
+
+		$this->wc->cart->add_to_cart( $exempt_product );
+
+		do_action( $this->action, $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 0, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0, '', 0.001 );
+	}
+
 	function test_correct_taxes_for_product_exemptions() {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
