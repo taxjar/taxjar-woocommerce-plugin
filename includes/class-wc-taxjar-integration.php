@@ -509,7 +509,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$tax_class = explode( '-', $product->get_tax_class() );
 			$tax_code = '';
 
-			if ( ! $product->is_taxable() ) {
+			if ( ! $product->is_taxable() || 'zero-rate' == $product->get_tax_class() ) {
 				$tax_code = '99999';
 			}
 
@@ -618,7 +618,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$unit_price = $product->get_price();
 			$tax_code = '';
 
-			if ( ! $product->is_taxable() ) {
+			if ( ! $product->is_taxable() || 'zero-rate' == $product->get_tax_class() ) {
 				$tax_code = '99999';
 			}
 
