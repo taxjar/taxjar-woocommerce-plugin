@@ -374,4 +374,54 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2, '', 0.001 );
 	}
 
+	function test_correct_taxes_for_uk_or_gb() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'UK',
+			'store_state' => '',
+			'store_zip' => 'SW1A 1AA',
+			'store_city' => 'London',
+		) );
+
+		// UK shipping address
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'country' => 'GB',
+			'state' => '',
+			'zip' => 'SW1A 1AA',
+			'city' => 'London',
+		) );
+
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		$this->wc->cart->add_to_cart( $product );
+
+		do_action( $this->action, $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 2, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2, '', 0.001 );
+	}
+
+	function test_correct_taxes_for_el_or_gr() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'EL',
+			'store_state' => '',
+			'store_zip' => '104 47',
+			'store_city' => 'Athens',
+		) );
+
+		// Greece shipping address
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'country' => 'GR',
+			'state' => '',
+			'zip' => '104 31',
+			'city' => 'Athens',
+		) );
+
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		$this->wc->cart->add_to_cart( $product );
+
+		do_action( $this->action, $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 2.4, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2.4, '', 0.001 );
+	}
+
 }
