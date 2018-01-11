@@ -93,6 +93,44 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 62.4, '', 0.001 );
 	}
 
+	function test_correct_taxes_for_multiple_products_with_rounding_difference() {
+		$product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '485',
+		) )->get_id();
+		$extra_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '225',
+			'sku' => 'SIMPLE2',
+		) )->get_id();
+
+		$this->wc->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'CA',
+			'zip' => '93013',
+			'city' => 'Carpinteria',
+		) );
+
+		$this->wc->cart->add_to_cart( $product );
+		$this->wc->cart->add_to_cart( $extra_product, 2 );
+
+		do_action( $this->action, $this->wc->cart );
+
+		$this->assertEquals( $this->wc->cart->tax_total, 72.47, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 72.47, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 1007.47, '', 0.001 );
+
+		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'SIMPLE1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 37.59, '', 0.001 );
+			}
+
+			if ( 'SIMPLE2' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 34.88, '', 0.001 );
+			}
+		}
+	}
+
 	function test_correct_taxes_for_duplicate_line_items() {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
