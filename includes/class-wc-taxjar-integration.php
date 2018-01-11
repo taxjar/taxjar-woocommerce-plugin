@@ -354,6 +354,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 
 			$this->item_collectable = $this->amount_to_collect - $this->shipping_collectable;
+
+			if ( 0 == $this->item_collectable ) {
+				$this->freight_taxable = 0;
+				$this->shipping_collectable = 0;
+			}
 		}
 
 		// Remove taxes if they are set somehow and customer is exempt
