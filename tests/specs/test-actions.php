@@ -90,7 +90,9 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			}
 		}
 
-		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 62.4, '', 0.001 );
+		if ( version_compare( $this->wc->version, '3.2', '>=' ) ) {
+			$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 62.4, '', 0.001 );
+		}
 	}
 
 	function test_correct_taxes_for_multiple_products_with_rounding_difference() {
@@ -115,7 +117,10 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $this->wc->cart->tax_total, 72.47, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 72.47, '', 0.001 );
-		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 1007.47, '', 0.001 );
+
+		if ( version_compare( $this->wc->version, '3.2', '>=' ) ) {
+			$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 1007.47, '', 0.001 );
+		}
 
 		foreach ( $this->wc->cart->get_cart() as $cart_item_key => $item ) {
 			$product = $item['data'];
@@ -141,7 +146,10 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $this->wc->cart->tax_total, 0.8, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.8, '', 0.001 );
-		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 20.8, '', 0.001 );
+
+		if ( version_compare( $this->wc->version, '3.2', '>=' ) ) {
+			$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 20.8, '', 0.001 );
+		}
 	}
 
 	function test_correct_taxes_for_exempt_products() {
@@ -213,7 +221,9 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			}
 		}
 
-		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 60.89, '', 0.001 );
+		if ( version_compare( $this->wc->version, '3.2', '>=' ) ) {
+			$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 60.89, '', 0.001 );
+		}
 	}
 
 	function test_correct_taxes_for_product_exemption_thresholds() {
@@ -273,7 +283,13 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$coupon = TaxJar_Coupon_Helper::create_coupon( array(
 			'amount' => '10',
 			'discount_type' => 'fixed_cart',
-		) )->get_code();
+		) );
+
+		if ( version_compare( $this->wc->version, '3.0', '>=' ) ) {
+			$coupon = $coupon->get_code();
+		} else {
+			$coupon = $coupon->code;
+		}
 
 		$this->wc->cart->add_to_cart( $product );
 		$this->wc->cart->add_to_cart( $product2, 2 );
@@ -283,7 +299,10 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $this->wc->cart->tax_total, 2.4, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 2.4, '', 0.001 );
-		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 62.4, '', 0.001 );
+
+		if ( version_compare( $this->wc->version, '3.2', '>=' ) ) {
+			$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 62.4, '', 0.001 );
+		}
 	}
 
 	function test_correct_taxes_for_intrastate_origin_state() {
@@ -308,7 +327,10 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $this->wc->cart->tax_total, 0.68, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.68, '', 0.001 );
-		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 10.68, '', 0.001 );
+
+		if ( version_compare( $this->wc->version, '3.2', '>=' ) ) {
+			$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 10.68, '', 0.001 );
+		}
 	}
 
 	function test_correct_taxes_for_interstate_origin_state() {
@@ -334,7 +356,10 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $this->wc->cart->tax_total, 0.83, '', 0.001 );
 		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.83, '', 0.001 );
-		$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 10.83, '', 0.001 );
+
+		if ( version_compare( $this->wc->version, '3.2', '>=' ) ) {
+			$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 10.83, '', 0.001 );
+		}
 	}
 
 	function test_correct_taxes_for_canada() {
