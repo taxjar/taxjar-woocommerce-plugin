@@ -354,6 +354,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 
 			$this->item_collectable = $this->amount_to_collect - $this->shipping_collectable;
+
+			// Exempt shipping tax in FL if local pickup is available
+			if ( 'FL' == $to_state && $this->has_shipping_method( 'local_pickup' ) ) {
+				$this->freight_taxable = 0;
+				$this->shipping_collectable = 0;
+			}
 		}
 
 		// Remove taxes if they are set somehow and customer is exempt
@@ -694,6 +700,26 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		return array( $country, $state, $postcode, $city );
+	}
+
+	/**
+	 * Check whether this cart has a specific shipping method or not.
+	 *
+	 * @param string $method_id
+	 * @return boolean
+	 */
+	public function has_shipping_method( $method_id ) {
+		$packages = WC()->shipping->calculate_shipping( WC()->shipping->get_packages() );
+
+		foreach ( $packages as $package ) {
+			foreach ( $package['rates'] as $rate ) {
+				if ( $method_id == $rate->get_method_id() ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
