@@ -1,3 +1,8 @@
+# 1.5.4 (2017-12-08)
+* Fix sign-up fees and total issues with WC Subscriptions
+* Fix tax for duplicate line items with WC Product Add-ons & WC Product Bundles
+* Fix minor logging issue on shared hosts
+
 # 1.5.3 (2017-11-17)
 * Fix total calculations for origin and modified-origin based states
 

@@ -71,9 +71,17 @@ class WC_Taxjar_Nexus {
 					return true;
 				}
 			} elseif ( isset( $nexus->country_code ) ) {
-					if ( $country == $nexus->country_code ) {
-						return true;
-					}
+				if ( $country == $nexus->country_code ) {
+					return true;
+				}
+
+				if ( 'GB' == $country && 'UK' == $nexus->country_code ) {
+					return true;
+				}
+
+				if ( 'GR' == $country && 'EL' == $nexus->country_code ) {
+					return true;
+				}
 			}
 		}
 

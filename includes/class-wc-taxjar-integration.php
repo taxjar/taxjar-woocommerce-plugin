@@ -24,7 +24,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/1.5.3/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = 'TaxJarWordPressPlugin/1.5.4/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 
@@ -69,9 +69,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			// Rate calculations assume tax not included
 			update_option( 'woocommerce_prices_include_tax', 'no' );
-
-			// Don't ever set a default customer address
-			update_option( 'woocommerce_default_customer_address', '' );
 
 			// Use no special handling on shipping taxes, our API handles that
 			update_option( 'woocommerce_shipping_tax_class', '' );
@@ -507,7 +504,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$tax_class = explode( '-', $product->get_tax_class() );
 			$tax_code = '';
 
-			if ( ! $product->is_taxable() ) {
+			if ( ! $product->is_taxable() || 'zero-rate' == sanitize_title( $product->get_tax_class() ) ) {
 				$tax_code = '99999';
 			}
 
@@ -618,7 +615,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$unit_price = $product->get_price();
 			$tax_code = '';
 
-			if ( ! $product->is_taxable() ) {
+			if ( ! $product->is_taxable() || 'zero-rate' == sanitize_title( $product->get_tax_class() ) ) {
 				$tax_code = '99999';
 			}
 
