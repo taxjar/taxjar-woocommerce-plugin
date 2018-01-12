@@ -467,7 +467,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		// Skip calculations for WC Subscription recurring totals, tax rate already available
 		if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
-			if ( 'recurring_total' == WC_Subscriptions_Cart::get_calculation_type() ) {
+			if ( 'recurring_total' == WC_Subscriptions_Cart::get_calculation_type() && ! WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
 				return;
 			}
 		}
@@ -515,9 +515,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 			// Get WC Subscription sign-up fees for calculations
 			if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
 				if ( 'none' == WC_Subscriptions_Cart::get_calculation_type() ) {
-					if ( class_exists( 'WC_Subscriptions_Synchroniser' ) ) {
-						WC_Subscriptions_Synchroniser::maybe_set_free_trial();
-					}
 					$unit_price = WC_Subscriptions_Cart::set_subscription_prices_for_calculation( $unit_price, $product );
 				}
 			}
@@ -546,6 +543,15 @@ class WC_Taxjar_Integration extends WC_Integration {
 			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
 			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );
 			new WC_Cart_Totals( $wc_cart_object );
+		}
+
+		if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
+			if ( class_exists( 'WC_Subscriptions_Synchroniser' ) ) {
+				WC_Subscriptions_Synchroniser::maybe_set_free_trial();
+			}
+			if ( WC_Subscriptions_Cart::all_cart_items_have_free_trial() ) {
+				return;
+			}
 		}
 
 		foreach ( $this->line_items as $line_item_key => $line_item ) {
