@@ -310,7 +310,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			'store_country' => 'US',
 			'store_state' => 'TX',
 			'store_zip' => '76082',
-			'store_city' => 'Agnes',
+			'store_city' => 'Springtown',
 		) );
 
 		// TX shipping address
@@ -325,11 +325,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		do_action( $this->action, $this->wc->cart );
 
-		$this->assertEquals( $this->wc->cart->tax_total, 0.68, '', 0.001 );
-		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.68, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->tax_total, 0.83, '', 0.001 );
+		$this->assertEquals( $this->wc->cart->get_taxes_total(), 0.83, '', 0.001 );
 
 		if ( version_compare( $this->wc->version, '3.2', '>=' ) ) {
-			$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 10.68, '', 0.001 );
+			$this->assertEquals( $this->wc->cart->get_total( 'amount' ), 10.83, '', 0.001 );
 		}
 	}
 
