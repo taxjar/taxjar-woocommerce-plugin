@@ -612,6 +612,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 
 			$product = wc_get_product( $id );
+
+			if ( ! $product ) {
+				continue;
+			}
+
 			$unit_price = $product->get_price();
 			$tax_code = '';
 
