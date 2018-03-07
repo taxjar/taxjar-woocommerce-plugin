@@ -7,7 +7,7 @@
  * Author: TaxJar
  * Author URI: https://www.taxjar.com
  * WC requires at least: 2.6.0
- * WC tested up to: 3.2.0
+ * WC tested up to: 3.3.0
  *
  * Copyright: © 2014-2017 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc.
  * License: GNU General Public License v2.0 or later
