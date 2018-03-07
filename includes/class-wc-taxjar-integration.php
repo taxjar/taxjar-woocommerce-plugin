@@ -551,7 +551,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 				if ( method_exists( $product, 'set_tax_status' ) ) {
 					$product->set_tax_status( 'none' ); // Woo 3.0+
 				} else {
-					$product->set_prop( 'tax_status', 'none' ); // Woo 2.6
+					$product->tax_status = 'none'; // Woo 2.6
 				}
 			}
 		}
