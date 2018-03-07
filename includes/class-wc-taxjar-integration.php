@@ -370,11 +370,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$product_id = explode( '-', $line_item_key )[0];
 				$product = wc_get_product( $product_id );
 				$tax_class = $product->get_tax_class();
-				$this->create_or_update_tax_rate( $line_item_key, $location, $line_item->combined_tax_rate * 100, $tax_class );
-			}
 
-			// Add shipping tax rate
-			$this->create_or_update_tax_rate( 'shipping', $location, $this->tax_rate * 100 );
+				if ( $line_item->combined_tax_rate ) {
+					$this->create_or_update_tax_rate( $line_item_key, $location, $line_item->combined_tax_rate * 100, $tax_class );
+				}
+			}
 		} // End if().
 	} // End calculate_tax().
 
@@ -542,33 +542,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'line_items' => $line_items,
 		) );
 
-		foreach ( $this->line_items as $line_item_key => $line_item ) {
-			if ( isset( $cart_taxes[ $this->rate_ids[ $line_item_key ] ] ) ) {
-				$cart_taxes[ $this->rate_ids[ $line_item_key ] ] += $line_item->tax_collectable;
-			} else {
-				$cart_taxes[ $this->rate_ids[ $line_item_key ] ] = $line_item->tax_collectable;
-			}
-
-			$cart_tax_total += $line_item->tax_collectable;
-		}
-
-		// Store the rate ID and the amount on the cart's totals
-		$wc_cart_object->tax_total = $cart_tax_total;
-		$wc_cart_object->shipping_tax_total = $this->shipping_collectable;
-		$wc_cart_object->taxes = $cart_taxes;
-
-		if ( isset( $this->rate_ids['shipping'] ) ) {
-			$wc_cart_object->shipping_taxes = array(
-				$this->rate_ids['shipping'] => $this->shipping_collectable,
-			);
-		}
-
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
 			$line_item_key = $product->get_id() . '-' . $cart_item_key;
 
-			if ( isset( $this->line_items[ $line_item_key ] ) ) {
-				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $line_item_key ]->tax_collectable;
+			if ( isset( $this->line_items[ $line_item_key ] ) && ! $this->line_items[ $line_item_key ]->combined_tax_rate ) {
+				$product->set_tax_status( 'none' );
 			}
 		}
 
