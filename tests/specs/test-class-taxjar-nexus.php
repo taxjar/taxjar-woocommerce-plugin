@@ -53,7 +53,7 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 	}
 
-	function test_works_when_only_using_counry() {
+	function test_works_when_only_using_country() {
 		update_option( 'woocommerce_default_country', 'DE:' );
 		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'DE' ) );
 	}

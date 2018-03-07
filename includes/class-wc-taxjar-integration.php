@@ -42,7 +42,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 		add_action( 'admin_menu', array( $this, 'taxjar_admin_menu' ),  15 );
 
 		if ( ( 'yes' == $this->settings['enabled'] ) ) {
-
 			// Calculate Taxes at Cart / Checkout
 			if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
 				add_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
