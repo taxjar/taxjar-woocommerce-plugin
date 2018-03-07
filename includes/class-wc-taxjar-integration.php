@@ -547,7 +547,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$line_item_key = $product->get_id() . '-' . $cart_item_key;
 
 			if ( isset( $this->line_items[ $line_item_key ] ) && ! $this->line_items[ $line_item_key ]->combined_tax_rate ) {
-				$product->set_tax_status( 'none' );
+				if ( method_exists( $product, 'set_tax_status' ) ) {
+					$product->set_tax_status( 'none' ); // Woo 3.0+
+				} else {
+					$product->set_prop( 'tax_status', 'none' ); // Woo 2.6
+				}
 			}
 		}
 
