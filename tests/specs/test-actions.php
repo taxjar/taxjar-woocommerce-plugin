@@ -149,8 +149,14 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $extra_product, 2 );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 72.47, '', 0.001 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 72.47, '', 0.001 );
+		if ( version_compare( WC()->version, '3.2.6', '>=' ) ) {
+			$rounding_tax_total = 72.47;
+		} else {
+			$rounding_tax_total = 72.46;
+		}
+
+		$this->assertEquals( WC()->cart->tax_total, $rounding_tax_total, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), $rounding_tax_total, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
 			$this->assertEquals( WC()->cart->get_total( 'amount' ), 1007.47, '', 0.01 );
