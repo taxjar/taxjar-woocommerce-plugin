@@ -19,6 +19,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		} else {
 			$this->action = 'woocommerce_calculate_totals';
 		}
+
+		// We need this to have the calculate_totals() method calculate totals
+		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
+			define( 'WOOCOMMERCE_CHECKOUT', true );
+		}
 	}
 
 	function tearDown() {
