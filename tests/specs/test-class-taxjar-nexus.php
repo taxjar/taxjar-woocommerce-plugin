@@ -48,6 +48,7 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		delete_transient( $this->cache_key );
 		$nexus_list = $this->tj_nexus->get_or_update_cached_nexus();
 		$this->assertTrue( count( $nexus_list ) > 0 );
+		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 	}
 
 	function test_or_get_update_cached_nexus_unauthorized() {
@@ -55,6 +56,7 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		$this->tj->settings['api_token'] = 'INVALID_OR_EXPIRED_API_TOKEN';
 		$nexus_list = $this->tj_nexus->get_or_update_cached_nexus();
 		$this->assertTrue( count( $nexus_list ) == 0 );
+		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 	}
 
 	function test_or_get_update_cached_nexus_stays_cached_on_unauthorized() {
@@ -63,6 +65,7 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		$nexus_list = $this->tj_nexus->get_or_update_cached_nexus();
 		$transient = get_transient( $this->cache_key );
 		$this->assertTrue( count( $nexus_list ) == 0 );
+		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 
 		// Ensure nexus response is cached on 401 / 403 errors
 		// Requires manually syncing nexus addresses from admin to resolve
@@ -70,6 +73,7 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 			$nexus_list = $this->tj_nexus->get_or_update_cached_nexus();
 			$this->assertEquals( $transient[0], time() + 0.5 * DAY_IN_SECONDS );
 			$this->assertTrue( count( get_transient( $this->cache_key ) ) > 0 );
+			$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 		}
 	}
 
@@ -79,9 +83,11 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		$this->tj->settings['api_token'] = 'INVALID_OR_EXPIRED_API_TOKEN';
 		$nexus_list = $this->tj_nexus->get_or_update_cached_nexus();
 		$this->assertTrue( count( $nexus_list ) == 0 );
+		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 		$this->tj->settings['api_token'] = $original_api_token;
 		$nexus_list = $this->tj_nexus->get_or_update_cached_nexus( true );
 		$this->assertTrue( count( $nexus_list ) > 0 );
+		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 	}
 
 	function test_has_nexus_check_uses_base_address() {
