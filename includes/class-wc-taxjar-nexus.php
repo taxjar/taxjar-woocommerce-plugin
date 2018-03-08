@@ -11,6 +11,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_Taxjar_Nexus {
 
+	const INVALID_OR_EXPIRED_API_TOKEN = array( 'Unauthorized' );
+
 	public function __construct( $integration ) {
 		$this->integration = $integration;
 		$this->nexus = $this->get_or_update_cached_nexus();
@@ -91,6 +93,10 @@ class WC_Taxjar_Nexus {
 	public function get_or_update_cached_nexus( $force_update = false ) {
 		$nexus_list = $this->get_nexus_from_cache();
 
+		if ( ! $force_update && self::INVALID_OR_EXPIRED_API_TOKEN == $nexus_list ) {
+			return array();
+		}
+
 		if ( $force_update || false === $nexus_list || null === $nexus_list || ( is_array( $nexus_list ) && count( $nexus_list ) == 0 ) ) {
 			delete_transient( 'tlc__' . md5( 'get_nexus_from_cache' ) );
 			$nexus_list = $this->get_nexus_from_cache();
@@ -114,6 +120,10 @@ class WC_Taxjar_Nexus {
 			$this->integration->_log( ':::: Nexus addresses updated ::::' );
 			$body = json_decode( $response['body'] );
 			return $body->regions;
+		}
+
+		if ( $response['response']['code'] >= 400 ) {
+			return self::INVALID_OR_EXPIRED_API_TOKEN;
 		}
 
 		return array();
