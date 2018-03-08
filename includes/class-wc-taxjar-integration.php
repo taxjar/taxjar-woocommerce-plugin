@@ -541,12 +541,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'line_items' => $line_items,
 		) );
 
-		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
-			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
-			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );
-			new WC_Cart_Totals( $wc_cart_object );
-		}
-
 		foreach ( $this->line_items as $line_item_key => $line_item ) {
 			if ( isset( $cart_taxes[ $this->rate_ids[ $line_item_key ] ] ) ) {
 				$cart_taxes[ $this->rate_ids[ $line_item_key ] ] += $line_item->tax_collectable;
@@ -575,6 +569,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 			if ( isset( $this->line_items[ $line_item_key ] ) ) {
 				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $line_item_key ]->tax_collectable;
 			}
+		}
+
+		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
+			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
+			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );
+			new WC_Cart_Totals( $wc_cart_object );
 		}
 	}
 
