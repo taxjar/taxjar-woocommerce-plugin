@@ -103,4 +103,5 @@ class TaxJar_Product_Helper {
 		$factory = new WC_Product_Factory();
 		return $factory->get_product( $products[0]->ID );
 	}
+
 }

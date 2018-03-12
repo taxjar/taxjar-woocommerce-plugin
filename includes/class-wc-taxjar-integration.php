@@ -369,11 +369,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$product_id = explode( '-', $line_item_key )[0];
 				$product = wc_get_product( $product_id );
 				$tax_class = $product->get_tax_class();
-				$this->create_or_update_tax_rate( $line_item_key, $location, $line_item->combined_tax_rate * 100, $tax_class );
-			}
 
-			// Add shipping tax rate
-			$this->create_or_update_tax_rate( 'shipping', $location, $this->tax_rate * 100 );
+				if ( $line_item->combined_tax_rate ) {
+					$this->create_or_update_tax_rate( $line_item_key, $location, $line_item->combined_tax_rate * 100, $tax_class );
+				}
+			}
 		} // End if().
 	} // End calculate_tax().
 
@@ -417,6 +417,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		} else {
 			// Insert a rate if we did not find one
 			$this->_log( ':: Adding New Tax Rate ::' );
+			$this->_log( $tax_rate );
 			$rate_id = WC_Tax::_insert_tax_rate( $tax_rate );
 			WC_Tax::_update_tax_rate_postcodes( $rate_id, wc_clean( $location['to_zip'] ) );
 			WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $location['to_city'] ) );
@@ -464,13 +465,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 	public function calculate_totals( $wc_cart_object ) {
 		global $woocommerce;
 
-		// Skip calculations for WC Subscription recurring totals, tax rate already available
-		if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
-			if ( 'recurring_total' == WC_Subscriptions_Cart::get_calculation_type() ) {
-				return;
-			}
-		}
-
 		// Get all of the required customer params
 		$taxable_address = $woocommerce->customer->get_taxable_address(); // returns unassociated array
 		$taxable_address = is_array( $taxable_address ) ? $taxable_address : array();
@@ -511,16 +505,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$tax_code = end( $tax_class );
 			}
 
-			// Get WC Subscription sign-up fees for calculations
-			if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
-				if ( 'none' == WC_Subscriptions_Cart::get_calculation_type() ) {
-					if ( class_exists( 'WC_Subscriptions_Synchroniser' ) ) {
-						WC_Subscriptions_Synchroniser::maybe_set_free_trial();
-					}
-					$unit_price = WC_Subscriptions_Cart::set_subscription_prices_for_calculation( $unit_price, $product );
-				}
-			}
-
 			if ( $unit_price && $line_subtotal ) {
 				array_push($line_items, array(
 					'id' => $id . '-' . $cart_item_key,
@@ -541,40 +525,27 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'line_items' => $line_items,
 		) );
 
-		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
-			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
-			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );
-			new WC_Cart_Totals( $wc_cart_object );
-		}
-
-		foreach ( $this->line_items as $line_item_key => $line_item ) {
-			if ( isset( $cart_taxes[ $this->rate_ids[ $line_item_key ] ] ) ) {
-				$cart_taxes[ $this->rate_ids[ $line_item_key ] ] += $line_item->tax_collectable;
-			} else {
-				$cart_taxes[ $this->rate_ids[ $line_item_key ] ] = $line_item->tax_collectable;
-			}
-
-			$cart_tax_total += $line_item->tax_collectable;
-		}
-
-		// Store the rate ID and the amount on the cart's totals
-		$wc_cart_object->tax_total = $cart_tax_total;
-		$wc_cart_object->shipping_tax_total = $this->shipping_collectable;
-		$wc_cart_object->taxes = $cart_taxes;
-
-		if ( isset( $this->rate_ids['shipping'] ) ) {
-			$wc_cart_object->shipping_taxes = array(
-				$this->rate_ids['shipping'] => $this->shipping_collectable,
-			);
-		}
-
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
 			$product = $cart_item['data'];
 			$line_item_key = $product->get_id() . '-' . $cart_item_key;
 
-			if ( isset( $this->line_items[ $line_item_key ] ) ) {
-				$wc_cart_object->cart_contents[ $cart_item_key ]['line_tax'] = $this->line_items[ $line_item_key ]->tax_collectable;
+			if ( isset( $this->line_items[ $line_item_key ] ) && ! $this->line_items[ $line_item_key ]->combined_tax_rate ) {
+				if ( method_exists( $product, 'set_tax_status' ) ) {
+					$product->set_tax_status( 'none' ); // Woo 3.0+
+				} else {
+					$product->tax_status = 'none'; // Woo 2.6
+				}
 			}
+		}
+
+		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
+			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
+			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );
+			new WC_Cart_Totals( $wc_cart_object );
+		} else {
+			remove_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
+			$wc_cart_object->calculate_totals();
+			add_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 		}
 	}
 
