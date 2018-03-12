@@ -309,6 +309,53 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		}
 	}
 
+	function test_correct_taxes_for_product_exemption_threshold_reduced_rates() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'NY',
+			'store_zip' => '10118',
+			'store_city' => 'New York City',
+		) );
+
+		// NY shipping address
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NY',
+			'zip' => '10541',
+			'city' => 'Mahopac',
+		) );
+
+		$taxable_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '150', // Over $110 threshold
+			'sku' => 'EXEMPTOVER1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$reduced_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '25',
+			'sku' => 'REDUCED1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $taxable_product );
+		WC()->cart->add_to_cart( $reduced_product, 2 );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 14.75, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 14.75, '', 0.01 );
+
+		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'REDUCED1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 2.19, '', 0.01 );
+			}
+
+			if ( 'EXEMPTOVER1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 12.56, '', 0.01 );
+			}
+		}
+	}
+
 	function test_correct_taxes_for_discounts() {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		$product2 = TaxJar_Product_Helper::create_product( 'simple', array(
