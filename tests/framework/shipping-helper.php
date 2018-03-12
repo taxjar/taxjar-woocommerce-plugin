@@ -10,6 +10,7 @@ class TaxJar_Shipping_Helper {
 			'tax_status'   => 'taxable',
 			'cost'         => $cost,
 		);
+
 		update_option( 'woocommerce_flat_rate_settings', $flat_rate_settings );
 		update_option( 'woocommerce_flat_rate', array() );
 		WC_Cache_Helper::get_transient_version( 'shipping', true );

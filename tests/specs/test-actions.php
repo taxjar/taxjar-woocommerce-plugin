@@ -49,6 +49,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
+		WC()->shipping->shipping_total = 5;
 
 		WC()->cart->calculate_totals();
 
@@ -67,6 +68,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			$this->assertEquals( $item['line_tax'], 0.4, '', 0.01 );
 		}
 
+		WC()->session->set( 'chosen_shipping_methods', array() );
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
@@ -84,6 +86,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
+		WC()->shipping->shipping_total = 5;
 
 		WC()->cart->calculate_totals();
 
@@ -95,6 +98,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			$this->assertEquals( $item['line_tax'], 1.03, '', 0.01 );
 		}
 
+		WC()->session->set( 'chosen_shipping_methods', array() );
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
