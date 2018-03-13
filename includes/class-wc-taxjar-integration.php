@@ -42,7 +42,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 		add_action( 'admin_menu', array( $this, 'taxjar_admin_menu' ),  15 );
 
 		if ( ( 'yes' == $this->settings['enabled'] ) ) {
-
 			// Calculate Taxes at Cart / Checkout
 			if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
 				add_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
@@ -618,6 +617,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 
 			$product = wc_get_product( $id );
+
+			if ( ! $product ) {
+				continue;
+			}
+
 			$unit_price = $product->get_price();
 			$tax_code = '';
 
@@ -832,7 +836,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		if ( isset( $default_wc_settings[1] ) ) {
 			$store_settings['store_state_setting'] = $default_wc_settings[1];
 		}
-		return $store_settings;
+		return apply_filters( 'taxjar_store_settings', $store_settings, $this->settings );
 	}
 
 	/**
