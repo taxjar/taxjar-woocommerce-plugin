@@ -65,6 +65,11 @@ class TaxJar_Product_Helper {
 			'tax_status' => 'taxable',
 			'downloadable' => 'no',
 			'virtual' => 'yes',
+			'interval' => 1,
+			'period' => 'month',
+			'sign_up_fee' => 0,
+			'trial_length' => 1,
+			'trial_period' => 'month',
 		);
 
 		$post = array(
@@ -79,7 +84,7 @@ class TaxJar_Product_Helper {
 
 		register_taxonomy(
 			'product_type',
-			'product'
+			'subscription'
 		);
 
 		update_post_meta( $post_id, '_price', $post_meta['price'] );
@@ -93,15 +98,17 @@ class TaxJar_Product_Helper {
 		update_post_meta( $post_id, '_virtual', $post_meta['virtual'] );
 		update_post_meta( $post_id, '_stock_status', 'instock' );
 
+		// Subscription meta
+		update_post_meta( $post_id, '_subscription_price', $post_meta['price'] );
+		update_post_meta( $post_id, '_subscription_period_interval', $post_meta['interval'] );
+		update_post_meta( $post_id, '_subscription_period', $post_meta['period'] );
+		update_post_meta( $post_id, '_subscription_sign_up_fee', $post_meta['sign_up_fee'] );
+		update_post_meta( $post_id, '_subscription_trial_length', $post_meta['trial_length'] );
+		update_post_meta( $post_id, '_subscription_trial_period', $post_meta['trial_period'] );
+
 		wp_set_object_terms( $post_id, 'subscription', 'product_type' );
 
-		$products = get_posts( array(
-			'post_type' => 'product',
-			'_sku' => $post_meta['sku'],
-		) );
-
-		$factory = new WC_Product_Factory();
-		return $factory->get_product( $products[0]->ID );
+		return new WC_Product_Subscription( $post_id );
 	}
 
 }
