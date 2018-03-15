@@ -529,6 +529,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 		}
 
+		if ( ! count( $line_items ) ) {
+			return;
+		}
+
 		$this->calculate_tax( array(
 			'to_city' => $to_city,
 			'to_state' => $to_state,
