@@ -559,4 +559,196 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( WC()->cart->get_taxes_total(), 2.4, '', 0.01 );
 	}
 
+	function test_correct_taxes_for_subscription_products_with_trial() {
+		$subscription_product = TaxJar_Product_Helper::create_product( 'subscription', array(
+			'price' => '19.99',
+			'sign_up_fee' => 0,
+			'trial_length' => 1,
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $subscription_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0, '', 0.01 );
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+		}
+	}
+
+	function test_correct_taxes_for_subscription_products_with_trial_and_signup_fee() {
+		$subscription_product = TaxJar_Product_Helper::create_product( 'subscription', array(
+			'price' => '19.99',
+			'sign_up_fee' => 50,
+			'trial_length' => 1,
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $subscription_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 2, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 2, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 50 + 2, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'SUBSCRIPTION1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 2, '', 0.01 );
+			}
+		}
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+		}
+	}
+
+	function test_correct_taxes_for_subscription_products_with_no_trial() {
+		$subscription_product = TaxJar_Product_Helper::create_product( 'subscription', array(
+			'price' => '19.99',
+			'sign_up_fee' => 0,
+			'trial_length' => 0,
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $subscription_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0.8, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0.8, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 19.99 + 0.8, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'SUBSCRIPTION1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0.8, '', 0.01 );
+			}
+		}
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+		}
+	}
+
+	function test_correct_taxes_for_subscription_products_with_no_trial_and_signup_fee() {
+		$subscription_product = TaxJar_Product_Helper::create_product( 'subscription', array(
+			'price' => '19.99',
+			'sign_up_fee' => 50,
+			'trial_length' => 0,
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $subscription_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 2.8, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 2.8, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 19.99 + 50 + 2.8, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'SUBSCRIPTION1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 2.8, '', 0.01 );
+			}
+		}
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+		}
+	}
+
+	function test_correct_taxes_for_subscription_products_with_other_products() {
+		$subscription_product = TaxJar_Product_Helper::create_product( 'subscription', array(
+			'price' => '19.99',
+			'sign_up_fee' => 0,
+			'trial_length' => 0,
+		) )->get_id();
+
+		$extra_product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+
+		WC()->cart->add_to_cart( $subscription_product );
+		WC()->cart->add_to_cart( $extra_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 1.2, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 1.2, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 19.99 + 10 + 1.2, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'SUBSCRIPTION1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0.8, '', 0.01 );
+			}
+
+			if ( 'SIMPLE1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0.4, '', 0.01 );
+			}
+		}
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+		}
+	}
+
+	function test_correct_taxes_for_subscription_products_with_other_products_and_trial() {
+		$subscription_product = TaxJar_Product_Helper::create_product( 'subscription', array(
+			'price' => '19.99',
+			'sign_up_fee' => 0,
+			'trial_length' => 1,
+		) )->get_id();
+
+		$extra_product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+
+		WC()->cart->add_to_cart( $subscription_product );
+		WC()->cart->add_to_cart( $extra_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0.4, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0.4, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 10 + 0.4, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'SUBSCRIPTION1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0, '', 0.01 );
+			}
+
+			if ( 'SIMPLE1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0.4, '', 0.01 );
+			}
+		}
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+		}
+	}
 }
