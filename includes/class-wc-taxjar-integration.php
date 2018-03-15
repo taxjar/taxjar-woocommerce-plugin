@@ -546,6 +546,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
 			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );
 			new WC_Cart_Totals( $wc_cart_object );
+		} else {
+			remove_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
+			$wc_cart_object->calculate_totals();
+			add_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 		}
 
 		if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
