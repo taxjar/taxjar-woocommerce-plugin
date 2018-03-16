@@ -499,6 +499,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		$address = $this->get_address( $wc_cart_object );
+		$line_items = $this->get_line_items( $wc_cart_object );
 
 		$taxes = $this->calculate_tax( array(
 			'to_city' => $address['to_city'],
@@ -506,7 +507,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_country' => $address['to_country'],
 			'to_zip' => $address['to_zip'],
 			'shipping_amount' => $woocommerce->shipping->shipping_total,
-			'line_items' => $this->get_line_items( $wc_cart_object ),
+			'line_items' => $line_items,
 		) );
 
 		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
@@ -554,6 +555,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	public function calculate_backend_totals( $order_id ) {
 		$order = wc_get_order( $order_id );
 		$address = $this->get_backend_address();
+		$line_items = $this->get_backend_line_items( $order );
 
 		if ( method_exists( $order, 'get_shipping_total' ) ) {
 			$shipping = $order->get_shipping_total(); // Woo 3.0+
@@ -567,7 +569,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_country' => $address['to_country'],
 			'to_zip' => $address['to_zip'],
 			'shipping_amount' => $shipping,
-			'line_items' => $this->get_backend_line_items( $order ),
+			'line_items' => $line_items,
 		) );
 
 		// Add tax rates manually for Woo 3.0+
@@ -611,6 +613,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		$address = $this->get_address( $wc_cart_object );
+		$line_items = $this->get_line_items( $wc_cart_object );
+
+		if ( ! count( $line_items ) ) {
+			return;
+		}
 
 		$taxes = $this->calculate_tax( array(
 			'to_city' => $address['to_city'],
@@ -618,7 +625,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_country' => $address['to_country'],
 			'to_zip' => $address['to_zip'],
 			'shipping_amount' => $woocommerce->shipping->shipping_total,
-			'line_items' => $this->get_line_items( $wc_cart_object ),
+			'line_items' => $line_items,
 		) );
 	}
 
