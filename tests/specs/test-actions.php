@@ -293,6 +293,10 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( WC()->cart->tax_total, 13.31, '', 0.01 );
 		$this->assertEquals( WC()->cart->get_taxes_total(), 13.31, '', 0.01 );
 
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 150 + 50 + 13.31, '', 0.01 );
+		}
+
 		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
 			$product = $item['data'];
 			$sku = $product->get_sku();
@@ -340,9 +344,74 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( WC()->cart->tax_total, 14.75, '', 0.01 );
 		$this->assertEquals( WC()->cart->get_taxes_total(), 14.75, '', 0.01 );
 
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 150 + 50 + 14.75, '', 0.01 );
+		}
+
 		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
 			$product = $item['data'];
 			$sku = $product->get_sku();
+
+			if ( 'REDUCED1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 2.19, '', 0.01 );
+			}
+
+			if ( 'EXEMPTOVER1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 12.56, '', 0.01 );
+			}
+		}
+	}
+
+	function test_correct_taxes_for_product_exemption_threshold_reduced_rates_and_other_products() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'NY',
+			'store_zip' => '10118',
+			'store_city' => 'New York City',
+		) );
+
+		// NY shipping address
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NY',
+			'zip' => '10541',
+			'city' => 'Mahopac',
+		) );
+
+		$regular_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '25',
+			'sku' => 'SIMPLE1',
+			'tax_class' => '',
+		) )->get_id();
+		$taxable_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '150', // Over $110 threshold
+			'sku' => 'EXEMPTOVER1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$reduced_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '25',
+			'sku' => 'REDUCED1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $regular_product, 2 );
+		WC()->cart->add_to_cart( $taxable_product );
+		WC()->cart->add_to_cart( $reduced_product, 2 );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 18.94, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 18.94, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 150 + 50 + 50 + 18.94, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'SIMPLE1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 4.19, '', 0.01 );
+			}
 
 			if ( 'REDUCED1' == $sku ) {
 				$this->assertEquals( $item['line_tax'], 2.19, '', 0.01 );
@@ -475,7 +544,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'country' => 'AU',
 			'state' => 'VIC',
-			'zip' => 'VIC 3002',
+			'zip' => 'VIC3002',
 			'city' => 'Richmond',
 		) );
 
@@ -523,7 +592,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'country' => 'GB',
 			'state' => '',
-			'zip' => 'SW1A 1AA',
+			'zip' => 'SW1A1AA',
 			'city' => 'London',
 		) );
 
@@ -547,7 +616,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'country' => 'GR',
 			'state' => '',
-			'zip' => '104 31',
+			'zip' => '10431',
 			'city' => 'Athens',
 		) );
 
@@ -749,6 +818,65 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
 			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
 			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+		}
+	}
+
+	function test_correct_taxes_for_subscription_products_with_other_products_and_trial_and_thresholds() {
+		// NY shipping address
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NY',
+			'zip' => '10011',
+			'city' => 'New York City',
+		) );
+
+		$subscription_product = TaxJar_Product_Helper::create_product( 'subscription', array(
+			'price' => '19.99',
+			'sign_up_fee' => 100,
+			'trial_length' => 1,
+		) )->get_id();
+		$taxable_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '200', // Over $110 threshold
+			'sku' => 'EXEMPTOVER1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '10',
+			'sku' => 'EXEMPT1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $subscription_product );
+		WC()->cart->add_to_cart( $taxable_product );
+		WC()->cart->add_to_cart( $exempt_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 26.63, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 26.63, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 100 + 200 + 10 + 26.63, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'SUBSCRIPTION1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 8.88, '', 0.01 );
+			}
+
+			if ( 'EXEMPTOVER1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 17.75, '', 0.01 );
+			}
+
+			if ( 'EXEMPT1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0, '', 0.01 );
+			}
+		}
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+			$this->assertEquals( $recurring_cart->tax_total, 1.77, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.77, '', 0.01 );
 		}
 	}
 }
