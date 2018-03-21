@@ -833,6 +833,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			'price' => '10',
 			'sign_up_fee' => 100,
 			'trial_length' => 1,
+			'virtual' => 'no',
 		) )->get_id();
 		$taxable_product = TaxJar_Product_Helper::create_product( 'simple', array(
 			'price' => '200',
@@ -871,7 +872,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
 			$this->assertEquals( $recurring_cart->tax_total, 0.66, '', 0.01 );
-			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.66, '', 0.01 );
+			$this->assertEquals( $recurring_cart->shipping_tax_total, 0.66, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.32, '', 0.01 );
 		}
 
 		WC()->session->set( 'chosen_shipping_methods', array() );
