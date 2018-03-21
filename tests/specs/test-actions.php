@@ -866,7 +866,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		}
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 400 + 7.29, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 400 + 10 + 7.29, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
