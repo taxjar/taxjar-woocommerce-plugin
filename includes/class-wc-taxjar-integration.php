@@ -385,6 +385,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$shipping_rate_id = $this->create_or_update_tax_rate(
 				$location,
 				$taxes['tax_rate'] * 100,
+				'',
 				$taxes['freight_taxable']
 			);
 			$taxes['rate_ids']['shipping'] = $shipping_rate_id;
