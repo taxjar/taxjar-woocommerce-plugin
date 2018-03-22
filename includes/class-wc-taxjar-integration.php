@@ -204,18 +204,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	/**
-	 * Prints information to wp-content/debug.log
+	 * Prints debug info to wp-content/uploads/wc-logs/taxjar-*.log
 	 *
 	 * @return void
 	 */
 	public function _log( $message ) {
-		if ( WP_DEBUG === true ) {
-			if ( is_array( $message ) || is_object( $message ) ) {
-				error_log( print_r( $message, true ) );
-			} else {
-				error_log( $message );
-			}
-		}
 		if ( $this->debug ) {
 			if ( ! isset( $this->log ) ) {
 			    $this->log = new WC_Logger();
