@@ -371,24 +371,24 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$tax_class = $product->get_tax_class();
 
 				if ( $line_item->combined_tax_rate ) {
-					$rate_id = $this->create_or_update_tax_rate(
+					$taxes['rate_ids'][ $line_item_key ] = $this->create_or_update_tax_rate(
 						$location,
 						$line_item->combined_tax_rate * 100,
 						$tax_class,
 						$taxes['freight_taxable']
 					);
-					$taxes['rate_ids'][ $line_item_key ] = $rate_id;
 				}
 			}
 
 			// Add shipping tax rate
-			$shipping_rate_id = $this->create_or_update_tax_rate(
-				$location,
-				$taxes['tax_rate'] * 100,
-				'',
-				$taxes['freight_taxable']
-			);
-			$taxes['rate_ids']['shipping'] = $shipping_rate_id;
+			if ( $taxes['tax_rate'] ) {
+				$taxes['rate_ids']['shipping'] = $this->create_or_update_tax_rate(
+					$location,
+					$taxes['tax_rate'] * 100,
+					'',
+					$taxes['freight_taxable']
+				);
+			}
 		} // End if().
 
 		return $taxes;
