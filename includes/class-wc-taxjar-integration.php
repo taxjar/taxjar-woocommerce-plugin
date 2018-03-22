@@ -522,6 +522,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 		}
 
+		// Recalculate shipping package rates
+		foreach ( $wc_cart_object->get_shipping_packages() as $package_key => $package ) {
+			$woocommerce->session->set( 'shipping_for_package_' . $package_key, null );
+		}
+
 		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
 			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
 			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );

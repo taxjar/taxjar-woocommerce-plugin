@@ -174,6 +174,66 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		}
 	}
 
+	function test_correct_taxes_for_exempt_multiple_products_and_shipping() {
+		// NJ shipping address
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NJ',
+			'zip' => '07306',
+			'city' => 'Jersey City',
+		) );
+
+		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '50',
+			'sku' => 'EXEMPT1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$exempt_product2 = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '75',
+			'sku' => 'EXEMPT2',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $exempt_product );
+		WC()->cart->add_to_cart( $exempt_product2 );
+
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
+		WC()->shipping->shipping_total = 10;
+
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->shipping_tax_total, 0.66, '', 0.01 );
+
+		if ( method_exists( WC()->cart, 'get_shipping_taxes' ) ) {
+			$this->assertEquals( array_values( WC()->cart->get_shipping_taxes() )[0], 0.66, '', 0.01 );
+		} else {
+			$this->assertEquals( array_values( WC()->cart->shipping_taxes )[0], 0.66, '', 0.01 );
+		}
+
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0.66, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 125 + 10 + 0.66, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'EXEMPT1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0, '', 0.01 );
+			}
+
+			if ( 'EXEMPT2' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0, '', 0.01 );
+			}
+		}
+
+		WC()->session->set( 'chosen_shipping_methods', array() );
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+	}
+
 	function test_correct_taxes_for_duplicate_line_items() {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
