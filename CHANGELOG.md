@@ -1,3 +1,16 @@
+# 1.6.0 (2018-03-22)
+* Tested up to WooCommerce 3.3 
+* Refactored plugin to better handle total calculations and WC Subscriptions
+* Fix nexus overage API issue with expired TaxJar accounts
+* Fix rounding issue with line items in WC 3.2
+* Add filter hook to TaxJar store settings for developers
+* Skip backend calculations for deleted products
+* Remove default customer address setting override
+* Exempt line items with "Zero rate" tax class applied
+* Support UK / GB and EL / GR ISO 3166-1 code exceptions
+* Sanitize tax class to handle "Zero Rate" string from Disability VAT Exemption plugin
+* Drop WP_DEBUG logging in favor of taxjar.log
+
 # 1.5.4 (2017-12-08)
 * Fix sign-up fees and total issues with WC Subscriptions
 * Fix tax for duplicate line items with WC Product Add-ons & WC Product Bundles
