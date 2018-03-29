@@ -203,18 +203,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->calculate_totals();
 
 		$this->assertEquals( WC()->cart->tax_total, 0, '', 0.01 );
-		$this->assertEquals( WC()->cart->shipping_tax_total, 0.66, '', 0.01 );
-
-		if ( method_exists( WC()->cart, 'get_shipping_taxes' ) ) {
-			$this->assertEquals( array_values( WC()->cart->get_shipping_taxes() )[0], 0.66, '', 0.01 );
-		} else {
-			$this->assertEquals( array_values( WC()->cart->shipping_taxes )[0], 0.66, '', 0.01 );
-		}
-
-		$this->assertEquals( WC()->cart->get_taxes_total(), 0.66, '', 0.01 );
+		$this->assertEquals( WC()->cart->shipping_tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 125 + 10 + 0.66, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 125 + 10, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
