@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_Taxjar_Nexus {
 
-	const INVALID_OR_EXPIRED_API_TOKEN = array( 'Unauthorized' );
+	const INVALID_OR_EXPIRED_API_TOKEN = 'Unauthorized';
 
 	public function __construct( $integration ) {
 		$this->integration = $integration;
