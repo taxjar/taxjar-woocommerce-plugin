@@ -1,3 +1,7 @@
+# 1.6.1 (2018-04-05)
+* Fix error for WooCommerce stores running on PHP 5.4
+* Update "Configure TaxJar" button to point directly to TaxJar integration section
+
 # 1.6.0 (2018-03-22)
 * Tested up to WooCommerce 3.3 
 * Refactored plugin to better handle total calculations and WC Subscriptions
