@@ -2,7 +2,6 @@
 class TJ_WC_Actions extends WP_UnitTestCase {
 
 	function setUp() {
-		global $woocommerce;
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 		$this->tj = new WC_Taxjar_Integration();
 

@@ -2,8 +2,6 @@
 class TaxJar_Customer_Helper {
 
 	public static function create_customer( $opts = array() ) {
-		global $woocommerce;
-
 		$defaults = array(
 			'country' => 'US',
 			'state' => 'CO',

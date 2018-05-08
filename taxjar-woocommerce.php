@@ -43,8 +43,6 @@ final class WC_Taxjar {
 	 * Initialize the plugin.
 	 */
 	public function init() {
-		global $woocommerce;
-
 		// Checks if WooCommerce is installed.
 		if ( class_exists( 'WC_Integration' ) ) {
 			// Include our integration class and WP_User for wp_delete_user()

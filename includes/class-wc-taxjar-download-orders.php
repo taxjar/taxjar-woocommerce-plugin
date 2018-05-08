@@ -70,14 +70,12 @@ class WC_Taxjar_Download_Orders {
 	 * @return array
 	 */
 	public function get_form_settings_field() {
-		global $woocommerce;
-
 		$description_for_order_download = "If enabled, TaxJar will download your orders for reporting.";
 
 		if ( $this->taxjar_download ) {
 			$error = false;
 
-			if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) ) {
+			if ( version_compare( WC()->version, '2.4.0', '>=' ) ) {
 				if ( ! $this->existing_api_key() ) {
 					$error = true;
 				}
@@ -365,9 +363,7 @@ class WC_Taxjar_Download_Orders {
 	 * @return array
 	 */
 	private function get_or_create_woocommerce_api_keys() {
-		global $woocommerce;
-
-		if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) ) {
+		if ( version_compare( WC()->version, '2.4.0', '>=' ) ) {
 			global $current_user;
 			wp_get_current_user();
 
