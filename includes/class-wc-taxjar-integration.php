@@ -260,12 +260,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 		), $options) );
 
 		$taxes = array(
-			'amount_to_collect' => 0,
 			'freight_taxable' => 1,
 			'has_nexus' => 0,
 			'line_items' => array(),
 			'rate_ids' => array(),
-			'shipping_collectable' => 0,
 			'tax_rate' => 0,
 		);
 
@@ -320,16 +318,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$taxjar_response          = $taxjar_response->tax;
 
 			// Update Properties based on Response
-			$taxes['amount_to_collect']  = $taxjar_response->amount_to_collect;
 			$taxes['freight_taxable']    = (int) $taxjar_response->freight_taxable;
 			$taxes['has_nexus']          = (int) $taxjar_response->has_nexus;
 			$taxes['tax_rate']           = $taxjar_response->rate;
 
 			if ( ! empty( $taxjar_response->breakdown ) ) {
-				if ( ! empty( $taxjar_response->breakdown->shipping ) ) {
-					$taxes['shipping_collectable'] = $taxjar_response->breakdown->shipping->tax_collectable;
-				}
-
 				if ( ! empty( $taxjar_response->breakdown->line_items ) ) {
 					$line_items = array();
 					foreach ( $taxjar_response->breakdown->line_items as $line_item ) {
