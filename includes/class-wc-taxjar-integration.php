@@ -461,7 +461,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return void
 	 */
 	public function calculate_totals( $wc_cart_object ) {
-		global $woocommerce;
+		if ( ( ! is_cart() && ! is_checkout() ) || ( is_cart() && is_ajax() ) ) {
+			return;
+		}
 
 		$cart_taxes = array();
 		$cart_tax_total = 0;
