@@ -2,9 +2,9 @@
 
 ## Initial Setup
 
-1) Install [PHPUnit](http://phpunit.de/) by following their [installation guide](https://phpunit.de/getting-started.html). If you've installed it correctly, this should display the version:
+1) [PHPUnit](http://phpunit.de/) and other dev dependencies are installed automatically via `composer install`. To ensure you've installed it correctly, check the version:
 
-    $ phpunit --version
+    $ vendor/bin/phpunit --version
 
 2) Install WordPress and the WP Unit Test lib using the `install.sh` script. Change to the plugin root directory and type:
 
@@ -26,8 +26,8 @@ Sample usage:
 
 Go to the `/tests` directory in the command line and type:
 
-    $ phpunit
+    $ ../vendor/bin/phpunit
 
 You can run specific tests by providing the path and filename to the test class:
 
-    $ phpunit specs/test-actions.php
+    $ ../vendor/bin/phpunit specs/test-actions.php
