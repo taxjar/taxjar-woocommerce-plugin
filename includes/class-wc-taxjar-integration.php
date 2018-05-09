@@ -449,10 +449,18 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	public function smartcalcs_cache_request( $json ) {
-		return tlc_transient( __FUNCTION__ . hash( 'md5', $json ) )
-				->updates_with( array( $this, 'smartcalcs_request' ), array( $json ) )
-				->expires_in( $this->cache_time )
-				->get();
+		$cache_key = 'tj_tax_' . hash( 'md5', $json );
+		$response  = get_transient( $cache_key );
+
+		if ( false === $response ) {
+			$response = $this->smartcalcs_request( $json );
+
+			if ( 200 == wp_remote_retrieve_response_code( $response ) ) {
+				set_transient( $cache_key, $response, $this->cache_time );
+			}
+		}
+
+		return $response;
 	}
 
 	/**

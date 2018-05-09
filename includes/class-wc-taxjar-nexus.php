@@ -98,7 +98,7 @@ class WC_Taxjar_Nexus {
 		}
 
 		if ( $force_update || false === $nexus_list || null === $nexus_list || ( is_array( $nexus_list ) && count( $nexus_list ) == 0 ) ) {
-			delete_transient( 'tlc__' . md5( 'get_nexus_from_cache' ) );
+			delete_transient( 'tj_nexus' );
 			$nexus_list = $this->get_nexus_from_cache();
 		}
 
@@ -130,10 +130,15 @@ class WC_Taxjar_Nexus {
 	}
 
 	public function get_nexus_from_cache() {
-		return tlc_transient( __FUNCTION__ )
-				->updates_with( array( $this, 'get_nexus_from_api' ) )
-				->expires_in( 0.5 * DAY_IN_SECONDS )
-				->get();
+		$cache_key = 'tj_nexus';
+		$response  = get_transient( $cache_key );
+
+		if ( false === $response ) {
+			$response = $this->get_nexus_from_api();
+			set_transient( $cache_key, $response, 0.5 * DAY_IN_SECONDS );
+		}
+
+		return $response;
 	}
 
 } // End WC_Taxjar_Nexus.
