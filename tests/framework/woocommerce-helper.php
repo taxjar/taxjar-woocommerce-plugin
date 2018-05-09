@@ -26,6 +26,11 @@ class TaxJar_Woocommerce_Helper {
 		// Set default tax classes
 		// WooCommerce 3.2 checks for a valid class
 		update_option( 'woocommerce_tax_classes', "Reduced rate\nZero Rate\nClothing Rate - 20010" );
+
+		// Allow calculate_totals to run in specs for WooCommerce < 3.2
+		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+		}
 	}
 
 	public static function set_shipping_origin( $integration, $opts = array() ) {
