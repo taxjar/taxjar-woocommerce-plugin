@@ -461,6 +461,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return void
 	 */
 	public function calculate_totals( $wc_cart_object ) {
+		// If outside of cart and checkout page or within mini-cart, skip calculations
 		if ( ( ! is_cart() && ! is_checkout() ) || ( is_cart() && is_ajax() ) ) {
 			return;
 		}
