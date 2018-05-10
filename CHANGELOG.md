@@ -1,3 +1,8 @@
+# 1.7.0 (2018-05-10)
+* Improve performance by skipping calculations in the mini-cart
+* Drop TLC transients library in favor of native WP Transients API
+* Fix caching issues with tax calculations
+
 # 1.6.1 (2018-04-05)
 * Fix error for WooCommerce stores running on PHP 5.4
 * Update "Configure TaxJar" button to point directly to TaxJar integration section
