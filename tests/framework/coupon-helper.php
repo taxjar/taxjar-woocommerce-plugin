@@ -2,8 +2,6 @@
 class TaxJar_Coupon_Helper {
 
 	public static function create_coupon( $opts = array() ) {
-		global $woocommerce;
-
 		$defaults = array(
 			'code' => 'HIRO',
 			'amount' => '10',
@@ -11,7 +9,7 @@ class TaxJar_Coupon_Helper {
 		);
 		$params = extract( array_replace_recursive( $defaults, $opts ) );
 
-		if ( version_compare( $woocommerce->version, '3.0', '>=' ) ) {
+		if ( version_compare( WC()->version, '3.0', '>=' ) ) {
 			$coupon = new WC_Coupon();
 			$coupon->set_code( $code );
 			$coupon->set_amount( $amount );

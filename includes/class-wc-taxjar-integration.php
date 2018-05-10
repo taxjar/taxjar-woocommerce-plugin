@@ -15,8 +15,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * Init and hook in the integration.
 	 */
 	public function __construct() {
-		global $woocommerce;
-
 		$this->id                 = 'taxjar-integration';
 		$this->method_title       = __( 'TaxJar', 'wc-taxjar' );
 		$this->method_description = __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), city, and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable order downloads to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>. We\'ll get back to you within hours.</b>', 'wc-taxjar' );
@@ -24,7 +22,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/1.6.1/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . $woocommerce->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = 'TaxJarWordPressPlugin/1.6.1/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 
@@ -225,10 +223,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * Slightly altered copy and paste of private function in WC_Tax class file
 	 */
 	public function _get_wildcard_postcodes( $postcode ) {
-		global $woocommerce;
-
 		$postcodes = array( '*', strtoupper( $postcode ) );
-		if ( version_compare( $woocommerce->version, '2.4.0', '>=' ) ) {
+
+		if ( version_compare( WC()->version, '2.4.0', '>=' ) ) {
 			$postcodes = array( '*', strtoupper( $postcode ), strtoupper( $postcode ) . '*' );
 		}
 
@@ -248,8 +245,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return void
 	 */
 	public function calculate_tax( $options = array() ) {
-		global $woocommerce;
-
 		$this->_log( ':::: TaxJar Plugin requested ::::' );
 
 		// Process $options array and turn them into variables
@@ -260,22 +255,20 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_state' => null,
 			'to_zip' => null,
 			'to_city' => null,
-			'shipping_amount' => null, // $woocommerce->shipping->shipping_total
+			'shipping_amount' => null, // WC()->shipping->shipping_total
 			'line_items' => null
 		), $options) );
 
 		$taxes = array(
-			'amount_to_collect' => 0,
 			'freight_taxable' => 1,
 			'has_nexus' => 0,
 			'line_items' => array(),
 			'rate_ids' => array(),
-			'shipping_collectable' => 0,
 			'tax_rate' => 0,
 		);
 
 		// Strict conditions to be met before API call can be conducted
-		if ( empty( $to_country ) || empty( $to_zip ) || $woocommerce->customer->is_vat_exempt() ) {
+		if ( empty( $to_country ) || empty( $to_zip ) || WC()->customer->is_vat_exempt() ) {
 			return false;
 		}
 
@@ -325,16 +318,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$taxjar_response          = $taxjar_response->tax;
 
 			// Update Properties based on Response
-			$taxes['amount_to_collect']  = $taxjar_response->amount_to_collect;
 			$taxes['freight_taxable']    = (int) $taxjar_response->freight_taxable;
 			$taxes['has_nexus']          = (int) $taxjar_response->has_nexus;
 			$taxes['tax_rate']           = $taxjar_response->rate;
 
 			if ( ! empty( $taxjar_response->breakdown ) ) {
-				if ( ! empty( $taxjar_response->breakdown->shipping ) ) {
-					$taxes['shipping_collectable'] = $taxjar_response->breakdown->shipping->tax_collectable;
-				}
-
 				if ( ! empty( $taxjar_response->breakdown->line_items ) ) {
 					$line_items = array();
 					foreach ( $taxjar_response->breakdown->line_items as $line_item ) {
@@ -346,7 +334,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		// Remove taxes if they are set somehow and customer is exempt
-		if ( $woocommerce->customer->is_vat_exempt() ) {
+		if ( WC()->customer->is_vat_exempt() ) {
 			$wc_cart_object->remove_taxes();
 		} elseif ( $taxes['has_nexus'] ) {
 			// Use Woo core to find matching rates for taxable address
@@ -461,10 +449,18 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	public function smartcalcs_cache_request( $json ) {
-		return tlc_transient( __FUNCTION__ . hash( 'md5', $json ) )
-				->updates_with( array( $this, 'smartcalcs_request' ), array( $json ) )
-				->expires_in( $this->cache_time )
-				->get();
+		$cache_key = 'tj_tax_' . hash( 'md5', $json );
+		$response  = get_transient( $cache_key );
+
+		if ( false === $response ) {
+			$response = $this->smartcalcs_request( $json );
+
+			if ( 200 == wp_remote_retrieve_response_code( $response ) ) {
+				set_transient( $cache_key, $response, $this->cache_time );
+			}
+		}
+
+		return $response;
 	}
 
 	/**
@@ -473,7 +469,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return void
 	 */
 	public function calculate_totals( $wc_cart_object ) {
-		global $woocommerce;
+		// If outside of cart and checkout page or within mini-cart, skip calculations
+		if ( ( ! is_cart() && ! is_checkout() ) || ( is_cart() && is_ajax() ) ) {
+			return;
+		}
 
 		$cart_taxes = array();
 		$cart_tax_total = 0;
@@ -496,7 +495,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_state' => $address['to_state'],
 			'to_country' => $address['to_country'],
 			'to_zip' => $address['to_zip'],
-			'shipping_amount' => $woocommerce->shipping->shipping_total,
+			'shipping_amount' => WC()->shipping->shipping_total,
 			'line_items' => $line_items,
 		) );
 
@@ -517,7 +516,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		// Recalculate shipping package rates
 		foreach ( $wc_cart_object->get_shipping_packages() as $package_key => $package ) {
-			$woocommerce->session->set( 'shipping_for_package_' . $package_key, null );
+			WC()->session->set( 'shipping_for_package_' . $package_key, null );
 		}
 
 		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
@@ -584,9 +583,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return array
 	 */
 	protected function get_address() {
-		global $woocommerce;
-
-		$taxable_address = $woocommerce->customer->get_taxable_address();
+		$taxable_address = WC()->customer->get_taxable_address();
 		$taxable_address = is_array( $taxable_address ) ? $taxable_address : array();
 
 		$to_country = isset( $taxable_address[0] ) && ! empty( $taxable_address[0] ) ? $taxable_address[0] : false;
