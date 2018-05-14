@@ -122,7 +122,7 @@ class WC_Taxjar_Nexus {
 			return $body->regions;
 		}
 
-		if ( $response['response']['code'] >= 400 ) {
+		if ( ! is_wp_error( $response ) && $response['response']['code'] >= 400 ) {
 			return self::INVALID_OR_EXPIRED_API_TOKEN;
 		}
 
