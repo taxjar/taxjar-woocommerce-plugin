@@ -347,7 +347,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			// Add line item tax rates
 			foreach ( $taxes['line_items'] as $line_item_key => $line_item ) {
-				$product_id = explode( '-', $line_item_key )[0];
+				$line_item_key_chunks = explode( '-', $line_item_key );
+				$product_id = $line_item_key_chunks[0];
 				$product = wc_get_product( $product_id );
 				$tax_class = $product->get_tax_class();
 
@@ -729,7 +730,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 	public function override_woocommerce_tax_rates( $taxes, $price, $rates ) {
 		if ( isset( $this->response_line_items ) && array_values( $rates ) ) {
 			// Get tax rate ID for current item
-			$tax_rate_id = array_keys( $taxes )[0];
+			$keys = array_keys( $taxes );
+			$tax_rate_id = $keys[0];
 			$line_items = array();
 
 			// Map line items using rate ID
