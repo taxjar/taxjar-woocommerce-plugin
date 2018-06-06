@@ -350,7 +350,14 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$line_item_key_chunks = explode( '-', $line_item_key );
 				$product_id = $line_item_key_chunks[0];
 				$product = wc_get_product( $product_id );
-				$tax_class = $product->get_tax_class();
+
+				if ( $product ) {
+					$tax_class = $product->get_tax_class();
+				} else {
+					if ( isset( $this->backend_tax_classes[$product_id] ) ) {
+						$tax_class = $this->backend_tax_classes[$product_id];
+					}
+				}
 
 				if ( $line_item->combined_tax_rate ) {
 					$taxes['rate_ids'][ $line_item_key ] = $this->create_or_update_tax_rate(
@@ -676,30 +683,29 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 */
 	protected function get_backend_line_items( $order ) {
 		$line_items = array();
+		$this->backend_tax_classes = array();
 
 		foreach ( $order->get_items() as $item_key => $item ) {
 			if ( is_object( $item ) ) { // Woo 3.0+
 				$id = $item->get_product_id();
 				$quantity = $item->get_quantity();
+				$unit_price = wc_format_decimal( $item->get_subtotal() / $quantity );
 				$discount = wc_format_decimal( $item->get_subtotal() - $item->get_total() );
-				$tax_class = explode( '-', $item->get_tax_class() );
+				$tax_class_name = $item->get_tax_class();
 			} else { // Woo 2.6
 				$id = $item['product_id'];
 				$quantity = $item['qty'];
+				$unit_price = wc_format_decimal( $item['subtotal'] / $quantity );
 				$discount = wc_format_decimal( $item['line_subtotal'] - $item['line_total'] );
-				$tax_class = explode( '-', $item['tax_class'] );
+				$tax_class_name = $item['tax_class'];
 			}
 
-			$product = wc_get_product( $id );
+			$this->backend_tax_classes[$id] = $tax_class_name;
 
-			if ( ! $product ) {
-				continue;
-			}
-
-			$unit_price = $product->get_price();
+			$tax_class = explode( '-', $tax_class_name );
 			$tax_code = '';
 
-			if ( ! $product->is_taxable() || 'zero-rate' == sanitize_title( $product->get_tax_class() ) ) {
+			if ( 'taxable' !== $item->get_tax_status() ) {
 				$tax_code = '99999';
 			}
 
