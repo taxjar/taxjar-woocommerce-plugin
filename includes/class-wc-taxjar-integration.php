@@ -418,8 +418,14 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$this->_log( ':: Adding New Tax Rate ::' );
 			$this->_log( $tax_rate );
 			$rate_id = WC_Tax::_insert_tax_rate( $tax_rate );
-			WC_Tax::_update_tax_rate_postcodes( $rate_id, wc_clean( $location['to_zip'] ) );
-			WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $location['to_city'] ) );
+
+			if ( isset( $location['to_zip'] ) ) {
+				WC_Tax::_update_tax_rate_postcodes( $rate_id, wc_clean( $location['to_zip'] ) );
+			}
+
+			if ( isset( $location['to_city'] ) ) {
+				WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $location['to_city'] ) );
+			}
 		}
 
 		$this->_log( 'Tax Rate ID Set for ' . $rate_id );
