@@ -55,8 +55,9 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 				'api_token' => $this->api_token,
 				'enabled' => 'yes',
 				'taxjar_download' => 'yes',
-				'store_zip' => '80111',
+				'store_postcode' => '80111',
 				'store_city' => 'Greenwood Village',
+				'store_street' => '6060 S Quebec St',
 				'debug' => 'yes',
 			)
 		);
