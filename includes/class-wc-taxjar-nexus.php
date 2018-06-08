@@ -50,8 +50,8 @@ class WC_Taxjar_Nexus {
 
 	public function has_nexus_check( $country, $state = null ) {
 		$store_settings   = $this->integration->get_store_settings();
-		$from_country     = $store_settings['store_country_setting'];
-		$from_state       = $store_settings['store_state_setting'];
+		$from_country     = $store_settings['country'];
+		$from_state       = $store_settings['state'];
 
 		$nexus_areas = $this->get_or_update_cached_nexus();
 
@@ -62,8 +62,8 @@ class WC_Taxjar_Nexus {
 		array_push(
 			$nexus_areas,
 			(object) array(
-				'country_code' => $store_settings['store_country_setting'],
-				'region_code' => $store_settings['store_state_setting'],
+				'country_code' => $store_settings['country'],
+				'region_code' => $store_settings['state'],
 			)
 		);
 
