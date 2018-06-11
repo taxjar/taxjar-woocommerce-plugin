@@ -268,7 +268,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 		);
 
 		// Strict conditions to be met before API call can be conducted
-		if ( empty( $to_country ) || empty( $to_zip ) || empty( $line_items ) || WC()->customer->is_vat_exempt() ) {
+		if (
+			empty( $to_country ) ||
+			empty( $to_zip ) ||
+			( empty( $line_items ) && ( 0 == $shipping_amount ) ) ||
+			WC()->customer->is_vat_exempt()
+		) {
 			return false;
 		}
 
@@ -303,9 +308,15 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_city' => $to_city,
 			'to_zip' => $to_zip,
 			'shipping' => $shipping_amount,
-			'line_items' => $line_items,
 			'plugin' => 'woo',
 		);
+
+		// Either `amount` or `line_items` parameters are required to perform tax calculations.
+		if ( empty( $line_items ) ) {
+			$body['amount'] = 0.0;
+		} else {
+			$body['line_items'] = $line_items;
+		}
 
 		$response = $this->smartcalcs_cache_request( wp_json_encode( $body ) );
 
