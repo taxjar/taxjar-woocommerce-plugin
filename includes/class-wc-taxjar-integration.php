@@ -565,17 +565,13 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		// Add tax rates manually for Woo 3.0+
 		// Woo 2.6 adds the rates automatically
-		foreach ( $order->get_items() as $item_key => $item ) {
-			if ( is_object( $item ) ) { // Woo 3.0+
+		if ( class_exists( 'WC_Order_Item_Tax' ) ) {
+			foreach ( $order->get_items() as $item_key => $item ) {
 				$product_id = $item->get_product_id();
-			}
+				$line_item_key = $product_id . '-' . $item_key;
 
-			$line_item_key = $product_id . '-' . $item_key;
-
-			if ( isset( $taxes['rate_ids'][ $line_item_key ] ) ) {
-				$rate_id = $taxes['rate_ids'][ $line_item_key ];
-
-				if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Woo 3.0+
+				if ( isset( $taxes['rate_ids'][ $line_item_key ] ) ) {
+					$rate_id = $taxes['rate_ids'][ $line_item_key ];
 					$item_tax = new WC_Order_Item_Tax();
 					$item_tax->set_rate( $rate_id );
 					$item_tax->set_order_id( $order_id );
@@ -692,12 +688,15 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$unit_price = wc_format_decimal( $item->get_subtotal() / $quantity );
 				$discount = wc_format_decimal( $item->get_subtotal() - $item->get_total() );
 				$tax_class_name = $item->get_tax_class();
+				$tax_status = $item->get_tax_status();
 			} else { // Woo 2.6
 				$id = $item['product_id'];
 				$quantity = $item['qty'];
-				$unit_price = wc_format_decimal( $item['subtotal'] / $quantity );
+				$unit_price = wc_format_decimal( $item['line_subtotal'] / $quantity );
 				$discount = wc_format_decimal( $item['line_subtotal'] - $item['line_total'] );
 				$tax_class_name = $item['tax_class'];
+				$product = $order->get_product_from_item( $item );
+				$tax_status = $product ? $product->get_tax_status() : 'taxable';
 			}
 
 			$this->backend_tax_classes[$id] = $tax_class_name;
@@ -705,7 +704,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$tax_class = explode( '-', $tax_class_name );
 			$tax_code = '';
 
-			if ( 'taxable' !== $item->get_tax_status() ) {
+			if ( 'taxable' !== $tax_status ) {
 				$tax_code = '99999';
 			}
 
