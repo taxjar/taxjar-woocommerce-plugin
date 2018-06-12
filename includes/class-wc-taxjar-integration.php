@@ -563,9 +563,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'line_items' => $line_items,
 		) );
 
-		// Add tax rates manually for Woo 3.0+
-		// Woo 2.6 adds the rates automatically
-		if ( class_exists( 'WC_Order_Item_Tax' ) ) {
+		if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
 			foreach ( $order->get_items() as $item_key => $item ) {
 				$product_id = $item->get_product_id();
 				$line_item_key = $product_id . '-' . $item_key;
@@ -577,6 +575,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 					$item_tax->set_order_id( $order_id );
 					$item_tax->save();
 				}
+			}
+		} else { // Recalculate tax for Woo 2.6 to apply new tax rates
+			if ( class_exists( 'WC_AJAX' ) ) {
+				remove_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
+				WC_AJAX::calc_line_taxes();
+				add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
 			}
 		}
 	}
