@@ -644,12 +644,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$tax_class = explode( '-', $product->get_tax_class() );
 			$tax_code = '';
 
-			if ( ! $product->is_taxable() || 'zero-rate' == sanitize_title( $product->get_tax_class() ) ) {
-				$tax_code = '99999';
-			}
-
 			if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
 				$tax_code = end( $tax_class );
+			}
+
+			if ( ! $product->is_taxable() || 'zero-rate' == sanitize_title( $product->get_tax_class() ) ) {
+				$tax_code = '99999';
 			}
 
 			// Get WC Subscription sign-up fees for calculations
@@ -708,12 +708,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$tax_class = explode( '-', $tax_class_name );
 			$tax_code = '';
 
-			if ( 'taxable' !== $tax_status ) {
-				$tax_code = '99999';
-			}
-
 			if ( isset( $tax_class[1] ) && is_numeric( $tax_class[1] ) ) {
 				$tax_code = $tax_class[1];
+			}
+
+			if ( 'taxable' !== $tax_status ) {
+				$tax_code = '99999';
 			}
 
 			if ( $unit_price ) {
