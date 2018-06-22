@@ -253,6 +253,19 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( WC()->cart->get_taxes_total(), 0, '', 0.01 );
 	}
 
+	function test_correct_taxes_for_categorized_exempt_products() {
+		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'tax_status' => 'none',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $exempt_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0, '', 0.01 );
+	}
+
 	function test_correct_taxes_for_zero_rate_exempt_products() {
 		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
 			'tax_class' => 'zero-rate',
