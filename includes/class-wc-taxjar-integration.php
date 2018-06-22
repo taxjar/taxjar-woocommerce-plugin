@@ -268,7 +268,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		);
 
 		// Strict conditions to be met before API call can be conducted
-		if ( empty( $to_country ) || empty( $to_zip ) || WC()->customer->is_vat_exempt() ) {
+		if ( empty( $to_country ) || empty( $to_zip ) || empty( $line_items ) || WC()->customer->is_vat_exempt() ) {
 			return false;
 		}
 
