@@ -468,11 +468,15 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_discount( $coupon );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 1.56, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 1.56, '', 0.01 );
-
+		// Woo 3.2+ allocates fixed discounts evenly across line items
+		// Woo 2.6+ allocates fixed discounts proportionately across line items
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->tax_total, 1.56, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_taxes_total(), 1.56, '', 0.01 );
 			$this->assertEquals( WC()->cart->get_total( 'amount' ), 283 - 10 + 1.56, '', 0.01 );
+		} else {
+			$this->assertEquals( WC()->cart->tax_total, 1.42, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_taxes_total(), 1.42, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
@@ -484,7 +488,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			}
 
 			if ( 'EXEMPTOVER1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 1.56, '', 0.01 );
+				if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+					$this->assertEquals( $item['line_tax'], 1.56, '', 0.01 );
+				} else {
+					$this->assertEquals( $item['line_tax'], 1.42, '', 0.01 );
+				}
 			}
 		}
 	}
