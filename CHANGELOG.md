@@ -1,3 +1,12 @@
+# 1.7.1 (2018-07-19)
+* Tested up to WooCommerce 3.4
+* Skip API requests when there are no line items or shipping charges
+* Fix backend order tax calculations for deleted products
+* Fix calculations for multiple line items with exemption thresholds
+* Fix compatibility issues with PHP 5.2 and 5.3
+* Fix tax code precedence for "None" tax status and custom tax class products
+* Fix error handling when syncing nexus regions with an expired API token
+
 # 1.7.0 (2018-05-10)
 * Improve performance by skipping calculations in the mini-cart
 * Drop TLC transients library in favor of native WP Transients API
