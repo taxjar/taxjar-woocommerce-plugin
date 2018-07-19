@@ -376,6 +376,119 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		}
 	}
 
+	function test_correct_taxes_for_product_exemption_threshold_ma() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'SC',
+			'store_zip' => '29401',
+			'store_city' => 'Charleston',
+		) );
+
+		// NY shipping address
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'MA',
+			'zip' => '02127',
+			'city' => 'Boston',
+		) );
+
+		$taxable_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '205', // Over $110 threshold
+			'sku' => 'EXEMPTOVER1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '78',
+			'sku' => 'EXEMPT1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $taxable_product );
+		WC()->cart->add_to_cart( $exempt_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 1.88, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 1.88, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 283 + 1.88, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'EXEMPT1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0, '', 0.01 );
+			}
+
+			if ( 'EXEMPTOVER1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 1.88, '', 0.01 );
+			}
+		}
+	}
+
+	function test_correct_taxes_for_product_exemption_threshold_ma_with_discount() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'SC',
+			'store_zip' => '29401',
+			'store_city' => 'Charleston',
+		) );
+
+		// NY shipping address
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'MA',
+			'zip' => '02127',
+			'city' => 'Boston',
+		) );
+
+		$taxable_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '205', // Over $110 threshold
+			'sku' => 'EXEMPTOVER1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '78',
+			'sku' => 'EXEMPT1',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$coupon = TaxJar_Coupon_Helper::create_coupon( array(
+			'amount' => '10',
+			'discount_type' => 'fixed_cart',
+		) );
+
+		if ( version_compare( WC()->version, '3.0', '>=' ) ) {
+			$coupon = $coupon->get_code();
+		} else {
+			$coupon = $coupon->code;
+		}
+
+		WC()->cart->add_to_cart( $taxable_product );
+		WC()->cart->add_to_cart( $exempt_product );
+		WC()->cart->add_discount( $coupon );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 1.56, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 1.56, '', 0.01 );
+
+		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 283 - 10 + 1.56, '', 0.01 );
+		}
+
+		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
+			$product = $item['data'];
+			$sku = $product->get_sku();
+
+			if ( 'EXEMPT1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 0, '', 0.01 );
+			}
+
+			if ( 'EXEMPTOVER1' == $sku ) {
+				$this->assertEquals( $item['line_tax'], 1.56, '', 0.01 );
+			}
+		}
+	}
+
 	function test_correct_taxes_for_product_exemption_threshold_reduced_rates() {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
