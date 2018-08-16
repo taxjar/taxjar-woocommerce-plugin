@@ -52,7 +52,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			// Settings Page
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
-			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_after' ),  11 );
 
 			// Filters
 			add_filter( 'woocommerce_calc_tax', array( $this, 'override_woocommerce_tax_rates' ), 10, 3 );
@@ -585,6 +584,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
 			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );
 			new WC_Cart_Totals( $wc_cart_object );
+			remove_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
+			do_action( 'woocommerce_after_calculate_totals', $wc_cart_object );
+			add_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 		} else {
 			remove_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 			$wc_cart_object->calculate_totals();
@@ -634,7 +636,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 		} else { // Recalculate tax for Woo 2.6 to apply new tax rates
 			if ( class_exists( 'WC_AJAX' ) ) {
 				remove_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
-				WC_AJAX::calc_line_taxes();
+				if ( check_ajax_referer( 'calc-totals', 'security', false ) ) {
+					WC_AJAX::calc_line_taxes();
+				}
 				add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
 			}
 		}
@@ -1098,20 +1102,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	/**
-	 * Hack to hide the tax sections for additional tax class rate tables.
-	 *
+	 * Output TaxJar message above tax configuration screen
 	 */
 	public function output_sections_before() {
-		echo '<div class="updated taxjar-notice"><p><b>Powered by <a href="https://www.taxjar.com" target="_blank">TaxJar</a></b> ― Your tax rates and settings are automatically configured.</p><p><a href="admin.php?page=wc-settings&tab=integration&section=taxjar-integration" class="button-primary">Configure TaxJar</a> &nbsp; <a href="https://www.taxjar.com/contact/" class="button" target="_blank">Help &amp; Support</a></p></div>';
-		echo '<div style="display: none">';
-	}
-
-	/**
-	 * Hack to hide the tax sections for additional tax class rate tables.
-	 *
-	 */
-	public function output_sections_after() {
-		echo '</div>';
+		echo '<div class="updated taxjar-notice"><p><b>Powered by <a href="https://www.taxjar.com" target="_blank">TaxJar</a></b> ― Your tax rates and settings are automatically configured below.</p><p><a href="admin.php?page=wc-settings&tab=integration&section=taxjar-integration" class="button-primary">Configure TaxJar</a> &nbsp; <a href="https://www.taxjar.com/contact/" class="button" target="_blank">Help &amp; Support</a></p></div>';
 	}
 
 	/**

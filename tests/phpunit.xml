@@ -8,7 +8,7 @@
   verbose="true"
   >
   <testsuites>
-    <testsuite name="TaxJar WooCommerce Unit Tests">
+    <testsuite name="taxjar">
       <directory prefix="test-" suffix=".php">./specs/</directory>
     </testsuite>
   </testsuites>
