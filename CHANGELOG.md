@@ -1,3 +1,9 @@
+# 2.0.0 (2018-08-16)
+* Street address support with rooftop accuracy
+* Display native rate tables for custom rates
+* Call `woocommerce_after_calculate_totals` after recalculation for other plugins
+* Fix backend order calculations in WC 2.6
+
 # 1.7.1 (2018-07-19)
 * Tested up to WooCommerce 3.4
 * Skip API requests when there are no line items or shipping charges
