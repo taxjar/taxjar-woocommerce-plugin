@@ -1,18 +1,18 @@
-jQuery(document).ready(function() {
+jQuery( document ).ready( function() {
 	/*
-	* Javascript module for TaxJar admin settings page
+	* JavaScript for TaxJar admin settings page
 	*/
-	var TaxJarAdmin = (function($, m) {
+	var TaxJarAdmin = ( function( $, m ) {
 		var init = function() {
-			$('[name="woocommerce_taxjar-integration_api_token"]').on('blur', clean_api_key);
-			$('.js-wc-taxjar-sync-nexus-addresses').on('click', sync_nexus_addresses);
+			$( '[name="woocommerce_taxjar-integration_api_token"]' ).on( 'blur', clean_api_key );
+			$( '.js-wc-taxjar-sync-nexus-addresses' ).on( 'click', sync_nexus_addresses );
 		};
 
 		var clean_api_key = function() {
-			$(this).attr('value', $(this).attr('value').replace(/ /g,''));
+			$( this ).attr( 'value', $(this).attr( 'value' ).replace( / /g, '' ) );
 		};
 
-		var sync_nexus_addresses = function(e) {
+		var sync_nexus_addresses = function( e ) {
 			e.preventDefault();
 
 			$.ajax({
@@ -25,7 +25,7 @@ jQuery(document).ready(function() {
 					'woocommerce_taxjar-integration_api_token': woocommerce_taxjar_admin.api_token
 				}
 			}).done(function() {
-				alert('Nexus Addresses Synced');
+				alert( 'Nexus Addresses Synced' );
 				location.reload();
 			});
 		};
@@ -33,7 +33,7 @@ jQuery(document).ready(function() {
 		return {
 			init: init
 		};
-	}(jQuery, TaxJarAdmin || {}));
+	}( jQuery, TaxJarAdmin || {} ) );
 
 	TaxJarAdmin.init();
 });
