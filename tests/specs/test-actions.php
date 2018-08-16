@@ -380,11 +380,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'SC',
-			'store_zip' => '29401',
+			'store_postcode' => '29401',
 			'store_city' => 'Charleston',
 		) );
 
-		// NY shipping address
+		// MA shipping address
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'state' => 'MA',
 			'zip' => '02127',
@@ -431,11 +431,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'SC',
-			'store_zip' => '29401',
+			'store_postcode' => '29401',
 			'store_city' => 'Charleston',
 		) );
 
-		// NY shipping address
+		// MA shipping address
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'state' => 'MA',
 			'zip' => '02127',
