@@ -30,4 +30,4 @@ Go to the `/tests` directory in the command line and type:
 
 You can run specific tests by providing the path and filename to the test class:
 
-    $ ../vendor/bin/phpunit specs/test-actions.php
+    $ ../vendor/bin/phpunit --testsuite=taxjar
