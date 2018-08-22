@@ -57,7 +57,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			add_filter( 'woocommerce_calc_tax', array( $this, 'override_woocommerce_tax_rates' ), 10, 3 );
 			add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'sanitize_settings' ) );
 			add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
-			add_filter( 'woocommerce_matched_rates', array( $this, 'allow_street_for_matched_rates' ), 10, 2 );
+			add_filter( 'woocommerce_matched_rates', array( $this, 'allow_street_address_for_matched_rates' ), 10, 2 );
 
 			// Scripts / Stylesheets
 			add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_new_order_assets' ) );
@@ -887,7 +887,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @param string $tax_class
 	 * @return array
 	 */
-	public function allow_street_for_matched_rates( $matched_tax_rates, $tax_class = '' ) {
+	public function allow_street_address_for_matched_rates( $matched_tax_rates, $tax_class = '' ) {
 		$tax_class         = sanitize_title( $tax_class );
 		$location          = WC_Tax::get_tax_location( $tax_class );
 		$matched_tax_rates = array();
