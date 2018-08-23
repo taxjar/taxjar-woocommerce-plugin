@@ -1,3 +1,6 @@
+# 2.0.1 (2018-08-23)
+* Fix local pickup calculations with street address support
+
 # 2.0.0 (2018-08-16)
 * Street address support with rooftop accuracy
 * Display native rate tables for custom rates
