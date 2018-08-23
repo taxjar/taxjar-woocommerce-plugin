@@ -101,6 +101,38 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
+	function test_correct_taxes_with_local_pickup() {
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+
+		// NY shipping address
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NY',
+			'zip' => '10001',
+			'city' => 'New York City',
+		) );
+
+		WC()->cart->add_to_cart( $product );
+
+		// Set local pickup shipping method and ship to CO address instead
+		WC()->session->set( 'chosen_shipping_methods', array() );
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+		WC()->session->set( 'chosen_shipping_methods', array( 'local_pickup' ) );
+		update_option( 'woocommerce_tax_based_on', 'base' );
+
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0.4, '', 0.01 );
+		$this->assertEquals( WC()->cart->shipping_tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0.4, '', 0.01 );
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$this->assertEquals( $item['line_tax'], 0.4, '', 0.01 );
+		}
+
+		WC()->session->set( 'chosen_shipping_methods', array() );
+		update_option( 'woocommerce_tax_based_on', 'shipping' );
+	}
+
 	function test_correct_taxes_for_multiple_products() {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		$extra_product = TaxJar_Product_Helper::create_product( 'simple', array(
