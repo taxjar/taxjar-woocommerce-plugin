@@ -29,6 +29,7 @@ class WC_Taxjar_Download_Orders {
 		} else {
 			$value = 'no';
 		}
+		$value = apply_filters( 'taxjar_download_orders', $value );
 
 		if ( ($value != $previous_value ) ) {
 			if ( 'yes' == $value ) {

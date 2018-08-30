@@ -17,7 +17,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	public function __construct() {
 		$this->id                 = 'taxjar-integration';
 		$this->method_title       = __( 'TaxJar', 'wc-taxjar' );
-		$this->method_description = __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), city, and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable order downloads to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>. We\'ll get back to you within hours.</b>', 'wc-taxjar' );
+		$this->method_description = apply_filters( 'taxjar_method_description', __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), city, and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable order downloads to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>. We\'ll get back to you within hours.</b>', 'wc-taxjar' ) );
 		$this->app_uri            = 'https://app.taxjar.com/';
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
@@ -130,7 +130,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 			);
 		}
 
-		if ( $this->post_or_setting( 'api_token' ) && $tj_connection->api_token_valid ) {
+		$api_token_valid = apply_filters( 'taxjar_api_token_valid', $this->post_or_setting( 'api_token' ) && $tj_connection->api_token_valid );
+		if ( $api_token_valid ) {
 			$this->form_fields = array_merge( $this->form_fields,
 				array(
 					'taxjar_title_step_2' => array(
@@ -227,6 +228,8 @@ class WC_Taxjar_Integration extends WC_Integration {
 				)
 			);
 		} // End if().
+
+		$this->form_fields = apply_filters( 'taxjar_form_fields', $this->form_fields );
 	}
 
 	/**
@@ -235,6 +238,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return void
 	 */
 	public function _log( $message ) {
+		do_action( 'taxjar_log', $message );
 		if ( $this->debug ) {
 			if ( ! isset( $this->log ) ) {
 			    $this->log = new WC_Logger();
@@ -477,18 +481,20 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	public function smartcalcs_request( $json ) {
-		$url = $this->uri . 'taxes';
+		$response = apply_filters( 'taxjar_smartcalcs_request', $json, false );
+		if ( ! $response ) {
+			$url = $this->uri . 'taxes';
+			$this->_log( 'Requesting: ' . $this->uri . 'taxes - ' . $json );
 
-		$this->_log( 'Requesting: ' . $this->uri . 'taxes - ' . $json );
-
-		$response = wp_remote_post( $url, array(
-			'headers' => array(
-							'Authorization' => 'Token token="' . $this->settings['api_token'] . '"',
-							'Content-Type' => 'application/json',
-						),
-			'user-agent' => $this->ua,
-			'body' => $json,
-		) );
+			$response = wp_remote_post( $url, array(
+				'headers' => array(
+								'Authorization' => 'Token token="' . $this->settings['api_token'] . '"',
+								'Content-Type' => 'application/json',
+							),
+				'user-agent' => $this->ua,
+				'body' => $json,
+			) );
+		}
 
 		if ( is_wp_error( $response ) ) {
 			new WP_Error( 'request', __( 'There was an error retrieving the tax rates. Please check your server configuration.' ) );
