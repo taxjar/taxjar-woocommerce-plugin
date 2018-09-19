@@ -481,7 +481,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	public function smartcalcs_request( $json ) {
-		$response = apply_filters( 'taxjar_smartcalcs_request', $json, false );
+		$response = apply_filters( 'taxjar_smartcalcs_request', false, $json );
 		if ( ! $response ) {
 			$url = $this->uri . 'taxes';
 			$this->_log( 'Requesting: ' . $this->uri . 'taxes - ' . $json );
