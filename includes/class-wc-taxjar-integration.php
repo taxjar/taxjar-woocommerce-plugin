@@ -394,12 +394,10 @@ class WC_Taxjar_Integration extends WC_Integration {
 				$product_id = $line_item_key_chunks[0];
 				$product = wc_get_product( $product_id );
 
-				if ( $product ) {
-					$tax_class = $product->get_tax_class();
+				if ( isset( $this->backend_tax_classes[$product_id] ) ) {
+					$tax_class = $this->backend_tax_classes[$product_id];
 				} else {
-					if ( isset( $this->backend_tax_classes[$product_id] ) ) {
-						$tax_class = $this->backend_tax_classes[$product_id];
-					}
+					$tax_class = $product->get_tax_class();
 				}
 
 				if ( $line_item->combined_tax_rate ) {
