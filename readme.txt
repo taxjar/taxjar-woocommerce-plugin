@@ -15,7 +15,7 @@ Save hours every month by putting your sales tax on autopilot. Automated, multi-
 
 Painless sales tax calculations, reporting and filing for WooCommerce!
 
-Get accurate sales tax calculations and return-ready reports. [TaxJar for WooCommerce](https://www.taxjar.com/woocommerce-sales-tax-plugin/) takes care of all your sales tax needs. Trusted by over 10,000 eCommerce businesses each month.
+Get accurate sales tax calculations and return-ready reports. [TaxJar for WooCommerce](https://www.taxjar.com/woocommerce-sales-tax-plugin/) takes care of all your sales tax needs. Trusted by over 15,000 eCommerce businesses each month.
 
 *Why WooCommerce Customers Love TaxJar:*
 
