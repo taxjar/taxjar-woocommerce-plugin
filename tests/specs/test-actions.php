@@ -101,6 +101,52 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
+	function test_correct_taxes_from_taxable_shipping_to_exempt_shipping() {
+		// NJ shipping address
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NJ',
+			'zip' => '07306',
+			'city' => 'Jersey City',
+		) );
+
+		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '50',
+			'sku' => 'EXEMPT',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$taxable_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '100',
+			'sku' => 'TAXABLE',
+			'tax_class' => '',
+		) )->get_id();
+
+		$exempt_product_item_key = WC()->cart->add_to_cart( $exempt_product );
+		$taxable_product_item_key = WC()->cart->add_to_cart( $taxable_product );
+
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
+		WC()->shipping->shipping_total = 10;
+
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 6.63, '', 0.01 );
+		$this->assertEquals( WC()->cart->shipping_tax_total, 0.66, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 7.29, '', 0.01 );
+
+		// Remove taxable product from cart
+		WC()->cart->remove_cart_item( $taxable_product_item_key );
+
+		// Recalculate totals
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->shipping_tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0, '', 0.01 );
+
+		WC()->session->set( 'chosen_shipping_methods', array() );
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+	}
+
 	function test_correct_taxes_with_local_pickup() {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
