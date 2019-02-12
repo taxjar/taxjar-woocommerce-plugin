@@ -957,11 +957,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 	public function post_or_setting( $key ) {
 		$val = null;
 
-		if ( count( $_POST ) > 0 ) {
-			$val = isset( $_POST[ 'woocommerce_taxjar-integration_' . $key ] ) ? $_POST[ 'woocommerce_taxjar-integration_' . $key ] : null;
-		} else {
-			$val = $this->settings[ $key ];
-		}
+        if ( isset( $_POST[ 'woocommerce_taxjar-integration_' . $key ] ) ) {
+            $val = $_POST[ 'woocommerce_taxjar-integration_' . $key ];
+        } else {
+            $val = $this->settings[ $key ];
+        }
 
 		if ( 'yes' == $val ) {
 			$val = 1;
