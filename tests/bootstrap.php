@@ -15,7 +15,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 
 		$this->tests_dir    = dirname( __FILE__ );
 		$this->plugin_dir   = __DIR__ . '/../../';
-		$this->wp_tests_dir = '/tmp/wordpress-tests-lib/';
+		$this->wp_tests_dir = !empty( getenv('WP_TESTS_DIR' ) ) ? getenv('WP_TESTS_DIR' ) : '/tmp/wordpress-tests-lib/';
 
 		$this->api_token = getenv( 'TAXJAR_API_TOKEN' );
 
