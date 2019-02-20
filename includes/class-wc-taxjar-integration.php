@@ -770,9 +770,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 			$tax_class = explode( '-', $tax_class_name );
 			$tax_code = '';
 
-			if ( isset( $tax_class[1] ) && is_numeric( $tax_class[1] ) ) {
-				$tax_code = $tax_class[1];
-			}
+            if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
+                $tax_code = end( $tax_class );
+            }
 
 			if ( 'taxable' !== $tax_status ) {
 				$tax_code = '99999';
