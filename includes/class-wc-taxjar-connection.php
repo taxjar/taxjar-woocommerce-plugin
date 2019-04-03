@@ -27,6 +27,12 @@ class WC_Taxjar_Connection {
 	}
 
 	private function check_status() {
+		if ( ! apply_filters( 'taxjar_should_check_status', true ) ) {
+			$this->api_token_valid = apply_filters( 'taxjar_api_token_valid', false );
+			$this->can_connect = apply_filters( 'taxjar_can_connect', false );
+			return;
+		}
+
 		$description = '';
 		$url         = $this->integration->uri . 'verify';
 		$body_string = 'token=' . $this->integration->post_or_setting( 'api_token' );

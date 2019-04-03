@@ -236,7 +236,7 @@ final class WC_Taxjar {
 
 		$api_token = WC()->integrations->integrations['taxjar-integration']->get_option( 'api_token' );
 
-		if ( '' == $api_token ) {
+		if ( '' == $api_token && apply_filters( 'taxjar_should_display_connect_notice', true ) ) {
 			$url = $this->get_settings_url();
 			// translators: Installation admin notice
 			echo '<div class="updated fade"><p>' . sprintf( __( '%1$sTaxJar for WooCommerce is almost ready. %2$sTo get started, %3$sconnect your TaxJar account%4$s.', 'wc-taxjar' ), '<strong>', '</strong>', '<a href="' . esc_url( $url ) . '">', '</a>' ) . '</p></div>' . "\n";
