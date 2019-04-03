@@ -52,19 +52,19 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 0.4, '', 0.01 );
-		$this->assertEquals( WC()->cart->shipping_tax_total, 0.2, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 0.73, '', 0.01 );
+		$this->assertEquals( WC()->cart->shipping_tax_total, 0.36, '', 0.01 );
 
 		if ( method_exists( WC()->cart, 'get_shipping_taxes' ) ) {
-			$this->assertEquals( array_values( WC()->cart->get_shipping_taxes() )[0], 0.2, '', 0.01 );
+			$this->assertEquals( array_values( WC()->cart->get_shipping_taxes() )[0], 0.36, '', 0.01 );
 		} else {
-			$this->assertEquals( array_values( WC()->cart->shipping_taxes )[0], 0.2, '', 0.01 );
+			$this->assertEquals( array_values( WC()->cart->shipping_taxes )[0], 0.36, '', 0.01 );
 		}
 
-		$this->assertEquals( WC()->cart->get_taxes_total(), 0.6, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 1.09, '', 0.01 );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( $item['line_tax'], 0.4, '', 0.01 );
+			$this->assertEquals( $item['line_tax'], 0.73, '', 0.01 );
 		}
 
 		WC()->session->set( 'chosen_shipping_methods', array() );
@@ -101,6 +101,52 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
+	function test_correct_taxes_from_taxable_shipping_to_exempt_shipping() {
+		// NJ shipping address
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NJ',
+			'zip' => '07306',
+			'city' => 'Jersey City',
+		) );
+
+		$exempt_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '50',
+			'sku' => 'EXEMPT',
+			'tax_class' => 'clothing-rate-20010',
+		) )->get_id();
+		$taxable_product = TaxJar_Product_Helper::create_product( 'simple', array(
+			'price' => '100',
+			'sku' => 'TAXABLE',
+			'tax_class' => '',
+		) )->get_id();
+
+		$exempt_product_item_key = WC()->cart->add_to_cart( $exempt_product );
+		$taxable_product_item_key = WC()->cart->add_to_cart( $taxable_product );
+
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
+		WC()->shipping->shipping_total = 10;
+
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 6.63, '', 0.01 );
+		$this->assertEquals( WC()->cart->shipping_tax_total, 0.66, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 7.29, '', 0.01 );
+
+		// Remove taxable product from cart
+		WC()->cart->remove_cart_item( $taxable_product_item_key );
+
+		// Recalculate totals
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->shipping_tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0, '', 0.01 );
+
+		WC()->session->set( 'chosen_shipping_methods', array() );
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+	}
+
 	function test_correct_taxes_with_local_pickup() {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
@@ -121,12 +167,12 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 0.4, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 0.73, '', 0.01 );
 		$this->assertEquals( WC()->cart->shipping_tax_total, 0, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 0.4, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0.73, '', 0.01 );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( $item['line_tax'], 0.4, '', 0.01 );
+			$this->assertEquals( $item['line_tax'], 0.73, '', 0.01 );
 		}
 
 		WC()->session->set( 'chosen_shipping_methods', array() );
@@ -144,24 +190,24 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $extra_product, 2 );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 2.4, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 2.4, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 4.36, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 4.36, '', 0.01 );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
 			$product = $item['data'];
 			$sku = $product->get_sku();
 
 			if ( 'SIMPLE2' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 2, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 3.63, '', 0.01 );
 			}
 
 			if ( 'SIMPLE1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 0.4, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 0.73, '', 0.01 );
 			}
 		}
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 62.4, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 64.36, '', 0.01 );
 		}
 	}
 
@@ -265,11 +311,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $product, 1, 0, [], [ 'duplicate' => true ] );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 0.8, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 0.8, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 1.46, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 1.46, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 20.8, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 21.46, '', 0.01 );
 		}
 	}
 
@@ -663,11 +709,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_discount( $coupon );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 2.4, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 2.4, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 4.35, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 4.35, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 62.4, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 64.35, '', 0.01 );
 		}
 	}
 
@@ -900,8 +946,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( WC()->cart->get_taxes_total(), 0, '', 0.01 );
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
-			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
-			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->tax_total, 1.45, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.45, '', 0.01 );
 		}
 	}
 
@@ -915,11 +961,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $subscription_product );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 2, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 2, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 3.63, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 3.63, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 50 + 2, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 50 + 3.63, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
@@ -927,13 +973,13 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			$sku = $product->get_sku();
 
 			if ( 'SUBSCRIPTION1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 2, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 3.63, '', 0.01 );
 			}
 		}
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
-			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
-			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->tax_total, 1.45, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.45, '', 0.01 );
 		}
 	}
 
@@ -947,11 +993,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $subscription_product );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 0.8, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 0.8, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 1.45, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 1.45, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 19.99 + 0.8, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 19.99 + 1.45, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
@@ -959,13 +1005,13 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			$sku = $product->get_sku();
 
 			if ( 'SUBSCRIPTION1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 0.8, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 1.45, '', 0.01 );
 			}
 		}
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
-			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
-			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->tax_total, 1.45, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.45, '', 0.01 );
 		}
 	}
 
@@ -979,11 +1025,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $subscription_product );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 2.8, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 2.8, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 5.07, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 5.07, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 19.99 + 50 + 2.8, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 19.99 + 50 + 5.07, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
@@ -991,13 +1037,13 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			$sku = $product->get_sku();
 
 			if ( 'SUBSCRIPTION1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 2.8, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 5.07, '', 0.01 );
 			}
 		}
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
-			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
-			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->tax_total, 1.45, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.45, '', 0.01 );
 		}
 	}
 
@@ -1014,11 +1060,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $extra_product );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 1.2, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 1.2, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 2.18, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 2.18, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 19.99 + 10 + 1.2, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 19.99 + 10 + 2.18, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
@@ -1026,17 +1072,17 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			$sku = $product->get_sku();
 
 			if ( 'SUBSCRIPTION1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 0.8, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 1.45, '', 0.01 );
 			}
 
 			if ( 'SIMPLE1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 0.4, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 0.73, '', 0.01 );
 			}
 		}
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
-			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
-			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->tax_total, 1.45, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.45, '', 0.01 );
 		}
 	}
 
@@ -1053,11 +1099,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $extra_product );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 0.4, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 0.4, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 0.73, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0.73, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 10 + 0.4, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 10 + 0.73, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
@@ -1069,13 +1115,13 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			}
 
 			if ( 'SIMPLE1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 0.4, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 0.73, '', 0.01 );
 			}
 		}
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
-			$this->assertEquals( $recurring_cart->tax_total, 0.8, '', 0.01 );
-			$this->assertEquals( $recurring_cart->get_taxes_total(), 0.8, '', 0.01 );
+			$this->assertEquals( $recurring_cart->tax_total, 1.45, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.45, '', 0.01 );
 		}
 	}
 

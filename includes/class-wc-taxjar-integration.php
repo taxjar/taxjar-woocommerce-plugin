@@ -39,7 +39,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		add_action( 'woocommerce_update_options_integration_' . $this->id, array( $this, 'process_admin_options' ) );
 		add_action( 'admin_menu', array( $this, 'taxjar_admin_menu' ),  15 );
 
-		if ( apply_filters( 'taxjar_enabled', 'yes' == $this->settings['enabled'] ) ) {
+		if ( apply_filters( 'taxjar_enabled', isset( $this->settings['enabled'] ) && 'yes' == $this->settings['enabled'] ) ) {
 			// Calculate Taxes at Cart / Checkout
 			if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
 				add_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
@@ -382,7 +382,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		// Remove taxes if they are set somehow and customer is exempt
 		if ( WC()->customer->is_vat_exempt() ) {
-			$wc_cart_object->remove_taxes();
+			WC()->cart->remove_taxes(); // Woo < 3.2
 		} elseif ( $taxes['has_nexus'] ) {
 			// Use Woo core to find matching rates for taxable address
 			$location = array(
@@ -417,14 +417,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 
 			// Add shipping tax rate
-			if ( $taxes['tax_rate'] ) {
-				$taxes['rate_ids']['shipping'] = $this->create_or_update_tax_rate(
-					$location,
-					$taxes['tax_rate'] * 100,
-					'',
-					$taxes['freight_taxable']
-				);
-			}
+			$taxes['rate_ids']['shipping'] = $this->create_or_update_tax_rate(
+				$location,
+				$taxes['tax_rate'] * 100,
+				'',
+				$taxes['freight_taxable']
+			);
 		} // End if().
 
 		return $taxes;
