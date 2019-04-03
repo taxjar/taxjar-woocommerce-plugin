@@ -588,6 +588,12 @@ class WC_Taxjar_Integration extends WC_Integration {
 		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
 			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
 			do_action( 'woocommerce_before_calculate_totals', $wc_cart_object );
+
+			// Prevent WooCommerce Smart Coupons from removing the applied gift card amount when calculating totals the second time
+			if ( WC()->cart->smart_coupon_credit_used ) {
+                WC()->cart->smart_coupon_credit_used = array();
+            }
+
 			new WC_Cart_Totals( $wc_cart_object );
 			remove_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 			do_action( 'woocommerce_after_calculate_totals', $wc_cart_object );
