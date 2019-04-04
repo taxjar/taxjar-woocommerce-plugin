@@ -2,8 +2,8 @@
 Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxjar, tax, taxes, sales tax, tax calculation, sales tax compliance, sales tax filing
 Requires at least: 4.2
-Tested up to: 5.0.0
-Stable tag: 2.0.1
+Tested up to: 5.1.1
+Stable tag: 2.1.0
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 2.6.0
@@ -90,6 +90,17 @@ Yes. The fee is $19.95 per state, per filing.
 1. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+
+= 2.1.0 (2019-04-04)
+* Tested up to WooCommerce 3.5
+* Compatibility support for WooCommerce Smart Coupons
+* Add filters / actions for custom overrides of plugin functionality
+* Check to make sure `enabled` setting exists after installing the plugin
+* Fix empty nexus list issue
+* Fix exempt products getting taxed on backend
+* Fix taxable to fully exempt shipping in same order
+* Fix VAT exempt tax removal in Woo < 3.2
+* Fix JSON parsing error for backend orders with variable product variations containing special characters
 
 = 2.0.1 (2018-08-23) =
 * Fix local pickup calculations with street address support

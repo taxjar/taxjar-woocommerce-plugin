@@ -1,3 +1,14 @@
+# 2.1.0 (2019-04-04)
+* Tested up to WooCommerce 3.5
+* Compatibility support for WooCommerce Smart Coupons
+* Add filters / actions for custom overrides of plugin functionality
+* Check to make sure `enabled` setting exists after installing the plugin
+* Fix empty nexus list issue
+* Fix exempt products getting taxed on backend
+* Fix taxable to fully exempt shipping in same order
+* Fix VAT exempt tax removal in Woo < 3.2
+* Fix JSON parsing error for backend orders with variable product variations containing special characters
+
 # 2.0.1 (2018-08-23)
 * Fix local pickup calculations with street address support
 
