@@ -840,7 +840,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'AU',
 			'store_state' => 'NSW',
-			'store_postcode' => 'NSW 2000',
+			'store_postcode' => '2000',
 			'store_city' => 'Sydney',
 		) );
 
@@ -848,7 +848,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'country' => 'AU',
 			'state' => 'VIC',
-			'zip' => 'VIC3002',
+			'zip' => '3002',
 			'city' => 'Richmond',
 		) );
 
