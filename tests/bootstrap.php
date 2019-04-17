@@ -32,6 +32,12 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// load woocommerce core
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
+		// completely remove woocommerce data from DB
+        define( 'WP_UNINSTALL_PLUGIN', true );
+        define( 'WC_REMOVE_ALL_DATA', true );
+        update_option( 'woocommerce_status_options', array( 'uninstall_data' => 1 ) );
+        include $this->plugin_dir . 'woocommerce/uninstall.php';
+
 		// load taxjar core
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
 
@@ -42,11 +48,6 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->tests_dir . '/framework/product-helper.php';
 		require_once $this->tests_dir . '/framework/shipping-helper.php';
 
-		// load woocommerce subscriptions
-		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
-		update_option( 'woocommerce_db_version', WC_VERSION );
-		TaxJar_Woocommerce_Helper::prepare_woocommerce();
-		require_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 	}
 
 	public function setup() {
@@ -66,8 +67,12 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'woocommerce_calc_shipping', 'yes' );
 		update_option( 'woocommerce_coupons_enabled', 'yes' );
 
-		$wc_install = new WC_Install;
-		$wc_install->install();
+		WC_Install::install();
+
+		// load woocommerce subscriptions
+        update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
+        update_option( 'woocommerce_db_version', WC_VERSION );
+        require_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 
 		do_action( 'plugins_loaded' );
 		do_action( 'woocommerce_init' );
