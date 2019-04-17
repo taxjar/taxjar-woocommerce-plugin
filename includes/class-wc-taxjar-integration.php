@@ -985,7 +985,7 @@ class WC_Taxjar_Integration extends WC_Integration {
             'AU' => '/^\d{4}$/',
         );
 
-	    if ( isset( $postal_regexes[$to_country] ) ) {
+	    if ( isset( $postal_regexes[ $to_country ] ) ) {
 
 	        // SmartCalcs api allows requests with no zip codes outside of the US, mark them as valid
 	        if ( empty( $to_zip ) ) {
@@ -996,7 +996,7 @@ class WC_Taxjar_Integration extends WC_Integration {
                 }
             }
 
-	        if ( preg_match( $postal_regexes[$to_country], $to_zip ) === 0 ) {
+	        if ( preg_match( $postal_regexes[ $to_country ], $to_zip ) === 0 ) {
                 $this->_log( ':::: Postal code ' . $to_zip . ' is invalid for country ' . $to_country . ', API request stopped. ::::' );
 	            return false;
             }
