@@ -841,7 +841,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			foreach ( $this->response_line_items as $line_item_key => $line_item ) {
 				// If line item belongs to rate and matches the price, manually set the tax
-				if ( in_array( $line_item_key, $line_items ) && $price == $line_item->line_total ) {
+				if ( in_array( $line_item_key, $line_items ) && round( $price, 2 ) == round( $line_item->line_total, 2 ) ) {
 					if ( function_exists( 'wc_add_number_precision' ) ) {
 						$taxes[ $tax_rate_id ] = wc_add_number_precision( $line_item->tax_collectable );
 					} else {
