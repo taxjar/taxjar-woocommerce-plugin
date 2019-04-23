@@ -7,7 +7,7 @@ Stable tag: 2.1.0
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 2.6.0
-WC tested up to: 3.5.0
+WC tested up to: 3.6.1
 
 Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculations, reporting, and filing.
 
