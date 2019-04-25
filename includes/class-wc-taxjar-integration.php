@@ -312,7 +312,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		// Valid zip codes to prevent unnecessary API requests
         if ( ! $this->is_postal_code_valid( $to_country, $to_state, $to_zip ) ) {
-            //$this->_log( ':::: Order contains invalid ship to zip code ::::' );
             return false;
         }
 
@@ -968,7 +967,6 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	public function is_postal_code_valid( $to_country, $to_state, $to_zip ) {
-
 	    $postal_regexes = array(
             'US' => '/^\d{5}([ \-]\d{4})?$/',
             'CA' => '/^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ ]?\d[ABCEGHJ-NPRSTV-Z]\d$/',
@@ -986,7 +984,6 @@ class WC_Taxjar_Integration extends WC_Integration {
         );
 
 	    if ( isset( $postal_regexes[ $to_country ] ) ) {
-
 	        // SmartCalcs api allows requests with no zip codes outside of the US, mark them as valid
 	        if ( empty( $to_zip ) ) {
 	            if ( $to_country == 'US' ) {
@@ -1000,7 +997,6 @@ class WC_Taxjar_Integration extends WC_Integration {
                 $this->_log( ':::: Postal code ' . $to_zip . ' is invalid for country ' . $to_country . ', API request stopped. ::::' );
 	            return false;
             }
-
         }
 
 	    return true;

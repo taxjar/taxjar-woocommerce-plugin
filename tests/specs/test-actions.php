@@ -1244,7 +1244,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_is_postal_code_valid() {
-
 	    $postal_array = array(
             'US' => array(
               '60515630-968-2144' => false,
@@ -1363,11 +1362,10 @@ class TJ_WC_Actions extends WP_UnitTestCase {
             )
         );
 
-	    foreach( $postal_array as $country => $codes ) {
-	        foreach( $codes as $code => $expected ) {
+	    foreach ( $postal_array as $country => $codes ) {
+	        foreach ( $codes as $code => $expected ) {
                 $this->assertEquals( $this->tj->is_postal_code_valid( $country, null, $code ), $expected );
             }
         }
-
     }
 }
