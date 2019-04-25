@@ -310,6 +310,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			return false;
 		}
 
+		// Valid zip codes to prevent unnecessary API requests
+        if ( ! $this->is_postal_code_valid( $to_country, $to_state, $to_zip ) ) {
+            return false;
+        }
+
 		$taxjar_nexus = new WC_Taxjar_Nexus( $this );
 
 		if ( ! $taxjar_nexus->has_nexus_check( $to_country, $to_state ) ) {
@@ -961,6 +966,42 @@ class WC_Taxjar_Integration extends WC_Integration {
 		return apply_filters( 'woocommerce_customer_taxable_address', array( $country, $state, $postcode, $city, $street ) );
 	}
 
+	public function is_postal_code_valid( $to_country, $to_state, $to_zip ) {
+	    $postal_regexes = array(
+            'US' => '/^\d{5}([ \-]\d{4})?$/',
+            'CA' => '/^[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ ]?\d[ABCEGHJ-NPRSTV-Z]\d$/',
+            'UK' => '/^GIR[ ]?0AA|((AB|AL|B|BA|BB|BD|BH|BL|BN|BR|BS|BT|CA|CB|CF|CH|CM|CO|CR|CT|CV|CW|DA|DD|DE|DG|DH|DL|DN|DT|DY|E|EC|EH|EN|EX|FK|FY|G|GL|GY|GU|HA|HD|HG|HP|HR|HS|HU|HX|IG|IM|IP|IV|JE|KA|KT|KW|KY|L|LA|LD|LE|LL|LN|LS|LU|M|ME|MK|ML|N|NE|NG|NN|NP|NR|NW|OL|OX|PA|PE|PH|PL|PO|PR|RG|RH|RM|S|SA|SE|SG|SK|SL|SM|SN|SO|SP|SR|SS|ST|SW|SY|TA|TD|TF|TN|TQ|TR|TS|TW|UB|W|WA|WC|WD|WF|WN|WR|WS|WV|YO|ZE)(\d[\dA-Z]?[ ]?\d[ABD-HJLN-UW-Z]{2}))|BFPO[ ]?\d{1,4}$/',
+            'FR' => '/^\d{2}[ ]?\d{3}$/',
+            'IT' => '/^\d{5}$/',
+            'DE' => '/^\d{5}$/',
+            'NL' => '/^\d{4}[ ]?[A-Z]{2}$/',
+            'ES' => '/^\d{5}$/',
+            'DK' => '/^\d{4}$/',
+            'SE' => '/^\d{3}[ ]?\d{2}$/',
+            'BE' => '/^\d{4}$/',
+            'IN' => '/^\d{6}$/',
+            'AU' => '/^\d{4}$/',
+        );
+
+	    if ( isset( $postal_regexes[ $to_country ] ) ) {
+	        // SmartCalcs api allows requests with no zip codes outside of the US, mark them as valid
+	        if ( empty( $to_zip ) ) {
+	            if ( $to_country == 'US' ) {
+	                return false;
+                } else {
+	                return true;
+                }
+            }
+
+	        if ( preg_match( $postal_regexes[ $to_country ], $to_zip ) === 0 ) {
+                $this->_log( ':::: Postal code ' . $to_zip . ' is invalid for country ' . $to_country . ', API request stopped. ::::' );
+	            return false;
+            }
+        }
+
+	    return true;
+    }
+
 	/**
 	 * Return either the post value or settings value of a key
 	 *
@@ -975,16 +1016,16 @@ class WC_Taxjar_Integration extends WC_Integration {
             $val = $this->settings[ $key ];
         }
 
-		if ( 'yes' == $val ) {
-			$val = 1;
-		}
+        if ( 'yes' == $val ) {
+            $val = 1;
+        }
 
-		if ( 'no' == $val ) {
-			$val = 0;
-		}
+        if ( 'no' == $val ) {
+            $val = 0;
+        }
 
-		return $val;
-	}
+        return $val;
+    }
 
 	/**
 	 * Check if there is an existing WooCommerce 2.4 API Key

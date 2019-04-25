@@ -840,7 +840,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'AU',
 			'store_state' => 'NSW',
-			'store_postcode' => 'NSW 2000',
+			'store_postcode' => '2000',
 			'store_city' => 'Sydney',
 		) );
 
@@ -848,7 +848,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'country' => 'AU',
 			'state' => 'VIC',
-			'zip' => 'VIC3002',
+			'zip' => '3002',
 			'city' => 'Richmond',
 		) );
 
@@ -1242,4 +1242,130 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.77, '', 0.01 );
 		}
 	}
+
+	function test_is_postal_code_valid() {
+	    $postal_array = array(
+            'US' => array(
+              '60515630-968-2144' => false,
+              '' => false,
+              '1' => false,
+              '12' => false,
+              '123' => false,
+              '1234' => false,
+              '12345-' => false,
+              '12345-1' => false,
+              '23451-123' => false,
+              '12345-12345' => false,
+              'A1111' => false,
+              'ACDES' => false,
+              '12345' => true,
+              '12345-1234' => true
+            ),
+            'CA' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '1' => false,
+                '12' => false,
+                '12345-1' => false,
+                'A1111' => false,
+                'ACDES' => false,
+                '12345' => false,
+                '12345-1234' => false,
+                'P1P 0G0' => true,
+                'J0T 0P2' => true
+            ),
+            'UK' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => false,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+                'EC1A 1BB' => true,
+                'CR2 6XH' => true
+            ),
+            'FR' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => true,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+                '12 345' => true
+            ),
+            'IT' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => true,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+            ),
+            'DE' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => true,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+            ),
+            'NL' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => false,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+                '1234 AB' => true,
+                '1234AB' => true
+            ),
+            'ES' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => true,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+            ),
+            'DK' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => false,
+                '1234' => true,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+            ),
+            'SE' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => true,
+                '123 45' => true,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+            ),
+            'BE' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => false,
+                '1234' => true,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+            ),
+            'IN' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '123456' => true,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+            ),
+            'AU' => array(
+                '60515630-968-2144' => false,
+                '' => true,
+                '12345' => false,
+                '1234' => true,
+                '12345-1234' => false,
+                'P1P 0G0' => false,
+            )
+        );
+
+	    foreach ( $postal_array as $country => $codes ) {
+	        foreach ( $codes as $code => $expected ) {
+                $this->assertEquals( $this->tj->is_postal_code_valid( $country, null, $code ), $expected );
+            }
+        }
+    }
 }
