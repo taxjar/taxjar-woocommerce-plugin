@@ -534,6 +534,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			return;
 		}
 
+		// prevent unnecessary calls to API during add to cart process
+        if ( doing_action( 'woocommerce_add_to_cart' ) ) {
+            return;
+        }
+
 		$cart_taxes = array();
 		$cart_tax_total = 0;
 
