@@ -77,6 +77,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->tests_dir . '/framework/customer-helper.php';
 		require_once $this->tests_dir . '/framework/product-helper.php';
 		require_once $this->tests_dir . '/framework/shipping-helper.php';
+		require_once $this->tests_dir . '/framework/wp-http-testcase.php';
 	}
 
 	public function setup() {
