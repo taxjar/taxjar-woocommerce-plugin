@@ -3,7 +3,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 	function setUp() {
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
-		$this->tj = new WC_Taxjar_Integration();
+		$this->tj = WC()->integrations->integrations['taxjar-integration'];
 
 		// Reset shipping origin
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
@@ -13,12 +13,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			'store_city' => 'Greenwood Village',
 		) );
 
-		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
-			$this->action = 'woocommerce_after_calculate_totals';
-		} else {
-			$this->action = 'woocommerce_calculate_totals';
-		}
-
 		// We need this to have the calculate_totals() method calculate totals
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
@@ -26,10 +20,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function tearDown() {
-		// Prevent duplicate action callbacks
-		remove_action( $this->action, array( $this->tj, 'calculate_totals' ), 20 );
-		remove_action( 'woocommerce_before_save_order_items', array( $this->tj, 'calculate_backend_totals' ), 20 );
-
 		// Empty the cart
 		WC()->cart->empty_cart();
 	}
