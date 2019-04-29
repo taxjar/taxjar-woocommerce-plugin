@@ -35,8 +35,6 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function load_wc() {
-		define( 'WC_TAX_ROUNDING_MODE', 'auto' );
-		define( 'WC_USE_TRANSACTIONS', false );
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
 		// load taxjar core
