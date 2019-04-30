@@ -32,11 +32,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_with_shipping() {
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
 		WC()->cart->add_to_cart( $product );
 
-		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
 		WC()->shipping->shipping_total = 5;
 
@@ -62,6 +62,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_with_exempt_shipping() {
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
+
 		// CA shipping address
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'state' => 'CA',
@@ -73,7 +75,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		WC()->cart->add_to_cart( $product );
 
-		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
 		WC()->shipping->shipping_total = 5;
 
@@ -243,6 +244,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_exempt_multiple_products_and_shipping() {
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+
 		// NJ shipping address
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'state' => 'NJ',
@@ -264,7 +267,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $exempt_product );
 		WC()->cart->add_to_cart( $exempt_product2 );
 
-		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
 		WC()->shipping->shipping_total = 10;
 

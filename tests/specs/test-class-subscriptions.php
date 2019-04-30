@@ -247,6 +247,8 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_products_with_other_products_and_trial_and_shipping() {
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+
 		// NJ shipping address
 		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
 			'state' => 'NJ',
@@ -275,7 +277,6 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		WC()->cart->add_to_cart( $taxable_product );
 		WC()->cart->add_to_cart( $exempt_product );
 
-		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
 		WC()->shipping->shipping_total = 10;
 
