@@ -25,6 +25,9 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// load WC
 		tests_add_filter( 'muplugins_loaded', array( $this, 'load_wc' ) );
 
+		// install WC Subscriptions
+		tests_add_filter( 'plugins_loaded', array( $this, 'install_subscriptions' ), 0 );
+
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
 
@@ -35,13 +38,24 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function load_wc() {
+		// load woocommerce
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
 		// load taxjar core
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
 	}
 
+	public function install_subscriptions() {
+		// load woocommerce subscriptions
+		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
+		update_option( 'woocommerce_db_version', WC_VERSION );
+		require_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+	}
+
 	public function install_wc() {
+		// prevent error from occurring when reinstalling WooCommerce
+		remove_action( 'woocommerce_payment_gateways_settings', 'WC_Subscriptions_Admin::add_recurring_payment_gateway_information', 10 , 1 );
+
 		// Clean existing install first.
 		define( 'WP_UNINSTALL_PLUGIN', true );
 		define( 'WC_REMOVE_ALL_DATA', true );
@@ -59,11 +73,6 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		}
 
 		echo esc_html( 'Installing WooCommerce...' . PHP_EOL );
-
-		// load woocommerce subscriptions
-		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
-		update_option( 'woocommerce_db_version', WC_VERSION );
-		require_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 
 		$this->setup();
 	}
