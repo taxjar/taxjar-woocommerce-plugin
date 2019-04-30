@@ -19,6 +19,9 @@ class TaxJar_Woocommerce_Helper {
 		WC()->shipping->shipping_total = 0;
 		WC()->shipping->reset_shipping();
 
+		// Ensure default is tax based on shipping
+		update_option( 'woocommerce_tax_based_on', 'shipping' );
+
 		// Reset tax rates
 		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rates' );
 		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rate_locations' );
