@@ -26,7 +26,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		tests_add_filter( 'muplugins_loaded', array( $this, 'load_wc' ) );
 
 		// install WC Subscriptions
-		tests_add_filter( 'plugins_loaded', array( $this, 'install_subscriptions' ), 0 );
+		tests_add_filter( 'plugins_loaded', array( $this, 'install_subscriptions' ), -1 );
 
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
