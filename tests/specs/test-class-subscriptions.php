@@ -9,6 +9,10 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 
 		parent::setUp();
 
+		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
+			$this->markTestSkipped('WooCommerce Subscriptions plugin is required');
+		}
+
 		global $wp_rest_server;
 		$wp_rest_server = new WP_REST_Server();
 		$this->server   = $wp_rest_server;
