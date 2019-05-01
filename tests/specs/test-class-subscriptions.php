@@ -370,63 +370,7 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
 
-		$subscription_product = TaxJar_Product_Helper::create_product( 'subscription', array(
-			'price' => '100',
-			'sign_up_fee' => 0,
-			'trial_length' => 0,
-		) );
-		$subscription_product_id = $subscription_product->get_id();
-
-		$request = new WP_REST_Request( 'POST', '/wc/v1/subscriptions' );
-
-		$parameters = array(
-			'customer_id' => 1,
-		    'status' => 'active',
-		    'billing_period' => 'month',
-		    'billing_interval' => 1,
-		    'start_date' => '2016-04-04 10:45:00',
-		    'next_payment_date' => '2017-01-01 10:45:00',
-		    'payment_method' => 'stripe',
-			'payment_method_title'       => 'Credit Card (Stripe)',
-			'set_paid'             => true,
-			'billing'              => array(
-				'first_name' => 'John',
-				'last_name'  => 'Doe',
-				'address_1'  => '969 Market',
-				'address_2'  => '',
-				'city'       => 'Greenwood Village',
-				'state'      => 'CO',
-				'postcode'   => '80111',
-				'country'    => 'US',
-				'email'      => 'john.doe@example.com',
-				'phone'      => '(555) 555-5555',
-			),
-			'shipping'             => array(
-				'first_name' => 'John',
-				'last_name'  => 'Doe',
-				'address_1'  => '969 Market',
-				'address_2'  => '',
-				'city'       => 'Greenwood Village',
-				'state'      => 'CO',
-				'postcode'   => '80111',
-				'country'    => 'US',
-			),
-			'line_items'           => array(
-				array(
-					'product_id' => $subscription_product_id,
-					'quantity'   => 1
-				)
-			),
-			'shipping_lines'       => array(
-				array(
-					'method_id'    => 'flat_rate',
-					'method_title' => 'Flat rate',
-					'total'        => '10',
-				),
-			),
-		);
-
-		$request->set_body_params( $parameters );
+		$request = TaxJar_Subscription_Helper::prepare_subscription_request();
 		$response = $this->server->dispatch( $request );
 		$data     = $response->get_data();
 
@@ -442,4 +386,5 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
+
 }
