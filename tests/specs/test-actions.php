@@ -1051,4 +1051,23 @@ class TJ_WC_Actions extends WP_UnitTestCase {
             }
         }
     }
+
+	function test_vat_exempt_customer_with_shipping() {
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
+		WC()->customer->set_is_vat_exempt( true );
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+
+		WC()->cart->add_to_cart( $product );
+
+		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
+		WC()->shipping->shipping_total = 5;
+
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0.00, '', 0.01 );
+		$this->assertEquals( WC()->cart->shipping_tax_total, 0.00, '', 0.01 );
+
+		WC()->session->set( 'chosen_shipping_methods', array() );
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+	}
 }
