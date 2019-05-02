@@ -388,6 +388,13 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		$this->assertEquals( $renewal_order->get_cart_tax(), 7.25, '', 0.01 );
 		$this->assertEquals( $renewal_order->get_total(), 117.98 , '', 0.01 );
 
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		// test to ensure subscription tax has been correctly calculated and updated
+		$this->assertEquals( $subscription->get_shipping_tax(), 0.73, '', 0.01 );
+		$this->assertEquals( $subscription->get_cart_tax(), 7.25, '', 0.01 );
+		$this->assertEquals( $subscription->get_total(), 117.98 , '', 0.01 );
+
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
