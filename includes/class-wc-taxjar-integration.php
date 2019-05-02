@@ -675,7 +675,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	/**
-	 * Calculate tax / totals using TaxJar for WooCommerce Subscription renewal orders
+	 * Triggers tax calculation on both renewal order and subscription when creating a new renewal order
 	 *
 	 * @return WC_Order
 	 */
@@ -690,51 +690,64 @@ class WC_Taxjar_Integration extends WC_Integration {
 		    return $order;
 		}
 
-		$address = $this->get_address_from_order( $order );
-		$line_items = $this->get_backend_line_items( $order );
+		$this->calculate_order_tax( $order );
 
-		if ( method_exists( $order, 'get_shipping_total' ) ) {
-			$shipping = $order->get_shipping_total(); // Woo 3.0+
-		} else {
-			$shipping = $order->get_total_shipping(); // Woo 2.6
-		}
-
-		$taxes = $this->calculate_tax( array(
-			'to_country' => $address[ 'to_country' ],
-			'to_state' => $address[ 'to_state' ],
-			'to_zip' => $address[ 'to_zip' ],
-			'to_city' => $address[ 'to_city' ],
-			'to_street' => $address[ 'to_street' ],
-			'shipping_amount' => $shipping,
-			'line_items' => $line_items,
-		) );
-
-		if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
-			foreach ( $order->get_items() as $item_key => $item ) {
-				$product_id = $item->get_product_id();
-				$line_item_key = $product_id . '-' . $item_key;
-
-				if ( isset( $taxes['rate_ids'][ $line_item_key ] ) ) {
-					$rate_id = $taxes['rate_ids'][ $line_item_key ];
-					$item_tax = new WC_Order_Item_Tax();
-					$item_tax->set_rate( $rate_id );
-					$item_tax->set_order_id( $order->get_id() );
-					$item_tax->save();
-				}
-			}
-		} else { // Recalculate tax for Woo 2.6 to apply new tax rates
-			if ( class_exists( 'WC_AJAX' ) ) {
-				remove_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
-				if ( check_ajax_referer( 'calc-totals', 'security', false ) ) {
-					WC_AJAX::calc_line_taxes();
-				}
-				add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
-			}
-		}
+		// must calculate tax on subscription in order for my account to properly display the correct tax
+		$this->calculate_order_tax( $subscription );
 
 		$order->calculate_totals();
+		$subscription->calculate_totals();
 
 	    return $order;
+    }
+
+	/**
+	 * Calculate tax on an order
+	 *
+	 * @return null
+	 */
+    public function calculate_order_tax( $order ) {
+	    $address = $this->get_address_from_order( $order );
+	    $line_items = $this->get_backend_line_items( $order );
+
+	    if ( method_exists( $order, 'get_shipping_total' ) ) {
+		    $shipping = $order->get_shipping_total(); // Woo 3.0+
+	    } else {
+		    $shipping = $order->get_total_shipping(); // Woo 2.6
+	    }
+
+	    $taxes = $this->calculate_tax( array(
+		    'to_country' => $address[ 'to_country' ],
+		    'to_state' => $address[ 'to_state' ],
+		    'to_zip' => $address[ 'to_zip' ],
+		    'to_city' => $address[ 'to_city' ],
+		    'to_street' => $address[ 'to_street' ],
+		    'shipping_amount' => $shipping,
+		    'line_items' => $line_items,
+	    ) );
+
+	    if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
+		    foreach ( $order->get_items() as $item_key => $item ) {
+			    $product_id = $item->get_product_id();
+			    $line_item_key = $product_id . '-' . $item_key;
+
+			    if ( isset( $taxes['rate_ids'][ $line_item_key ] ) ) {
+				    $rate_id = $taxes['rate_ids'][ $line_item_key ];
+				    $item_tax = new WC_Order_Item_Tax();
+				    $item_tax->set_rate( $rate_id );
+				    $item_tax->set_order_id( $order->get_id() );
+				    $item_tax->save();
+			    }
+		    }
+	    } else { // Recalculate tax for Woo 2.6 to apply new tax rates
+		    if ( class_exists( 'WC_AJAX' ) ) {
+			    remove_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
+			    if ( check_ajax_referer( 'calc-totals', 'security', false ) ) {
+				    WC_AJAX::calc_line_taxes();
+			    }
+			    add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
+		    }
+	    }
     }
 
 	/**
