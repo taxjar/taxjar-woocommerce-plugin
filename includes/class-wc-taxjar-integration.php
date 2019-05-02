@@ -680,6 +680,16 @@ class WC_Taxjar_Integration extends WC_Integration {
 	 * @return WC_Order
 	 */
 	public function calculate_renewal_order_totals( $order, $subscription, $type ) {
+
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		// Ensure payment gateway allows order totals to be changed
+		if ( ! $subscription->payment_method_supports( 'subscription_amount_changes' ) ) {
+		    return $order;
+		}
+
 		$address = $this->get_address_from_order( $order );
 		$line_items = $this->get_backend_line_items( $order );
 
