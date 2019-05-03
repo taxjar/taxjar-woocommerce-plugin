@@ -54,6 +54,9 @@ final class WC_Taxjar {
 			include_once 'includes/class-wc-taxjar-integration.php';
 			include_once 'includes/class-wc-taxjar-transaction-sync.php';
 
+			// Load Action Scheduler library
+			require_once( 'libraries/action-scheduler/action-scheduler.php' );
+
 			// Register the integration.
 			add_filter( 'woocommerce_integrations', array( $this, 'add_integration' ), 20 );
 
