@@ -30,6 +30,8 @@ if ( ! class_exists( 'WC_Taxjar' ) ) :
  */
 final class WC_Taxjar {
 
+	static $version = '3.0.0';
+
 	/**
 	 * Construct the plugin.
 	 */
@@ -53,6 +55,7 @@ final class WC_Taxjar {
 			include_once 'includes/class-wc-taxjar-connection.php';
 			include_once 'includes/class-wc-taxjar-integration.php';
 			include_once 'includes/class-wc-taxjar-transaction-sync.php';
+			include_once 'includes/class-wc-taxjar-install.php';
 
 			// Load Action Scheduler library
 			require_once( 'libraries/action-scheduler/action-scheduler.php' );
