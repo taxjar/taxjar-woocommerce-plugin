@@ -1,0 +1,30 @@
+<?php
+class TJ_WC_Test_Sync extends WP_UnitTestCase {
+
+	function setUp() {
+		parent::setUp();
+	}
+
+	function tearDown() {
+		parent::tearDown();
+	}
+
+	function test_install() {
+		// clean existing install first.
+		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+			define( 'WP_UNINSTALL_PLUGIN', true );
+		}
+
+		if ( ! defined( 'TAXJAR_REMOVE_ALL_DATA' ) ) {
+			define( 'TAXJAR_REMOVE_ALL_DATA', true );
+		}
+
+		include dirname( dirname( dirname( __FILE__ ) ) ) . '/uninstall.php';
+		delete_transient( 'taxjar_installing' );
+
+		WC_Taxjar_Install::install();
+
+		$this->assertEquals( WC_Taxjar::$version, get_option( 'taxjar_version' ) );
+	}
+
+}
