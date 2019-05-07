@@ -56,6 +56,7 @@ final class WC_Taxjar {
 			include_once 'includes/class-wc-taxjar-integration.php';
 			include_once 'includes/class-wc-taxjar-transaction-sync.php';
 			include_once 'includes/class-wc-taxjar-install.php';
+			include_once 'includes/class-wc-taxjar-record-queue.php';
 
 			// Load Action Scheduler library
 			require_once( 'libraries/action-scheduler/action-scheduler.php' );
