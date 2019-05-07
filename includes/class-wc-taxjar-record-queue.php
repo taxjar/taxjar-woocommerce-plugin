@@ -63,7 +63,12 @@ class WC_Taxjar_Record_Queue {
 	 * @return bool
 	 */
 	static function is_valid_record_type( $record_type ) {
-
+		$valid_types = array( 'order' );
+		if ( in_array( $record_type, $valid_types ) ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 }
