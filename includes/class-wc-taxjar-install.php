@@ -98,6 +98,7 @@ class WC_Taxjar_Install {
 CREATE TABLE {$wpdb->prefix}taxjar_record_queue (
   queue_id BIGINT UNSIGNED NOT NULL auto_increment,
   record_id BIGINT UNSIGNED NOT NULL,
+  record_type varchar(200) NOT NULL,
   record_data longtext NOT NULL,
   created_datetime datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   processed_datetime datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
