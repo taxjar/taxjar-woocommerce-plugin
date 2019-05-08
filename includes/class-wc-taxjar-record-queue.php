@@ -12,6 +12,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Taxjar_Record_Queue {
 
 	/**
+	 * Get queue table name
+	 *
+	 * @return string - name of queue table in db
+	 */
+	static function get_queue_table_name() {
+		global $wpdb;
+		return "{$wpdb->prefix}taxjar_record_queue";
+	}
+
+	/**
 	 * Add record to queue.
 	 *
 	 * @param int $record_id - id of the record to add to the queue (normally a post id)
@@ -20,7 +30,25 @@ class WC_Taxjar_Record_Queue {
 	 * @return int|bool - if successful returns queue_id otherwise returns false
 	 */
 	static function add_to_queue( $record_id, $record_type, $data ) {
+		// validate parameters
+		if ( empty( $record_id ) || empty( $data ) || empty( $record_type ) ) {
+			return false;
+		}
 
+		// validate record type
+		if ( ! self::is_valid_record_type( $record_type ) ) {
+			return false;
+		}
+
+		global $wpdb;
+		$insert = array(
+			'record_id' => $record_id,
+			'record_type' => $record_type,
+			'record_data' => json_encode( $data ),
+			'created_datetime' => gmdate( 'Y-m-d H:i:s' )
+		);
+
+		$result = $wpdb->insert( self::get_queue_table_name(), $insert );
 	}
 
 	/**
@@ -53,7 +81,13 @@ class WC_Taxjar_Record_Queue {
 	 * @return int|bool - if successful returns queue_id otherwise returns false
 	 */
 	static function find_in_queue( $record_id ) {
+		global $wpdb;
 
+		$table_name = self::get_queue_table_name();
+		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id}";
+		$results = $wpdb->get_results( $query );
+
+		return $results;
 	}
 
 	/**
