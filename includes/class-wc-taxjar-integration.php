@@ -585,10 +585,18 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 		}
 
-		// Recalculate shipping package rates
-		foreach ( $wc_cart_object->get_shipping_packages() as $package_key => $package ) {
-			WC()->session->set( 'shipping_for_package_' . $package_key, null );
-		}
+		// ensure fully exempt orders have no tax on shipping
+		if ( ! $taxes[ 'freight_taxable' ] ) {
+			foreach ( $wc_cart_object->get_shipping_packages() as $package_key => $package ) {
+				$shipping_for_package =  WC()->session->get( 'shipping_for_package_' . $package_key );
+				if ( !empty( $shipping_for_package[ 'rates' ] ) ) {
+					foreach ( $shipping_for_package['rates'] as $shipping_rate ) {
+						$shipping_rate->set_taxes( array() );
+					}
+					WC()->session->set( 'shipping_for_package_' . $package_key, $shipping_for_package );
+				}
+			}
+        }
 
 		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
 			do_action( 'woocommerce_cart_reset', $wc_cart_object, false );
