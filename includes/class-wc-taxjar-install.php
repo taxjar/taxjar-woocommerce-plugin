@@ -100,6 +100,8 @@ CREATE TABLE {$wpdb->prefix}taxjar_record_queue (
   record_id BIGINT UNSIGNED NOT NULL,
   record_type varchar(200) NOT NULL,
   record_data longtext NOT NULL,
+  status varchar(200) NOT NULL DEFAULT 'new',
+  batch_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
   created_datetime datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   processed_datetime datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   retry_count smallint(4) NOT NULL DEFAULT 0,

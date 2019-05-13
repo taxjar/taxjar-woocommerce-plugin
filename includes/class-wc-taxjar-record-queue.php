@@ -29,7 +29,7 @@ class WC_Taxjar_Record_Queue {
 	 * @param array $data - array of data to be synced to TaxJar
 	 * @return int|bool - if successful returns queue_id otherwise returns false
 	 */
-	static function add_to_queue( $record_id, $record_type, $data ) {
+	static function add_to_queue( $record_id, $record_type, $data, $status = 'new', $batch_id = 0 ) {
 		// validate parameters
 		if ( empty( $record_id ) || empty( $data ) || empty( $record_type ) ) {
 			return false;
