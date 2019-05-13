@@ -31,8 +31,28 @@ class WC_Taxjar_Transaction_Sync {
 		}
 	}
 
+	/**
+	 * Process the record queue and schedule batches
+	 *
+	 * @return null
+	 */
 	public static function process_queue() {
+		$active_records = WC_Taxjar_Record_Queue::get_all_active_in_queue();
 
+		if ( empty( $active_records ) ) {
+			return;
+		}
+
+		$active_records = array_map( function( $arr ) {
+			return (int)$arr[ 'queue_id' ];
+		}, $active_records );
+
+		// Allow batch size to be altered through a filter, may need this to be adjustable for performance
+		$batches = array_chunk( $active_records, apply_filters( 'taxjar_record_batch_size', 50 ) );
+
+		foreach( $batches as $batch ) {
+			$batch_id = as_schedule_single_action( time(), 'taxjar_process_record_batch', array( 'queue_ids' => $batch ), self::QUEUE_GROUP );
+		}
 	}
 
 }
