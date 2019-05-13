@@ -105,6 +105,22 @@ class WC_Taxjar_Record_Queue {
 	}
 
 	/**
+	 * Get the queue ids of all active (processing and in_batch) records in queue
+	 *
+	 * @return array|bool - if active records are found returns array, otherwise returns false
+	 */
+	static function get_all_active_in_queue() {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+
+		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new', 'in_batch' )";
+		$results = $wpdb->get_results( $query,  ARRAY_A );
+
+		return $results;
+	}
+
+	/**
 	 * Check if record type is valid.
 	 *
 	 * @param string $record_type
