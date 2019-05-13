@@ -77,16 +77,16 @@ class WC_Taxjar_Record_Queue {
 	}
 
 	/**
-	 * Remove record from queue.
+	 * Find record in queue
 	 *
 	 * @param int $record_id - record id of item to search queue for
 	 * @return int|bool - if successful returns queue_id otherwise returns false
 	 */
-	static function find_in_queue( $record_id ) {
+	static function find_active_in_queue( $record_id ) {
 		global $wpdb;
 
 		$table_name = self::get_queue_table_name();
-		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id}";
+		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id} AND status IN ( 'new', 'in_batch' )";
 		$results = $wpdb->get_results( $query,  ARRAY_A );
 
 		if ( empty( $results ) || ! is_array( $results ) ) {
