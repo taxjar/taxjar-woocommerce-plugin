@@ -52,6 +52,7 @@ class WC_Taxjar_Transaction_Sync {
 
 		foreach( $batches as $batch ) {
 			$batch_id = as_schedule_single_action( time(), 'taxjar_process_record_batch', array( 'queue_ids' => $batch ), self::QUEUE_GROUP );
+			WC_Taxjar_Record_Queue::add_records_to_batch( $batch, $batch_id );
 		}
 	}
 

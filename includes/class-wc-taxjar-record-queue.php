@@ -79,6 +79,16 @@ class WC_Taxjar_Record_Queue {
 
 	}
 
+	static function add_records_to_batch( $queue_ids, $batch_id ) {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+		$queue_ids_string = join( "','", $queue_ids );
+
+		$query = "UPDATE {$table_name} SET status = 'in_batch', batch_id = {$batch_id} WHERE queue_id IN ('{$queue_ids_string}')";
+		$wpdb->get_results( $query,  ARRAY_A );
+	}
+
 	/**
 	 * Find record in queue
 	 *
@@ -114,7 +124,7 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 
-		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new', 'in_batch' )";
+		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new' )";
 		$results = $wpdb->get_results( $query,  ARRAY_A );
 
 		return $results;
