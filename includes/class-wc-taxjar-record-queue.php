@@ -35,16 +35,18 @@ class WC_Taxjar_Record_Queue {
 			return false;
 		}
 
-		// validate record type
-		if ( ! self::is_valid_record_type( $record_type ) ) {
+		// validate record type and status
+		if ( ! self::is_valid_record_type( $record_type ) || ! self::is_valid_status( $status ) ) {
 			return false;
 		}
 
 		global $wpdb;
 		$insert = array(
-			'record_id' => $record_id,
-			'record_type' => $record_type,
-			'record_data' => json_encode( $data ),
+			'record_id'        => $record_id,
+			'record_type'      => $record_type,
+			'record_data'      => json_encode( $data ),
+			'status'           => $status,
+			'batch_id'         => $batch_id,
 			'created_datetime' => gmdate( 'Y-m-d H:i:s' )
 		);
 
@@ -102,12 +104,27 @@ class WC_Taxjar_Record_Queue {
 	/**
 	 * Check if record type is valid.
 	 *
-	 * @param int $record_type
+	 * @param string $record_type
 	 * @return bool
 	 */
 	static function is_valid_record_type( $record_type ) {
 		$valid_types = array( 'order' );
 		if ( in_array( $record_type, $valid_types ) ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Check if status is valid.
+	 *
+	 * @param string $status
+	 * @return bool
+	 */
+	static function is_valid_status( $status ) {
+		$valid_types = array( 'new', 'failed', 'in_batch', 'completed', 'processing' );
+		if ( in_array( $status, $valid_types ) ) {
 			return true;
 		} else {
 			return false;
