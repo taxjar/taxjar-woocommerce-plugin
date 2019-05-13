@@ -85,9 +85,18 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id}";
-		$results = $wpdb->get_results( $query );
+		$results = $wpdb->get_results( $query,  ARRAY_A );
 
-		return $results;
+		if ( empty( $results ) || ! is_array( $results ) ) {
+			return false;
+		}
+
+		$last_element = end( $results );
+		if ( empty( $last_element[ 'queue_id' ] ) ) {
+			return false;
+		}
+
+		return (int)$last_element[ 'queue_id' ];
 	}
 
 	/**
