@@ -60,7 +60,10 @@ class WC_Taxjar_Record_Queue {
 	 * @return null
 	 */
 	static function remove_from_queue( $queue_id ) {
+		global $wpdb;
 
+		$table_name = self::get_queue_table_name();
+		return $wpdb->delete( $table_name, array( 'queue_id' => $queue_id ) );
 	}
 
 	/**
