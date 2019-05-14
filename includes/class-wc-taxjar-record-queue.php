@@ -138,6 +138,23 @@ class WC_Taxjar_Record_Queue {
 	}
 
 	/**
+	 * Get the data for all records in the batch
+	 *
+	 * @return array
+	 */
+	static function get_data_for_batch( $queue_ids ) {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+		$queue_ids_string = join( "','", $queue_ids );
+
+		$query = "SELECT * FROM {$table_name} WHERE queue_id IN ('{$queue_ids_string}')";
+		$results = $wpdb->get_results( $query,  ARRAY_A );
+
+		return $results;
+	}
+
+	/**
 	 * Check if record type is valid.
 	 *
 	 * @param string $record_type
