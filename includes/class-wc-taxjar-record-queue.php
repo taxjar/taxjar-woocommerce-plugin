@@ -79,6 +79,13 @@ class WC_Taxjar_Record_Queue {
 
 	}
 
+	/**
+	 * Update record status and batch id in queue
+	 *
+	 * @param array $queue_ids - array of queue ids that were added to batch
+	 * @param array $batch_id - id of batch
+	 * @return null
+	 */
 	static function add_records_to_batch( $queue_ids, $batch_id ) {
 		global $wpdb;
 
@@ -86,7 +93,7 @@ class WC_Taxjar_Record_Queue {
 		$queue_ids_string = join( "','", $queue_ids );
 
 		$query = "UPDATE {$table_name} SET status = 'in_batch', batch_id = {$batch_id} WHERE queue_id IN ('{$queue_ids_string}')";
-		$wpdb->get_results( $query,  ARRAY_A );
+		$wpdb->get_results( $query );
 	}
 
 	/**
