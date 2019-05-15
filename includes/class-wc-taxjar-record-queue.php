@@ -184,4 +184,58 @@ class WC_Taxjar_Record_Queue {
 		}
 	}
 
+	/**
+	 * Get order data to store in record queue
+	 *
+	 * @param WC_Order $order
+	 * @return array|bool
+	 */
+	static function get_order_data( $order ) {
+
+		if ( ! $order instanceof WC_Order ) {
+			return false;
+		}
+
+		$taxjar_integration = WC()->integrations->integrations[ 'taxjar-integration' ];
+
+		$store_settings   = $taxjar_integration->get_store_settings();
+		$from_country     = $store_settings['country'];
+		$from_state       = $store_settings['state'];
+		$from_zip         = $store_settings['postcode'];
+		$from_city        = $store_settings['city'];
+		$from_street      = $store_settings['street'];
+
+		$amount = $order->get_total() - $order->get_total_tax();
+
+		$order_data = array(
+			'transaction_id' => $order->get_order_number(),
+			'transaction_date' => $order->get_date_created()->date( DateTime::ISO8601 ),
+			'from_country' => $from_country,
+			'from_zip' => $from_zip,
+			'from_state' => $from_state,
+			'from_city' => $from_city,
+			'from_street' => $from_street,
+			'to_country' => $order->get_shipping_country(),
+			'to_zip' => $order->get_shipping_postcode(),
+			'to_state' => $order->get_shipping_state(),
+			'to_city' => $order->get_shipping_city(),
+			'to_street' => $order->get_shipping_address_1(),
+			'amount' => $amount,
+			'shipping' => $order->get_shipping_total(),
+			'sales_tax' => $order->get_total_tax(),
+			'customer_id' => '',
+			'line_items' => '',
+		);
+
+		//TODO: Should we sync order number or order ID?
+		//TODO: is transaction date the date created, paid or completed?
+		//TODO: from address - is it always the store address or can it be different?
+		//TODO: better to get from address at time order is added to queue or when syncing order to taxjar?
+		//TODO: do we need to send over a customer ID?
+		//TODO: is there any scenario where shipping address wouldn't be present on the order - get billing instead?
+
+		return $order_data;
+
+	}
+
 }
