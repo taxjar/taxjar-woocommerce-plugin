@@ -64,7 +64,18 @@ class WC_Taxjar_Transaction_Sync {
 	 * @return null
 	 */
 	public static function process_batch( $args ) {
-		
+		if ( empty( $args[ 'queue_ids' ] ) ) {
+			return;
+		}
+
+		$records = WC_Taxjar_Record_Queue::get_data_for_batch( $args[ 'queue_ids' ] );
+
+		foreach( $records as $record ) {
+			if ( $record[ 'status' ] != 'in_batch' ) {
+				continue;
+			}
+		}
+
 	}
 
 }
