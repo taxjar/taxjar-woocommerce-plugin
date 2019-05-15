@@ -224,7 +224,7 @@ class WC_Taxjar_Record_Queue {
 			'shipping' => $order->get_shipping_total(),
 			'sales_tax' => $order->get_total_tax(),
 			'customer_id' => '',
-			'line_items' => '',
+			'line_items' => self::get_line_items( $order ),
 		);
 
 		//TODO: Should we sync order number or order ID?
@@ -235,6 +235,58 @@ class WC_Taxjar_Record_Queue {
 		//TODO: is there any scenario where shipping address wouldn't be present on the order - get billing instead?
 
 		return $order_data;
+
+	}
+
+	/**
+	 * Get line items from order
+	 *
+	 * @param WC_Order $order
+	 * @return array|bool
+	 */
+	static function get_line_items( $order ) {
+		$line_items_data = array();
+		$items = $order->get_items();
+
+		if ( ! empty( $items ) ) {
+			foreach( $items as $item ) {
+				$product = $item->get_product();
+
+				$quantity = $item->get_quantity();
+				$unit_price = $item->get_subtotal() / $quantity;
+				$discount = $item->get_subtotal() - $item->get_total();
+
+				$tax_class = explode( '-', $product->get_tax_class() );
+				$tax_code = '';
+				if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
+					$tax_code = end( $tax_class );
+				}
+
+				if ( ! $product->is_taxable() || 'zero-rate' == sanitize_title( $product->get_tax_class() ) ) {
+					$tax_code = '99999';
+				}
+
+				$line_items_data[] = array(
+					'id' => $item->get_id(),
+					'quantity' => $quantity,
+					'product_identifier' => $product->get_sku(),
+					'description' => '',
+					'product_tax_code' => $tax_code,
+					'unit_price' => $unit_price,
+					'discount' => $discount,
+					'sales_tax' => $item->get_total_tax(),
+				);
+			}
+		}
+
+
+		return $line_items_data;
+
+		//TODO: What is the id that we currently pull for each line item from the woocommerce API?
+		//TODO: what to use as the product identifier?
+		//TODO: should we send fees as line items?
+		//TODO: description - use short_description of product? would have to only take first 255 chars
+		//TODO: unit price include or exclude discount?
 
 	}
 
