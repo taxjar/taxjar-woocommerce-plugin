@@ -70,13 +70,39 @@ class WC_Taxjar_Record_Queue {
 	 * Update record in queue.
 	 *
 	 * @param int $queue_id - queue id of item to update
+	 * @param array $record_data - array of data to be synced to TaxJar
 	 * @param int $record_id - id of the record to add to the queue (normally a post id)
 	 * @param string $record_type - type of record to be synced to TaxJar
-	 * @param array $data - array of data to be synced to TaxJar
 	 * @return int|bool - if successful returns queue_id otherwise returns false
 	 */
-	static function update_queue( $queue_id, $record_id = null, $record_type = null, $data = null ) {
+	static function update_queue( $queue_id, $record_data = null, $record_id = null, $record_type = null ) {
+		global $wpdb;
+		$table_name = self::get_queue_table_name();
 
+		$data = array();
+
+		if ( ! empty( $record_type ) && self::is_valid_record_type( $record_type ) ) {
+			$data[ 'record_type' ] = $record_type;
+		}
+
+		if ( ! empty( $record_id ) ) {
+			$data[ 'record_id' ] = $record_id;
+		}
+
+		if ( ! empty( $record_data ) ) {
+			$data[ 'record_data' ] = json_encode( $record_data );
+		}
+
+		if ( empty( $data ) ) {
+			return false;
+		}
+
+		$where = array(
+			'queue_id' => $queue_id
+		);
+
+		$result = $wpdb->update( $table_name, $data, $where );
+		return $result;
 	}
 
 	/**

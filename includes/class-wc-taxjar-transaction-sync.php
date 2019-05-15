@@ -95,8 +95,10 @@ class WC_Taxjar_Transaction_Sync {
 		if ( $queue_id === false ) { // no record in queue
 			WC_Taxjar_Record_Queue::add_to_queue( $order_id, 'order', $data );
 		} else {
-
+			WC_Taxjar_Record_Queue::update_queue( $queue_id, $data );
 		}
+
+		//TODO: handle any failed update / creation
 
 		return $status;
 
