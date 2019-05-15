@@ -15,8 +15,12 @@ class WC_Taxjar_Transaction_Sync {
 	const PROCESS_BATCH_HOOK = 'taxjar_process_record_batch';
 	const QUEUE_GROUP = 'taxjar-queue-group';
 
+	public $taxjar_integration;
+
 	public function __construct( $integration ) {
 		self::init();
+
+		$this->taxjar_integration = $integration;
 	}
 
 	public static function init() {
@@ -105,6 +109,39 @@ class WC_Taxjar_Transaction_Sync {
 		//TODO: Should we handle any other
 		//TODO: checking update times vs last sync time
 
+	}
+
+	public function create_order_in_taxjar( $order_id, $data ) {
+		if ( ! apply_filters( 'taxjar_should_sync_order_to_taxjar', true, $order_id, $data ) ) {
+			return false;
+		}
+
+		$url = $this->taxjar_integration->uri . 'transactions/orders';
+		$body = wp_json_encode( $data );
+
+		$response = wp_remote_post( $url, array(
+			'headers' => array(
+				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
+				'Content-Type' => 'application/json',
+			),
+			'user-agent' => $this->taxjar_integration->ua,
+			'body' => $body,
+		) );
+
+		return $response;
+
+		//TODO: Handle errors
+		//TODO: Handle failure when order already exists in taxjar, 422 error - are there other error from TaxJar API?
+		//TODO: Add logging
+		//TODO: Change request to have source of woocommerce instead of default API
+
+//		if ( is_wp_error( $response ) ) {
+//			new WP_Error( 'request', __( 'There was an error retrieving the tax rates. Please check your server configuration.' ) );
+//		} elseif ( 200 == $response['response']['code'] ) {
+//			return $response;
+//		} else {
+//			$this->_log( 'Received (' . $response['response']['code'] . '): ' . $response['body'] );
+//		}
 	}
 
 }
