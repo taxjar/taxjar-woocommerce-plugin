@@ -23,6 +23,9 @@ class WC_Taxjar_Transaction_Sync {
 		add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
 		add_action( self::PROCESS_QUEUE_HOOK, array( __CLASS__, 'process_queue' ) );
 		add_action( self::PROCESS_BATCH_HOOK, array( __CLASS__, 'process_batch' ) );
+
+		add_action( 'woocommerce_new_order', array( __CLASS__, 'order_updated' ) );
+		add_action( 'woocommerce_update_order', array( __CLASS__, 'order_updated' ) );
 	}
 
 	public static function schedule_process_queue() {
@@ -75,6 +78,30 @@ class WC_Taxjar_Transaction_Sync {
 				continue;
 			}
 		}
+
+	}
+
+	public static function order_updated( $order_id ) {
+		$order = wc_get_order( $order_id );
+		$status = $order->get_status();
+
+		if ( ! $status == 'completed' ) {
+			return;
+		}
+
+		$queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order_id );
+		$data = WC_Taxjar_Record_Queue::get_order_data( $order );
+
+		if ( $queue_id === false ) { // no record in queue
+			WC_Taxjar_Record_Queue::add_to_queue( $order_id, 'order', $data );
+		} else {
+
+		}
+
+		return $status;
+
+		//TODO: Should we handle any other
+		//TODO: checking update times vs last sync time
 
 	}
 
