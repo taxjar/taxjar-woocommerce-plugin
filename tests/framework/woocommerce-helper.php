@@ -4,17 +4,23 @@ class TaxJar_Woocommerce_Helper {
 	public static function prepare_woocommerce() {
 		global $wpdb;
 
-		WC()->product_factory = new WC_Product_Factory();
-		WC()->order_factory = new WC_Order_Factory();
-		$session_class = apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' );
-		WC()->session  = new $session_class();
-		WC()->cart = new WC_Cart();
-		WC()->countries = new WC_Countries();
-
 		// Start with an empty cart
 		WC()->cart->empty_cart();
+		WC()->session->set( 'cart', null );
+		WC()->session->set( 'cart_totals', null );
+		WC()->session->set( 'applied_coupons', null );
+		WC()->session->set( 'coupon_discount_totals', null );
+		WC()->session->set( 'coupon_discount_tax_totals', null );
+		WC()->session->set( 'removed_cart_contents', null );
+		WC()->session->set( 'order_awaiting_payment', null );
+		WC()->session->set( 'customer', null );
+		WC()->session->set( 'chosen_shipping_methods', array() );
 		WC()->cart->remove_coupons();
 		WC()->shipping->shipping_total = 0;
+		WC()->shipping->reset_shipping();
+
+		// Ensure default is tax based on shipping
+		update_option( 'woocommerce_tax_based_on', 'shipping' );
 
 		// Reset tax rates
 		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rates' );
