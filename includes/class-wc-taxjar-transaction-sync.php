@@ -105,11 +105,29 @@ class WC_Taxjar_Transaction_Sync {
 		return $status;
 	}
 
-	public function create_order_in_taxjar( $order_id, $data ) {
+	public function maybe_create_order_in_taxjar( $order_id, $data ) {
+
 		if ( ! apply_filters( 'taxjar_should_sync_order_to_taxjar', true, $order_id, $data ) ) {
 			return false;
 		}
 
+		$response = $this->create_order_taxjar_api_request( $order_id, $data );
+
+		if ( is_wp_error( $response ) ) {
+			// handle wordpress error and add message to log here
+			return $response;
+		} elseif ( $response['response']['code'] == 200 ) {
+			// successful order creation in taxjar - now need to update record queue
+			return response;
+		} elseif ( $response['response']['code'] == 422 ) {
+			$update_response = $this->update_order_taxjar_api_request( $order_id, $data );
+			return $update_response;
+		}
+
+		return $response;
+	}
+
+	public function create_order_taxjar_api_request( $order_id, $data ) {
 		$url = $this->taxjar_integration->uri . 'transactions/orders';
 		$body = wp_json_encode( $data );
 
@@ -123,14 +141,23 @@ class WC_Taxjar_Transaction_Sync {
 		) );
 
 		return $response;
+	}
 
-//		if ( is_wp_error( $response ) ) {
-//			new WP_Error( 'request', __( 'There was an error retrieving the tax rates. Please check your server configuration.' ) );
-//		} elseif ( 200 == $response['response']['code'] ) {
-//			return $response;
-//		} else {
-//			$this->_log( 'Received (' . $response['response']['code'] . '): ' . $response['body'] );
-//		}
+	public function update_order_taxjar_api_request( $order_id, $data ) {
+		$url = $this->taxjar_integration->uri . 'transactions/orders/' . $order_id;
+		$body = wp_json_encode( $data );
+
+		$response = wp_remote_request( $url, array(
+			'method' => 'PUT',
+			'headers' => array(
+				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
+				'Content-Type' => 'application/json',
+			),
+			'user-agent' => $this->taxjar_integration->ua,
+			'body' => $body,
+		) );
+
+		return $response;
 	}
 
 }
