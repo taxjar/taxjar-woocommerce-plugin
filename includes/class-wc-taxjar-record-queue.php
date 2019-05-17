@@ -304,4 +304,15 @@ class WC_Taxjar_Record_Queue {
 		return $line_items_data;
 	}
 
+	static function sync_success( $queue_id ) {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+		$current_datetime =  gmdate( 'Y-m-d H:i:s' );
+		$query = "UPDATE {$table_name} SET status = 'complete', processed_datetime = '{$current_datetime}' WHERE queue_id = {$queue_id}";
+		$results = $wpdb->get_results( $query );
+
+		return $results;
+	}
+
 }

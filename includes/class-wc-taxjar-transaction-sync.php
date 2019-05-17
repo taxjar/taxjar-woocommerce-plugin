@@ -105,7 +105,7 @@ class WC_Taxjar_Transaction_Sync {
 		return $status;
 	}
 
-	public function maybe_create_order_in_taxjar( $order_id, $data ) {
+	public function maybe_create_order_in_taxjar( $queue_id, $order_id, $data ) {
 
 		if ( ! apply_filters( 'taxjar_should_sync_order_to_taxjar', true, $order_id, $data ) ) {
 			return false;
@@ -118,10 +118,19 @@ class WC_Taxjar_Transaction_Sync {
 			return $response;
 		} elseif ( $response['response']['code'] == 200 ) {
 			// successful order creation in taxjar - now need to update record queue
-			return response;
+			WC_Taxjar_Record_Queue::sync_success( $queue_id );
+			return true;
 		} elseif ( $response['response']['code'] == 422 ) {
 			$update_response = $this->update_order_taxjar_api_request( $order_id, $data );
-			return $update_response;
+
+			if ( is_wp_error( $update_response ) ) {
+
+			} elseif ( $update_response['response']['code'] == 200 ) {
+				WC_Taxjar_Record_Queue::sync_success( $queue_id );
+				return true;
+			} else {
+				return false;
+			}
 		}
 
 		return $response;
