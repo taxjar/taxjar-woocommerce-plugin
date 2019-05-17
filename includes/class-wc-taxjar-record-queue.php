@@ -315,4 +315,28 @@ class WC_Taxjar_Record_Queue {
 		return $results;
 	}
 
+	static function sync_failure( $queue_id ) {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+
+		$query = "SELECT retry_count FROM {$table_name} WHERE queue_id = {$queue_id}";
+		$results = $wpdb->get_results( $query,  ARRAY_A );
+
+		if ( empty( $results[0] ) ) {
+			return;
+		}
+
+		$retry_count = intval( $results[0]['retry_count'] );
+		$retry_count++;
+
+		if ( $retry_count >= 3 ) {
+			$query = "UPDATE {$table_name} SET status = 'failed', retry_count = {$retry_count} WHERE queue_id = {$queue_id}";
+			$results = $wpdb->get_results( $query );
+		} else {
+			$query = "UPDATE {$table_name} SET retry_count = {$retry_count} WHERE queue_id = {$queue_id}";
+			$results = $wpdb->get_results( $query );
+		}
+	}
+
 }
