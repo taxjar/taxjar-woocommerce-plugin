@@ -251,7 +251,7 @@ class WC_Taxjar_Record_Queue {
 			'sales_tax' => $order->get_total_tax(),
 			'line_items' => self::get_line_items( $order ),
 		);
-		
+
 		$customer_id = $order->get_customer_id();
 		if ( $customer_id ) {
 			$order_data[ 'customer_id' ] = $customer_id;
@@ -292,7 +292,7 @@ class WC_Taxjar_Record_Queue {
 					'id' => $item->get_id(),
 					'quantity' => $quantity,
 					'product_identifier' => $product->get_sku(),
-					'description' => '',
+					'description' => $product->get_name(),
 					'product_tax_code' => $tax_code,
 					'unit_price' => $unit_price,
 					'discount' => $discount,
