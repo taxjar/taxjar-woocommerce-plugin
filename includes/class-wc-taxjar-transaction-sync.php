@@ -102,13 +102,7 @@ class WC_Taxjar_Transaction_Sync {
 			WC_Taxjar_Record_Queue::update_queue( $queue_id, $data );
 		}
 
-		//TODO: handle any failed update / creation
-
 		return $status;
-
-		//TODO: Should we handle any other
-		//TODO: checking update times vs last sync time
-
 	}
 
 	public function create_order_in_taxjar( $order_id, $data ) {
@@ -129,11 +123,6 @@ class WC_Taxjar_Transaction_Sync {
 		) );
 
 		return $response;
-
-		//TODO: Handle errors
-		//TODO: Handle failure when order already exists in taxjar, 422 error - are there other error from TaxJar API?
-		//TODO: Add logging
-		//TODO: Change request to have source of woocommerce instead of default API
 
 //		if ( is_wp_error( $response ) ) {
 //			new WP_Error( 'request', __( 'There was an error retrieving the tax rates. Please check your server configuration.' ) );

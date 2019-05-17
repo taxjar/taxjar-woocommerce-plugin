@@ -253,15 +253,7 @@ class WC_Taxjar_Record_Queue {
 			'line_items' => self::get_line_items( $order ),
 		);
 
-		//TODO: Should we sync order number or order ID?
-		//TODO: is transaction date the date created, paid or completed?
-		//TODO: from address - is it always the store address or can it be different?
-		//TODO: better to get from address at time order is added to queue or when syncing order to taxjar?
-		//TODO: do we need to send over a customer ID?
-		//TODO: is there any scenario where shipping address wouldn't be present on the order - get billing instead?
-
 		return $order_data;
-
 	}
 
 	/**
@@ -304,16 +296,8 @@ class WC_Taxjar_Record_Queue {
 				);
 			}
 		}
-
-
+		
 		return $line_items_data;
-
-		//TODO: What is the id that we currently pull for each line item from the woocommerce API?
-		//TODO: what to use as the product identifier?
-		//TODO: should we send fees as line items?
-		//TODO: description - use short_description of product? would have to only take first 255 chars
-		//TODO: unit price include or exclude discount?
-
 	}
 
 }
