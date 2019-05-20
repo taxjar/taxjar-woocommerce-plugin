@@ -3,10 +3,23 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function setUp() {
 		parent::setUp();
+
+		TaxJar_Woocommerce_Helper::prepare_woocommerce();
+		$this->tj = WC()->integrations->integrations['taxjar-integration'];
+
+		// Reset shipping origin
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'CO',
+			'store_postcode' => '80111',
+			'store_city' => 'Greenwood Village',
+		) );
 	}
 
 	function tearDown() {
 		parent::tearDown();
+
+		WC_Taxjar_Record_Queue::clear_queue();
 	}
 
 	function test_install_and_uninstall() {
