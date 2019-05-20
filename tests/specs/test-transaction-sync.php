@@ -9,7 +9,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		parent::tearDown();
 	}
 
-	function test_install() {
+	function test_install_and_uninstall() {
 		// clean existing install first.
 		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 			define( 'WP_UNINSTALL_PLUGIN', true );
@@ -33,6 +33,14 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$scheduled_action = as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_QUEUE_HOOK );
 		$this->assertNotEmpty( $scheduled_action );
+
+		include dirname( dirname( dirname( __FILE__ ) ) ) . '/uninstall.php';
+		delete_transient( 'taxjar_installing' );
+
+		$this->assertFalse( get_option( 'taxjar_version' ) );
+		$this->assertEmpty( as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_QUEUE_HOOK ) );
+
+		WC_Taxjar_Install::install();
 
 	}
 
