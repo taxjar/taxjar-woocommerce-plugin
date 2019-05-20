@@ -55,6 +55,31 @@ class WC_Taxjar_Record_Queue {
 	}
 
 	/**
+	 * Gets all the data from a record in the queue
+	 *
+	 * @param int $queue_id
+	 * @return array|bool - returns array of queue data or false if unsuccessful
+	 */
+	static function get_record_in_queue( $queue_id ) {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+		$query = "SELECT * FROM {$table_name} WHERE queue_id = {$queue_id}";
+		$results = $wpdb->get_results( $query,  ARRAY_A );
+
+		if ( empty( $results ) || ! is_array( $results ) ) {
+			return false;
+		}
+
+		$last_element = end( $results );
+		if ( empty( $last_element ) ) {
+			return false;
+		}
+
+		return $last_element;
+	}
+
+	/**
 	 * Remove record from queue.
 	 *
 	 * @param int $queue_id - queue id of item to remove
