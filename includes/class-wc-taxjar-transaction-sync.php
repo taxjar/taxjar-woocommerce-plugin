@@ -111,6 +111,8 @@ class WC_Taxjar_Transaction_Sync {
 			return false;
 		}
 
+		$error_responses = array( 400, 401, 403, 404, 405, 406, 410, 429, 500, 503 );
+
 		$response = $this->create_order_taxjar_api_request( $order_id, $data );
 
 		if ( is_wp_error( $response ) ) {
@@ -120,7 +122,7 @@ class WC_Taxjar_Transaction_Sync {
 			// successful order creation in taxjar - now need to update record queue
 			WC_Taxjar_Record_Queue::sync_success( $queue_id );
 			return true;
-		} elseif ( $response['response']['code'] == 422 ) {
+		} elseif ( $response['response']['code'] == 422 ) { // transaction already exists in TaxJar
 			$update_response = $this->update_order_taxjar_api_request( $order_id, $data );
 
 			if ( is_wp_error( $update_response ) ) {
@@ -129,8 +131,12 @@ class WC_Taxjar_Transaction_Sync {
 				WC_Taxjar_Record_Queue::sync_success( $queue_id );
 				return true;
 			} else {
+				WC_Taxjar_Record_Queue::sync_failure( $queue_id );
 				return false;
 			}
+		} elseif ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
+			WC_Taxjar_Record_Queue::sync_failure( $queue_id );
+			return false;
 		}
 
 		return $response;
