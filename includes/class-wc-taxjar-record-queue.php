@@ -365,4 +365,17 @@ class WC_Taxjar_Record_Queue {
 		}
 	}
 
+	/**
+	 * Remove all record from queue
+	 *
+	 * @return int|bool Bool true on success or false on error
+	 */
+	static function clear_queue() {
+		global $wpdb;
+		$table_name = self::get_queue_table_name();
+		$query = "TRUNCATE TABLE {$table_name}";
+		$result = $wpdb->query( $query );
+		return $result;
+	}
+
 }
