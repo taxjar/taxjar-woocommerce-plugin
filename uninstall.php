@@ -28,6 +28,7 @@ if ( defined( 'TAXJAR_REMOVE_ALL_DATA' ) && true === TAXJAR_REMOVE_ALL_DATA ) {
 
 	// Delete options.
 	$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'woocommerce\_taxjar\_%';" );
+	$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'taxjar\_version%';" );
 
 	// Clear any cached data that has been removed.
 	wp_cache_flush();
