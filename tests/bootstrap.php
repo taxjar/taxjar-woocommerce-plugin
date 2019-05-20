@@ -89,6 +89,19 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function setup() {
+		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+			define( 'WP_UNINSTALL_PLUGIN', true );
+		}
+
+		if ( ! defined( 'TAXJAR_REMOVE_ALL_DATA' ) ) {
+			define( 'TAXJAR_REMOVE_ALL_DATA', true );
+		}
+
+		include dirname( dirname( __FILE__ ) ) . '/uninstall.php';
+		delete_transient( 'taxjar_installing' );
+
+		WC_Taxjar_Install::install();
+
 		update_option( 'woocommerce_taxjar-integration_settings',
 			array(
 				'api_token' => $this->api_token,

@@ -50,8 +50,6 @@ class WC_Taxjar_Install {
 		self::create_tables();
 		self::update_taxjar_version();
 
-		WC_Taxjar_Transaction_Sync::schedule_process_queue();
-
 		delete_transient( 'taxjar_installing' );
 
 		do_action( 'taxjar_installed' );

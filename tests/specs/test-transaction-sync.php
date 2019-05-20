@@ -31,17 +31,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$result = $wpdb->get_var( "SHOW TABLES LIKE '{$table_name}'" );
 		$this->assertEquals( $result, $table_name );
 
-		$scheduled_action = as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_QUEUE_HOOK );
-		$this->assertNotEmpty( $scheduled_action );
-
 		include dirname( dirname( dirname( __FILE__ ) ) ) . '/uninstall.php';
 		delete_transient( 'taxjar_installing' );
 
 		$this->assertFalse( get_option( 'taxjar_version' ) );
-		$this->assertEmpty( as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_QUEUE_HOOK ) );
 
 		WC_Taxjar_Install::install();
-
 	}
 
 }
