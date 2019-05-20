@@ -22,7 +22,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/2.2.0/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = 'TaxJarWordPressPlugin/2.3.0/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 		$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
@@ -50,6 +50,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 			// Calculate Taxes for Backend Orders (Woo 2.6+)
 			add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
+
+			// Calculate taxes for WooCommerce Subscriptions renewal orders
+            add_filter( 'wcs_new_order_created', array( $this, 'calculate_renewal_order_totals' ), 10, 3 );
 
 			// Settings Page
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
@@ -305,11 +308,17 @@ class WC_Taxjar_Integration extends WC_Integration {
 		if (
 			empty( $to_country ) ||
 			empty( $to_zip ) ||
-			( empty( $line_items ) && ( 0 == $shipping_amount ) ) ||
-			WC()->customer->is_vat_exempt()
+			( empty( $line_items ) && ( 0 == $shipping_amount ) )
 		) {
 			return false;
 		}
+
+		// validate customer exemption before sending API call
+		if ( is_object( WC()->customer ) ) {
+		    if ( WC()->customer->is_vat_exempt() ) {
+		        return false;
+            }
+        }
 
 		// Valid zip codes to prevent unnecessary API requests
         if ( ! $this->is_postal_code_valid( $to_country, $to_state, $to_zip ) ) {
@@ -387,7 +396,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 		}
 
 		// Remove taxes if they are set somehow and customer is exempt
-		if ( WC()->customer->is_vat_exempt() ) {
+		if ( is_object( WC()->customer ) && WC()->customer->is_vat_exempt() ) {
 			WC()->cart->remove_taxes(); // Woo < 3.2
 		} elseif ( $taxes['has_nexus'] ) {
 			// Use Woo core to find matching rates for taxable address
@@ -535,6 +544,11 @@ class WC_Taxjar_Integration extends WC_Integration {
 			return;
 		}
 
+		// prevent unnecessary calls to API during add to cart process
+        if ( doing_action( 'woocommerce_add_to_cart' ) ) {
+            return;
+        }
+
 		$cart_taxes = array();
 		$cart_tax_total = 0;
 
@@ -586,9 +600,21 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 		}
 
-		// Recalculate shipping package rates
-		foreach ( $wc_cart_object->get_shipping_packages() as $package_key => $package ) {
-			WC()->session->set( 'shipping_for_package_' . $package_key, null );
+		// ensure fully exempt orders have no tax on shipping
+		if ( ! $taxes[ 'freight_taxable' ] ) {
+			foreach ( $wc_cart_object->get_shipping_packages() as $package_key => $package ) {
+				$shipping_for_package = WC()->session->get( 'shipping_for_package_' . $package_key );
+				if ( ! empty( $shipping_for_package['rates'] ) ) {
+					foreach ( $shipping_for_package['rates'] as $shipping_rate ) {
+						if ( method_exists( $shipping_rate, 'set_taxes' ) ) {
+							$shipping_rate->set_taxes( array() );
+						} else {
+							$shipping_rate->taxes = array();
+						}
+						WC()->session->set( 'shipping_for_package_' . $package_key, $shipping_for_package );
+					}
+				}
+			}
 		}
 
 		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
@@ -662,6 +688,82 @@ class WC_Taxjar_Integration extends WC_Integration {
 	}
 
 	/**
+	 * Triggers tax calculation on both renewal order and subscription when creating a new renewal order
+	 *
+	 * @return WC_Order
+	 */
+	public function calculate_renewal_order_totals( $order, $subscription, $type ) {
+
+		if ( ! is_object( $subscription ) ) {
+			$subscription = wcs_get_subscription( $subscription );
+		}
+
+		// Ensure payment gateway allows order totals to be changed
+		if ( ! $subscription->payment_method_supports( 'subscription_amount_changes' ) ) {
+		    return $order;
+		}
+
+		$this->calculate_order_tax( $order );
+
+		// must calculate tax on subscription in order for my account to properly display the correct tax
+		$this->calculate_order_tax( $subscription );
+
+		$order->calculate_totals();
+		$subscription->calculate_totals();
+
+	    return $order;
+    }
+
+	/**
+	 * Calculate tax on an order
+	 *
+	 * @return null
+	 */
+    public function calculate_order_tax( $order ) {
+	    $address = $this->get_address_from_order( $order );
+	    $line_items = $this->get_backend_line_items( $order );
+
+	    if ( method_exists( $order, 'get_shipping_total' ) ) {
+		    $shipping = $order->get_shipping_total(); // Woo 3.0+
+	    } else {
+		    $shipping = $order->get_total_shipping(); // Woo 2.6
+	    }
+
+	    $taxes = $this->calculate_tax( array(
+		    'to_country' => $address[ 'to_country' ],
+		    'to_state' => $address[ 'to_state' ],
+		    'to_zip' => $address[ 'to_zip' ],
+		    'to_city' => $address[ 'to_city' ],
+		    'to_street' => $address[ 'to_street' ],
+		    'shipping_amount' => $shipping,
+		    'line_items' => $line_items,
+	    ) );
+
+	    if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
+		    foreach ( $order->get_items() as $item_key => $item ) {
+			    $product_id = $item->get_product_id();
+			    $line_item_key = $product_id . '-' . $item_key;
+
+			    if ( isset( $taxes['rate_ids'][ $line_item_key ] ) ) {
+				    $rate_id = $taxes['rate_ids'][ $line_item_key ];
+				    $item_tax = new WC_Order_Item_Tax();
+				    $item_tax->set_rate( $rate_id );
+				    $item_tax->set_order_id( $order->get_id() );
+				    $item_tax->save();
+			    }
+		    }
+	    } else { // Recalculate tax for Woo 2.6 to apply new tax rates
+		    if ( class_exists( 'WC_AJAX' ) ) {
+			    remove_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
+			    if ( check_ajax_referer( 'calc-totals', 'security', false ) ) {
+				    WC_AJAX::calc_line_taxes();
+			    }
+			    add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
+		    }
+	    }
+    }
+
+	/**
 	 * Get address details of customer at checkout
 	 *
 	 * @return array
@@ -705,6 +807,22 @@ class WC_Taxjar_Integration extends WC_Integration {
 			'to_street' => $to_street,
 		);
 	}
+
+	/**
+	 * Get ship to address from order object
+	 *
+	 * @return array
+	 */
+	public function get_address_from_order( $order ) {
+	    $address = $order->get_address( 'shipping' );
+		return array(
+			'to_country' => $address[ 'country' ],
+			'to_state' => $address[ 'state' ],
+			'to_zip' => $address[ 'postcode' ],
+			'to_city' => $address[ 'city' ],
+			'to_street' => $address[ 'address_1' ],
+		);
+    }
 
 	/**
 	 * Get line items at checkout
