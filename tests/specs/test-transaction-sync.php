@@ -39,4 +39,46 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		WC_Taxjar_Install::install();
 	}
 
+	function test_get_order_data() {
+		$order = TaxJar_Order_Helper::create_order();
+		$order_data = WC_Taxjar_Record_Queue::get_order_data( $order );
+
+		$expected_order_data = array(
+			'from_country' => 'US',
+			'from_zip' => '80111',
+			'from_state' => 'CO',
+			'from_city' => 'Greenwood Village',
+			'from_street' => '6060 S Quebec St',
+			'to_country' => 'US',
+			'to_zip' => '80111',
+			'to_state' => 'CO',
+			'to_city' => 'Greenwood Village',
+			'to_street' => '6060 S Quebec St',
+			'amount' => 110,
+			'shipping' => '10',
+			'sales_tax' => '7.98',
+			'customer_id' => 1
+		);
+
+		foreach( $expected_order_data as $key => $expected ) {
+			$this->assertEquals( $expected, $order_data[ $key ] );
+		}
+
+		$expected_line_item_data = array(
+			'quantity' => 1,
+			'product_identifier' => 'SIMPLE1',
+			'description' => 'Dummy Product',
+			'product_tax_code' => '',
+			'unit_price' => 100,
+			'discount' => 0,
+			'sales_tax' => '7.25'
+		);
+
+		foreach( $expected_line_item_data as $key => $expected ) {
+			$this->assertEquals( $expected, $order_data[ 'line_items' ][ 0 ][ $key ] );
+		}
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+	}
+
 }
