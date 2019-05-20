@@ -9,7 +9,11 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 global $wpdb;
 
-//TODO: remove all scheduled actions
+if ( function_exists( 'as_unschedule_all_actions' ) ) {
+	as_unschedule_all_actions( WC_Taxjar_Transaction_Sync::PROCESS_QUEUE_HOOK );
+	as_unschedule_all_actions( WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK );
+}
+
 
 /*
  * Only remove ALL tables and data if TAXJAR_REMOVE_ALL_DATA constant is set to true in user's
