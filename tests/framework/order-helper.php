@@ -41,6 +41,10 @@ class TaxJar_Order_Helper {
 			'subtotal' => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
 			'total'    => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
 		) );
+		$item->set_taxes( array(
+			'total' => array( 7.25 ),
+			'subtotal' => array( 7.25 )
+		) );
 		$item->save();
 		$order->add_item( $item );
 
@@ -55,6 +59,17 @@ class TaxJar_Order_Helper {
 		$order->set_billing_country( 'US' );
 		$order->set_billing_email( 'admin@example.org' );
 		$order->set_billing_phone( '111-111-1111' );
+
+		// Set shipping address
+		$order->set_shipping_first_name( 'Fname' );
+		$order->set_shipping_last_name( 'Lname' );
+		$order->set_shipping_address_1( '6060 S Quebec St' );
+		$order->set_shipping_address_2( '' );
+		$order->set_shipping_city( 'Greenwood Village' );
+		$order->set_shipping_state( 'CO' );
+		$order->set_shipping_postcode( '80111' );
+		$order->set_shipping_country( 'US' );
+
 
 		// Add shipping costs
 		$shipping_taxes = WC_Tax::calc_shipping_tax( '10', WC_Tax::get_shipping_tax_rates() );
