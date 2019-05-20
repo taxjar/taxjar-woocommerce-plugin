@@ -51,6 +51,7 @@ class WC_Taxjar_Record_Queue {
 		);
 
 		$result = $wpdb->insert( self::get_queue_table_name(), $insert );
+		return $result;
 	}
 
 	/**
