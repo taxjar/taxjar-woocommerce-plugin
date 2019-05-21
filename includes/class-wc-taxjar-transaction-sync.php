@@ -18,15 +18,14 @@ class WC_Taxjar_Transaction_Sync {
 	public $taxjar_integration;
 
 	public function __construct( $integration ) {
-		self::init();
-
+		$this->init();
 		$this->taxjar_integration = $integration;
 	}
 
-	public static function init() {
+	public function init() {
 		add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
 		add_action( self::PROCESS_QUEUE_HOOK, array( __CLASS__, 'process_queue' ) );
-		add_action( self::PROCESS_BATCH_HOOK, array( __CLASS__, 'process_batch' ) );
+		add_action( self::PROCESS_BATCH_HOOK, array( $this, 'process_batch' ) );
 
 		add_action( 'woocommerce_new_order', array( __CLASS__, 'order_updated' ) );
 		add_action( 'woocommerce_update_order', array( __CLASS__, 'order_updated' ) );
@@ -70,7 +69,7 @@ class WC_Taxjar_Transaction_Sync {
 	 *
 	 * @return null
 	 */
-	public static function process_batch( $args ) {
+	public function process_batch( $args ) {
 		if ( empty( $args[ 'queue_ids' ] ) ) {
 			return;
 		}
@@ -78,8 +77,20 @@ class WC_Taxjar_Transaction_Sync {
 		$records = WC_Taxjar_Record_Queue::get_data_for_batch( $args[ 'queue_ids' ] );
 
 		foreach( $records as $record ) {
-			if ( $record[ 'status' ] != 'in_batch' ) {
+			if ( $record[ 'status' ] != 'new' && $record[ 'status' ] != 'awaiting' ) {
 				continue;
+			}
+
+			if ( empty( $record[ 'batch_id' ] ) ) {
+				continue;
+			}
+
+			if ( $record[ 'record_type' ] == 'order' ) {
+				if ( $record[ 'status' ] == 'new' ) {
+					$result = $this->maybe_create_order_in_taxjar( $record[ 'queue_id' ],  $record[ 'record_id' ], json_decode( $record[ 'record_data' ], true ) );
+				} elseif ( $record[ 'status' ] == 'awaiting' ) {
+
+				}
 			}
 		}
 
@@ -89,7 +100,7 @@ class WC_Taxjar_Transaction_Sync {
 		$order = wc_get_order( $order_id );
 		$status = $order->get_status();
 
-		if ( ! $status == 'completed' ) {
+		if ( $status != "completed" ) {
 			return;
 		}
 
@@ -117,8 +128,9 @@ class WC_Taxjar_Transaction_Sync {
 
 		if ( is_wp_error( $response ) ) {
 			// handle wordpress error and add message to log here
+			WC_Taxjar_Record_Queue::sync_failure( $queue_id );
 			return $response;
-		} elseif ( $response['response']['code'] == 200 ) {
+		} elseif ( $response['response']['code'] == 201 ) {
 			// successful order creation in taxjar - now need to update record queue
 			WC_Taxjar_Record_Queue::sync_success( $queue_id );
 			return true;
@@ -126,7 +138,7 @@ class WC_Taxjar_Transaction_Sync {
 			$update_response = $this->update_order_taxjar_api_request( $order_id, $data );
 
 			if ( is_wp_error( $update_response ) ) {
-
+				WC_Taxjar_Record_Queue::sync_failure( $queue_id );
 			} elseif ( $update_response['response']['code'] == 200 ) {
 				WC_Taxjar_Record_Queue::sync_success( $queue_id );
 				return true;

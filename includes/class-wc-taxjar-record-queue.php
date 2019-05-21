@@ -144,7 +144,7 @@ class WC_Taxjar_Record_Queue {
 		$table_name = self::get_queue_table_name();
 		$queue_ids_string = join( "','", $queue_ids );
 
-		$query = "UPDATE {$table_name} SET status = 'in_batch', batch_id = {$batch_id} WHERE queue_id IN ('{$queue_ids_string}')";
+		$query = "UPDATE {$table_name} SET batch_id = {$batch_id} WHERE queue_id IN ('{$queue_ids_string}')";
 		$wpdb->get_results( $query );
 	}
 
@@ -158,7 +158,7 @@ class WC_Taxjar_Record_Queue {
 		global $wpdb;
 
 		$table_name = self::get_queue_table_name();
-		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id} AND status IN ( 'new', 'in_batch' )";
+		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id} AND status IN ( 'new', 'awaiting' )";
 		$results = $wpdb->get_results( $query,  ARRAY_A );
 
 		if ( empty( $results ) || ! is_array( $results ) ) {
@@ -174,7 +174,7 @@ class WC_Taxjar_Record_Queue {
 	}
 
 	/**
-	 * Get the queue ids of all active (processing and in_batch) records in queue
+	 * Get the queue ids of all active (new and awaiting) records in queue
 	 *
 	 * @return array|bool - if active records are found returns array, otherwise returns false
 	 */
@@ -183,7 +183,7 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 
-		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new' )";
+		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) AND batch_id = 0";
 		$results = $wpdb->get_results( $query,  ARRAY_A );
 
 		return $results;
@@ -228,7 +228,7 @@ class WC_Taxjar_Record_Queue {
 	 * @return bool
 	 */
 	static function is_valid_status( $status ) {
-		$valid_types = array( 'new', 'failed', 'in_batch', 'completed', 'processing' );
+		$valid_types = array( 'new', 'failed', 'completed', 'awaiting' );
 		if ( in_array( $status, $valid_types ) ) {
 			return true;
 		} else {
