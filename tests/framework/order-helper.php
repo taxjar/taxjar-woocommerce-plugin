@@ -12,14 +12,12 @@ class TaxJar_Order_Helper {
 		$order->delete( true );
 	}
 
-	public static function create_order( $customer_id = 1, $product = null ) {
+	public static function create_order( $customer_id = 1, $order_options = array() ) {
+		$options = array(
+			'price' => '100'
+		);
+		$product = TaxJar_Product_Helper::create_product( 'simple', $options );
 
-		if ( ! is_a( $product, 'WC_Product' ) ) {
-			$options = array(
-				'price' => '100'
-			);
-			$product = TaxJar_Product_Helper::create_product( 'simple', $options );
-		}
 
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
 
@@ -29,6 +27,7 @@ class TaxJar_Order_Helper {
 			'customer_note' => '',
 			'total'         => '',
 		);
+		$order_data = array_replace_recursive( $order_data, $order_options );
 
 		$_SERVER['REMOTE_ADDR'] = '127.0.0.1'; // Required, else wc_create_order throws an exception
 		$order 					= wc_create_order( $order_data );
