@@ -116,4 +116,19 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 	}
 
+	function test_get_record_in_queue() {
+		$order = TaxJar_Order_Helper::create_order();
+		$data = WC_Taxjar_Record_Queue::get_order_data( $order );
+		WC_Taxjar_Record_Queue::add_to_queue( $order->get_id(), 'order', $data );
+
+		$queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order->get_id() );
+		$record = WC_Taxjar_Record_Queue::get_record_in_queue( $queue_id );
+
+		$new_data = json_decode( $record[ 'record_data' ], true );
+		$this->assertEquals( $data, $new_data );
+		$this->assertEquals( $order->get_id(), $record[ 'record_id'] );
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+	}
+
 }
