@@ -143,4 +143,30 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( $order_data, $record_data );
 	}
 
+	function test_process_queue() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$order_queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order->get_id() );
+
+		$second_order = TaxJar_Order_Helper::create_order( 1 );
+		$second_order->update_status( 'completed' );
+		$second_order_queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order->get_id() );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+
+		$batch_timestamp = as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK );
+
+		$this->assertNotFalse( $batch_timestamp );
+
+		foreach( $batches as $batch_id ) {
+			// scheduled actions are stored as posts
+			$batch = get_post( $batch_id );
+			// args for the scheduled action are stored in post_content field
+			$args = json_decode( $batch->post_content, true );
+
+			$this->assertContains( $order_queue_id, $args[ 'queue_ids' ] );
+			$this->assertContains( $second_order_queue_id, $args[ 'queue_ids' ] );
+		}
+	}
+
 }
