@@ -89,7 +89,7 @@ class WC_Taxjar_Transaction_Sync {
 				if ( $record[ 'status' ] == 'new' ) {
 					$result = $this->maybe_create_order_in_taxjar( $record[ 'queue_id' ],  $record[ 'record_id' ], json_decode( $record[ 'record_data' ], true ) );
 				} elseif ( $record[ 'status' ] == 'awaiting' ) {
-
+					$result = $this->maybe_update_order_in_taxjar( $record[ 'queue_id' ],  $record[ 'record_id' ], json_decode( $record[ 'record_data' ], true ) );
 				}
 			}
 		}
