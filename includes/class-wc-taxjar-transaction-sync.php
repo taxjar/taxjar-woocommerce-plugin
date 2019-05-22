@@ -159,6 +159,49 @@ class WC_Taxjar_Transaction_Sync {
 		return false;
 	}
 
+	public function maybe_update_order_in_taxjar( $queue_id, $order_id, $data ) {
+
+		if ( ! apply_filters( 'taxjar_should_sync_order_to_taxjar', true, $order_id, $data ) ) {
+			return false;
+		}
+
+		$error_responses = array( 400, 401, 403, 404, 405, 406, 410, 422, 429, 500, 503 );
+		$success_responses = array( 200, 201 );
+
+		$response = $this->update_order_taxjar_api_request( $order_id, $data );
+
+		if ( is_wp_error( $response ) ) {
+			// handle wordpress error and add message to log here
+			WC_Taxjar_Record_Queue::sync_failure( $queue_id );
+			return $response;
+		}
+
+		if ( $response['response']['code'] == 404 ) {
+			$response = $this->create_order_taxjar_api_request( $order_id, $data );
+
+			// must recheck for wp error after generating new response
+			if ( is_wp_error( $response ) ) {
+				// handle wordpress error and add message to log here
+				WC_Taxjar_Record_Queue::sync_failure( $queue_id );
+				return $response;
+			}
+		}
+
+		if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
+			WC_Taxjar_Record_Queue::sync_failure( $queue_id );
+			return false;
+		}
+
+		if ( in_array( $response[ 'response' ][ 'code' ], $success_responses ) ) {
+			WC_Taxjar_Record_Queue::sync_success( $queue_id );
+			return true;
+		}
+
+		// handle any unexpected response value
+		WC_Taxjar_Record_Queue::sync_failure( $queue_id );
+		return false;
+	}
+
 	public function create_order_taxjar_api_request( $order_id, $data ) {
 		$url = $this->taxjar_integration->uri . 'transactions/orders';
 		$body = wp_json_encode( $data );
