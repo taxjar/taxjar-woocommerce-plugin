@@ -924,7 +924,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 			}
 		}
 
-		return $line_items;
+		return apply_filters( 'taxjar_get_backend_line_items', $line_items, $order, $this );
 	}
 
 	protected function get_line_item( $id, $line_items ) {
