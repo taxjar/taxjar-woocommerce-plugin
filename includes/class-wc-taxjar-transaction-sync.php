@@ -123,6 +123,7 @@ class WC_Taxjar_Transaction_Sync {
 		}
 
 		$error_responses = array( 400, 401, 403, 404, 405, 406, 410, 429, 500, 503 );
+		$success_responses = array( 200, 201 );
 
 		$response = $this->create_order_taxjar_api_request( $order_id, $data );
 
@@ -130,28 +131,32 @@ class WC_Taxjar_Transaction_Sync {
 			// handle wordpress error and add message to log here
 			WC_Taxjar_Record_Queue::sync_failure( $queue_id );
 			return $response;
-		} elseif ( $response['response']['code'] == 201 ) {
-			// successful order creation in taxjar - now need to update record queue
-			WC_Taxjar_Record_Queue::sync_success( $queue_id );
-			return true;
-		} elseif ( $response['response']['code'] == 422 ) { // transaction already exists in TaxJar
-			$update_response = $this->update_order_taxjar_api_request( $order_id, $data );
+		}
 
-			if ( is_wp_error( $update_response ) ) {
+		if ( $response['response']['code'] == 422 ) {
+			$response = $this->update_order_taxjar_api_request( $order_id, $data );
+
+			// must recheck for wp error after generating new response
+			if ( is_wp_error( $response ) ) {
+				// handle wordpress error and add message to log here
 				WC_Taxjar_Record_Queue::sync_failure( $queue_id );
-			} elseif ( $update_response['response']['code'] == 200 ) {
-				WC_Taxjar_Record_Queue::sync_success( $queue_id );
-				return true;
-			} else {
-				WC_Taxjar_Record_Queue::sync_failure( $queue_id );
-				return false;
+				return $response;
 			}
-		} elseif ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
+		}
+
+		if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
 			WC_Taxjar_Record_Queue::sync_failure( $queue_id );
 			return false;
 		}
 
-		return $response;
+		if ( in_array( $response[ 'response' ][ 'code' ], $success_responses ) ) {
+			WC_Taxjar_Record_Queue::sync_success( $queue_id );
+			return true;
+		}
+
+		// handle any unexpected response value
+		WC_Taxjar_Record_Queue::sync_failure( $queue_id );
+		return false;
 	}
 
 	public function create_order_taxjar_api_request( $order_id, $data ) {
