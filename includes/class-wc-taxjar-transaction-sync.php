@@ -239,4 +239,24 @@ class WC_Taxjar_Transaction_Sync {
 		return $response;
 	}
 
+	public function delete_order_taxjar_api_request( $order_id ) {
+		$url = $this->taxjar_integration->uri . 'transactions/orders/' . $order_id;
+		$data = array(
+			'transaction_id' => $order_id
+		);
+		$body = wp_json_encode( $data );
+
+		$response = wp_remote_request( $url, array(
+			'method' => 'DELETE',
+			'headers' => array(
+				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
+				'Content-Type' => 'application/json',
+			),
+			'user-agent' => $this->taxjar_integration->ua,
+			'body' => $body,
+		) );
+
+		return $response;
+	}
+
 }
