@@ -111,10 +111,16 @@ class WC_Taxjar_Transaction_Sync {
 		$queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order_id );
 		$data = WC_Taxjar_Record_Queue::get_order_data( $order );
 
+		$status = 'new';
+		$taxjar_last_sync = get_post_meta( $order_id, '_taxjar_last_sync', true );
+		if ( !empty( $taxjar_last_sync ) ) {
+			$status = 'awaiting';
+		}
+
 		if ( $queue_id === false ) { // no record in queue
-			WC_Taxjar_Record_Queue::add_to_queue( $order_id, 'order', $data );
+			WC_Taxjar_Record_Queue::add_to_queue( $order_id, 'order', $data, $status );
 		} else {
-			WC_Taxjar_Record_Queue::update_queue( $queue_id, $data );
+			WC_Taxjar_Record_Queue::update_queue( $queue_id, $data, null, $status );
 		}
 
 		return $status;
@@ -154,7 +160,7 @@ class WC_Taxjar_Transaction_Sync {
 		}
 
 		if ( in_array( $response[ 'response' ][ 'code' ], $success_responses ) ) {
-			WC_Taxjar_Record_Queue::sync_success( $queue_id );
+			WC_Taxjar_Record_Queue::sync_success( $queue_id, $order_id );
 			return true;
 		}
 
@@ -197,7 +203,7 @@ class WC_Taxjar_Transaction_Sync {
 		}
 
 		if ( in_array( $response[ 'response' ][ 'code' ], $success_responses ) ) {
-			WC_Taxjar_Record_Queue::sync_success( $queue_id );
+			WC_Taxjar_Record_Queue::sync_success( $queue_id, $order_id );
 			return true;
 		}
 

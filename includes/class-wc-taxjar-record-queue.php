@@ -101,7 +101,7 @@ class WC_Taxjar_Record_Queue {
 	 * @param string $record_type - type of record to be synced to TaxJar
 	 * @return int|bool - if successful returns queue_id otherwise returns false
 	 */
-	static function update_queue( $queue_id, $record_data = null, $record_id = null, $record_type = null ) {
+	static function update_queue( $queue_id, $record_data = null, $record_id = null, $status = null, $record_type = null ) {
 		global $wpdb;
 		$table_name = self::get_queue_table_name();
 
@@ -113,6 +113,10 @@ class WC_Taxjar_Record_Queue {
 
 		if ( ! empty( $record_id ) ) {
 			$data[ 'record_id' ] = $record_id;
+		}
+
+		if ( ! empty( $status ) ) {
+			$data[ 'status' ] = $status;
 		}
 
 		if ( ! empty( $record_data ) ) {
@@ -330,13 +334,15 @@ class WC_Taxjar_Record_Queue {
 		return $line_items_data;
 	}
 
-	static function sync_success( $queue_id ) {
+	static function sync_success( $queue_id, $record_id ) {
 		global $wpdb;
 
 		$table_name = self::get_queue_table_name();
 		$current_datetime =  gmdate( 'Y-m-d H:i:s' );
 		$query = "UPDATE {$table_name} SET status = 'complete', processed_datetime = '{$current_datetime}' WHERE queue_id = {$queue_id}";
 		$results = $wpdb->get_results( $query );
+
+		update_post_meta( $record_id, '_taxjar_last_sync', $current_datetime );
 
 		return $results;
 	}
