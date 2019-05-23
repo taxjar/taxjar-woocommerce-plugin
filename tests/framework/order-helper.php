@@ -100,4 +100,39 @@ class TaxJar_Order_Helper {
 
 		return $order;
 	}
+
+	static function get_test_order_data() {
+		$test_data = array(
+			"transaction_id" => "111111111",
+			"transaction_date" => "2019-05-21T00:00:00+0000",
+			"from_country" => "US",
+			"from_zip" => "80111",
+			"from_state" => "CO",
+			"from_city" => "Greenwood Village",
+			"from_street" => "6060 S Quebec St",
+			"to_country" => "US",
+			"to_zip" => "80111",
+			"to_state" => "CO",
+			"to_city" => "Greenwood Village",
+			"to_street" => "6060 S Quebec St",
+			"amount" => 110,
+			"shipping" => "10",
+			"sales_tax" => "7.98",
+			"line_items" => array(
+				array(
+					"id" => 1,
+					"quantity" => 1,
+					"product_identifier" => "simple-product",
+					"description" => "Simple Product",
+					"product_tax_code" => "",
+					"unit_price" => 100,
+					"discount" => 0,
+					"sales_tax" => "7.25"
+				)
+			),
+			"customer_id" => 1
+		);
+
+		return $test_data;
+	}
 }
