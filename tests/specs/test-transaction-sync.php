@@ -169,4 +169,11 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		}
 	}
 
+	function test_create_order_taxjar_api_request() {
+		$test_data = TaxJar_Order_Helper::get_test_order_data();
+		$result = $this->tj->transaction_sync->create_order_taxjar_api_request( $test_data[ 'transaction_id' ], $test_data );
+		$this->assertEquals( 201, $result[ 'response' ][ 'code' ] );
+		$result = $this->tj->transaction_sync->delete_order_taxjar_api_request( $test_data[ 'transaction_id' ] );
+	}
+
 }
