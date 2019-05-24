@@ -214,6 +214,7 @@ class WC_Taxjar_Transaction_Sync {
 
 	public function create_order_taxjar_api_request( $order_id, $data ) {
 		$url = $this->taxjar_integration->uri . 'transactions/orders';
+		$data[ 'provider' ] = 'woo';
 		$body = wp_json_encode( $data );
 
 		$response = wp_remote_post( $url, array(
@@ -230,6 +231,7 @@ class WC_Taxjar_Transaction_Sync {
 
 	public function update_order_taxjar_api_request( $order_id, $data ) {
 		$url = $this->taxjar_integration->uri . 'transactions/orders/' . $order_id;
+		$data[ 'provider' ] = 'woo';
 		$body = wp_json_encode( $data );
 
 		$response = wp_remote_request( $url, array(
@@ -248,7 +250,8 @@ class WC_Taxjar_Transaction_Sync {
 	public function delete_order_taxjar_api_request( $order_id ) {
 		$url = $this->taxjar_integration->uri . 'transactions/orders/' . $order_id;
 		$data = array(
-			'transaction_id' => $order_id
+			'transaction_id' => $order_id,
+			'provider' => 'woo'
 		);
 		$body = wp_json_encode( $data );
 
