@@ -52,9 +52,35 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		WC_Taxjar_Install::install();
 	}
 
+	function test_create_new_order_record() {
+		$order = TaxJar_Order_Helper::create_order();
+		$record = TaxJar_Order_Record::load( $order->get_id() );
+
+		$this->assertEquals( $order->get_id(), $record->get_record_id() );
+		$this->assertTrue( $record->object instanceof WC_Order );
+		$this->assertEquals( 0, $record->get_batch_id() );
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+	}
+
+	function test_get_order_record_by_queue_id() {
+		$order = TaxJar_Order_Helper::create_order();
+		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$record->save();
+
+		$queue_id = $record->get_queue_id();
+		$this->assertNotNull( $queue_id );
+
+		$retrieved_record = TaxJar_Order_Record::load( null, $queue_id );
+		$this->assertEquals( $order->get_id(), $retrieved_record->get_record_id() );
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+	}
+
 	function test_get_order_data() {
 		$order = TaxJar_Order_Helper::create_order();
-		$order_data = WC_Taxjar_Record_Queue::get_order_data( $order );
+		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$order_data = $record->get_order_data();
 
 		$expected_order_data = array(
 			'from_country' => 'US',
@@ -94,63 +120,40 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 	}
 
-	function test_add_to_queue() {
+	function test_get_active_order_record_in_queue() {
 		$order = TaxJar_Order_Helper::create_order();
+		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$record->save();
 
-		$data = WC_Taxjar_Record_Queue::get_order_data( $order );
-		$result = WC_Taxjar_Record_Queue::add_to_queue( $order->get_id(), 'order', $data );
-
-		$this->assertNotFalse( $result );
+		$retrieved_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$this->assertEquals( $order->get_id(), $retrieved_record->get_record_id() );
+		$this->assertEquals( $record->get_created_datetime(), $retrieved_record->get_created_datetime() );
+		$this->assertEquals( 0, $retrieved_record->get_retry_count() );
 
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 	}
 
-	function test_find_active_in_queue() {
-		$order = TaxJar_Order_Helper::create_order();
-		$data = WC_Taxjar_Record_Queue::get_order_data( $order );
-		WC_Taxjar_Record_Queue::add_to_queue( $order->get_id(), 'order', $data );
-
-		$result = WC_Taxjar_Record_Queue::find_active_in_queue( $order->get_id() );
-		$this->assertNotFalse( $result );
-
-		TaxJar_Order_Helper::delete_order( $order->get_id() );
-	}
-
-	function test_get_record_in_queue() {
-		$order = TaxJar_Order_Helper::create_order();
-		$data = WC_Taxjar_Record_Queue::get_order_data( $order );
-		WC_Taxjar_Record_Queue::add_to_queue( $order->get_id(), 'order', $data );
-
-		$queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order->get_id() );
-		$record = WC_Taxjar_Record_Queue::get_record_in_queue( $queue_id );
-
-		$new_data = json_decode( $record[ 'record_data' ], true );
-		$this->assertEquals( $data, $new_data );
-		$this->assertEquals( $order->get_id(), $record[ 'record_id'] );
-
-		TaxJar_Order_Helper::delete_order( $order->get_id() );
-	}
-
-	function test_completed_order_add_to_queue() {
+	function test_new_completed_order_add_to_queue() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$order->update_status( 'completed' );
 
-		$queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order->get_id() );
-		$record = WC_Taxjar_Record_Queue::get_record_in_queue( $queue_id );
-		$record_data = json_decode( $record[ 'record_data' ], true );
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$this->assertNotFalse( $record );
+		$this->assertEquals( $order->get_id(), $record->get_record_id() );
+		$this->assertEquals( 0, $record->get_retry_count() );
+		$this->assertEquals( 'new', $record->get_status() );
 
-		$order_data = WC_Taxjar_Record_Queue::get_order_data( $order );
-		$this->assertEquals( $order_data, $record_data );
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
 	}
 
 	function test_process_queue() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$order->update_status( 'completed' );
-		$order_queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order->get_id() );
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 
 		$second_order = TaxJar_Order_Helper::create_order( 1 );
 		$second_order->update_status( 'completed' );
-		$second_order_queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order->get_id() );
+		$second_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 
 		$batches = $this->tj->transaction_sync->process_queue();
 
@@ -164,27 +167,37 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 			// args for the scheduled action are stored in post_content field
 			$args = json_decode( $batch->post_content, true );
 
-			$this->assertContains( $order_queue_id, $args[ 'queue_ids' ] );
-			$this->assertContains( $second_order_queue_id, $args[ 'queue_ids' ] );
+			$this->assertContains( $record->get_queue_id(), $args[ 'queue_ids' ] );
+			$this->assertContains( $second_record->get_queue_id(), $args[ 'queue_ids' ] );
 		}
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+		TaxJar_Order_Helper::delete_order( $second_order->get_id() );
 	}
 
-	function test_create_order_taxjar_api_request() {
-		$test_data = TaxJar_Order_Helper::get_test_order_data();
-		$result = $this->tj->transaction_sync->create_order_taxjar_api_request( $test_data[ 'transaction_id' ], $test_data );
+	function test_create_order_in_taxjar() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$result = $record->create_in_taxjar();
+
 		$this->assertEquals( 201, $result[ 'response' ][ 'code' ] );
-		$result = $this->tj->transaction_sync->delete_order_taxjar_api_request( $test_data[ 'transaction_id' ] );
+		$result = $record->delete_in_taxjar();
 	}
 
-	function test_update_order_taxjar_api_request() {
-		$test_data = TaxJar_Order_Helper::get_test_order_data();
-		$result = $this->tj->transaction_sync->create_order_taxjar_api_request( $test_data[ 'transaction_id' ], $test_data );
+	function test_update_order_in_taxjar() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$result = $record->create_in_taxjar();
 
-		$test_data[ 'amount' ] = 200;
-		$result = $this->tj->transaction_sync->update_order_taxjar_api_request( $test_data[ 'transaction_id' ], $test_data );
+		$order->set_shipping_city( 'test' );
+		$order->save();
+
+		$new_record = TaxJar_Order_Record::load( $order->get_id() );
+		$result = $new_record->update_in_taxjar();
+
 		$this->assertEquals( 200, $result[ 'response' ][ 'code' ] );
 
-		$result = $this->tj->transaction_sync->delete_order_taxjar_api_request( $test_data[ 'transaction_id' ] );
+		$record->delete_in_taxjar();
 	}
 
 }
