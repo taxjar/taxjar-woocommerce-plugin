@@ -54,7 +54,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_create_new_order_record() {
 		$order = TaxJar_Order_Helper::create_order();
-		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
 
 		$this->assertEquals( $order->get_id(), $record->get_record_id() );
 		$this->assertTrue( $record->object instanceof WC_Order );
@@ -65,13 +66,16 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_get_order_record_by_queue_id() {
 		$order = TaxJar_Order_Helper::create_order();
-		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->save();
 
 		$queue_id = $record->get_queue_id();
 		$this->assertNotNull( $queue_id );
 
-		$retrieved_record = TaxJar_Order_Record::load( null, $queue_id );
+		$retrieved_record = new TaxJar_Order_Record();
+		$retrieved_record->set_queue_id( $queue_id );
+		$retrieved_record->read();
+
 		$this->assertEquals( $order->get_id(), $retrieved_record->get_record_id() );
 
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
@@ -79,7 +83,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_get_order_data() {
 		$order = TaxJar_Order_Helper::create_order();
-		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
 		$order_data = $record->get_order_data();
 
 		$expected_order_data = array(
@@ -122,7 +127,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_get_active_order_record_in_queue() {
 		$order = TaxJar_Order_Helper::create_order();
-		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->save();
 
 		$retrieved_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
@@ -177,7 +182,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_create_order_in_taxjar() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
-		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
 		$result = $record->create_in_taxjar();
 
 		$this->assertEquals( 201, $result[ 'response' ][ 'code' ] );
@@ -186,13 +192,15 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_update_order_in_taxjar() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
-		$record = TaxJar_Order_Record::load( $order->get_id() );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
 		$result = $record->create_in_taxjar();
 
 		$order->set_shipping_city( 'test' );
 		$order->save();
 
-		$new_record = TaxJar_Order_Record::load( $order->get_id() );
+		$new_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$new_record->load_object();
 		$result = $new_record->update_in_taxjar();
 
 		$this->assertEquals( 200, $result[ 'response' ][ 'code' ] );

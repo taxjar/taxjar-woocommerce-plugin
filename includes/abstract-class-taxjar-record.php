@@ -21,28 +21,17 @@ abstract class TaxJar_Record {
 	public $object;
 	public $taxjar_integration;
 
-	public function __construct( $record_id = null, $queue_id = null ) {
+	public function __construct( $record_id = null, $set_defaults = false ) {
 		$this->taxjar_integration =  WC()->integrations->integrations[ 'taxjar-integration' ];
-
-		if ( empty( $queue_id ) && empty( $record_id ) ) {
-			throw new Exception( "Invalid parameters user in constructor" );
-		}
 
 		if ( ! empty ( $record_id ) ) {
 			$this->set_record_id( $record_id );
 		}
 
-		if ( empty( $queue_id ) ) {
+		if ( $set_defaults ) {
 			$this->set_defaults();
-		} else {
-			$this->set_queue_id( $queue_id );
-			$this->read();
 		}
-
-		$this->load_object();
 	}
-
-	abstract static function load( $record_id = null, $queue_id = null );
 
 	abstract function load_object();
 
@@ -172,7 +161,11 @@ abstract class TaxJar_Record {
 			return false;
 		}
 
-		return static::load( null, (int)$last_element[ 'queue_id' ] );
+		$record = new static();
+		$record->set_queue_id( (int)$last_element[ 'queue_id' ] );
+		$record->read();
+
+		return $record;
 	}
 
 	/**

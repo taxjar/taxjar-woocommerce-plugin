@@ -10,14 +10,6 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		parent::__construct( $record_id, $queue_id );
 	}
 
-	static function load( $record_id = null, $queue_id = null ) {
-		try {
-			return new TaxJar_Order_Record( $record_id, $queue_id );
-		} catch ( Exception $e ) {
-			return false;
-		}
-	}
-
 	function load_object() {
 		$order = wc_get_order( $this->get_record_id() );
 		if ( ! is_object( $order ) ) {
