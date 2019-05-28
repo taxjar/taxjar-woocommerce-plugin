@@ -18,11 +18,12 @@ abstract class TaxJar_Record {
 
 	public $uri;
 
-	public function __construct( $queue_id = null ) {
+	public function __construct( $record_id, $queue_id = null ) {
 		$this->uri = 'https://api.taxjar.com/v2/';
 
 		if ( empty( $queue_id ) ) {
 			$this->set_defaults();
+			$this->set_record_id( $record_id );
 			return;
 		}
 
