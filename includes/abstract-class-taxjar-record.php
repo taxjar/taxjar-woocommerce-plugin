@@ -17,10 +17,12 @@ abstract class TaxJar_Record {
 	protected $retry_count;
 
 	public $uri;
-	protected $object;
+	public $object;
+	public $taxjar_integration;
 
 	public function __construct( $record_id = null, $queue_id = null ) {
 		$this->uri = 'https://api.taxjar.com/v2/';
+		$this->taxjar_integration =  WC()->integrations->integrations[ 'taxjar-integration' ];
 
 		if ( empty( $queue_id ) && empty( $record_id ) ) {
 			throw new Exception( "Invalid parameters user in constructor" );
@@ -52,7 +54,7 @@ abstract class TaxJar_Record {
 			return false;
 		}
 
-		$table_name = $this->get_queue_table_name();
+		$table_name = self::get_queue_table_name();
 		$query = "SELECT * FROM {$table_name} WHERE queue_id = {$queue_id}";
 		$results = $wpdb->get_results( $query,  ARRAY_A );
 
@@ -87,7 +89,7 @@ abstract class TaxJar_Record {
 			'created_datetime' => $this->get_created_datetime()
 		);
 
-		$result = $wpdb->insert( $this->get_queue_table_name(), $insert );
+		$result = $wpdb->insert( self::get_queue_table_name(), $insert );
 		$this->set_queue_id( $wpdb->insert_id );
 		return $result;
 	}
@@ -98,17 +100,17 @@ abstract class TaxJar_Record {
 		}
 
 		global $wpdb;
-		$table_name = $this->get_queue_table_name();
+		$table_name = self::get_queue_table_name();
 		return $wpdb->delete( $table_name, array( 'queue_id' => $this->get_queue_id() ) );
 	}
 
 	public function save() {
-		if ( emtpy( $this->get_queue_id() ) ) {
+		if ( empty( $this->get_queue_id() ) ) {
 			return $this->create();
 		}
 
 		global $wpdb;
-		$table_name = $this->get_queue_table_name();
+		$table_name = self::get_queue_table_name();
 
 		$data = array(
 			'record_id' => $this->get_record_id(),
@@ -149,11 +151,36 @@ abstract class TaxJar_Record {
 	abstract function delete_in_taxjar();
 
 	/**
+	 * Find record in queue
+	 *
+	 * @param int $record_id - record id of item to search queue for
+	 * @return TaxJar_Record|bool - if successful returns a TaxJar_Record object, otherwise returns false
+	 */
+	static function find_active_in_queue( $record_id ) {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id} AND status IN ( 'new', 'awaiting' )";
+		$results = $wpdb->get_results( $query,  ARRAY_A );
+
+		if ( empty( $results ) || ! is_array( $results ) ) {
+			return false;
+		}
+
+		$last_element = end( $results );
+		if ( empty( $last_element[ 'queue_id' ] ) ) {
+			return false;
+		}
+
+		return static::load( null, (int)$last_element[ 'queue_id' ] );
+	}
+
+	/**
 	 * Get queue table name
 	 *
 	 * @return string - name of queue table in db
 	 */
-	protected function get_queue_table_name() {
+	protected static function get_queue_table_name() {
 		global $wpdb;
 		return $wpdb->prefix . self::QUEUE_NAME;
 	}
