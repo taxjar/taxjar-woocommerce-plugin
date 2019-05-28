@@ -17,19 +17,32 @@ abstract class TaxJar_Record {
 	protected $retry_count;
 
 	public $uri;
+	protected $object;
 
-	public function __construct( $record_id, $queue_id = null ) {
+	public function __construct( $record_id = null, $queue_id = null ) {
 		$this->uri = 'https://api.taxjar.com/v2/';
+
+		if ( empty( $queue_id ) && empty( $record_id ) ) {
+			throw new Exception( "Invalid parameters user in constructor" );
+		}
+
+		if ( ! empty ( $record_id ) ) {
+			$this->set_record_id( $record_id );
+		}
 
 		if ( empty( $queue_id ) ) {
 			$this->set_defaults();
-			$this->set_record_id( $record_id );
-			return;
+		} else {
+			$this->set_queue_id( $queue_id );
+			$this->read();
 		}
 
-		$this->set_queue_id( $queue_id );
-		$this->read();
+		$this->load_object();
 	}
+
+	abstract static function load( $record_id = null, $queue_id = null );
+
+	abstract function load_object();
 
 	public function read() {
 		global $wpdb;
