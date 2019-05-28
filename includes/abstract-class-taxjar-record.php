@@ -16,7 +16,11 @@ abstract class TaxJar_Record {
 	protected $processed_datetime;
 	protected $retry_count;
 
+	public $uri;
+
 	public function __construct( $queue_id = null ) {
+		$this->uri = 'https://api.taxjar.com/v2/';
+
 		if ( empty( $queue_id ) ) {
 			$this->set_defaults();
 			return;
