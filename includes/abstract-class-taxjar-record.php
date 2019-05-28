@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 abstract class TaxJar_Record {
 
 	const QUEUE_NAME = 'taxjar_record_queue';
+	const API_URI = 'https://api.taxjar.com/v2/';
 
 	protected $queue_id;
 	protected $record_id;
@@ -21,7 +22,6 @@ abstract class TaxJar_Record {
 	public $taxjar_integration;
 
 	public function __construct( $record_id = null, $queue_id = null ) {
-		$this->uri = 'https://api.taxjar.com/v2/';
 		$this->taxjar_integration =  WC()->integrations->integrations[ 'taxjar-integration' ];
 
 		if ( empty( $queue_id ) && empty( $record_id ) ) {

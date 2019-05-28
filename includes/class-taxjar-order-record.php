@@ -61,7 +61,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 	public function create_in_taxjar() {
 		$data = $this->get_order_data();
-		$url = $this->uri . 'transactions/orders';
+		$url = self::API_URI . 'transactions/orders';
 		$data[ 'provider' ] = 'woo';
 		$body = wp_json_encode( $data );
 
@@ -81,7 +81,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$order_id = $this->get_transaction_id();
 		$data = $this->get_order_data();
 
-		$url = $this->uri . 'transactions/orders/' . $order_id;
+		$url = self::API_URI . 'transactions/orders/' . $order_id;
 		$data[ 'provider' ] = 'woo';
 		$body = wp_json_encode( $data );
 
@@ -100,7 +100,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 	public function delete_in_taxjar(){
 		$order_id = $this->get_transaction_id();
-		$url = $this->uri . 'transactions/orders/' . $order_id;
+		$url = self::API_URI . 'transactions/orders/' . $order_id;
 		$data = array(
 			'transaction_id' => $order_id,
 			'provider' => 'woo'
