@@ -57,15 +57,14 @@ class TaxJar_Order_Record extends TaxJar_Record {
 	}
 
 	public function sync_success() {
-		global $wpdb;
-		$table_name = self::get_queue_table_name();
 		$current_datetime =  gmdate( 'Y-m-d H:i:s' );
-		$query = "UPDATE {$table_name} SET status = 'complete', processed_datetime = '{$current_datetime}' WHERE queue_id = {$this->get_queue_id()}";
-		$results = $wpdb->get_results( $query );
+		$this->set_processed_datetime( $current_datetime );
+		$this->set_status( 'completed' );
+		$this->save();
 
-		update_post_meta( $this->get_record_id(), '_taxjar_last_sync', $current_datetime );
-
-		return $results;
+		$this->object->update_meta_data( '_taxjar_last_sync', $current_datetime );
+		$this->object->save();
+		//update_post_meta( $this->get_record_id(), '_taxjar_last_sync', $current_datetime );
 	}
 
 	public function sync_failure() {
