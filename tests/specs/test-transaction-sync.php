@@ -158,7 +158,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$second_order = TaxJar_Order_Helper::create_order( 1 );
 		$second_order->update_status( 'completed' );
-		$second_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$second_record = TaxJar_Order_Record::find_active_in_queue( $second_order->get_id() );
 
 		$batches = $this->tj->transaction_sync->process_queue();
 
@@ -206,6 +206,50 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( 200, $result[ 'response' ][ 'code' ] );
 
 		$record->delete_in_taxjar();
+	}
+
+	function test_order_record_sync() {
+		// new status not in TaxJar
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$record->save();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		// new status already exists in TaxJar
+		$record->set_status( 'new' );
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		// awaiting status already exists in TaxJar
+		$record->set_status( 'awaiting' );
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->delete_in_taxjar();
+
+		// awaiting status not in TaxJar
+		$record->set_status( 'awaiting' );
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->delete_in_taxjar();
+	}
+
+	function test_process_batch() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+
+		$second_order = TaxJar_Order_Helper::create_order( 1 );
+		$second_order->update_status( 'completed' );
+		$second_record = TaxJar_Order_Record::find_active_in_queue( $second_order->get_id() );
+
+		$batch_args = array(
+			'queue_ids' => array( $record->get_queue_id(), $second_record->get_queue_id() )
+		);
+		$this->tj->transaction_sync->process_batch( $batch_args );
 	}
 
 }
