@@ -132,6 +132,7 @@ abstract class TaxJar_Record {
 		$this->set_created_datetime( gmdate( 'Y-m-d H:i:s' ) );
 	}
 
+	abstract function sync();
 	abstract function sync_success();
 	abstract function sync_failure();
 

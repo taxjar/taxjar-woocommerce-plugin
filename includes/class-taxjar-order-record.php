@@ -6,16 +6,54 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class TaxJar_Order_Record extends TaxJar_Record {
 
-	public function __construct( $record_id = null, $queue_id = null ) {
-		parent::__construct( $record_id, $queue_id );
-	}
-
 	function load_object() {
 		$this->object = wc_get_order( $this->get_record_id() );
 	}
 
 	public function get_record_type() {
 		return 'order';
+	}
+
+	public function sync() {
+		$error_responses = array( 400, 401, 403, 404, 405, 406, 410, 429, 500, 503 );
+		$success_responses = array( 200, 201 );
+
+		if ( $this->get_status() == 'new' ) {
+			$response = $this->create_in_taxjar();
+			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 422 ) {
+				$response = $this->update_in_taxjar();
+			}
+		} else {
+			$response = $this->update_in_taxjar();
+			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 404 ) {
+				$response = $this->create_in_taxjar();
+			}
+		}
+
+		if ( is_wp_error( $response ) ) {
+			// handle wordpress error and add message to log here
+			$this->sync_failure();
+			return false;
+		}
+
+		if ( ! isset( $response[ 'response' ][ 'code' ] ) ) {
+			$this->sync_failure();
+			return false;
+		}
+
+		if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
+			$this->sync_failure();
+			return false;
+		}
+
+		if ( in_array( $response[ 'response' ][ 'code' ], $success_responses ) ) {
+			$this->sync_success();
+			return true;
+		}
+
+		// handle any unexpected responses
+		$this->sync_failure();
+		return false;
 	}
 
 	public function sync_success() {
