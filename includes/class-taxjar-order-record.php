@@ -68,19 +68,15 @@ class TaxJar_Order_Record extends TaxJar_Record {
 	}
 
 	public function sync_failure() {
-		global $wpdb;
-
-		$table_name = self::get_queue_table_name();
-
 		$retry_count = $this->get_retry_count() + 1;
 		$this->set_retry_count( $retry_count );
 		if ( $this->get_retry_count() >= 3 ) {
-			$query = "UPDATE {$table_name} SET status = 'failed', retry_count = {$retry_count}, batch_id = 0 WHERE queue_id = {$this->get_queue_id()}";
-			$results = $wpdb->get_results( $query );
+			$this->set_status( 'failed' );
 		} else {
-			$query = "UPDATE {$table_name} SET retry_count = {$retry_count}, batch_id = 0, status = 'new' WHERE queue_id = {$this->get_queue_id()}";
-			$results = $wpdb->get_results( $query );
+			$this->set_batch_id( 0 );
 		}
+
+		$this->save();
 	}
 
 	public function create_in_taxjar() {
