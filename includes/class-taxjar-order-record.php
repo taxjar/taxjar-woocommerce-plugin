@@ -11,12 +11,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 	}
 
 	function load_object() {
-		$order = wc_get_order( $this->get_record_id() );
-		if ( ! is_object( $order ) ) {
-			throw new Exception( "Order object does not exist" );
-		}
-
-		$this->object = $order;
+		$this->object = wc_get_order( $this->get_record_id() );
 	}
 
 	public function get_record_type() {
