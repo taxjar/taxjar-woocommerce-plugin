@@ -168,6 +168,34 @@ abstract class TaxJar_Record {
 		return $record;
 	}
 
+	public static function create_from_record_row( $record_row ) {
+		if ( $record_row[ 'record_type' ] == 'order' ) {
+			$record = new TaxJar_Order_Record( $record_row[ 'record_id'] );
+		} else {
+			// remove record from queue as it's of a type not supported
+			$record = new TaxJar_Order_Record( $record_row[ 'record_id' ] );
+			$record->set_queue_id( $record_row[ 'queue_id'] );
+			$record->delete();
+			return false;
+		}
+
+		$record->set_queue_id( $record_row[ 'queue_id'] );
+		$record->set_retry_count( $record_row[ 'retry_count'] );
+		$record->set_status( $record_row[ 'status'] );
+		$record->set_created_datetime( $record_row[ 'status'] );
+		$record->set_batch_id( $record_row[ 'batch_id' ] );
+		$record->set_processed_datetime( $record_row[ 'processed_datetime' ] );
+		$record->load_object();
+
+		// handle records deleted after being added to queue
+		if ( ! is_object( $record->object ) ) {
+			$record->delete();
+			return false;
+		}
+
+		return $record;
+	}
+
 	/**
 	 * Get queue table name
 	 *
