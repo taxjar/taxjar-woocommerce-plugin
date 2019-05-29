@@ -241,15 +241,30 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$order->update_status( 'completed' );
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$record->set_batch_id( 1 );
+		$record->load_object();
+		$record->save();
 
 		$second_order = TaxJar_Order_Helper::create_order( 1 );
 		$second_order->update_status( 'completed' );
 		$second_record = TaxJar_Order_Record::find_active_in_queue( $second_order->get_id() );
+		$second_record->set_batch_id( 1 );
+		$second_record->load_object();
+		$second_record->save();
 
 		$batch_args = array(
 			'queue_ids' => array( $record->get_queue_id(), $second_record->get_queue_id() )
 		);
 		$this->tj->transaction_sync->process_batch( $batch_args );
+
+		$record->read();
+		$second_record->read();
+
+		$this->assertEquals( 'completed', $record->get_status() );
+		$this->assertEquals( 'completed', $second_record->get_status() );
+
+		$record->delete_in_taxjar();
+		$second_record->delete_in_taxjar();
 	}
 
 }
