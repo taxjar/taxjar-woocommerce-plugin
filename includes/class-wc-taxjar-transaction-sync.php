@@ -78,26 +78,23 @@ class WC_Taxjar_Transaction_Sync {
 			return;
 		}
 
-		$records = WC_Taxjar_Record_Queue::get_data_for_batch( $args[ 'queue_ids' ] );
-
-		foreach( $records as $record ) {
-			if ( $record[ 'status' ] != 'new' && $record[ 'status' ] != 'awaiting' ) {
+		$record_rows = WC_Taxjar_Record_Queue::get_data_for_batch( $args[ 'queue_ids' ] );
+		foreach( $record_rows as $record_row ) {
+			$record = TaxJar_Record::create_from_record_row( $record_row );
+			if ( $record == false ) {
 				continue;
 			}
 
-			if ( empty( $record[ 'batch_id' ] ) ) {
+			if ( $record->get_status() != 'new' && $record->get_stauts() != 'awaiting' ) {
 				continue;
 			}
 
-			if ( $record[ 'record_type' ] == 'order' ) {
-				if ( $record[ 'status' ] == 'new' ) {
-					$result = $this->maybe_create_order_in_taxjar( $record[ 'queue_id' ],  $record[ 'record_id' ], json_decode( $record[ 'record_data' ], true ) );
-				} elseif ( $record[ 'status' ] == 'awaiting' ) {
-					$result = $this->maybe_update_order_in_taxjar( $record[ 'queue_id' ],  $record[ 'record_id' ], json_decode( $record[ 'record_data' ], true ) );
-				}
+			if ( empty( $record->get_batch_id() ) ) {
+				continue;
 			}
+
+			$record->sync();
 		}
-
 	}
 
 	public static function order_updated( $order_id ) {
