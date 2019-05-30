@@ -208,6 +208,32 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->delete_in_taxjar();
 	}
 
+	function test_order_record_sync_success() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$record->sync_success();
+
+		$this->assertEquals( 'completed', $record->get_status() );
+
+		$updated_record = new TaxJar_Order_Record( $order->get_id() );
+		$updated_record->set_queue_id( $record->get_queue_id() );
+		$updated_record->read();
+
+		$this->assertEquals( 'completed', $updated_record->get_status() );
+
+		// Ensure updated order is not re-added to queue on successful sync
+		$active_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$this->assertFalse( $active_record );
+
+		$updated_order = wc_get_order( $order->get_id() );
+		$taxjar_processed_datetime = $updated_order->get_meta( '_taxjar_last_sync', true );
+		$this->assertNotEmpty( $taxjar_processed_datetime );
+
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+	}
+
 	function test_order_record_sync() {
 		// new status not in TaxJar
 		$order = TaxJar_Order_Helper::create_order( 1 );
