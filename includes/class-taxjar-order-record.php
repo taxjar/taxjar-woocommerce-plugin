@@ -154,6 +154,8 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 		$amount = $this->object->get_total() - $this->object->get_total_tax();
 
+		$ship_to_address = $this->get_ship_to_address();
+
 		$order_data = array(
 			'transaction_id' => $this->get_transaction_id(),
 			'transaction_date' => $this->object->get_date_created()->date( DateTime::ISO8601 ),
@@ -162,16 +164,13 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			'from_state' => $from_state,
 			'from_city' => $from_city,
 			'from_street' => $from_street,
-			'to_country' => $this->object->get_shipping_country(),
-			'to_zip' => $this->object->get_shipping_postcode(),
-			'to_state' => $this->object->get_shipping_state(),
-			'to_city' => $this->object->get_shipping_city(),
-			'to_street' => $this->object->get_shipping_address_1(),
 			'amount' => $amount,
 			'shipping' => $this->object->get_shipping_total(),
 			'sales_tax' => $this->object->get_total_tax(),
 			'line_items' => $this->get_line_items(),
 		);
+
+		$order_data = array_merge( $order_data, $ship_to_address );
 
 		$customer_id = $this->object->get_customer_id();
 		if ( $customer_id ) {
@@ -179,6 +178,63 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		}
 
 		return $order_data;
+	}
+
+	public function get_ship_to_address() {
+		$tax_based_on = get_option( 'woocommerce_tax_based_on' );
+
+		$local_pickup = false;
+		$shipping_methods = $this->object->get_shipping_methods();
+		if ( !empty( $shipping_methods ) ) {
+			foreach( $shipping_methods as $shipping_method ) {
+				if ( $shipping_method->get_method_id() == 'local_pickup' ) {
+					$local_pickup = true;
+				}
+			}
+		}
+
+		if ( $local_pickup ) {
+			$tax_based_on = 'base';
+		}
+
+		if ( 'base' === $tax_based_on ) {
+			$store_settings   = $this->taxjar_integration->get_store_settings();
+			$country  = $store_settings['country'];
+			$state    = $store_settings['state'];
+			$postcode = $store_settings['postcode'];
+			$city     = $store_settings['city'];
+			$street   = $store_settings['street'];
+		} elseif ( 'billing' === $tax_based_on ) {
+			$country  = $this->object->get_billing_country();
+			$state    = $this->object->get_billing_state();
+			$postcode = $this->object->get_billing_postcode();
+			$city     = $this->object->get_billing_city();
+			$street   = $this->object->get_billing_address_1();
+		} else {
+			$country  = $this->object->get_shipping_country();
+			$state    = $this->object->get_shipping_state();
+			$postcode = $this->object->get_shipping_postcode();
+			$city     = $this->object->get_shipping_city();
+			$street   = $this->object->get_shipping_address_1();
+		}
+
+		$taxable_address = apply_filters( 'woocommerce_customer_taxable_address', array( $country, $state, $postcode, $city, $street ) );
+
+		$taxable_address = is_array( $taxable_address ) ? $taxable_address : array();
+
+		$to_country = isset( $taxable_address[0] ) && ! empty( $taxable_address[0] ) ? $taxable_address[0] : false;
+		$to_state = isset( $taxable_address[1] ) && ! empty( $taxable_address[1] ) ? $taxable_address[1] : false;
+		$to_zip = isset( $taxable_address[2] ) && ! empty( $taxable_address[2] ) ? $taxable_address[2] : false;
+		$to_city = isset( $taxable_address[3] ) && ! empty( $taxable_address[3] ) ? $taxable_address[3] : false;
+		$to_street = isset( $taxable_address[4] ) && ! empty( $taxable_address[4] ) ? $taxable_address[4] : false;
+
+		return array(
+			'to_country' => $to_country,
+			'to_state' => $to_state,
+			'to_zip' => $to_zip,
+			'to_city' => $to_city,
+			'to_street' => $to_street,
+		);
 	}
 
 	public function get_line_items() {
