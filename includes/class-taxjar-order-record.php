@@ -62,8 +62,12 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$this->set_status( 'completed' );
 		$this->save();
 
+		// prevent creating new record in queue when updating a successfully synced order
+		remove_action( 'woocommerce_update_order', array( 'WC_Taxjar_Transaction_Sync', 'order_updated' ) );
 		$this->object->update_meta_data( '_taxjar_last_sync', $current_datetime );
 		$this->object->save();
+		add_action( 'woocommerce_update_order', array( 'WC_Taxjar_Transaction_Sync', 'order_updated' ) );
+
 		//update_post_meta( $this->get_record_id(), '_taxjar_last_sync', $current_datetime );
 	}
 
