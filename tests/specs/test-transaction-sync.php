@@ -291,6 +291,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $record->delete_in_taxjar();
+
+		// Ensure updated order is not re-added to queue on failed sync
+		$active_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$this->assertFalse( $active_record );
 	}
 
 	function test_process_batch() {
