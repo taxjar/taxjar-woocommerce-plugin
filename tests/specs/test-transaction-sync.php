@@ -327,4 +327,30 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$second_record->delete_in_taxjar();
 	}
 
+	function test_order_record_get_ship_to_address() {
+		// Tax based on shipping address
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$ship_to_address = $record->get_ship_to_address();
+		$this->assertEquals( "Shipping Address", $ship_to_address[ 'to_street' ] );
+
+		// Tax based on store address
+		update_option( 'woocommerce_tax_based_on', 'base' );
+		$ship_to_address = $record->get_ship_to_address();
+		$this->assertEquals( "6060 S Quebec St", $ship_to_address[ 'to_street' ] );
+
+		// Tax based on billing address
+		update_option( 'woocommerce_tax_based_on', 'billing' );
+		$ship_to_address = $record->get_ship_to_address();
+		$this->assertEquals( "Billing Address", $ship_to_address[ 'to_street' ] );
+
+		// Local Pickup order
+		$order = TaxJar_Order_Helper::create_local_pickup_order( 1 );
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$ship_to_address = $record->get_ship_to_address();
+		$this->assertEquals( "6060 S Quebec St", $ship_to_address[ 'to_street' ] );
+	}
+
 }
