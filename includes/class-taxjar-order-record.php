@@ -272,6 +272,38 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			}
 		}
 
+		$fees = $this->get_fee_line_items();
+
+
+		return array_merge( $line_items_data, $fees );
+	}
+
+	public function get_fee_line_items() {
+		$line_items_data = array();
+		$fees = $this->object->get_fees();
+		if ( !empty( $fees ) ) {
+			foreach( $fees as $fee ) {
+				$tax_class = explode( '-', $fee->get_tax_class() );
+				$tax_code = '';
+				if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
+					$tax_code = end( $tax_class );
+				}
+
+				$tax_status = $fee->get_tax_status();
+				if ( $tax_status != 'taxable' || 'zero-rate' == sanitize_title( $fee->get_tax_class() ) ) {
+					$tax_code = '99999';
+				}
+
+				$line_items_data[] = array(
+					'id' => $fee->get_id(),
+					'quantity' => $fee->get_quantity(),
+					'description' => $fee->get_name(),
+					'product_tax_code' => $tax_code,
+					'unit_price' => $fee->get_amount(),
+					'sales_tax' => $fee->get_total_tax(),
+				);
+			}
+		}
 		return $line_items_data;
 	}
 
