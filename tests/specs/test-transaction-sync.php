@@ -353,4 +353,61 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( "6060 S Quebec St", $ship_to_address[ 'to_street' ] );
 	}
 
+	function test_order_record_get_fee_line_items() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_defaults();
+		$fee->set_amount( '10.00' );
+		$fee->set_name( 'test fee' );
+		$order->add_item( $fee );
+		$order->save();
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$fee_line_items = $record->get_fee_line_items();
+		$this->assertEquals( 'test fee', $fee_line_items[ 0 ][ 'description' ] );
+		$this->assertEquals( '10.00', $fee_line_items[ 0 ][ 'unit_price' ] );
+		$this->assertEquals( '0', $fee_line_items[ 0 ][ 'sales_tax' ] );
+		$this->assertEquals( 1, $fee_line_items[ 0 ][ 'quantity' ] );
+
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_defaults();
+		$fee->set_amount( '10.00' );
+		$fee->set_tax_class( 'clothing-rate-20010' );
+		$order->add_item( $fee );
+		$order->save();
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$fee_line_items = $record->get_fee_line_items();
+		$this->assertEquals( '20010', $fee_line_items[ 0 ][ 'product_tax_code' ] );
+
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_defaults();
+		$fee->set_amount( '10.00' );
+		$fee->set_tax_class( 'zero-rate' );
+		$order->add_item( $fee );
+		$order->save();
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$fee_line_items = $record->get_fee_line_items();
+		$this->assertEquals( '99999', $fee_line_items[ 0 ][ 'product_tax_code' ] );
+
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_defaults();
+		$fee->set_amount( '10.00' );
+		$fee->set_tax_status( 'none' );
+		$order->add_item( $fee );
+		$order->save();
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$fee_line_items = $record->get_fee_line_items();
+		$this->assertEquals( '99999', $fee_line_items[ 0 ][ 'product_tax_code' ] );
+	}
+
 }
