@@ -97,7 +97,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 			'to_zip' => '80111',
 			'to_state' => 'CO',
 			'to_city' => 'Greenwood Village',
-			'to_street' => '6060 S Quebec St',
+			'to_street' => 'Shipping Address',
 			'amount' => 110,
 			'shipping' => '10',
 			'sales_tax' => '7.98',
