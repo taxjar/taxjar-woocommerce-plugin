@@ -410,4 +410,23 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( '99999', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 	}
 
+	function test_order_with_fee_record_sync() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_amount( '10.00' );
+		$fee->set_name( 'test fee' );
+		$fee->set_total( '10.00' );
+		$order->add_item( $fee );
+		$order->calculate_totals();
+		$order->save();
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$record->save();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->delete_in_taxjar();
+	}
+
 }
