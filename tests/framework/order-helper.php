@@ -71,8 +71,7 @@ class TaxJar_Order_Helper {
 
 
 		// Add shipping costs
-		$shipping_taxes = WC_Tax::calc_shipping_tax( '10', WC_Tax::get_shipping_tax_rates() );
-		$rate   = new WC_Shipping_Rate( 'flat_rate_shipping', 'Flat rate shipping', '10', $shipping_taxes, 'flat_rate' );
+		$rate   = new WC_Shipping_Rate( 'flat_rate_shipping', 'Flat rate shipping', '10', array( .73 ), 'flat_rate' );
 		$item   = new WC_Order_Item_Shipping();
 		$item->set_props( array(
 			'method_title' => $rate->label,
@@ -157,7 +156,6 @@ class TaxJar_Order_Helper {
 
 
 		// Add shipping costs
-		$shipping_taxes = WC_Tax::calc_shipping_tax( '10', WC_Tax::get_shipping_tax_rates() );
 		$rate   = new WC_Shipping_Rate( 'local_pickup', 'Local Pickup', '0', array(), 'local_pickup' );
 		$item   = new WC_Order_Item_Shipping();
 		$item->set_props( array(
@@ -220,5 +218,30 @@ class TaxJar_Order_Helper {
 		);
 
 		return $test_data;
+	}
+
+	static function create_refund_from_order( $order_id ) {
+		$order       = wc_get_order( $order_id );
+		$order_items = $order->get_items( array( 'line_item', 'shipping', 'fee' ) );
+
+		$line_items = array();
+		foreach ( $order_items as $item_id => $item ) {
+			$line_items[ $item_id ] = array(
+				'qty'          => $item->get_quantity(),
+				'refund_total' => $item->get_total(),
+				'refund_tax'   => array(  $item->get_total_tax() )
+			);
+		}
+
+		$refund = wc_create_refund(
+			array(
+				'amount'         => $order->get_total(),
+				'reason'         => 'Refund Reason',
+				'order_id'       => $order_id,
+				'line_items'     => $line_items,
+			)
+		);
+
+		return $refund;
 	}
 }
