@@ -470,4 +470,39 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$result = $record->delete_in_taxjar();
 		$delete_result = $refund_record->delete_in_taxjar();
 	}
+
+	function test_refund_record_sync() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+
+		// new status not in TaxJar
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		// new status already exists in TaxJar
+		$record->set_status( 'new' );
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		// awaiting status already exists in TaxJar
+		$record->set_status( 'awaiting' );
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->delete_in_taxjar();
+
+		// awaiting status not in TaxJar
+		$record->set_status( 'awaiting' );
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->delete_in_taxjar();
+
+		// Ensure updated order is not re-added to queue on failed sync
+		$active_record = TaxJar_Order_Record::find_active_in_queue( $refund->get_id() );
+		$this->assertFalse( $active_record );
+	}
 }
