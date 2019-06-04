@@ -505,4 +505,38 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$active_record = TaxJar_Order_Record::find_active_in_queue( $refund->get_id() );
 		$this->assertFalse( $active_record );
 	}
+
+	function test_refund_queue_process() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+		$record->load_object();
+		$record->delete_in_taxjar();
+
+		$this->assertTrue( $record instanceof TaxJar_Refund_Record );
+		$this->assertEquals( $refund->get_id(), $record->get_record_id() );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+		$batch_timestamp = as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK );
+		$this->assertNotFalse( $batch_timestamp );
+
+		$batch = get_post( $batches[0] );
+		// args for the scheduled action are stored in post_content field
+		$args = json_decode( $batch->post_content, true );
+
+		$this->assertContains( $record->get_queue_id(), $args[ 'queue_ids' ] );
+		$this->tj->transaction_sync->process_batch( $args );
+
+		$record->read();
+		$record->load_object();
+		$this->assertEquals( 'completed', $record->get_status() );
+		$last_sync = $record->object->get_meta( '_taxjar_last_sync', true );
+		$this->assertNotEmpty( $last_sync );
+
+		$record_check = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+		$this->assertFalse( $record_check );
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+		$record->delete_in_taxjar();
+	}
 }
