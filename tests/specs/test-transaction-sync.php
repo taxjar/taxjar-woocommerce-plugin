@@ -500,10 +500,6 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $record->delete_in_taxjar();
-
-		// Ensure updated order is not re-added to queue on failed sync
-		$active_record = TaxJar_Order_Record::find_active_in_queue( $refund->get_id() );
-		$this->assertFalse( $active_record );
 	}
 
 	function test_refund_queue_process() {
@@ -535,6 +531,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$record_check = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
 		$this->assertFalse( $record_check );
+
+		// Ensure updated order is not re-added to queue on failed sync
+		$active_record = TaxJar_Order_Record::find_active_in_queue( $refund->get_id() );
+		$this->assertFalse( $active_record );
 
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 		$record->delete_in_taxjar();
