@@ -104,6 +104,7 @@ abstract class TaxJar_Record {
 		$data = array(
 			'record_id' => $this->get_record_id(),
 			'status' => $this->get_status(),
+			'record_type' => $this->get_record_type()
 		);
 
 		if ( ! empty( $this->get_processed_datetime() ) ) {
@@ -172,6 +173,8 @@ abstract class TaxJar_Record {
 	public static function create_from_record_row( $record_row ) {
 		if ( $record_row[ 'record_type' ] == 'order' ) {
 			$record = new TaxJar_Order_Record( $record_row[ 'record_id'] );
+		} elseif ( $record_row[ 'record_type' ] == 'refund' ) {
+			$record = new TaxJar_Refund_Record( $record_row[ 'record_id'] );
 		} else {
 			// remove record from queue as it's of a type not supported
 			$record = new TaxJar_Order_Record( $record_row[ 'record_id' ] );
