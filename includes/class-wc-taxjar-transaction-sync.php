@@ -31,6 +31,35 @@ class WC_Taxjar_Transaction_Sync {
 		add_action( 'woocommerce_update_order', array( __CLASS__, 'order_updated' ) );
 
 		add_action( 'woocommerce_order_refunded', array( __CLASS__, 'refund_created' ), 10, 2 );
+
+		add_filter( 'woocommerce_order_actions', array( $this, 'add_order_meta_box_action' ) );
+		add_action( 'woocommerce_order_action_taxjar_sync_action', array( $this, 'manual_order_sync' ) );
+	}
+
+	public function add_order_meta_box_action( $actions ) {
+		global $theorder;
+
+		if ( ! $theorder->has_status( 'completed') ) {
+			return $actions;
+		}
+
+		$actions['taxjar_sync_action'] = __( 'Sync order to TaxJar', 'taxjar' );
+		return $actions;
+	}
+
+	public function manual_order_sync( $order ) {
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		if ( ! $record ) {
+			$record = new TaxJar_Order_Record( $order->get_id(), true );
+		}
+		$record->load_object();
+
+		$result = $record->sync();
+		if ( $result ) {
+			$order->add_order_note( __( 'Order manually synced to TaxJar by admin action.', 'taxjar' ) );
+		} else {
+			$order->add_order_note( __( 'Order manual sync failed. Check TaxJar logs for additional details', 'taxjar' ) );
+		}
 	}
 
 	public static function schedule_process_queue() {
