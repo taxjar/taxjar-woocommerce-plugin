@@ -29,6 +29,8 @@ class WC_Taxjar_Transaction_Sync {
 
 		add_action( 'woocommerce_new_order', array( __CLASS__, 'order_updated' ) );
 		add_action( 'woocommerce_update_order', array( __CLASS__, 'order_updated' ) );
+
+		add_action( 'woocommerce_order_refunded', array( __CLASS__, 'refund_created' ), 10, 2 );
 	}
 
 	public static function schedule_process_queue() {
@@ -105,12 +107,29 @@ class WC_Taxjar_Transaction_Sync {
 			return;
 		}
 
-		$queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order_id );
+		$queue_id = TaxJar_Order_Record::find_active_in_queue( $order_id );
 		if ( $queue_id ) {
 			return;
 		}
 
 		$record = new TaxJar_Order_Record( $order_id, true );
+		$record->load_object();
+
+		$taxjar_last_sync = $record->object->get_meta( '_taxjar_last_sync', true );
+		if ( !empty( $taxjar_last_sync ) ) {
+			$record->set_status( 'awaiting' );
+		}
+
+		$record->save();
+	}
+
+	public static function refund_created( $order_id, $refund_id ) {
+		$queue_id = TaxJar_Refund_Record::find_active_in_queue( $refund_id );
+		if ( $queue_id ) {
+			return;
+		}
+
+		$record = new TaxJar_Refund_Record( $refund_id, true );
 		$record->load_object();
 
 		$taxjar_last_sync = $record->object->get_meta( '_taxjar_last_sync', true );
