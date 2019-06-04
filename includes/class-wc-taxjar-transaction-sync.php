@@ -106,21 +106,19 @@ class WC_Taxjar_Transaction_Sync {
 		}
 
 		$queue_id = WC_Taxjar_Record_Queue::find_active_in_queue( $order_id );
-		$data = WC_Taxjar_Record_Queue::get_order_data( $order );
+		if ( $queue_id ) {
+			return;
+		}
 
-		$status = 'new';
-		$taxjar_last_sync = get_post_meta( $order_id, '_taxjar_last_sync', true );
+		$record = new TaxJar_Order_Record( $order_id, true );
+		$record->load_object();
+
+		$taxjar_last_sync = $record->object->get_meta( '_taxjar_last_sync', true );
 		if ( !empty( $taxjar_last_sync ) ) {
-			$status = 'awaiting';
+			$record->set_status( 'awaiting' );
 		}
 
-		if ( $queue_id === false ) { // no record in queue
-			WC_Taxjar_Record_Queue::add_to_queue( $order_id, 'order', $data, $status );
-		} else {
-			WC_Taxjar_Record_Queue::update_queue( $queue_id, $data, null, $status );
-		}
-
-		return $status;
+		$record->save();
 	}
 
 	public function maybe_create_order_in_taxjar( $queue_id, $order_id, $data ) {
