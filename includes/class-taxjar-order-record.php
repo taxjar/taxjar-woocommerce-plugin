@@ -218,15 +218,11 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			$street   = $this->object->get_shipping_address_1();
 		}
 
-		$taxable_address = apply_filters( 'woocommerce_customer_taxable_address', array( $country, $state, $postcode, $city, $street ) );
-
-		$taxable_address = is_array( $taxable_address ) ? $taxable_address : array();
-
-		$to_country = isset( $taxable_address[0] ) && ! empty( $taxable_address[0] ) ? $taxable_address[0] : false;
-		$to_state = isset( $taxable_address[1] ) && ! empty( $taxable_address[1] ) ? $taxable_address[1] : false;
-		$to_zip = isset( $taxable_address[2] ) && ! empty( $taxable_address[2] ) ? $taxable_address[2] : false;
-		$to_city = isset( $taxable_address[3] ) && ! empty( $taxable_address[3] ) ? $taxable_address[3] : false;
-		$to_street = isset( $taxable_address[4] ) && ! empty( $taxable_address[4] ) ? $taxable_address[4] : false;
+		$to_country = isset( $country ) && ! empty( $country ) ? $country : false;
+		$to_state = isset( $state ) && ! empty( $state ) ? $state : false;
+		$to_zip = isset( $postcode ) && ! empty( $postcode ) ? $postcode : false;
+		$to_city = isset( $city ) && ! empty( $city ) ? $city : false;
+		$to_street = isset( $street ) && ! empty( $street ) ? $street : false;
 
 		return array(
 			'to_country' => $to_country,
