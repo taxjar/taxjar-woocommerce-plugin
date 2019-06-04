@@ -221,14 +221,31 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 	}
 
 	public function update_in_taxjar() {
+		$refund_id = $this->get_transaction_id();
+		$data = $this->get_refund_data();
 
+		$url = self::API_URI . 'transactions/refunds/' . $refund_id;
+		$data[ 'provider' ] = 'woo';
+		$body = wp_json_encode( $data );
+
+		$response = wp_remote_request( $url, array(
+			'method' => 'PUT',
+			'headers' => array(
+				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
+				'Content-Type' => 'application/json',
+			),
+			'user-agent' => $this->taxjar_integration->ua,
+			'body' => $body,
+		) );
+
+		return $response;
 	}
 
 	public function delete_in_taxjar() {
-		$order_id = $this->get_transaction_id();
-		$url = self::API_URI . 'transactions/refunds/' . $order_id;
+		$refund_id = $this->get_transaction_id();
+		$url = self::API_URI . 'transactions/refunds/' . $refund_id;
 		$data = array(
-			'transaction_id' => $order_id,
+			'transaction_id' => $refund_id,
 			'provider' => 'woo'
 		);
 		$body = wp_json_encode( $data );
