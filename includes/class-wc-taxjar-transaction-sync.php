@@ -116,7 +116,7 @@ class WC_Taxjar_Transaction_Sync {
 				continue;
 			}
 
-			if ( $record->get_status() != 'new' && $record->get_stauts() != 'awaiting' ) {
+			if ( $record->get_status() != 'new' && $record->get_status() != 'awaiting' ) {
 				continue;
 			}
 
