@@ -126,7 +126,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		return $response;
 	}
 
-	public function get_data() {
+	public function get_data_from_object() {
 		$store_settings   = $this->taxjar_integration->get_store_settings();
 		$from_country     = $store_settings['country'];
 		$from_state       = $store_settings['state'];

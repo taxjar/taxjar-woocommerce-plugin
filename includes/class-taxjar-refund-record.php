@@ -60,7 +60,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		$this->add_object_sync_metadata();
 	}
 
-	public function get_data() {
+	public function get_data_from_object() {
 		$order_id = $this->object->get_parent_id();
 		$order = wc_get_order( $order_id );
 

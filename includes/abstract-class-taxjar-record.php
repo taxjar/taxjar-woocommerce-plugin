@@ -134,7 +134,16 @@ abstract class TaxJar_Record {
 		$this->set_created_datetime( gmdate( 'Y-m-d H:i:s' ) );
 	}
 
-	abstract function get_data();
+	abstract function get_data_from_object();
+
+	public function get_data() {
+		if ( empty( $this->data ) ) {
+			$this->data = $this->get_data_from_object();
+		}
+
+		return $this->data;
+	}
+
 	abstract function sync();
 
 	public function sync_success() {
@@ -145,11 +154,8 @@ abstract class TaxJar_Record {
 	}
 
 	public function add_object_sync_metadata() {
-		if ( empty( $this->data ) ) {
-			$this->data = $this->get_data();
-		}
-
-		$data_hash = hash( 'md5', serialize( $this->data ) );
+		$data = $this->get_data();
+		$data_hash = hash( 'md5', serialize( $data ) );
 		$sync_datetime =  $this->get_processed_datetime();
 		$this->object->update_meta_data( '_taxjar_last_sync', $sync_datetime );
 		$this->object->update_meta_data( '_taxjar_hash', $data_hash );
