@@ -565,18 +565,21 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
 
-		$order_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
 		$order_hash = $order_record->get_object_hash();
 		$this->assertEmpty( $order_hash );
 
-		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$refund_record->load_object();
 		$refund_hash = $refund_record->get_object_hash();
 		$this->assertEmpty( $refund_hash );
 
 		$order_record->sync_success();
 		$refund_record->sync_success();
+
+		$this->assertTrue( $order_record->hash_match() );
+		$this->assertTrue( $refund_record->hash_match() );
 
 		$order_hash = $order_record->get_object_hash();
 		$refund_hash = $refund_record->get_object_hash();
@@ -593,6 +596,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order->set_shipping_address_1( 'New Value' );
 		$order->save();
 
+		$order_record->load_object();
+		$this->assertFalse( $order_record->hash_match() );
 		$new_order_hash = hash( 'md5', serialize( $order_record->get_data_from_object() ) );
 		$this->assertNotEquals( $order_hash, $new_order_hash );
 	}
