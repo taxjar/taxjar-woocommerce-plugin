@@ -8,6 +8,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 	function load_object() {
 		$this->object = wc_get_order( $this->get_record_id() );
+		parent::load_object();
 	}
 
 	public function get_record_type() {

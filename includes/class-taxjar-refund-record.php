@@ -11,6 +11,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		if ( $refund instanceof WC_Order_Refund ) {
 			$this->object = $refund;
 		}
+		parent::load_object();
 	}
 
 	public function sync() {

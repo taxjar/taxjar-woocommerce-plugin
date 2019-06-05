@@ -34,7 +34,9 @@ abstract class TaxJar_Record {
 		}
 	}
 
-	abstract function load_object();
+	public function load_object() {
+		$this->data = $this->get_data_from_object();
+	}
 
 	public function read() {
 		global $wpdb;
@@ -168,6 +170,16 @@ abstract class TaxJar_Record {
 
 	public function get_object_hash() {
 		return $this->object->get_meta( '_taxjar_hash', true );
+	}
+
+	public function hash_match() {
+		$object_hash = $this->get_object_hash();
+		$record_hash = hash( 'md5', serialize( $this->get_data() ) );
+		if ( $object_hash === $record_hash ) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public function sync_failure() {
