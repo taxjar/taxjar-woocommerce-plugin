@@ -134,10 +134,26 @@ abstract class TaxJar_Record {
 	}
 
 	abstract function get_data();
-
 	abstract function sync();
-	abstract function sync_success();
-	abstract function sync_failure();
+
+	public function sync_success() {
+		$current_datetime =  gmdate( 'Y-m-d H:i:s' );
+		$this->set_processed_datetime( $current_datetime );
+		$this->set_status( 'completed' );
+		$this->save();
+	}
+
+	public function sync_failure() {
+		$retry_count = $this->get_retry_count() + 1;
+		$this->set_retry_count( $retry_count );
+		if ( $this->get_retry_count() >= 3 ) {
+			$this->set_status( 'failed' );
+		} else {
+			$this->set_batch_id( 0 );
+		}
+
+		$this->save();
+	}
 
 	abstract function create_in_taxjar();
 	abstract function update_in_taxjar();

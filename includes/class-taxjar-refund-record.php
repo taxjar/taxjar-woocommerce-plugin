@@ -56,25 +56,11 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 	}
 
 	public function sync_success() {
-		$current_datetime =  gmdate( 'Y-m-d H:i:s' );
-		$this->set_processed_datetime( $current_datetime );
-		$this->set_status( 'completed' );
-		$this->save();
+		parent::sync_success();
 
+		$current_datetime =  gmdate( 'Y-m-d H:i:s' );
 		$this->object->update_meta_data( '_taxjar_last_sync', $current_datetime );
 		$this->object->save();
-	}
-
-	public function sync_failure() {
-		$retry_count = $this->get_retry_count() + 1;
-		$this->set_retry_count( $retry_count );
-		if ( $this->get_retry_count() >= 3 ) {
-			$this->set_status( 'failed' );
-		} else {
-			$this->set_batch_id( 0 );
-		}
-
-		$this->save();
 	}
 
 	public function get_data() {
