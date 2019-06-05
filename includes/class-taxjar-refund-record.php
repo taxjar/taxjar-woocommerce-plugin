@@ -57,10 +57,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 
 	public function sync_success() {
 		parent::sync_success();
-
-		$current_datetime =  gmdate( 'Y-m-d H:i:s' );
-		$this->object->update_meta_data( '_taxjar_last_sync', $current_datetime );
-		$this->object->save();
+		$this->add_object_sync_metadata();
 	}
 
 	public function get_data() {
@@ -99,6 +96,8 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		if ( $customer_id ) {
 			$refund_data[ 'customer_id' ] = $customer_id;
 		}
+
+		$this->data = $refund_data;
 
 		return $refund_data;
 	}

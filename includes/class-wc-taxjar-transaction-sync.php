@@ -144,7 +144,7 @@ class WC_Taxjar_Transaction_Sync {
 		$record = new TaxJar_Order_Record( $order_id, true );
 		$record->load_object();
 
-		$taxjar_last_sync = $record->object->get_meta( '_taxjar_last_sync', true );
+		$taxjar_last_sync = $record->get_last_sync_time();
 		if ( !empty( $taxjar_last_sync ) ) {
 			$record->set_status( 'awaiting' );
 		}
@@ -161,7 +161,7 @@ class WC_Taxjar_Transaction_Sync {
 		$record = new TaxJar_Refund_Record( $refund_id, true );
 		$record->load_object();
 
-		$taxjar_last_sync = $record->object->get_meta( '_taxjar_last_sync', true );
+		$taxjar_last_sync = $record->get_last_sync_time();
 		if ( !empty( $taxjar_last_sync ) ) {
 			$record->set_status( 'awaiting' );
 		}

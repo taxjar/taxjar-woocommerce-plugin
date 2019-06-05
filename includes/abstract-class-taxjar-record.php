@@ -20,6 +20,7 @@ abstract class TaxJar_Record {
 	public $uri;
 	public $object;
 	public $taxjar_integration;
+	public $data;
 
 	public function __construct( $record_id = null, $set_defaults = false ) {
 		$this->taxjar_integration =  WC()->integrations->integrations[ 'taxjar-integration' ];
@@ -141,6 +142,26 @@ abstract class TaxJar_Record {
 		$this->set_processed_datetime( $current_datetime );
 		$this->set_status( 'completed' );
 		$this->save();
+	}
+
+	public function add_object_sync_metadata() {
+		if ( empty( $this->data ) ) {
+			$this->data = $this->get_data();
+		}
+
+		$data_hash = hash( 'md5', serialize( $this->data ) );
+		$sync_datetime =  $this->get_processed_datetime();
+		$this->object->update_meta_data( '_taxjar_last_sync', $sync_datetime );
+		$this->object->update_meta_data( '_taxjar_hash', $data_hash );
+		$this->object->save();
+	}
+
+	public function get_last_sync_time() {
+		return $this->object->get_meta( '_taxjar_last_sync', true );
+	}
+
+	public function get_object_hash() {
+		return $this->object->get_meta( '_taxjar_hash', true );
 	}
 
 	public function sync_failure() {
