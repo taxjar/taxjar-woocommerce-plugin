@@ -77,7 +77,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		$this->save();
 	}
 
-	public function get_refund_data() {
+	public function get_data() {
 		$order_id = $this->object->get_parent_id();
 		$order = wc_get_order( $order_id );
 
@@ -241,7 +241,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 	}
 
 	public function create_in_taxjar() {
-		$data = $this->get_refund_data();
+		$data = $this->get_data();
 		$url = self::API_URI . 'transactions/refunds';
 		$data[ 'provider' ] = 'woo';
 		$body = wp_json_encode( $data );
@@ -260,7 +260,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 
 	public function update_in_taxjar() {
 		$refund_id = $this->get_transaction_id();
-		$data = $this->get_refund_data();
+		$data = $this->get_data();
 
 		$url = self::API_URI . 'transactions/refunds/' . $refund_id;
 		$data[ 'provider' ] = 'woo';

@@ -85,7 +85,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order = TaxJar_Order_Helper::create_order();
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
-		$order_data = $record->get_order_data();
+		$order_data = $record->get_data();
 
 		$expected_order_data = array(
 			'from_country' => 'US',
