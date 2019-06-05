@@ -539,4 +539,24 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 		$record->delete_in_taxjar();
 	}
+
+	function test_manual_order_sync() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$this->tj->transaction_sync->manual_order_sync( $order );
+
+		$last_sync = $order->get_meta( '_taxjar_last_sync', true );
+		$this->assertNotEmpty( $last_sync );
+
+		remove_filter( 'comments_clauses', array( 'WC_Comments', 'exclude_order_comments' ), 10, 1 );
+		$comments = get_comments( array(
+			'post_id' => $order->get_id(),
+			'type' => 'order_note'
+		) );
+		add_filter( 'comments_clauses', array( 'WC_Comments', 'exclude_order_comments' ), 10, 1 );
+		$this->assertEquals( 'Order manually synced to TaxJar by admin action.', $comments[0]->comment_content );
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+	}
 }
