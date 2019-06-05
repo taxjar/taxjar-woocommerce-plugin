@@ -228,8 +228,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$updated_order = wc_get_order( $order->get_id() );
 		$taxjar_processed_datetime = $updated_order->get_meta( '_taxjar_last_sync', true );
+		$taxjar_hash = $updated_order->get_meta( '_taxjar_hash', true );
 		$this->assertNotEmpty( $taxjar_processed_datetime );
-
+		$this->assertNotEmpty( $taxjar_hash );
 
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 	}
@@ -558,5 +559,41 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 		$record->delete_in_taxjar();
+	}
+
+	function test_record_hash() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$order_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+		$order_record->load_object();
+		$order_hash = $order_record->get_object_hash();
+		$this->assertEmpty( $order_hash );
+
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+		$refund_record->load_object();
+		$refund_hash = $refund_record->get_object_hash();
+		$this->assertEmpty( $refund_hash );
+
+		$order_record->sync_success();
+		$refund_record->sync_success();
+
+		$order_hash = $order_record->get_object_hash();
+		$refund_hash = $refund_record->get_object_hash();
+
+		$this->assertNotEmpty( $order_hash );
+		$this->assertNotEmpty( $refund_hash );
+
+		$order_expected_hash = hash( 'md5', serialize( $order_record->get_data_from_object() ) );
+		$this->assertEquals( $order_expected_hash, $order_hash );
+		$refund_expected_hash = hash( 'md5', serialize( $refund_record->get_data_from_object() ) );
+		$this->assertEquals( $refund_expected_hash, $refund_hash );
+
+		// alter order to ensure hash is different
+		$order->set_shipping_address_1( 'New Value' );
+		$order->save();
+
+		$new_order_hash = hash( 'md5', serialize( $order_record->get_data_from_object() ) );
+		$this->assertNotEquals( $order_hash, $new_order_hash );
 	}
 }
