@@ -56,6 +56,33 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		return false;
 	}
 
+	public function should_sync() {
+		$should_sync = true;
+
+		$data = $this->get_data();
+		if ( $data[ 'to_country' ] != 'US' ) {
+			$should_sync = false;
+		}
+
+		if ( $this->object->get_currency() != 'USD' ) {
+			$should_sync = false;
+		}
+
+		if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
+			$should_sync = false;
+		}
+
+		if ( empty( $data[ 'from_country' ] ) || empty( $data[ 'from_state' ] ) || empty( $data[ 'from_zip' ] ) || empty( $data[ 'from_city' ] ) ) {
+			$should_sync = false;
+		}
+
+		if ( empty( $data[ 'to_country' ] ) || empty( $data[ 'to_state' ] ) || empty( $data[ 'to_zip' ] ) || empty( $data[ 'to_city' ] ) ) {
+			$should_sync = false;
+		}
+
+		return apply_filters( 'taxjar_should_sync_order', $should_sync );
+	}
+
 	public function sync_success() {
 		parent::sync_success();
 		$this->add_object_sync_metadata();

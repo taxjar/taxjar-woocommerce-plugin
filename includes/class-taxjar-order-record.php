@@ -57,6 +57,37 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		return false;
 	}
 
+	public function should_sync() {
+		$status = $this->object->get_status();
+		if ( $status != "completed" ) {
+			return false;
+		}
+
+		$order_data = $this->get_data();
+		if ( $order_data[ 'to_country' ] != 'US' ) {
+			return false;
+		}
+
+		$test = $this->object->get_currency();
+		if ( $this->object->get_currency() != 'USD' ) {
+			return false;
+		}
+
+		if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
+			return false;
+		}
+
+		if ( empty( $order_data[ 'from_country' ] ) || empty( $order_data[ 'from_state' ] ) || empty( $order_data[ 'from_zip' ] ) || empty( $order_data[ 'from_city' ] ) ) {
+			return false;
+		}
+
+		if ( empty( $order_data[ 'to_country' ] ) || empty( $order_data[ 'to_state' ] ) || empty( $order_data[ 'to_zip' ] ) || empty( $order_data[ 'to_city' ] ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public function sync_success() {
 		parent::sync_success();
 

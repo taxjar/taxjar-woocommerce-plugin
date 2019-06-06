@@ -14,6 +14,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 			'store_postcode' => '80111',
 			'store_city' => 'Greenwood Village',
 		) );
+
+		update_option( 'woocommerce_currency', 'USD' );
 	}
 
 	function tearDown() {

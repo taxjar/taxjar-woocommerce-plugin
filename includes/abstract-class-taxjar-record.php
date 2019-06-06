@@ -147,6 +147,7 @@ abstract class TaxJar_Record {
 	}
 
 	abstract function sync();
+	abstract function should_sync();
 
 	public function sync_success() {
 		$current_datetime =  gmdate( 'Y-m-d H:i:s' );

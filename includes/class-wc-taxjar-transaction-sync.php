@@ -129,13 +129,6 @@ class WC_Taxjar_Transaction_Sync {
 	}
 
 	public static function order_updated( $order_id ) {
-		$order = wc_get_order( $order_id );
-		$status = $order->get_status();
-
-		if ( $status != "completed" ) {
-			return;
-		}
-
 		$queue_id = TaxJar_Order_Record::find_active_in_queue( $order_id );
 		if ( $queue_id ) {
 			return;
@@ -143,6 +136,13 @@ class WC_Taxjar_Transaction_Sync {
 
 		$record = new TaxJar_Order_Record( $order_id, true );
 		$record->load_object();
+		if ( ! $record->object ) {
+			return;
+		}
+
+		if ( ! apply_filters( 'taxjar_should_sync_order', $record->should_sync() ) ) {
+			return;
+		}
 
 		$taxjar_last_sync = $record->get_last_sync_time();
 		if ( !empty( $taxjar_last_sync ) ) {
@@ -160,6 +160,13 @@ class WC_Taxjar_Transaction_Sync {
 
 		$record = new TaxJar_Refund_Record( $refund_id, true );
 		$record->load_object();
+		if ( ! $record->object ) {
+			return;
+		}
+
+		if ( ! apply_filters( 'taxjar_should_sync_refund', $record->should_sync() ) ) {
+			return;
+		}
 
 		$taxjar_last_sync = $record->get_last_sync_time();
 		if ( !empty( $taxjar_last_sync ) ) {
