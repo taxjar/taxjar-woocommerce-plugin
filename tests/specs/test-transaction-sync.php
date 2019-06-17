@@ -612,4 +612,101 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$new_order_hash = hash( 'md5', serialize( $order_record->get_data_from_object() ) );
 		$this->assertNotEquals( $order_hash, $new_order_hash );
 	}
+
+	function test_order_record_validation() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order_record->load_object();
+
+		$this->assertFalse( $order_record->should_sync() );
+		$order->update_status( 'completed' );
+		$order_record->load_object();
+		$this->assertTrue( $order_record->should_sync() );
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+
+		$empty_order = TaxJar_Order_Helper::create_order_with_no_customer_information( 1 );
+		$empty_order->update_status( 'completed' );
+		$order_record = new TaxJar_Order_Record( $empty_order->get_id(), true );
+		$order_record->load_object();
+		$this->assertFalse( $order_record->should_sync() );
+
+		$empty_order->set_shipping_country( 'US' );
+		$empty_order->save();
+		$order_record->load_object();
+		$this->assertFalse( $order_record->should_sync() );
+
+		$empty_order->set_shipping_city( 'Greenwood Village' );
+		$empty_order->set_shipping_state( 'CO' );
+		$empty_order->set_shipping_postcode( '80111' );
+		$empty_order->save();
+		$order_record->load_object();
+		$this->assertTrue( $order_record->should_sync() );
+
+		TaxJar_Order_Helper::delete_order( $empty_order->get_id() );
+
+		update_option( 'woocommerce_currency', 'GBP' );
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order_record->load_object();
+		update_option( 'woocommerce_currency', 'USD' );
+		$this->assertFalse( $order_record->should_sync() );
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+	}
+
+	function test_refund_record_validation() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$order = wc_get_order( $order->get_id() );
+
+		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$refund_record->load_object();
+		$this->assertTrue( $refund_record->should_sync() );
+
+		$order->update_status( 'pending' );
+		$order->save();
+
+		$refund_record->load_object();
+		$refund_record->data = array();
+		$refund_record->order_status = '';
+		$this->assertFalse( $refund_record->should_sync() );
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+
+		$empty_order = TaxJar_Order_Helper::create_order_with_no_customer_information( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $empty_order->get_id() );
+		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$refund_record->load_object();
+		$this->assertFalse( $refund_record->should_sync() );
+
+		$empty_order->set_shipping_country( 'US' );
+		$empty_order->save();
+		$refund_record->load_object();
+		$refund_record->data = array();
+		$this->assertFalse( $refund_record->should_sync() );
+
+		$empty_order->set_shipping_city( 'Greenwood Village' );
+		$empty_order->set_shipping_state( 'CO' );
+		$empty_order->set_shipping_postcode( '80111' );
+		$empty_order->save();
+		$refund_record->load_object();
+		$refund_record->data = array();
+		$this->assertTrue( $refund_record->should_sync() );
+
+		TaxJar_Order_Helper::delete_order( $empty_order->get_id() );
+
+		update_option( 'woocommerce_currency', 'GBP' );
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$refund_record->load_object();
+		update_option( 'woocommerce_currency', 'USD' );
+		$this->assertFalse( $refund_record->should_sync() );
+
+		TaxJar_Order_Helper::delete_order( $order->get_id() );
+	}
+
+
 }
