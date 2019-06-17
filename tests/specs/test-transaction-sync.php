@@ -270,19 +270,21 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	function test_order_record_sync() {
 		// new status not in TaxJar
 		$order = TaxJar_Order_Helper::create_order( 1 );
-		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order->update_status( 'completed' );
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		$record->load_object();
-		$record->save();
 		$result = $record->sync();
 		$this->assertTrue( $result );
 
 		// new status already exists in TaxJar
 		$record->set_status( 'new' );
+		$record->object->update_meta_data( '_taxjar_hash', '' );
 		$result = $record->sync();
 		$this->assertTrue( $result );
 
 		// awaiting status already exists in TaxJar
 		$record->set_status( 'awaiting' );
+		$record->object->update_meta_data( '_taxjar_hash', '' );
 		$result = $record->sync();
 		$this->assertTrue( $result );
 
@@ -290,6 +292,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		// awaiting status not in TaxJar
 		$record->set_status( 'awaiting' );
+		$record->object->update_meta_data( '_taxjar_hash', '' );
 		$result = $record->sync();
 		$this->assertTrue( $result );
 
@@ -415,6 +418,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_order_with_fee_record_sync() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
 		$fee = new WC_Order_Item_Fee();
 		$fee->set_amount( '10.00' );
 		$fee->set_name( 'test fee' );
@@ -487,11 +491,13 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		// new status already exists in TaxJar
 		$record->set_status( 'new' );
+		$record->object->update_meta_data( '_taxjar_hash', '' );
 		$result = $record->sync();
 		$this->assertTrue( $result );
 
 		// awaiting status already exists in TaxJar
 		$record->set_status( 'awaiting' );
+		$record->object->update_meta_data( '_taxjar_hash', '' );
 		$result = $record->sync();
 		$this->assertTrue( $result );
 
@@ -499,6 +505,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		// awaiting status not in TaxJar
 		$record->set_status( 'awaiting' );
+		$record->object->update_meta_data( '_taxjar_hash', '' );
 		$result = $record->sync();
 		$this->assertTrue( $result );
 
@@ -545,8 +552,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_manual_order_sync() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
 		$this->tj->transaction_sync->manual_order_sync( $order );
 
+		$order = wc_get_order( $order->get_id() );
 		$last_sync = $order->get_meta( '_taxjar_last_sync', true );
 		$this->assertNotEmpty( $last_sync );
 

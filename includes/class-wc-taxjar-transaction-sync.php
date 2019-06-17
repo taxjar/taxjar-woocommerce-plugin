@@ -145,7 +145,7 @@ class WC_Taxjar_Transaction_Sync {
 		}
 
 		$taxjar_last_sync = $record->get_last_sync_time();
-		if ( !empty( $taxjar_last_sync ) ) {
+		if ( ! empty( $taxjar_last_sync ) ) {
 			$record->set_status( 'awaiting' );
 		}
 

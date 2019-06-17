@@ -15,25 +15,34 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 	}
 
 	public function sync() {
+		if ( ! apply_filters( 'taxjar_should_sync_refund', $this->should_sync() ) ) {
+			$this->sync_failure();
+			return false;
+		}
+
 		$error_responses = array( 400, 401, 403, 404, 405, 406, 410, 429, 500, 503 );
 		$success_responses = array( 200, 201 );
 
 		if ( $this->get_status() == 'new' ) {
 			$response = $this->create_in_taxjar();
+			if ( is_wp_error( $response ) ) {
+				// handle wordpress error and add message to log here
+				$this->sync_failure();
+				return false;
+			}
 			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 422 ) {
 				$response = $this->update_in_taxjar();
 			}
 		} else {
 			$response = $this->update_in_taxjar();
+			if ( is_wp_error( $response ) ) {
+				// handle wordpress error and add message to log here
+				$this->sync_failure();
+				return false;
+			}
 			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 404 ) {
 				$response = $this->create_in_taxjar();
 			}
-		}
-
-		if ( is_wp_error( $response ) ) {
-			// handle wordpress error and add message to log here
-			$this->sync_failure();
-			return false;
 		}
 
 		if ( ! isset( $response[ 'response' ][ 'code' ] ) ) {
