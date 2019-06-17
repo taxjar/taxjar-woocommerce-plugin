@@ -746,5 +746,53 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 	}
 
+	function test_sync_deleted_records() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund_id = $refund->get_id();
+		$order_id = $order->get_id();
+		$refund->delete();
+
+		$refund_record = new TaxJar_Refund_Record( $refund_id, true );
+		$refund_record->load_object();
+
+		$new_refund = wc_get_order( $refund_record->get_record_id() );
+		$this->assertFalse( $new_refund );
+		$result = $refund_record->sync();
+		$this->assertFalse( $result );
+
+		$order->delete();
+		$order_record = new TaxJar_Order_Record( $order_id, true );
+		$order_record->load_object();
+
+		$new_order = wc_get_order( $order_record->get_record_id() );
+		$this->assertEquals( 'trash', $new_order->get_status() );
+		$result = $order_record->sync();
+		$this->assertFalse( $result );
+
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund_id = $refund->get_id();
+		$order_id = $order->get_id();
+		$refund->delete( true );
+
+		$refund_record = new TaxJar_Refund_Record( $refund_id, true );
+		$refund_record->load_object();
+
+		$new_refund = wc_get_order( $refund_record->get_record_id() );
+		$this->assertFalse( $new_refund );
+		$result = $refund_record->sync();
+		$this->assertFalse( $result );
+
+		$order->delete( true );
+		$order_record = new TaxJar_Order_Record( $order_id, true );
+		$order_record->load_object();
+
+		$new_order = wc_get_order( $order_record->get_record_id() );
+		$this->assertFalse( $new_order );
+		$result = $order_record->sync();
+		$this->assertFalse( $result );
+	}
+
 
 }

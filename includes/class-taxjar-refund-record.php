@@ -12,7 +12,10 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		$refund =  wc_get_order( $this->get_record_id() );
 		if ( $refund instanceof WC_Order_Refund ) {
 			$this->object = $refund;
+		} else {
+			return;
 		}
+
 		parent::load_object();
 	}
 
@@ -107,6 +110,11 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 	}
 
 	public function get_data_from_object() {
+		if ( ! isset( $this->object ) ) {
+			$this->data = array();
+			return array();
+		}
+
 		$order_id = $this->object->get_parent_id();
 		$order = wc_get_order( $order_id );
 		if ( $order === false ) {

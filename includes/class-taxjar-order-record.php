@@ -7,7 +7,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class TaxJar_Order_Record extends TaxJar_Record {
 
 	function load_object() {
-		$this->object = wc_get_order( $this->get_record_id() );
+		$order = wc_get_order( $this->get_record_id() );
+		if ( $order instanceof WC_Order ) {
+			$this->object = $order;
+		} else {
+			return;
+		}
+
 		parent::load_object();
 	}
 
@@ -67,6 +73,10 @@ class TaxJar_Order_Record extends TaxJar_Record {
 	}
 
 	public function should_sync() {
+		if ( ! isset( $this->object ) ) {
+			return false;
+		}
+
 		$status = $this->object->get_status();
 		$valid_statuses = array( 'completed', 'refunded' );
 		if ( ! in_array( $status, $valid_statuses ) ) {
