@@ -39,7 +39,8 @@ class WC_Taxjar_Transaction_Sync {
 	public function add_order_meta_box_action( $actions ) {
 		global $theorder;
 
-		if ( ! $theorder->has_status( 'completed') ) {
+		$valid_statuses = array( 'completed', 'refunded' );
+		if ( ! in_array( $theorder->get_status(), $valid_statuses ) ) {
 			return $actions;
 		}
 
@@ -53,10 +54,27 @@ class WC_Taxjar_Transaction_Sync {
 			$record = new TaxJar_Order_Record( $order->get_id(), true );
 		}
 		$record->load_object();
+		$order_result = $record->sync();
 
-		$result = $record->sync();
-		if ( $result ) {
-			$order->add_order_note( __( 'Order manually synced to TaxJar by admin action.', 'taxjar' ) );
+		$refunds = $order->get_refunds();
+		$refund_success = true;
+		foreach( $refunds as $refund ) {
+			$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+			if ( ! $refund_record ) {
+				$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+			}
+
+			$refund_record->load_object();
+			$refund_result = $refund_record->sync();
+			if ( ! $refund_result ) {
+				$refund_success = false;
+			}
+		}
+
+		if ( $order_result && $refund_success ) {
+			$order->add_order_note( __( 'Order and refunds (if any) manually synced to TaxJar by admin action.', 'taxjar' ) );
+		} else if ( $order_result && ! $refund_success ) {
+			$order->add_order_note( __( 'Order manual sync failed. Check TaxJar logs for additional details', 'taxjar' ) );
 		} else {
 			$order->add_order_note( __( 'Order manual sync failed. Check TaxJar logs for additional details', 'taxjar' ) );
 		}

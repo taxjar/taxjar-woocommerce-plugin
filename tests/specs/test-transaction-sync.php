@@ -565,9 +565,47 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 			'type' => 'order_note'
 		) );
 		add_filter( 'comments_clauses', array( 'WC_Comments', 'exclude_order_comments' ), 10, 1 );
-		$this->assertEquals( 'Order manually synced to TaxJar by admin action.', $comments[0]->comment_content );
+
+		$has_correct_comment = false;
+		foreach( $comments as $comment ) {
+			if ( $comment->comment_content == 'Order and refunds (if any) manually synced to TaxJar by admin action.' ) {
+				$has_correct_comment = true;
+			}
+		}
+		$this->assertTrue( $has_correct_comment );
 
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$this->tj->transaction_sync->manual_order_sync( $order );
+
+		$refund = wc_get_order( $refund->get_id() );
+		$last_sync = $refund->get_meta( '_taxjar_last_sync', true );
+		$this->assertNotEmpty( $last_sync );
+
+		remove_filter( 'comments_clauses', array( 'WC_Comments', 'exclude_order_comments' ), 10, 1 );
+		$comments = get_comments( array(
+			'post_id' => $order->get_id(),
+			'type' => 'order_note'
+		) );
+		add_filter( 'comments_clauses', array( 'WC_Comments', 'exclude_order_comments' ), 10, 1 );
+
+		$has_correct_comment = false;
+		foreach( $comments as $comment ) {
+			if ( $comment->comment_content == 'Order and refunds (if any) manually synced to TaxJar by admin action.' ) {
+				$has_correct_comment = true;
+			}
+		}
+		$this->assertTrue( $has_correct_comment );
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$record->load_object();
 		$record->delete_in_taxjar();
 	}
