@@ -988,4 +988,37 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record_check = TaxJar_Refund_Record::find_active_in_queue( $refund_record->get_record_id() );
 		$this->assertFalse( $record_check );
 	}
+
+	function test_cancel_order_with_refund() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order_record->load_object();
+		$result = $order_record->sync();
+		$this->assertTrue( $result );
+
+		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$refund_record->load_object();
+		$result = $refund_record->sync();
+		$this->assertTrue( $result );
+
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$result = $refund_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$order->update_status( 'cancelled' );
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+		$result = $refund_record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+
+		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
+		$this->assertFalse( $record_check );
+		$record_check = TaxJar_Refund_Record::find_active_in_queue( $refund_record->get_record_id() );
+		$this->assertFalse( $record_check );
+	}
 }

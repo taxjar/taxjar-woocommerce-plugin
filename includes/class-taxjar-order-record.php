@@ -72,15 +72,17 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		return false;
 	}
 
-	public function should_sync() {
+	public function should_sync( $ignore_status = false ) {
 		if ( ! isset( $this->object ) ) {
 			return false;
 		}
 
-		$status = $this->object->get_status();
-		$valid_statuses = array( 'completed', 'refunded' );
-		if ( ! in_array( $status, $valid_statuses ) ) {
-			return false;
+		if ( ! $ignore_status ) {
+			$status = $this->object->get_status();
+			$valid_statuses = array( 'completed', 'refunded' );
+			if ( ! in_array( $status, $valid_statuses ) ) {
+				return false;
+			}
 		}
 
 		$order_data = $this->get_data();
