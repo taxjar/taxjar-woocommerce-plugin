@@ -178,6 +178,22 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		return $response;
 	}
 
+	public function get_from_taxjar() {
+		$order_id = $this->get_transaction_id();
+		$url = self::API_URI . 'transactions/orders/' . $order_id . '?provider=woo';
+
+		$response = wp_remote_request( $url, array(
+			'method' => 'GET',
+			'headers' => array(
+				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
+				'Content-Type' => 'application/json',
+			),
+			'user-agent' => $this->taxjar_integration->ua,
+		) );
+
+		return $response;
+	}
+
 	public function get_data_from_object() {
 		$store_settings   = $this->taxjar_integration->get_store_settings();
 		$from_country     = $store_settings['country'];

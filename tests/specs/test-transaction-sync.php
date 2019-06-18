@@ -794,5 +794,198 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertFalse( $result );
 	}
 
+	function test_get_order_from_taxjar() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order_record->load_object();
+		$result = $order_record->sync();
+		$this->assertTrue( $result );
 
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$order_record->delete_in_taxjar();
+	}
+
+	function test_get_refund_from_taxjar() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$record->delete_in_taxjar();
+	}
+
+	function test_trash_order() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order_record->load_object();
+		$result = $order_record->sync();
+		$this->assertTrue( $result );
+
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$order->delete();
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+
+		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
+		$this->assertFalse( $record_check );
+	}
+
+	function test_force_delete_order() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order_record->load_object();
+		$result = $order_record->sync();
+		$this->assertTrue( $result );
+
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$order->delete( true );
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+
+		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
+		$this->assertFalse( $record_check );
+	}
+
+	function test_trash_order_no_metadata() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order_record->load_object();
+		$result = $order_record->sync();
+		$this->assertTrue( $result );
+
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$order_record->object->delete_meta_data( '_taxjar_last_sync' );
+		$order_record->object->delete_meta_data( '_taxjar_hash' );
+		$order_record->object->save();
+		$order->delete();
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+
+		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
+		$this->assertFalse( $record_check );
+	}
+
+	function test_delete_refund() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$refund->delete();
+		$result = $record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+	}
+
+	function test_delete_refund_no_metatdata() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$record->object->delete_meta_data( '_taxjar_last_sync' );
+		$record->object->delete_meta_data( '_taxjar_hash' );
+		$record->object->save();
+		$refund->delete();
+		$result = $record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+	}
+
+	function test_trash_order_with_refund() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order_record->load_object();
+		$result = $order_record->sync();
+		$this->assertTrue( $result );
+
+		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$refund_record->load_object();
+		$result = $refund_record->sync();
+		$this->assertTrue( $result );
+
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$result = $refund_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$order->delete();
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+		$result = $refund_record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+
+		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
+		$this->assertFalse( $record_check );
+		$record_check = TaxJar_Refund_Record::find_active_in_queue( $refund_record->get_record_id() );
+		$this->assertFalse( $record_check );
+	}
+
+	function test_force_delete_order_with_refund() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
+		$order_record->load_object();
+		$result = $order_record->sync();
+		$this->assertTrue( $result );
+
+		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$refund_record->load_object();
+		$result = $refund_record->sync();
+		$this->assertTrue( $result );
+
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$result = $refund_record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
+
+		$order->delete( true );
+		$result = $order_record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+		$result = $refund_record->get_from_taxjar();
+		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
+
+		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
+		$this->assertFalse( $record_check );
+		$record_check = TaxJar_Refund_Record::find_active_in_queue( $refund_record->get_record_id() );
+		$this->assertFalse( $record_check );
+	}
 }

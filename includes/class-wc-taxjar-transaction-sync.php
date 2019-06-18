@@ -34,6 +34,10 @@ class WC_Taxjar_Transaction_Sync {
 
 		add_filter( 'woocommerce_order_actions', array( $this, 'add_order_meta_box_action' ) );
 		add_action( 'woocommerce_order_action_taxjar_sync_action', array( $this, 'manual_order_sync' ) );
+
+		add_action( 'wp_trash_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
+		add_action( 'before_delete_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
+		add_action( 'before_delete_post', array( $this, 'maybe_delete_refund_from_taxjar' ), 9, 1 );
 	}
 
 	public function add_order_meta_box_action( $actions ) {
@@ -192,5 +196,73 @@ class WC_Taxjar_Transaction_Sync {
 		}
 
 		$record->save();
+	}
+
+	public function maybe_delete_transaction_from_taxjar( $post_id ) {
+		if ( 'shop_order' != get_post_type( $post_id ) ) {
+			return;
+		}
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $post_id );
+		if ( ! $record ) {
+			$record = new TaxJar_Order_Record( $post_id, true );
+		}
+		$record->load_object();
+
+		$should_delete = false;
+		if ( $record->get_object_hash() || $record->get_last_sync_time() ) {
+			$should_delete = true;
+		} else {
+			if ( $record->should_sync() ) {
+				$should_delete = true;
+			}
+		}
+
+		if ( ! $should_delete ) {
+			return;
+		}
+
+		$record->delete_in_taxjar();
+		$record->delete();
+
+		$refunds = $record->object->get_refunds();
+		foreach( $refunds as $refund ) {
+			$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+			if ( ! $refund_record ) {
+				$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+			}
+			$refund_record->load_object();
+
+			$refund_record->delete_in_taxjar();
+			$refund_record->delete();
+		}
+	}
+
+	public function maybe_delete_refund_from_taxjar( $post_id ) {
+		if ( 'shop_order_refund' != get_post_type( $post_id ) ) {
+			return;
+		}
+
+		$record = TaxJar_Refund_Record::find_active_in_queue( $post_id );
+		if ( ! $record ) {
+			$record = new TaxJar_Refund_Record( $post_id, true );
+		}
+		$record->load_object();
+
+		$should_delete = false;
+		if ( $record->get_object_hash() || $record->get_last_sync_time() ) {
+			$should_delete = true;
+		} else {
+			if ( $record->should_sync() ) {
+				$should_delete = true;
+			}
+		}
+
+		if ( ! $should_delete ) {
+			return;
+		}
+
+		$record->delete_in_taxjar();
+		$record->delete();
 	}
 }

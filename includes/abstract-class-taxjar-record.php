@@ -198,6 +198,7 @@ abstract class TaxJar_Record {
 	abstract function create_in_taxjar();
 	abstract function update_in_taxjar();
 	abstract function delete_in_taxjar();
+	abstract function get_from_taxjar();
 
 	/**
 	 * Find record in queue
