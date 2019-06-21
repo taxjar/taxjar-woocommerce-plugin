@@ -39,7 +39,7 @@ class WC_Taxjar_Record_Queue {
 	}
 
 	/**
-	 * Get the queue ids of all active (new and awaiting) records in queue
+	 * Get the queue ids of all active (new and awaiting) records in queue that are not in a batch
 	 *
 	 * @return array|bool - if active records are found returns array, otherwise returns false
 	 */
@@ -49,6 +49,22 @@ class WC_Taxjar_Record_Queue {
 		$table_name = self::get_queue_table_name();
 
 		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) AND batch_id = 0";
+		$results = $wpdb->get_results( $query,  ARRAY_A );
+
+		return $results;
+	}
+
+	/**
+	 * Get the record and queue ids of all active (new and awaiting) records in queue
+	 *
+	 * @return array|bool - if active records are found returns array, otherwise returns false
+	 */
+	static function get_all_active_record_ids_in_queue() {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+
+		$query = "SELECT queue_id, record_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )";
 		$results = $wpdb->get_results( $query,  ARRAY_A );
 
 		return $results;

@@ -305,4 +305,106 @@ class WC_Taxjar_Transaction_Sync {
 			$refund_record->delete();
 		}
 	}
+
+	public function transaction_backfill( $start_date = null, $end_date = null, $force = false ) {
+		global $wpdb;
+		$queue_table = WC_Taxjar_Record_Queue::get_queue_table_name();
+		$current_datetime = gmdate( 'Y-m-d H:i:s' );
+
+		$order_ids = $this->get_orders_to_backfill( $start_date, $end_date, $force );
+		$active_records = WC_Taxjar_Record_Queue::get_all_active_record_ids_in_queue();
+		$record_ids = array_map( function( $record ) {
+			return $record['record_id'];
+		}, $active_records );
+
+		$diff = array_diff( $order_ids, $record_ids );
+
+		if ( ! empty( $diff ) ) {
+			if ( $force ) {
+				$query = "INSERT INTO {$queue_table} (record_id, record_type, force_push, status, created_datetime) VALUES";
+				$count = 0;
+				foreach( $diff as $order_id ) {
+					if ( ! $count ) {
+						$query .= " ( {$order_id}, 'order', 1, 'awaiting', '{$current_datetime}' )";
+					} else {
+						$query .= ", ( {$order_id}, 'order', 1,  'awaiting', '{$current_datetime}' )";
+					}
+					$count++;
+				}
+			} else {
+				$query = "INSERT INTO {$queue_table} (record_id, record_type, status, created_datetime) VALUES";
+				$count = 0;
+				foreach( $diff as $order_id ) {
+					if ( ! $count ) {
+						$query .= " ( {$order_id}, 'order', 'awaiting', '{$current_datetime}' )";
+					} else {
+						$query .= ", ( {$order_id}, 'order', 'awaiting', '{$current_datetime}' )";
+					}
+					$count++;
+				}
+			}
+			$wpdb->query( $query );
+		}
+
+		if ( $force ) {
+			$queue_ids = array_map( function( $record ) {
+				return $record['queue_id'];
+			}, $active_records );
+			$records = array_combine( $record_ids, $queue_ids );
+
+			$in_queue = array_values( array_intersect_key( $records, array_flip( $order_ids ) ) );
+			if ( ! empty( $in_queue ) ) {
+				$in_queue_string = implode( ', ', $in_queue );
+				$query = "UPDATE {$queue_table} SET force_push = 1 WHERE queue_id in ( {$in_queue_string} )";
+				$wpdb->query( $query );
+			}
+		}
+	}
+
+	public function get_orders_to_backfill( $start_date = null, $end_date = null, $force = false ) {
+		global $wpdb;
+
+		if ( ! $start_date ) {
+			$start_date = date( 'Y-m-d H:i:s', strtotime( 'midnight', current_time( 'timestamp' ) ) );
+		}
+
+		if ( ! $end_date ) {
+			$end_date = date( 'Y-m-d H:i:s', strtotime( '+1 day, midnight', current_time( 'timestamp' ) ) );
+		}
+
+		if ( $force ) {
+			$posts = $wpdb->get_results(
+					"
+				SELECT p.id 
+				FROM {$wpdb->posts} AS p 
+				INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id )  AND ( order_meta_completed_date.meta_key = '_completed_date' ) 
+				WHERE p.post_type = 'shop_order' 
+				AND p.post_status IN ( 'wc-completed', 'wc-refunded' ) 
+				AND p.post_date >= '{$start_date}' 
+				AND p.post_date < '{$end_date}' 
+				AND order_meta_completed_date.meta_value IS NOT NULL 
+				ORDER BY p.post_date ASC
+				", ARRAY_N
+			);
+		} else {
+			$posts = $wpdb->get_results(
+					"
+				SELECT p.id 
+				FROM {$wpdb->posts} AS p 
+				INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id )  AND ( order_meta_completed_date.meta_key = '_completed_date' ) 
+				LEFT JOIN {$wpdb->postmeta} AS order_meta_last_sync ON ( p.id = order_meta_last_sync.post_id )  AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' )
+				WHERE p.post_type = 'shop_order' 
+				AND p.post_status IN ( 'wc-completed', 'wc-refunded' ) 
+				AND p.post_date >= '{$start_date}' 
+				AND p.post_date < '{$end_date}' 
+				AND order_meta_completed_date.meta_value IS NOT NULL 
+				AND ((order_meta_last_sync.meta_value IS NULL) OR (p.post_modified_gmt > order_meta_last_sync.meta_value)) 
+				ORDER BY p.post_date ASC
+				", ARRAY_N
+			);
+		}
+
+		return call_user_func_array( 'array_merge', $posts );
+	}
+
 }

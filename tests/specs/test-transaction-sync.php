@@ -1021,4 +1021,175 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record_check = TaxJar_Refund_Record::find_active_in_queue( $refund_record->get_record_id() );
 		$this->assertFalse( $record_check );
 	}
+
+	function test_get_orders_to_backfill() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+
+		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
+
+		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order->update_status( 'completed' );
+		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
+		$synced_order_record->load_object();
+		$synced_order_record->sync_success();
+
+		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order->update_status( 'completed' );
+		$updated_order_record = new TaxJar_Order_Record( $updated_order->get_id(), true );
+		$updated_order_record->load_object();
+		$prior_datetime = date( 'Y-m-d H:i:s', time() - 5 );
+		$updated_order->update_meta_data( '_taxjar_last_sync', $prior_datetime );
+		$updated_order->save();
+
+		$orders_to_backfill = $this->tj->transaction_sync->get_orders_to_backfill();
+		$this->assertContains( $order->get_id(), $orders_to_backfill );
+		$this->assertContains( $updated_order->get_id(), $orders_to_backfill );
+	}
+
+	function test_get_all_active_record_ids_in_queue() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+
+		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
+
+		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order->update_status( 'completed' );
+		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
+		$synced_order_record->load_object();
+		$synced_order_record->sync_success();
+
+		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order->update_status( 'completed' );
+		$updated_order_record = new TaxJar_Order_Record( $updated_order->get_id(), true );
+		$updated_order_record->load_object();
+		$prior_datetime = date( 'Y-m-d H:i:s', time() - 5 );
+		$updated_order->update_meta_data( '_taxjar_last_sync', $prior_datetime );
+		$updated_order->save();
+
+		$active_records = WC_Taxjar_Record_Queue::get_all_active_record_ids_in_queue();
+		$active_records = array_map( function( $record ) {
+			return $record['record_id'];
+		}, $active_records );
+		$this->assertContains( $order->get_id(), $active_records );
+		$this->assertContains( $updated_order->get_id(), $active_records );
+	}
+
+	function test_order_backfill() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+
+		$order_two = TaxJar_Order_Helper::create_order( 1 );
+		$order_two->update_status( 'completed' );
+		$order_two_record = TaxJar_Order_Record::find_active_in_queue( $order_two->get_id() );
+		$order_two_record->delete();
+
+		$order_three = TaxJar_Order_Helper::create_order( 1 );
+		$order_three->update_status( 'completed' );
+		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
+		$order_three_record->delete();
+
+		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
+
+		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order->update_status( 'completed' );
+		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
+		$synced_order_record->load_object();
+		$synced_order_record->sync_success();
+
+		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order->update_status( 'completed' );
+		$prior_datetime = date( 'Y-m-d H:i:s', time() - 5 );
+		$updated_order->update_meta_data( '_taxjar_last_sync', $prior_datetime );
+		$updated_order->save();
+		$updated_order_record = TaxJar_Order_Record::find_active_in_queue( $updated_order->get_id() );
+		$updated_order_record->delete();
+
+		$order_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$noncomplete_order_record = TaxJar_Order_Record::find_active_in_queue( $noncomplete_order->get_id() );
+		$order_two_record = TaxJar_Order_Record::find_active_in_queue( $order_two->get_id() );
+		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
+		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
+		$updated_order_record = TaxJar_Order_Record::find_active_in_queue( $updated_order->get_id() );
+		$this->assertNotFalse( $order_record );
+		$this->assertFalse( $noncomplete_order_record );
+		$this->assertFalse( $order_two_record );
+		$this->assertFalse( $order_three_record );
+		$this->assertFalse( $synced_order_record );
+		$this->assertFalse( $updated_order_record );
+
+		$this->tj->transaction_sync->transaction_backfill();
+
+		$order_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$noncomplete_order_record = TaxJar_Order_Record::find_active_in_queue( $noncomplete_order->get_id() );
+		$order_two_record = TaxJar_Order_Record::find_active_in_queue( $order_two->get_id() );
+		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
+		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
+		$updated_order_record = TaxJar_Order_Record::find_active_in_queue( $updated_order->get_id() );
+		$this->assertNotFalse( $order_record );
+		$this->assertFalse( $noncomplete_order_record );
+		$this->assertNotFalse( $order_two_record );
+		$this->assertNotFalse( $order_three_record );
+		$this->assertFalse( $synced_order_record );
+		$this->assertNotFalse( $updated_order_record );
+	}
+
+	function test_force_order_backfill() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+
+		$order_two = TaxJar_Order_Helper::create_order( 1 );
+		$order_two->update_status( 'completed' );
+		$order_two_record = TaxJar_Order_Record::find_active_in_queue( $order_two->get_id() );
+		$order_two_record->delete();
+
+		$order_three = TaxJar_Order_Helper::create_order( 1 );
+		$order_three->update_status( 'completed' );
+		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
+		$order_three_record->delete();
+
+		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
+
+		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order->update_status( 'completed' );
+		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
+		$synced_order_record->load_object();
+		$synced_order_record->sync_success();
+
+		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order->update_status( 'completed' );
+		$prior_datetime = date( 'Y-m-d H:i:s', time() - 5 );
+		$updated_order->update_meta_data( '_taxjar_last_sync', $prior_datetime );
+		$updated_order->save();
+		$updated_order_record = TaxJar_Order_Record::find_active_in_queue( $updated_order->get_id() );
+		$updated_order_record->delete();
+
+		$order_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$noncomplete_order_record = TaxJar_Order_Record::find_active_in_queue( $noncomplete_order->get_id() );
+		$order_two_record = TaxJar_Order_Record::find_active_in_queue( $order_two->get_id() );
+		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
+		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
+		$updated_order_record = TaxJar_Order_Record::find_active_in_queue( $updated_order->get_id() );
+		$this->assertNotFalse( $order_record );
+		$this->assertFalse( $noncomplete_order_record );
+		$this->assertFalse( $order_two_record );
+		$this->assertFalse( $order_three_record );
+		$this->assertFalse( $synced_order_record );
+		$this->assertFalse( $updated_order_record );
+
+		$this->tj->transaction_sync->transaction_backfill( null, null, true );
+
+		$order_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$noncomplete_order_record = TaxJar_Order_Record::find_active_in_queue( $noncomplete_order->get_id() );
+		$order_two_record = TaxJar_Order_Record::find_active_in_queue( $order_two->get_id() );
+		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
+		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
+		$updated_order_record = TaxJar_Order_Record::find_active_in_queue( $updated_order->get_id() );
+		$this->assertNotFalse( $order_record );
+		$this->assertFalse( $noncomplete_order_record );
+		$this->assertNotFalse( $order_two_record );
+		$this->assertNotFalse( $order_three_record );
+		$this->assertNotFalse( $synced_order_record );
+		$this->assertNotFalse( $updated_order_record );
+	}
 }
