@@ -85,17 +85,20 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			}
 		}
 
+		if ( ! $this->get_force_push() ) {
+			if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
+				return false;
+			}
+		}
+
 		$order_data = $this->get_data();
+
 		if ( $order_data[ 'to_country' ] != 'US' ) {
 			return false;
 		}
 
 		$test = $this->object->get_currency();
 		if ( $this->object->get_currency() != 'USD' ) {
-			return false;
-		}
-
-		if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
 			return false;
 		}
 

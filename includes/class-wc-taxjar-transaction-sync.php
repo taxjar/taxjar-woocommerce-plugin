@@ -59,6 +59,7 @@ class WC_Taxjar_Transaction_Sync {
 		if ( ! $record ) {
 			$record = new TaxJar_Order_Record( $order->get_id(), true );
 		}
+		$record->set_force_push( 1 );
 		$record->load_object();
 		$order_result = $record->sync();
 
@@ -70,6 +71,7 @@ class WC_Taxjar_Transaction_Sync {
 				$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 			}
 
+			$refund_record->set_force_push( 1 );
 			$refund_record->load_object();
 			$refund_result = $refund_record->sync();
 			if ( ! $refund_result ) {
@@ -312,6 +314,16 @@ class WC_Taxjar_Transaction_Sync {
 		$current_datetime = gmdate( 'Y-m-d H:i:s' );
 
 		$order_ids = $this->get_orders_to_backfill( $start_date, $end_date, $force );
+		if ( empty( $order_ids ) ) {
+			return;
+		}
+
+		$transaction_ids = $order_ids;
+		$refund_ids = $this->get_refunds_to_backfill( $order_ids );
+		if ( ! empty( $refund_ids ) ) {
+			$transaction_ids = array_merge( $order_ids, $refund_ids );
+		}
+
 		$active_records = WC_Taxjar_Record_Queue::get_all_active_record_ids_in_queue();
 		$record_ids = array_map( function( $record ) {
 			return $record['record_id'];
@@ -339,6 +351,35 @@ class WC_Taxjar_Transaction_Sync {
 						$query .= " ( {$order_id}, 'order', 'awaiting', '{$current_datetime}' )";
 					} else {
 						$query .= ", ( {$order_id}, 'order', 'awaiting', '{$current_datetime}' )";
+					}
+					$count++;
+				}
+			}
+			$wpdb->query( $query );
+		}
+
+		$refunds_diff = array_diff( $refund_ids, $record_ids );
+
+		if ( ! empty( $refunds_diff ) ) {
+			if ( $force ) {
+				$query = "INSERT INTO {$queue_table} (record_id, record_type, force_push, status, created_datetime) VALUES";
+				$count = 0;
+				foreach( $refunds_diff as $refund_id ) {
+					if ( ! $count ) {
+						$query .= " ( {$refund_id}, 'refund', 1, 'awaiting', '{$current_datetime}' )";
+					} else {
+						$query .= ", ( {$refund_id}, 'refund', 1,  'awaiting', '{$current_datetime}' )";
+					}
+					$count++;
+				}
+			} else {
+				$query = "INSERT INTO {$queue_table} (record_id, record_type, status, created_datetime) VALUES";
+				$count = 0;
+				foreach( $refunds_diff as $refund_id ) {
+					if ( ! $count ) {
+						$query .= " ( {$refund_id}, 'refund', 'awaiting', '{$current_datetime}' )";
+					} else {
+						$query .= ", ( {$refund_id}, 'refund', 'awaiting', '{$current_datetime}' )";
 					}
 					$count++;
 				}
@@ -402,6 +443,36 @@ class WC_Taxjar_Transaction_Sync {
 				ORDER BY p.post_date ASC
 				", ARRAY_N
 			);
+		}
+
+		if ( empty( $posts ) ) {
+			return array();
+		}
+
+		return call_user_func_array( 'array_merge', $posts );
+	}
+
+	public function get_refunds_to_backfill( $order_ids ) {
+		if ( empty( $order_ids ) ) {
+			return array();
+		}
+
+		global $wpdb;
+		$order_ids_string = implode( ',', $order_ids );
+
+		$posts = $wpdb->get_results(
+			"
+			SELECT p.id 
+			FROM {$wpdb->posts} AS p 
+			WHERE p.post_type = 'shop_order_refund' 
+			AND p.post_status = 'wc-completed' 
+			AND p.post_parent IN ( {$order_ids_string} ) 
+			ORDER BY p.post_date ASC
+			", ARRAY_N
+		);
+
+		if ( empty( $posts ) ) {
+			return array();
 		}
 
 		return call_user_func_array( 'array_merge', $posts );

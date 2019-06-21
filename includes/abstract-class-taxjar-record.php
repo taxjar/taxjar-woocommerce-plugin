@@ -16,6 +16,7 @@ abstract class TaxJar_Record {
 	protected $created_datetime;
 	protected $processed_datetime;
 	protected $retry_count;
+	protected $force_push;
 
 	public $uri;
 	public $object;
@@ -65,6 +66,7 @@ abstract class TaxJar_Record {
 		$this->set_processed_datetime( $record_data[ 'processed_datetime' ] );
 		$this->set_retry_count( $record_data[ 'retry_count' ] );
 		$this->set_status( $record_data[ 'status' ] );
+		$this->set_force_push( $record_data[ 'force_push' ] );
 	}
 
 	public function create() {
@@ -107,7 +109,8 @@ abstract class TaxJar_Record {
 		$data = array(
 			'record_id' => $this->get_record_id(),
 			'status' => $this->get_status(),
-			'record_type' => $this->get_record_type()
+			'record_type' => $this->get_record_type(),
+			'force_push' => $this->get_force_push()
 		);
 
 		if ( ! empty( $this->get_processed_datetime() ) ) {
@@ -134,6 +137,7 @@ abstract class TaxJar_Record {
 		$this->set_status( 'new' );
 		$this->set_batch_id( 0 );
 		$this->set_created_datetime( gmdate( 'Y-m-d H:i:s' ) );
+		$this->set_force_push( 0 );
 	}
 
 	abstract function get_data_from_object();
@@ -248,6 +252,7 @@ abstract class TaxJar_Record {
 		$record->set_created_datetime( $record_row[ 'status'] );
 		$record->set_batch_id( $record_row[ 'batch_id' ] );
 		$record->set_processed_datetime( $record_row[ 'processed_datetime' ] );
+		$record->set_force_push( $record_row[ 'force_push' ] );
 		$record->load_object();
 
 		// handle records deleted after being added to queue
@@ -325,5 +330,17 @@ abstract class TaxJar_Record {
 
 	public function get_retry_count() {
 		return $this->retry_count;
+	}
+
+	public function set_force_push( $force_push = 0 ) {
+		if ( $force_push ) {
+			$this->force_push = 1;
+		} else {
+			$this->force_push = 0;
+		}
+	}
+
+	public function get_force_push() {
+		return $this->force_push;
 	}
 }

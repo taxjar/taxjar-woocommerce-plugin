@@ -81,15 +81,17 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			return false;
 		}
 
+		if ( ! $this->get_force_push() ) {
+			if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
+				return false;
+			}
+		}
+
 		if ( $data[ 'to_country' ] != 'US' ) {
 			return false;
 		}
 
 		if ( $this->object->get_currency() != 'USD' ) {
-			return false;
-		}
-
-		if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
 			return false;
 		}
 

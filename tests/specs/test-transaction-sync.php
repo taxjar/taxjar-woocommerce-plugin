@@ -149,6 +149,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( $order->get_id(), $record->get_record_id() );
 		$this->assertEquals( 0, $record->get_retry_count() );
 		$this->assertEquals( 'new', $record->get_status() );
+		$this->assertEquals( 0, $record->get_force_push() );
 
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 	}
@@ -1075,9 +1076,15 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertContains( $updated_order->get_id(), $active_records );
 	}
 
-	function test_order_backfill() {
+	function test_transaction_backfill() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$order->update_status( 'completed' );
+
+		$refunded_order = TaxJar_Order_Helper::create_order( 1 );
+		$refunded_order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $refunded_order->get_id() );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+		$refund_record->delete();
 
 		$order_two = TaxJar_Order_Helper::create_order( 1 );
 		$order_two->update_status( 'completed' );
@@ -1111,12 +1118,15 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
 		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
 		$updated_order_record = TaxJar_Order_Record::find_active_in_queue( $updated_order->get_id() );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+		$this->assertNotFalse( $order_record );
 		$this->assertNotFalse( $order_record );
 		$this->assertFalse( $noncomplete_order_record );
 		$this->assertFalse( $order_two_record );
 		$this->assertFalse( $order_three_record );
 		$this->assertFalse( $synced_order_record );
 		$this->assertFalse( $updated_order_record );
+		$this->assertFalse( $refund_record );
 
 		$this->tj->transaction_sync->transaction_backfill();
 
@@ -1126,12 +1136,14 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
 		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
 		$updated_order_record = TaxJar_Order_Record::find_active_in_queue( $updated_order->get_id() );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
 		$this->assertNotFalse( $order_record );
 		$this->assertFalse( $noncomplete_order_record );
 		$this->assertNotFalse( $order_two_record );
 		$this->assertNotFalse( $order_three_record );
 		$this->assertFalse( $synced_order_record );
 		$this->assertNotFalse( $updated_order_record );
+		$this->assertNotFalse( $refund_record );
 	}
 
 	function test_force_order_backfill() {
@@ -1191,5 +1203,79 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertNotFalse( $order_three_record );
 		$this->assertNotFalse( $synced_order_record );
 		$this->assertNotFalse( $updated_order_record );
+	}
+
+	public function test_force_sync_order() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->sync();
+		$this->assertFalse( $result );
+
+		$record->set_force_push( true );
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$record->delete_in_taxjar();
+	}
+
+	public function test_force_sync_refund() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$result = $record->sync();
+		$this->assertFalse( $result );
+
+		$record->set_force_push( true );
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$record->delete_in_taxjar();
+	}
+
+	public function test_get_refunds_to_backfill() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
+		$noncomplete_order_refund = TaxJar_Order_Helper::create_refund_from_order( $noncomplete_order->get_id() );
+
+		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order->update_status( 'completed' );
+		$synced_order_refund = TaxJar_Order_Helper::create_refund_from_order( $synced_order->get_id() );
+		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
+		$synced_order_record->load_object();
+		$synced_order_record->sync_success();
+
+		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order->update_status( 'completed' );
+		$updated_order_refund = TaxJar_Order_Helper::create_refund_from_order( $updated_order->get_id() );
+		$prior_datetime = date( 'Y-m-d H:i:s', time() - 5 );
+		$updated_order->update_meta_data( '_taxjar_last_sync', $prior_datetime );
+		$updated_order->save();
+
+		$orders_to_backfill = $this->tj->transaction_sync->get_orders_to_backfill();
+		$refunds_to_backfill = $this->tj->transaction_sync->get_refunds_to_backfill( $orders_to_backfill );
+		$this->assertContains( $refund->get_id(), $refunds_to_backfill );
+		$this->assertNotContains( $synced_order_refund->get_id(), $refunds_to_backfill );
+		$this->assertContains( $updated_order_refund->get_id(), $refunds_to_backfill );
+		$this->assertNotContains( $noncomplete_order_refund->get_id(), $refunds_to_backfill );
+
+		$orders_to_backfill = $this->tj->transaction_sync->get_orders_to_backfill( null, null, true );
+		$refunds_to_backfill = $this->tj->transaction_sync->get_refunds_to_backfill( $orders_to_backfill );
+		$this->assertContains( $refund->get_id(), $refunds_to_backfill );
+		$this->assertContains( $synced_order_refund->get_id(), $refunds_to_backfill );
+		$this->assertContains( $updated_order_refund->get_id(), $refunds_to_backfill );
+		$this->assertNotContains( $noncomplete_order_refund->get_id(), $refunds_to_backfill );
 	}
 }
