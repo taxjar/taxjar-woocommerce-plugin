@@ -19,10 +19,8 @@ class WC_Taxjar_Connection {
 	public function get_form_settings_field() {
 		return array(
 			'title'             => __( 'TaxJar Status', 'wc-taxjar' ),
-			'type'              => 'hidden',
-			'description'       => $this->description,
-			'class'             => 'input-text disabled regular-input',
-			'disabled'          => 'disabled',
+			'type'              => 'title',
+			'desc'              => $this->description,
 		);
 	}
 
@@ -61,16 +59,16 @@ class WC_Taxjar_Connection {
 			}
 
 			if ( $this->integration->post_or_setting( 'api_token' ) && isset( $body->valid ) && false === $body->valid ) {
-				$description .= '<div style="color: #ff0000;"><strong>';
+				$description .= '<span style="color: #ff0000;"><strong>';
 				$description .= 'It looks like your API token is invalid.';
 				$description .= sprintf( '<br><a href="%s" target="_blank">Please review your API token.</a>', $this->integration->app_uri . 'account#api-access' );
-				$description .= '</strong></div>';
+				$description .= '</strong></span>';
 				$this->api_token_valid = false;
 			}
 
 			$this->can_connect = true;
 		} else {
-			$description .= '<div style="color: #ff0000;">';
+			$description .= '<span style="color: #ff0000;">';
 			$description .= __( 'wp_remote_post() failed. TaxJar could not connect to server. Please contact your hosting provider.', 'wc-taxjar' );
 			$description .= '<br>';
 
@@ -82,7 +80,7 @@ class WC_Taxjar_Connection {
 				$description .= ' ' . sprintf( __( 'Status code: %s', 'wc-taxjar' ), wc_clean( $response['response']['code'] ) );
 			}
 
-			$description .= '</div>';
+			$description .= '</span>';
 			$this->can_connect = false;
     	} // End if().
 

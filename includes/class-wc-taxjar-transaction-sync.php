@@ -315,7 +315,7 @@ class WC_Taxjar_Transaction_Sync {
 
 		$order_ids = $this->get_orders_to_backfill( $start_date, $end_date, $force );
 		if ( empty( $order_ids ) ) {
-			return;
+			return 0;
 		}
 
 		$transaction_ids = $order_ids;
@@ -400,6 +400,8 @@ class WC_Taxjar_Transaction_Sync {
 				$wpdb->query( $query );
 			}
 		}
+
+		return count( $order_ids );
 	}
 
 	public function get_orders_to_backfill( $start_date = null, $end_date = null, $force = false ) {

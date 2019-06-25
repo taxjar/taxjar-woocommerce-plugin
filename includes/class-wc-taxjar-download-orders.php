@@ -99,7 +99,8 @@ class WC_Taxjar_Download_Orders {
 			'type'              => 'checkbox',
 			'label'             => __( 'Enable order downloads to TaxJar', 'wc-taxjar' ),
 			'default'           => 'no',
-			'description'       => __( $description_for_order_download, 'wc-taxjar' ),
+			'desc'       => __( $description_for_order_download, 'wc-taxjar' ),
+			'id'                => 'woocommerce_taxjar-integration_settings[taxjar_download]'
 		);
 	}
 
