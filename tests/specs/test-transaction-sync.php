@@ -5,7 +5,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		parent::setUp();
 
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
-		$this->tj = WC()->integrations->integrations['taxjar-integration'];
+		$this->tj = TaxJar();
 
 		// Reset shipping origin
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(

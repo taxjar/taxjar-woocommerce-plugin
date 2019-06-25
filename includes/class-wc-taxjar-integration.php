@@ -11,6 +11,21 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 
 class WC_Taxjar_Integration extends WC_Settings_API {
 
+	protected static $_instance = null;
+
+	/**
+	 * Main TaxJar Integration Instance.
+	 * Ensures only one instance of TaxJar Integration is loaded or can be loaded.
+	 *
+	 * @return WC_Taxjar_Integration - Main instance.
+	 */
+	public static function instance() {
+		if ( is_null( self::$_instance ) ) {
+			self::$_instance = new self();
+		}
+		return self::$_instance;
+	}
+
 	/**
 	 * Init and hook in the integration.
 	 */
@@ -1496,7 +1511,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		);
 
 		wp_enqueue_script( 'wc-taxjar-admin' , array( 'jquery' ) );
-		
+
 		wp_enqueue_script( 'jquery-ui-datepicker' );
 		wp_enqueue_style( 'jquery-ui-datepicker' );
 	}

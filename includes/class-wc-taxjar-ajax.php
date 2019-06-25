@@ -56,7 +56,7 @@ class WC_Taxjar_AJAX {
 			$force_sync = true;
 		}
 
-		$integration = WC()->integrations->integrations['taxjar-integration'];
+		$integration = TaxJar();
 		$result = $integration->transaction_sync->transaction_backfill( $start_date, $end_date, $force_sync );
 
 		$response = array(

@@ -24,7 +24,7 @@ abstract class TaxJar_Record {
 	public $data;
 
 	public function __construct( $record_id = null, $set_defaults = false ) {
-		$this->taxjar_integration =  WC()->integrations->integrations[ 'taxjar-integration' ];
+		$this->taxjar_integration = TaxJar();
 
 		if ( ! empty ( $record_id ) ) {
 			$this->set_record_id( $record_id );

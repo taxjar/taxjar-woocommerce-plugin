@@ -65,7 +65,7 @@ final class WC_Taxjar {
 			require_once( 'libraries/action-scheduler/action-scheduler.php' );
 
 			// Register the integration.
-			add_filter( 'woocommerce_integrations', array( $this, 'add_integration' ), 20 );
+			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );
 
 			// Display notices if applicable.
 			add_action( 'admin_notices', array( $this, 'maybe_display_admin_notices' ) );
@@ -75,9 +75,8 @@ final class WC_Taxjar {
 	/**
 	 * Add a new integration to WooCommerce.
 	 */
-	public function add_integration( $integrations ) {
-		$integrations[] = 'WC_Taxjar_Integration';
-		return $integrations;
+	public function add_integration() {
+		TaxJar();
 	}
 
 	/**
@@ -245,7 +244,7 @@ final class WC_Taxjar {
 			return;
 		}
 
-		$api_token = WC()->integrations->integrations['taxjar-integration']->get_option( 'api_token' );
+		$api_token = TaxJar()->get_option( 'api_token' );
 
 		if ( '' == $api_token && apply_filters( 'taxjar_should_display_connect_notice', true ) ) {
 			$url = $this->get_settings_url();
@@ -278,5 +277,12 @@ final class WC_Taxjar {
 } // End WC_Taxjar.
 
 $WC_Taxjar = new WC_Taxjar( __FILE__ );
+
+/**
+ * Returns the main instance of TaxJar Integration.
+ */
+function TaxJar() {
+	return WC_Taxjar_Integration::instance();
+}
 
 endif;

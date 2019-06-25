@@ -28,7 +28,7 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 		WC()->cart->recurring_carts = array();
-		$this->tj = WC()->integrations->integrations['taxjar-integration'];
+		$this->tj = TaxJar();
 
 		// Reset shipping origin
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
