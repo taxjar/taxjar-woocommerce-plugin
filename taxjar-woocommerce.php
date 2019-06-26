@@ -60,6 +60,7 @@ final class WC_Taxjar {
 			include_once 'includes/abstract-class-taxjar-record.php';
 			include_once 'includes/class-taxjar-order-record.php';
 			include_once 'includes/class-taxjar-refund-record.php';
+			include_once 'includes/class-wc-taxjar-queue-list.php';
 
 			// Load Action Scheduler library
 			require_once( 'libraries/action-scheduler/action-scheduler.php' );

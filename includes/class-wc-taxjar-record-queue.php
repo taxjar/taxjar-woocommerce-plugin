@@ -55,6 +55,21 @@ class WC_Taxjar_Record_Queue {
 	}
 
 	/**
+	 * Get the queue ids of all records in queue limiting by 20
+	 *
+	 * @return array|bool - if active records are found returns array, otherwise returns false
+	 */
+	static function get_records_from_queue( ) {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+
+		$query = "SELECT * FROM {$table_name} ORDER BY queue_id DESC LIMIT 0, 20";
+		$results = $wpdb->get_results( $query );
+		return $results;
+	}
+
+	/**
 	 * Get the record and queue ids of all active (new and awaiting) records in queue
 	 *
 	 * @return array|bool - if active records are found returns array, otherwise returns false

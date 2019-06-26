@@ -204,9 +204,9 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	public function output_sync_queue() {
 		global $hide_save_button;
 		$hide_save_button = true;
-		?>
 
-		<?php
+		$report = new WC_Taxjar_Queue_List();
+		$report->output_report();
 	}
 
 	/**
