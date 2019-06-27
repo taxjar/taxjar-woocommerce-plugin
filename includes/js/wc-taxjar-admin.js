@@ -48,9 +48,20 @@ jQuery( document ).ready( function() {
 					'force_sync': $('input#force_sync').prop( 'checked' ),
 				}
 			}).done( function( data ) {
+				if ( data.records_updated != null ) {
+					if ( data.records_updated == 0 ) {
+						alert( 'No records found to add to queue.' );
+					} else {
+						if ( data.records_updated == 1 ) {
+							alert(data.records_updated + ' record added to queue and will sync to TaxJar shortly.');
+						} else {
+							alert(data.records_updated + ' records added to queue and will sync to TaxJar shortly.');
+						}
+					}
+				} else {
+					alert( 'Error adding records to queue.' );
+				}
 				console.log( data );
-				alert( 'Transactions in date range added to queue and will sync to TaxJar shortly.' );
-				//location.reload();
 			});
 		}
 
