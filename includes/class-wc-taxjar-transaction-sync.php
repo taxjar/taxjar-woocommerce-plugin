@@ -131,11 +131,17 @@ class WC_Taxjar_Transaction_Sync {
 	 * @return null
 	 */
 	public function process_batch( $args ) {
-		if ( empty( $args[ 'queue_ids' ] ) ) {
+		if ( empty( $args ) ) {
 			return;
 		}
 
-		$record_rows = WC_Taxjar_Record_Queue::get_data_for_batch( $args[ 'queue_ids' ] );
+		if ( empty( $args[ 'queue_ids' ] ) ) {
+			$queue_ids = $args;
+		} else {
+			$queue_ids = $args[ 'queue_ids' ];
+		}
+
+		$record_rows = WC_Taxjar_Record_Queue::get_data_for_batch( $queue_ids );
 		foreach( $record_rows as $record_row ) {
 			$record = TaxJar_Record::create_from_record_row( $record_row );
 			if ( $record == false ) {
