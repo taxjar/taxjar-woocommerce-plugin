@@ -399,7 +399,7 @@ class WC_Taxjar_Transaction_Sync {
 			}, $active_records );
 			$records = array_combine( $record_ids, $queue_ids );
 
-			$in_queue = array_values( array_intersect_key( $records, array_flip( $order_ids ) ) );
+			$in_queue = array_values( array_intersect_key( $records, array_flip( $transaction_ids ) ) );
 			if ( ! empty( $in_queue ) ) {
 				$in_queue_string = implode( ', ', $in_queue );
 				$query = "UPDATE {$queue_table} SET force_push = 1 WHERE queue_id in ( {$in_queue_string} )";
@@ -407,7 +407,7 @@ class WC_Taxjar_Transaction_Sync {
 			}
 		}
 
-		return count( $order_ids );
+		return count( $transaction_ids );
 	}
 
 	public function get_orders_to_backfill( $start_date = null, $end_date = null, $force = false ) {
