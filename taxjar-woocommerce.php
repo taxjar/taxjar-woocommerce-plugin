@@ -270,7 +270,7 @@ final class WC_Taxjar {
 	 * Adds settings link to the plugins page
 	 */
 	public function plugin_settings_link( $links ) {
-		$settings_link = '<a href="admin.php?page=wc-settings&tab=integration&section=taxjar-integration">Settings</a>';
+		$settings_link = '<a href="admin.php?page=wc-settings&tab=taxjar-integration">Settings</a>';
 		array_unshift( $links, $settings_link );
 		return $links;
 	}
