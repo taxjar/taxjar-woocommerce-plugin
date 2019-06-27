@@ -311,7 +311,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 						'desc'     => __( 'Enter the street address where your store ships from.', 'wc-taxjar' ),
 						'desc_tip' => true,
 						'default'  => '',
-						'id'       => 'woocommerce_taxjar-integration_settings[store_address]'
+						'id'       => 'woocommerce_taxjar-integration_settings[store_street]'
 					);
 					$settings[] = array(
 						'title'       => __( 'Ship From City', 'wc-taxjar' ),
