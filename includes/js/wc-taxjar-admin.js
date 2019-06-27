@@ -35,6 +35,8 @@ jQuery( document ).ready( function() {
 		var trigger_backfill = function( e ) {
 			e.preventDefault();
 
+			$( "body" ).css( "cursor", "wait" );
+
 			$.ajax({
 				method: 'POST',
 				dataType: 'json',
@@ -61,7 +63,7 @@ jQuery( document ).ready( function() {
 				} else {
 					alert( 'Error adding records to queue.' );
 				}
-				console.log( data );
+				$("body").css("cursor", "default");
 			});
 		}
 
