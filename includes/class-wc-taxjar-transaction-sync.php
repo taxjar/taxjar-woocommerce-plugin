@@ -38,6 +38,7 @@ class WC_Taxjar_Transaction_Sync {
 		add_action( 'wp_trash_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
 		add_action( 'before_delete_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
 		add_action( 'before_delete_post', array( $this, 'maybe_delete_refund_from_taxjar' ), 9, 1 );
+		add_action( 'untrashed_post', array( $this, 'untrash_post' ), 11 );
 
 		add_action( 'woocommerce_order_status_cancelled', array( $this, 'order_cancelled' ), 10, 2 );
 	}
@@ -206,6 +207,41 @@ class WC_Taxjar_Transaction_Sync {
 		}
 
 		$record->save();
+	}
+
+	public function untrash_post( $id ) {
+		if ( ! $id ) {
+			return;
+		}
+
+		$post_type = get_post_type( $id );
+		if ( 'shop_order' != $post_type ) {
+			return;
+		}
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $id );
+		if ( ! $record ) {
+			$record = new TaxJar_Order_Record( $id, true );
+		}
+		$record->load_object();
+
+		if ( $record->should_sync() ) {
+			$record->set_force_push( true );
+			$record->save();
+			$refunds = $record->object->get_refunds();
+			foreach( $refunds as $refund ) {
+				$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+				if ( ! $refund_record ) {
+					$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+				}
+
+				$refund_record->load_object();
+				if ( $refund_record->should_sync() ) {
+					$refund_record->set_force_push( true );
+				    $refund_record->save();
+				}
+			}
+		}
 	}
 
 	public function maybe_delete_transaction_from_taxjar( $post_id ) {

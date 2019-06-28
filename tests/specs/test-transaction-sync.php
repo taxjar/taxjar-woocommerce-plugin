@@ -1278,4 +1278,27 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertContains( $updated_order_refund->get_id(), $refunds_to_backfill );
 		$this->assertNotContains( $noncomplete_order_refund->get_id(), $refunds_to_backfill );
 	}
+
+	function test_enqueue_untrashed_orders_refunds() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund_id = $refund->get_id();
+		$order_id = $order->get_id();
+		$order->delete();
+
+		$order_record = TaxJar_Order_Record::find_active_in_queue( $order_id );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund_id );
+		$this->assertFalse( $order_record );
+		$this->assertFalse( $refund_record );
+
+		wp_untrash_post( $order_id );
+
+		$order_record = TaxJar_Order_Record::find_active_in_queue( $order_id );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund_id );
+		$this->assertNotFalse( $order_record );
+		$this->assertNotFalse( $refund_record );
+		$this->assertEquals( 1, $order_record->get_force_push() );
+		$this->assertEquals( 1, $refund_record->get_force_push() );
+	}
 }

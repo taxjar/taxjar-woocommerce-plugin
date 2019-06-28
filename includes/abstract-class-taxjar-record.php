@@ -80,7 +80,8 @@ abstract class TaxJar_Record {
 			'record_type'      => $this->get_record_type(),
 			'status'           => $this->get_status(),
 			'batch_id'         => $this->get_batch_id(),
-			'created_datetime' => $this->get_created_datetime()
+			'created_datetime' => $this->get_created_datetime(),
+			'force_push'       => $this->get_force_push()
 		);
 
 		$result = $wpdb->insert( self::get_queue_table_name(), $insert );
