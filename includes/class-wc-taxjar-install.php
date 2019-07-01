@@ -24,9 +24,24 @@ class WC_Taxjar_Install {
 	 * This check is done on all requests and runs if the versions do not match.
 	 */
 	public static function check_version() {
-		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( get_option( 'taxjar_version' ), WC_Taxjar::$version, '<' ) ) {
+		$current_version = get_option( 'taxjar_version' );
+		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, WC_Taxjar::$version, '<' ) ) {
 			self::install();
 			do_action( 'taxjar_updated' );
+		}
+
+		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.0', '<' ) ) {
+			self::taxjar_300_update();
+		}
+	}
+
+	public static function taxjar_300_update() {
+		$tj = TaxJar();
+		$tj->download_orders->unlink_provider( site_url() );
+
+		if ( $tj->get_option( 'taxjar_download' ) == 'yes' ) {
+			$start_date = date( 'Y-m-d H:i:s', strtotime( '-1 day, midnight', current_time( 'timestamp' ) ) );
+			$tj->transaction_sync->transaction_backfill( $start_date );
 		}
 	}
 
