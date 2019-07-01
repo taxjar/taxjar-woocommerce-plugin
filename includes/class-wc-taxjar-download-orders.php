@@ -22,7 +22,6 @@ class WC_Taxjar_Download_Orders {
 	 */
 	public function validate_taxjar_download_field( $key ) {
 		$value = $this->integration->get_value_from_post( $key );
-		$previous_value = $this->integration->get_option( 'taxjar_download' );
 
 		if ( isset( $value ) && $value ) {
 			$value = 'yes';
@@ -31,39 +30,8 @@ class WC_Taxjar_Download_Orders {
 		}
 		$value = apply_filters( 'taxjar_download_orders', $value );
 
-		if ( ($value != $previous_value ) ) {
-			if ( 'yes' == $value ) {
-				// Enable the WooCommerce API for downloads if it is not enabled
-				update_option( 'woocommerce_api_enabled', 'yes' );
-
-				// Get/generate the WooCommerce API information and link this store to TaxJar
-				$keys = $this->get_or_create_woocommerce_api_keys();
-				$success = false;
-
-				if ( $keys ) {
-					$consumer_key     = $keys['consumer_key'];
-					$consumer_secret  = $keys['consumer_secret'];
-					$store_url        = home_url();
-					$success = $this->link_provider( $consumer_key, $consumer_secret, $store_url );
-
-					if ( $success ) {
-						return 'yes';
-					}
-				}
-
-				if ( ! $success ) {
-					$this->taxjar_download = false;
-					$this->integration->errors[] = 'shop_not_linked';
-					return 'no';
-				}
-			} else {
-				$this->unlink_provider( home_url() );
-				return 'no';
-			}
-		}
-
 		return $value;
-		}
+	}
 
 	/**
 	 * Called by the integration to show on the TaxJar settings page
@@ -71,35 +39,12 @@ class WC_Taxjar_Download_Orders {
 	 * @return array
 	 */
 	public function get_form_settings_field() {
-		$description_for_order_download = "If enabled, TaxJar will download your orders for reporting.";
-
-		if ( $this->taxjar_download ) {
-			$error = false;
-
-			if ( version_compare( WC()->version, '2.4.0', '>=' ) ) {
-				if ( ! $this->existing_api_key() ) {
-					$error = true;
-				}
-			} else {
-				$user = $this->api_user_query();
-				$user = get_userdata( $user->ID );
-
-				if ( ! isset( $user ) || ! isset( $user->woocommerce_api_consumer_key ) || ! isset( $user->woocommerce_api_consumer_secret ) ) {
-					$error = true;
-				}
-			}
-
-			if ( $error ) {
-				$description_for_order_download = "<span style='color: #ff0000;'>There was an error retrieving your keys. Please disable and re-enable Order Downloads.</span>";
-			}
-		}
-
 		return array(
 			'title'             => __( 'Sales Tax Reporting', 'wc-taxjar' ),
 			'type'              => 'checkbox',
-			'label'             => __( 'Enable order downloads to TaxJar', 'wc-taxjar' ),
+			'label'             => __( 'Enable order sync to TaxJar', 'wc-taxjar' ),
 			'default'           => 'no',
-			'desc'       => __( $description_for_order_download, 'wc-taxjar' ),
+			'desc'              => __( 'If enabled, will automatically sync your orders to TaxJar for reporting.', 'wc-taxjar' ),
 			'id'                => 'woocommerce_taxjar-integration_settings[taxjar_download]'
 		);
 	}
