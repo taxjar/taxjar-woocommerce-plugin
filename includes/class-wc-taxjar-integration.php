@@ -59,6 +59,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		add_action( 'woocommerce_settings_' . $this->id, array( $this, 'output' ) );
 		add_action( 'woocommerce_settings_save_' . $this->id, array( $this, 'save' ) );
 
+		add_filter( 'woocommerce_admin_settings_sanitize_option_woocommerce_taxjar-integration_settings', array( $this, 'sanitize_settings' ), 10, 2 );
+
 		if ( apply_filters( 'taxjar_enabled', isset( $this->settings['enabled'] ) && 'yes' == $this->settings['enabled'] ) ) {
 			// Calculate Taxes at Cart / Checkout
 			if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
@@ -78,7 +80,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 
 			// Filters
 			add_filter( 'woocommerce_calc_tax', array( $this, 'override_woocommerce_tax_rates' ), 10, 3 );
-			add_filter( 'woocommerce_settings_api_sanitized_fields_' . $this->id, array( $this, 'sanitize_settings' ) );
 			add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
 			add_filter( 'woocommerce_matched_rates', array( $this, 'allow_street_address_for_matched_rates' ), 10, 2 );
 
@@ -1357,44 +1358,30 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	}
 
 	/**
-	 * Santize our settings
-	 * @see process_admin_options()
+	 * Sanitize our settings
 	 */
-	public function sanitize_settings( $settings ) {
-		// We're going to make the api token all lower case characters and clean input
-		if ( isset( $settings ) &&
-				isset( $settings['api_token'] ) &&
-				isset( $settings['store_postcode'] ) &&
-				isset( $settings['store_city'] ) &&
-				isset( $settings['store_street'] ) ) {
-			$settings['api_token']  = strtolower( wc_clean( $settings['api_token'] ) );
-			$settings['store_postcode']  = wc_clean( $settings['store_postcode'] );
-			$settings['store_city'] = wc_clean( $settings['store_city'] );
-			$settings['store_street'] = wc_clean( $settings['store_street'] );
-		}
-		return $settings;
-	}
+	public function sanitize_settings( $value, $option ) {
 
-	/**
-	 * Validate the option to enable TaxJar order downloads
-	 * @see validate_settings_fields()
-	 */
-	public function validate_taxjar_download_field( $key ) {
-		// Validate the value and perform work for taxjar_download option
-		return $value = $this->download_orders->validate_taxjar_download_field( $key );
-	}
+		parse_str( $option['id'], $option_name_array );
+		$option_name  = current( array_keys( $option_name_array ) );
+		$setting_name = key( $option_name_array[ $option_name ] );
 
-	/**
-	 * Validate the API token
-	 * @see validate_settings_fields()
-	 */
-	public function validate_api_token_field( $key ) {
-		$value = $this->get_value_from_post( $key );
-		if ( ! $value && '' == $value && $this->download_orders->taxjar_download ) {
-			$this->download_orders->unlink_provider( site_url() );
-		}
+		if ( in_array( $setting_name, array( 'store_postcode', 'store_city', 'store_street' ) ) ) {
+		    return wc_clean( $value );
+        }
 
-		return $value;
+		if ( $setting_name == 'api_token' ) {
+			if ( ! $value && '' == $value && $this->download_orders->taxjar_download ) {
+				$this->download_orders->unlink_provider( site_url() );
+			}
+			return strtolower( wc_clean( $value ) );
+        }
+
+		if ( $setting_name == 'taxjar_download' ) {
+			return $value = $this->download_orders->validate_taxjar_download_field( $setting_name );
+        }
+
+	    return $value;
 	}
 
 	/**
@@ -1440,8 +1427,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	 * @return mixed $value
 	 */
 	public function get_value_from_post( $key ) {
-		if ( isset( $_POST[ $this->plugin_id . $this->id . '_' . $key ] ) ) {
-			return $_POST[ $this->plugin_id . $this->id . '_' . $key ];
+		if ( isset( $_POST[ $this->plugin_id . $this->id . '_settings' ][ $key ] ) ) {
+			return $_POST[ $this->plugin_id . $this->id . '_settings' ][ $key ];
 		} else {
 			return false;
 		}
