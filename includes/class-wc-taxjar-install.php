@@ -120,7 +120,8 @@ CREATE TABLE {$wpdb->prefix}taxjar_record_queue (
   created_datetime datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   processed_datetime datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   retry_count smallint(4) NOT NULL DEFAULT 0,
-  PRIMARY KEY  (queue_id)
+  PRIMARY KEY  (queue_id),
+  KEY record_id (record_id)
   ) $collate;
 		";
 
