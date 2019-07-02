@@ -48,6 +48,8 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
+
+		update_option( 'woocommerce_currency', 'USD' );
 	}
 
 	function tearDown() {
@@ -529,6 +531,30 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		} else {
 			$this->assertEquals( $renewal_order->get_total(), 171.61, '', 0.01 );
 		}
+
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+	}
+
+	function test_renewal_order_transaction_sync() {
+		wp_set_current_user( $this->user );
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+		$request = TaxJar_Subscription_Helper::prepare_subscription_request();
+		$response = $this->server->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertEquals( $data['total'], 110.00, '', 0.01 );
+
+		$subscription_id = $data['id'];
+		$renewal_order = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
+		$renewal_order->update_status( 'completed' );
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $renewal_order->get_id() );
+		$this->assertNotFalse( $record );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+		$result = $record->delete_in_taxjar();
 
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
