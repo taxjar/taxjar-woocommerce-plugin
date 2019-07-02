@@ -1321,4 +1321,30 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( 1, $order_record->get_force_push() );
 		$this->assertEquals( 1, $refund_record->get_force_push() );
 	}
+
+	function test_get_provider() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+
+		$this->assertEquals( 'woo', $record->get_provider() );
+		$this->assertEquals( 'woo', $record->get_provider() );
+
+		add_filter( 'taxjar_get_order_provider', function( $provider, $order_object, $rec ) {
+			return 'ebay';
+		}, 10, 3 );
+		$order_provider = $record->get_provider();
+		remove_all_filters( 'taxjar_get_order_provider', 10 );
+		$this->assertEquals( 'ebay', $order_provider );
+
+		add_filter( 'taxjar_get_refund_provider', function( $provider, $refund_object, $rec ) {
+			return 'ebay';
+		}, 10, 3 );
+		$refund_provider = $refund_record->get_provider();
+		remove_all_filters( 'taxjar_get_refund_provider', 10 );
+		$this->assertEquals( 'ebay', $refund_provider );
+	}
 }

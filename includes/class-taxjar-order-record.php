@@ -125,7 +125,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 	public function create_in_taxjar() {
 		$data = $this->get_data();
 		$url = self::API_URI . 'transactions/orders';
-		$data[ 'provider' ] = 'woo';
+		$data[ 'provider' ] = $this->get_provider();
 		$body = wp_json_encode( $data );
 
 		$response = wp_remote_post( $url, array(
@@ -145,7 +145,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$data = $this->get_data();
 
 		$url = self::API_URI . 'transactions/orders/' . $order_id;
-		$data[ 'provider' ] = 'woo';
+		$data[ 'provider' ] = $this->get_provider();
 		$body = wp_json_encode( $data );
 
 		$response = wp_remote_request( $url, array(
@@ -166,7 +166,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$url = self::API_URI . 'transactions/orders/' . $order_id;
 		$data = array(
 			'transaction_id' => $order_id,
-			'provider' => 'woo'
+			'provider' => $this->get_provider()
 		);
 		$body = wp_json_encode( $data );
 

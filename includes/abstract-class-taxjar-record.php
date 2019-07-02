@@ -205,6 +205,10 @@ abstract class TaxJar_Record {
 	abstract function delete_in_taxjar();
 	abstract function get_from_taxjar();
 
+	public function get_provider() {
+		return apply_filters( 'taxjar_get_' . $this->get_record_type() . '_provider', 'woo', $this->object, $this );
+	}
+
 	/**
 	 * Find record in queue
 	 *
