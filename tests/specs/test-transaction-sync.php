@@ -481,6 +481,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_refund_record_sync() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
 		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$record->load_object();
@@ -515,6 +516,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_refund_queue_process() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
 		$record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
 		$record->load_object();
@@ -580,6 +582,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->delete_in_taxjar();
 
 		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
 		$this->tj->transaction_sync->manual_order_sync( $order );
 
@@ -697,6 +700,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_refund_record_validation() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
 		$order = wc_get_order( $order->get_id() );
 
@@ -726,6 +730,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$refund_record->data = array();
 		$this->assertFalse( $refund_record->should_sync() );
 
+		$empty_order->update_status( 'completed' );
 		$empty_order->set_shipping_city( 'Greenwood Village' );
 		$empty_order->set_shipping_state( 'CO' );
 		$empty_order->set_shipping_postcode( '80111' );

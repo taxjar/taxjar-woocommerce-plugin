@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class TaxJar_Refund_Record extends TaxJar_Record {
 
 	public $order_status;
+	public $order_completed_date;
 
 	public function load_object() {
 		$refund =  wc_get_order( $this->get_record_id() );
@@ -76,6 +77,10 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			return false;
 		}
 
+		if ( empty( $this->order_completed_date ) ) {
+			return false;
+		}
+
 		$valid_order_statuses = array( 'completed', 'refunded' );
 		if ( empty( $this->order_status ) || ! in_array( $this->order_status, $valid_order_statuses ) ) {
 			return false;
@@ -125,6 +130,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		}
 
 		$this->order_status = $order->get_status();
+		$this->order_completed_date = $order->get_date_completed();
 
 		$store_settings   = $this->taxjar_integration->get_store_settings();
 		$from_country     = $store_settings['country'];
