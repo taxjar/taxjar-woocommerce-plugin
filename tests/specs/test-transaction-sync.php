@@ -330,6 +330,21 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( 'completed', $record->get_status() );
 		$this->assertEquals( 'completed', $second_record->get_status() );
 
+		remove_filter( 'comments_clauses', array( 'WC_Comments', 'exclude_order_comments' ), 10, 1 );
+		$comments = get_comments( array(
+			'post_id' => $order->get_id(),
+			'type' => 'order_note'
+		) );
+		add_filter( 'comments_clauses', array( 'WC_Comments', 'exclude_order_comments' ), 10, 1 );
+
+		$has_correct_comment = false;
+		foreach( $comments as $comment ) {
+			if ( $comment->comment_content == 'Order synced to TaxJar' ) {
+				$has_correct_comment = true;
+			}
+		}
+		$this->assertTrue( $has_correct_comment );
+
 		$record->delete_in_taxjar();
 		$second_record->delete_in_taxjar();
 	}

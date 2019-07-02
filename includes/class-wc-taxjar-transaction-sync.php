@@ -157,7 +157,15 @@ class WC_Taxjar_Transaction_Sync {
 				continue;
 			}
 
-			$record->sync();
+			$previous_sync_datetime = $record->object->get_meta( '_taxjar_last_sync', true );
+
+			$result = $record->sync();
+
+			if ( $result && $record->get_record_type() == 'order' ) {
+				if ( empty( $previous_sync_datetime ) ) {
+					$record->object->add_order_note( __( 'Order synced to TaxJar', 'taxjar' ) );
+				}
+			}
 		}
 	}
 
