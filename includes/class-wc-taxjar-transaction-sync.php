@@ -55,6 +55,25 @@ class WC_Taxjar_Transaction_Sync {
 		return $actions;
 	}
 
+	/**
+	 * Prints debug info to wp-content/uploads/wc-logs/taxjar-transaction-sync-*.log
+	 *
+	 * @return void
+	 */
+	public function _log( $message ) {
+		do_action( 'taxjar_transaction_sync_log', $message );
+		if ( $this->taxjar_integration->debug ) {
+			if ( ! isset( $this->log ) ) {
+				$this->log = new WC_Logger();
+			}
+			if ( is_array( $message ) || is_object( $message ) ) {
+				$this->log->add( 'taxjar-transaction-sync', print_r( $message, true ) );
+			} else {
+				$this->log->add( 'taxjar-transaction-sync', $message );
+			}
+		}
+	}
+
 	public function manual_order_sync( $order ) {
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		if ( ! $record ) {
