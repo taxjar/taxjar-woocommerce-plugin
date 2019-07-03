@@ -332,7 +332,7 @@ class WC_Taxjar_Download_Orders {
 	 *
 	 * @return void
 	 */
-	private function delete_wc_taxjar_keys() {
+	public function delete_wc_taxjar_keys() {
 		global $wpdb;
 
 		$key_ids = $wpdb->get_results("SELECT key_id
