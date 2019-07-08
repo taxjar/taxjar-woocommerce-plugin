@@ -18,6 +18,8 @@ abstract class TaxJar_Record {
 	protected $retry_count;
 	protected $force_push;
 
+	public $error = array();
+
 	public $uri;
 	public $object;
 	public $taxjar_integration;
@@ -347,5 +349,20 @@ abstract class TaxJar_Record {
 
 	public function get_force_push() {
 		return $this->force_push;
+	}
+
+	public function get_error() {
+		return $this->error;
+	}
+
+	public function clear_error() {
+		$this->error = array();
+	}
+
+	public function add_error( $message, $data = null ) {
+		$this->error = array(
+			'message' => $message,
+			'data'    => $data
+		);
 	}
 }

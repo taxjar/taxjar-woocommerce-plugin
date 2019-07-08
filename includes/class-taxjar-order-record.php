@@ -33,8 +33,8 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		if ( $this->get_status() == 'new' ) {
 			$response = $this->create_in_taxjar();
 			if ( is_wp_error( $response ) ) {
-				// handle wordpress error and add message to log here
 				$this->sync_failure();
+				$this->add_error( __( 'WP_Error occurred on create request - ' , 'wc-taxjar' ) . $response->get_error_message() );
 				return false;
 			}
 			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 422 ) {
@@ -43,8 +43,8 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		} else {
 			$response = $this->update_in_taxjar();
 			if ( is_wp_error( $response ) ) {
-				// handle wordpress error and add message to log here
 				$this->sync_failure();
+				$this->add_error( __( 'WP_Error occurred on update request - ' , 'wc-taxjar' ) . $response->get_error_message() );
 				return false;
 			}
 			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 404 ) {
@@ -52,13 +52,21 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			}
 		}
 
+		if ( is_wp_error( $response ) ) {
+			$this->sync_failure();
+			$this->add_error( __( 'WP_Error occurred on create or update request - ' , 'wc-taxjar' ) . $response->get_error_message() );
+			return false;
+		}
+
 		if ( ! isset( $response[ 'response' ][ 'code' ] ) ) {
 			$this->sync_failure();
+			$this->add_error( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
 			return false;
 		}
 
 		if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
 			$this->sync_failure();
+			$this->add_error( __( 'Sync request failed with code ' , 'wc-taxjar' ) . $response[ 'response' ][ 'code' ], $response[ 'body' ] );
 			return false;
 		}
 
@@ -67,13 +75,14 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			return true;
 		}
 
-		// handle any unexpected responses
 		$this->sync_failure();
+		$this->add_error( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
 		return false;
 	}
 
 	public function should_sync( $ignore_status = false ) {
 		if ( ! isset( $this->object ) ) {
+			$this->add_error( __( 'Order failed validation - order object not loaded to record before syncing.', 'wc-taxjar' ) );
 			return false;
 		}
 
@@ -81,12 +90,14 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			$status = $this->object->get_status();
 			$valid_statuses = array( 'completed', 'refunded' );
 			if ( ! in_array( $status, $valid_statuses ) ) {
+				$this->add_error( __( 'Order failed validation - invalid status.', 'wc-taxjar' ) );
 				return false;
 			}
 		}
 
 		if ( ! $this->get_force_push() ) {
 			if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
+				$this->add_error( __( 'Order failed validation, order data not different than previous sync.', 'wc-taxjar' ) );
 				return false;
 			}
 		}
@@ -94,19 +105,22 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$order_data = $this->get_data();
 
 		if ( $order_data[ 'to_country' ] != 'US' ) {
+			$this->add_error( __( 'Order failed validation, ship to country not US', 'wc-taxjar' ) );
 			return false;
 		}
 
-		$test = $this->object->get_currency();
 		if ( $this->object->get_currency() != 'USD' ) {
+			$this->add_error( __( 'Order failed validation, currency not USD.', 'wc-taxjar' ) );
 			return false;
 		}
 
 		if ( empty( $order_data[ 'from_country' ] ) || empty( $order_data[ 'from_state' ] ) || empty( $order_data[ 'from_zip' ] ) || empty( $order_data[ 'from_city' ] ) ) {
+			$this->add_error( __( 'Order failed validation, missing required ship from field', 'wc-taxjar' ) );
 			return false;
 		}
 
 		if ( empty( $order_data[ 'to_country' ] ) || empty( $order_data[ 'to_state' ] ) || empty( $order_data[ 'to_zip' ] ) || empty( $order_data[ 'to_city' ] ) ) {
+			$this->add_error( __( 'Order failed validation, missing required ship to field.', 'wc-taxjar' ) );
 			return false;
 		}
 
