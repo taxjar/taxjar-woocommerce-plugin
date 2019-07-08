@@ -20,7 +20,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-if ( ! class_exists( 'WC_Taxjar' ) ) :
+/**
+ * Check if WooCommerce is active and at the required minimum version, and if it isn't, disable plugin.
+ */
+$active_plugins = (array) get_option( 'active_plugins', array() );
+if ( is_multisite() ) {
+	$active_plugins = array_merge( self::$active_plugins, get_site_option( 'active_sitewide_plugins', array() ) );
+}
+$woocommerce_active = in_array( 'woocommerce/woocommerce.php', $active_plugins ) || array_key_exists( 'woocommerce/woocommerce.php', $active_plugins );
+
+if ( ! $woocommerce_active || version_compare( get_option( 'woocommerce_db_version' ), WC_Taxjar::$minimum_woocommerce_version, '<' ) ) {
+	add_action( 'admin_notices', 'WC_Taxjar::display_woocommmerce_inactive_notice' );
+	return;
+}
 
 /**
  * Main TaxJar WooCommerce Class.
@@ -31,6 +43,7 @@ if ( ! class_exists( 'WC_Taxjar' ) ) :
 final class WC_Taxjar {
 
 	static $version = '3.0.0';
+	public static $minimum_woocommerce_version = '3.0.0';
 
 	/**
 	 * Construct the plugin.
@@ -78,6 +91,17 @@ final class WC_Taxjar {
 	 */
 	public function add_integration() {
 		TaxJar();
+	}
+
+	public static function display_woocommmerce_inactive_notice() {
+		if ( current_user_can( 'activate_plugins' ) ) {
+			$admin_notice_content = sprintf( esc_html__( '%1$sTaxJar is inactive.%2$s This version of TaxJar requires WooCommerce %3$s or newer. Please install or update WooCommerce to version %3$s or newer.', 'wc-taxjar' ), '<strong>', '</strong>', self::$minimum_woocommerce_version );
+			?>
+			<div class="error">
+				<p><?php echo $admin_notice_content; ?></p>
+			</div>
+			<?php
+		}
 	}
 
 	/**
@@ -286,4 +310,4 @@ function TaxJar() {
 	return WC_Taxjar_Integration::instance();
 }
 
-endif;
+
