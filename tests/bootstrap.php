@@ -34,6 +34,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// load the WP testing environment
 		require_once $this->wp_tests_dir . '/includes/bootstrap.php';
 
+
 		$this->includes();
 	}
 
@@ -42,6 +43,8 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
 		// load taxjar core
+		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
+		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
 	}
 
