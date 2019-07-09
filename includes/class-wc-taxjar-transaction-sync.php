@@ -103,29 +103,32 @@ class WC_Taxjar_Transaction_Sync {
 			$this->_log( 'Order ID# ' . $record->get_record_id() . ' (Queue ID ' . $record->get_queue_id() . ') successfully manual synced to TaxJar.' );
 		} else {
 			$this->log_with_record_error( 'Order ID# ' . $record->get_record_id() . ' (Queue ID ' . $record->get_queue_id() . ') failed to manual sync to TaxJar.', $record );
-			return;
 		}
 
-		$refunds = $order->get_refunds();
-		$refund_success = true;
-		foreach( $refunds as $refund ) {
-			$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
-			if ( ! $refund_record ) {
-				$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
-			}
+		if ( $order_result ) {
+			$refunds        = $order->get_refunds();
+			$refund_success = true;
+			foreach ( $refunds as $refund ) {
+				$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+				if ( ! $refund_record ) {
+					$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+				}
 
-			$refund_record->set_force_push( 1 );
-			$refund_record->load_object();
-			$refund_result = $refund_record->sync();
-			if ( ! $refund_result ) {
-				$refund_success = false;
-			}
+				$refund_record->set_force_push( 1 );
+				$refund_record->load_object();
+				$refund_result = $refund_record->sync();
+				if ( ! $refund_result ) {
+					$refund_success = false;
+				}
 
-			if ( $refund_result ) {
-				$this->_log( 'Refund ID# ' . $refund_record->get_record_id() . ' (Queue ID ' . $refund_record->get_queue_id() . ') successfully manual synced to TaxJar.' );
-			} else {
-				$this->log_with_record_error( 'Refund ID# ' . $refund_record->get_record_id() . ' (Queue ID ' . $refund_record->get_queue_id() . ') failed to manual sync to TaxJar.', $refund_record );
+				if ( $refund_result ) {
+					$this->_log( 'Refund ID# ' . $refund_record->get_record_id() . ' (Queue ID ' . $refund_record->get_queue_id() . ') successfully manual synced to TaxJar.' );
+				} else {
+					$this->log_with_record_error( 'Refund ID# ' . $refund_record->get_record_id() . ' (Queue ID ' . $refund_record->get_queue_id() . ') failed to manual sync to TaxJar.', $refund_record );
+				}
 			}
+		} else {
+			$refund_success = false;
 		}
 
 		if ( $order_result && $refund_success ) {
