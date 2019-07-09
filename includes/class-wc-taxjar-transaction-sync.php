@@ -588,4 +588,11 @@ class WC_Taxjar_Transaction_Sync {
 		return call_user_func_array( 'array_merge', $posts );
 	}
 
+	public static function unschedule_actions() {
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			as_unschedule_all_actions( self::PROCESS_QUEUE_HOOK );
+			as_unschedule_all_actions( self::PROCESS_BATCH_HOOK );
+		}
+	}
+
 }

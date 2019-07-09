@@ -22,6 +22,7 @@ class WC_Taxjar_Download_Orders {
 	 */
 	public function validate_taxjar_download_field( $key ) {
 		$value = $this->integration->get_value_from_post( $key );
+		$previous_value = $this->integration->get_option( 'taxjar_download' );
 
 		if ( isset( $value ) && $value ) {
 			$value = 'yes';
@@ -29,6 +30,12 @@ class WC_Taxjar_Download_Orders {
 			$value = 'no';
 		}
 		$value = apply_filters( 'taxjar_download_orders', $value );
+
+		if ( $value != $previous_value ) {
+			if ( $value !== 'yes' ) {
+				WC_Taxjar_Transaction_Sync::unschedule_actions();
+			}
+		}
 
 		return $value;
 	}
