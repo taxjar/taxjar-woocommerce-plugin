@@ -18,29 +18,31 @@ class WC_Taxjar_Transaction_Sync {
 	public $taxjar_integration;
 
 	public function __construct( $integration ) {
-		$this->init();
 		$this->taxjar_integration = $integration;
+		$this->init();
 	}
 
 	public function init() {
-		add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
-		add_action( self::PROCESS_QUEUE_HOOK, array( __CLASS__, 'process_queue' ) );
-		add_action( self::PROCESS_BATCH_HOOK, array( $this, 'process_batch' ) );
+		if ( isset( $this->taxjar_integration->settings['taxjar_download'] ) && 'yes' == $this->taxjar_integration->settings['taxjar_download'] ) {
+			add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
+			add_action( self::PROCESS_QUEUE_HOOK, array( __CLASS__, 'process_queue' ) );
+			add_action( self::PROCESS_BATCH_HOOK, array( $this, 'process_batch' ) );
 
-		add_action( 'woocommerce_new_order', array( __CLASS__, 'order_updated' ) );
-		add_action( 'woocommerce_update_order', array( __CLASS__, 'order_updated' ) );
+			add_action( 'woocommerce_new_order', array( __CLASS__, 'order_updated' ) );
+			add_action( 'woocommerce_update_order', array( __CLASS__, 'order_updated' ) );
 
-		add_action( 'woocommerce_order_refunded', array( __CLASS__, 'refund_created' ), 10, 2 );
+			add_action( 'woocommerce_order_refunded', array( __CLASS__, 'refund_created' ), 10, 2 );
 
-		add_filter( 'woocommerce_order_actions', array( $this, 'add_order_meta_box_action' ) );
-		add_action( 'woocommerce_order_action_taxjar_sync_action', array( $this, 'manual_order_sync' ) );
+			add_filter( 'woocommerce_order_actions', array( $this, 'add_order_meta_box_action' ) );
+			add_action( 'woocommerce_order_action_taxjar_sync_action', array( $this, 'manual_order_sync' ) );
 
-		add_action( 'wp_trash_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
-		add_action( 'before_delete_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
-		add_action( 'before_delete_post', array( $this, 'maybe_delete_refund_from_taxjar' ), 9, 1 );
-		add_action( 'untrashed_post', array( $this, 'untrash_post' ), 11 );
+			add_action( 'wp_trash_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
+			add_action( 'before_delete_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
+			add_action( 'before_delete_post', array( $this, 'maybe_delete_refund_from_taxjar' ), 9, 1 );
+			add_action( 'untrashed_post', array( $this, 'untrash_post' ), 11 );
 
-		add_action( 'woocommerce_order_status_cancelled', array( $this, 'order_cancelled' ), 10, 2 );
+			add_action( 'woocommerce_order_status_cancelled', array( $this, 'order_cancelled' ), 10, 2 );
+		}
 	}
 
 	public function add_order_meta_box_action( $actions ) {

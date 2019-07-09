@@ -57,11 +57,16 @@ class WC_Taxjar_AJAX {
 		}
 
 		$integration = TaxJar();
-		$result = $integration->transaction_sync->transaction_backfill( $start_date, $end_date, $force_sync );
-
-		$response = array(
-			'records_updated' => $result
-		);
+		if ( isset( $integration->settings['taxjar_download'] ) && 'yes' == $integration->settings['taxjar_download'] ) {
+			$result   = $integration->transaction_sync->transaction_backfill( $start_date, $end_date, $force_sync );
+			$response = array(
+				'records_updated' => $result
+			);
+		} else {
+			$response = array(
+				'error' => 'transaction sync disabled'
+			);
+		}
 
 		wp_send_json( $response );
 	}

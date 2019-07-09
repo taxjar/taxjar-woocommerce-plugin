@@ -61,7 +61,11 @@ jQuery( document ).ready( function() {
 						}
 					}
 				} else {
-					alert( 'Error adding records to queue.' );
+					if ( data.error == "transaction sync disabled" ) {
+						alert( 'Sales tax reporting must be enabled to perform transaction backfill. Please enable this setting and try again.' );
+					} else {
+						alert('Error adding records to queue.');
+					}
 				}
 				$("body").css("cursor", "default");
 			});
