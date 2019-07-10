@@ -264,6 +264,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			'body' => $body,
 		) );
 
+		$this->set_last_request( $body );
 		return $response;
 	}
 
@@ -285,6 +286,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			'body' => $body,
 		) );
 
+		$this->set_last_request( $body );
 		return $response;
 	}
 
@@ -307,6 +309,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			'body' => $body,
 		) );
 
+		$this->set_last_request( $body );
 		return $response;
 	}
 
@@ -323,6 +326,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			'user-agent' => $this->taxjar_integration->ua,
 		) );
 
+		$this->set_last_request( $refund_id );
 		return $response;
 	}
 

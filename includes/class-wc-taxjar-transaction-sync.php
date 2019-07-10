@@ -76,20 +76,6 @@ class WC_Taxjar_Transaction_Sync {
 		}
 	}
 
-	public function log_with_record_error( $message, $record ) {
-		$error = $record->get_error();
-		if ( ! empty( $error ) ) {
-			if ( ! empty( $error['message'] ) ) {
-				$message .= ' Error Message: ' . $error['message'];
-			}
-			if ( ! empty( $error['data'] ) ) {
-				$message .= 'Data: ' . $error['data'];
-			}
-			$record->clear_error();
-		}
-		$this->_log( $message );
-	}
-
 	public function manual_order_sync( $order ) {
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		if ( ! $record ) {
@@ -97,13 +83,9 @@ class WC_Taxjar_Transaction_Sync {
 		}
 		$record->set_force_push( 1 );
 		$record->load_object();
-		$order_result = $record->sync();
 
-		if ( $order_result ) {
-			$this->_log( 'Order ID# ' . $record->get_record_id() . ' (Queue ID ' . $record->get_queue_id() . ') successfully manual synced to TaxJar.' );
-		} else {
-			$this->log_with_record_error( 'Order ID# ' . $record->get_record_id() . ' (Queue ID ' . $record->get_queue_id() . ') failed to manual sync to TaxJar.', $record );
-		}
+		$this->_log( 'Manual sync for Order # ' . $record->get_record_id() . ' (Queue # ' . $record->get_queue_id() . ') triggered.' );
+		$order_result = $record->sync();
 
 		if ( $order_result ) {
 			$refunds        = $order->get_refunds();
@@ -119,12 +101,6 @@ class WC_Taxjar_Transaction_Sync {
 				$refund_result = $refund_record->sync();
 				if ( ! $refund_result ) {
 					$refund_success = false;
-				}
-
-				if ( $refund_result ) {
-					$this->_log( 'Refund ID# ' . $refund_record->get_record_id() . ' (Queue ID ' . $refund_record->get_queue_id() . ') successfully manual synced to TaxJar.' );
-				} else {
-					$this->log_with_record_error( 'Refund ID# ' . $refund_record->get_record_id() . ' (Queue ID ' . $refund_record->get_queue_id() . ') failed to manual sync to TaxJar.', $refund_record );
 				}
 			}
 		} else {
@@ -199,30 +175,25 @@ class WC_Taxjar_Transaction_Sync {
 			if ( $record == false ) {
 				continue;
 			}
+			$this->_log( 'Record # ' . $record->get_record_id() . ' (Queue # ' . $record->get_queue_id() . ') triggered to sync by batch # ' . $record->get_batch_id() );
 
 			if ( $record->get_status() != 'new' && $record->get_status() != 'awaiting' ) {
+				$this->_log( 'Record could not sync due to invalid status.' );
 				continue;
 			}
 
 			if ( empty( $record->get_batch_id() ) ) {
+				$this->_log( 'Record could not sync due to invalid batch ID.' );
 				continue;
 			}
 
 			$previous_sync_datetime = $record->object->get_meta( '_taxjar_last_sync', true );
-
 			$result = $record->sync();
 
 			if ( $result && $record->get_record_type() == 'order' ) {
 				if ( empty( $previous_sync_datetime ) ) {
 					$record->object->add_order_note( __( 'Order synced to TaxJar', 'taxjar' ) );
 				}
-			}
-
-			if ( $result ) {
-				$this->_log( ucfirst( $record->get_record_type() ) .' ID# ' . $record->get_record_id() . ' (Queue ID ' . $record->get_queue_id() . ') successfully synced to TaxJar.' );
-			} else {
-				$this->log_with_record_error( ucfirst( $record->get_record_type() ) . ' ID# ' . $record->get_record_id() . ' (Queue ID ' . $record->get_queue_id() . ') failed to sync to TaxJar.', $record );
-				return;
 			}
 		}
 	}
