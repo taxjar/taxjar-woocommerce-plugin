@@ -11,6 +11,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'CO',
+			'store_street' => '6060 S Quebec St',
 			'store_postcode' => '80111',
 			'store_city' => 'Greenwood Village',
 		) );
