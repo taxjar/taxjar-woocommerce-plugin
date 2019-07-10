@@ -335,6 +335,6 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 	}
 
 	public function get_transaction_id() {
-		return apply_filters( 'taxjar_get_refund_transaction_id', $this->object->get_id() );
+		return apply_filters( 'taxjar_get_refund_transaction_id', $this->get_record_id(), $this->object );
 	}
 }
