@@ -20,65 +20,6 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		parent::load_object();
 	}
 
-	public function sync() {
-		if ( ! apply_filters( 'taxjar_should_sync_refund', $this->should_sync() ) ) {
-			$this->sync_failure();
-			return false;
-		}
-
-		$error_responses = array( 400, 401, 403, 404, 405, 406, 410, 429, 500, 503 );
-		$success_responses = array( 200, 201 );
-
-		if ( $this->get_status() == 'new' ) {
-			$response = $this->create_in_taxjar();
-			if ( is_wp_error( $response ) ) {
-				$this->sync_failure();
-				$this->add_error( __( 'WP_Error occurred on create request - ' , 'wc-taxjar' ) . $response->get_error_message() );
-				return false;
-			}
-			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 422 ) {
-				$response = $this->update_in_taxjar();
-			}
-		} else {
-			$response = $this->update_in_taxjar();
-			if ( is_wp_error( $response ) ) {
-				$this->sync_failure();
-				$this->add_error( __( 'WP_Error occurred on create request - ' , 'wc-taxjar' ) . $response->get_error_message() );
-				return false;
-			}
-			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 404 ) {
-				$response = $this->create_in_taxjar();
-			}
-		}
-
-		if ( is_wp_error( $response ) ) {
-			$this->sync_failure();
-			$this->add_error( __( 'WP_Error occurred on create or update request - ' , 'wc-taxjar' ) . $response->get_error_message() );
-			return false;
-		}
-
-		if ( ! isset( $response[ 'response' ][ 'code' ] ) ) {
-			$this->sync_failure();
-			$this->add_error( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
-			return false;
-		}
-
-		if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
-			$this->sync_failure();
-			$this->add_error( __( 'Sync request failed with code ' , 'wc-taxjar' ) . $response[ 'response' ][ 'code' ], $response[ 'body' ] );
-			return false;
-		}
-
-		if ( in_array( $response[ 'response' ][ 'code' ], $success_responses ) ) {
-			$this->sync_success();
-			return true;
-		}
-
-		$this->sync_failure();
-		$this->add_error( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
-		return false;
-	}
-
 	public function should_sync() {
 		$data = $this->get_data();
 		if ( empty( $data ) ) {
