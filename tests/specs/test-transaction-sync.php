@@ -1348,4 +1348,31 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		remove_all_filters( 'taxjar_get_refund_provider', 10 );
 		$this->assertEquals( 'ebay', $refund_provider );
 	}
+
+	function test_partial_refund() {
+		$order = TaxJar_Order_Helper::create_order_quantity_two( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_partial_refund_from_order( $order->get_id() );
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$refund_record->load_object();
+		$result = $refund_record->sync();
+		$this->assertTrue( $result );
+
+		$tj_refund = $refund_record->get_from_taxjar();
+		$response = json_decode( $tj_refund[ 'body' ] );
+		$this->assertEquals( "-100.0", $response->refund->amount );
+		$this->assertEquals( "-7.25", $response->refund->sales_tax );
+		$this->assertEquals( "-100.0", $response->refund->line_items[0]->unit_price );
+		$this->assertEquals( "-7.25", $response->refund->line_items[0]->sales_tax );
+
+		$record->delete_in_taxjar();
+		$refund_record->delete_in_taxjar();
+	}
 }
