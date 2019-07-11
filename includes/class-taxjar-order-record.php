@@ -159,6 +159,12 @@ class TaxJar_Order_Record extends TaxJar_Record {
 	}
 
 	public function get_data_from_object() {
+		$created_date = $this->object->get_date_created();
+		if ( empty( $created_date ) ) {
+			$this->object = null;
+			return;
+		}
+
 		$store_settings   = $this->taxjar_integration->get_store_settings();
 		$from_country     = $store_settings['country'];
 		$from_state       = $store_settings['state'];
@@ -172,7 +178,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 		$order_data = array(
 			'transaction_id' => $this->get_transaction_id(),
-			'transaction_date' => $this->object->get_date_created()->date( DateTime::ISO8601 ),
+			'transaction_date' => $created_date->date( DateTime::ISO8601 ),
 			'from_country' => $from_country,
 			'from_zip' => $from_zip,
 			'from_state' => $from_state,
