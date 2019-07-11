@@ -158,8 +158,9 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 	 * Prepare customer list items.
 	 */
 	public function prepare_items() {
-		$current_page = absint( $this->get_pagenum() );
-		$per_page     = 20;
+		$current_page          = absint( $this->get_pagenum() );
+		$per_page              = absint( apply_filters( 'taxjar_queue_list_per_page', 20 ) );
+		$offset                = absint( ( $current_page - 1 ) * $per_page );
 
 		/**
 		 * Init column headers.
@@ -193,10 +194,12 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 			$query .= "AND record_id = '{$search}' ";
 		}
 
-        $query .= "ORDER BY queue_id DESC LIMIT 0, 20";
+        $query .= "ORDER BY queue_id DESC LIMIT {$offset}, {$per_page}";
 
 		$this->items = $wpdb->get_results( $query );
-		$total_records = $wpdb->get_var( 'SELECT FOUND_ROWS()' );
+
+		$total_query = "SELECT COUNT(*) FROM {$table_name}";
+		$total_records = $wpdb->get_var( $total_query );
 
 		$this->set_pagination_args(
 			array(
