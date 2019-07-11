@@ -1375,4 +1375,39 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->delete_in_taxjar();
 		$refund_record->delete_in_taxjar();
 	}
+
+	function test_sync_fee_refund() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_defaults();
+		$fee->set_amount( '10.00' );
+		$fee->set_total( '10.00' );
+		$fee->set_name( 'test fee' );
+		$order->add_item( $fee );
+		$order->calculate_totals();
+		$order->save();
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_fee_refund_from_order( $order->get_id() );
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$refund_record->load_object();
+		$result = $refund_record->sync();
+		$this->assertTrue( $result );
+
+		$tj_refund = $refund_record->get_from_taxjar();
+		$response = json_decode( $tj_refund[ 'body' ] );
+		$this->assertEquals( "-10.0", $response->refund->amount );
+		$this->assertEquals( "0.0", $response->refund->sales_tax );
+		$this->assertEquals( "-10.0", $response->refund->line_items[0]->unit_price );
+		$this->assertEquals( "0.0", $response->refund->line_items[0]->sales_tax );
+
+		$record->delete_in_taxjar();
+		$refund_record->delete_in_taxjar();
+	}
 }
