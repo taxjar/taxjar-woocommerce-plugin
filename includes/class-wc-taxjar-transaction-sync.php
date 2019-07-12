@@ -118,9 +118,10 @@ class WC_Taxjar_Transaction_Sync {
 
 	public static function schedule_process_queue() {
 		$next_timestamp = as_next_scheduled_action( self::PROCESS_QUEUE_HOOK );
+		$process_queue_interval = apply_filters( 'taxjar_process_queue_interval', 20 );
 
 		if ( ! $next_timestamp ) {
-			as_schedule_recurring_action( time(), MINUTE_IN_SECONDS * 5, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
+			as_schedule_recurring_action( time(), MINUTE_IN_SECONDS * $process_queue_interval, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
 		}
 	}
 
