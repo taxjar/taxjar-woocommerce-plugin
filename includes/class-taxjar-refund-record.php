@@ -32,7 +32,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			return false;
 		}
 
-		$valid_order_statuses = array( 'completed', 'refunded' );
+		$valid_order_statuses = apply_filters( 'taxjar_valid_order_statuses_for_sync', array( 'completed', 'refunded' ) );
 		if ( empty( $this->order_status ) || ! in_array( $this->order_status, $valid_order_statuses ) ) {
 			$this->add_error( __( 'Refund failed validation - parent order does not have valid status.', 'wc-taxjar' ) );
 			return false;

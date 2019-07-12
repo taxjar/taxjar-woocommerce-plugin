@@ -48,7 +48,7 @@ class WC_Taxjar_Transaction_Sync {
 	public function add_order_meta_box_action( $actions ) {
 		global $theorder;
 
-		$valid_statuses = array( 'completed', 'refunded' );
+		$valid_statuses = apply_filters( 'taxjar_valid_order_statuses_for_sync', array( 'completed', 'refunded' ) );
 		if ( ! in_array( $theorder->get_status(), $valid_statuses ) ) {
 			return $actions;
 		}
@@ -494,6 +494,9 @@ class WC_Taxjar_Transaction_Sync {
 			$end_date = date( 'Y-m-d H:i:s', strtotime( '+1 day, midnight', current_time( 'timestamp' ) ) );
 		}
 
+		$valid_post_statuses = apply_filters( 'taxjar_valid_post_statuses_for_sync', array( 'wc-completed', 'wc-refunded' ) );
+		$post_status_string = "( '" . implode( "', '", $valid_post_statuses ) . " ')";
+
 		if ( $force ) {
 			$posts = $wpdb->get_results(
 					"
@@ -501,7 +504,7 @@ class WC_Taxjar_Transaction_Sync {
 				FROM {$wpdb->posts} AS p 
 				INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id )  AND ( order_meta_completed_date.meta_key = '_completed_date' ) 
 				WHERE p.post_type = 'shop_order' 
-				AND p.post_status IN ( 'wc-completed', 'wc-refunded' ) 
+				AND p.post_status IN {$post_status_string} 
 				AND p.post_date >= '{$start_date}' 
 				AND p.post_date < '{$end_date}' 
 				AND order_meta_completed_date.meta_value IS NOT NULL 
@@ -516,7 +519,7 @@ class WC_Taxjar_Transaction_Sync {
 				INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id )  AND ( order_meta_completed_date.meta_key = '_completed_date' ) 
 				LEFT JOIN {$wpdb->postmeta} AS order_meta_last_sync ON ( p.id = order_meta_last_sync.post_id )  AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' )
 				WHERE p.post_type = 'shop_order' 
-				AND p.post_status IN ( 'wc-completed', 'wc-refunded' ) 
+				AND p.post_status IN {$post_status_string} 
 				AND p.post_date >= '{$start_date}' 
 				AND p.post_date < '{$end_date}' 
 				AND order_meta_completed_date.meta_value IS NOT NULL 
