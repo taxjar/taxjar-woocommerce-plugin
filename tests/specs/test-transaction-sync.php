@@ -1304,7 +1304,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
 		$noncomplete_order_refund = TaxJar_Order_Helper::create_refund_from_order( $noncomplete_order->get_id() );
-
+		
 		$synced_order = TaxJar_Order_Helper::create_order( 1 );
 		$synced_order->update_status( 'completed' );
 		$synced_order_refund = TaxJar_Order_Helper::create_refund_from_order( $synced_order->get_id() );

@@ -18,7 +18,6 @@ class TaxJar_Order_Helper {
 		);
 		$product = TaxJar_Product_Helper::create_product( 'simple', $options );
 
-
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
 
 		$order_data = array(

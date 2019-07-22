@@ -509,6 +509,7 @@ class WC_Taxjar_Transaction_Sync {
 				AND p.post_date >= '{$start_date}' 
 				AND p.post_date < '{$end_date}' 
 				AND order_meta_completed_date.meta_value IS NOT NULL 
+				AND order_meta_completed_date.meta_value != '' 
 				ORDER BY p.post_date ASC
 				", ARRAY_N
 			);
@@ -524,6 +525,7 @@ class WC_Taxjar_Transaction_Sync {
 				AND p.post_date >= '{$start_date}' 
 				AND p.post_date < '{$end_date}' 
 				AND order_meta_completed_date.meta_value IS NOT NULL 
+				AND order_meta_completed_date.meta_value != '' 
 				AND ((order_meta_last_sync.meta_value IS NULL) OR (p.post_modified_gmt > order_meta_last_sync.meta_value)) 
 				ORDER BY p.post_date ASC
 				", ARRAY_N
