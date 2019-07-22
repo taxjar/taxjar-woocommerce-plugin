@@ -379,14 +379,20 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	function test_order_record_get_fee_line_items() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$fee = new WC_Order_Item_Fee();
+
 		$fee->set_defaults();
-		$fee->set_amount( '10.00' );
 		$fee->set_name( 'test fee' );
+		$fee->set_total_tax( '0' );
+		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
+			$fee->set_total( '10.00' );
+		} else {
+			$fee->set_amount( '10.00' );
+		}
 		$order->add_item( $fee );
 		$order->save();
 
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
-		$record->load_object();
+		$record->load_object( $order );
 		$fee_line_items = $record->get_fee_line_items();
 		$this->assertEquals( 'test fee', $fee_line_items[ 0 ][ 'description' ] );
 		$this->assertEquals( '10.00', $fee_line_items[ 0 ][ 'unit_price' ] );
@@ -395,40 +401,58 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$fee = new WC_Order_Item_Fee();
+
 		$fee->set_defaults();
-		$fee->set_amount( '10.00' );
+		$fee->set_name( 'test fee' );
 		$fee->set_tax_class( 'clothing-rate-20010' );
+		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
+			$fee->set_total( '10.00' );
+		} else {
+			$fee->set_amount( '10.00' );
+		}
 		$order->add_item( $fee );
 		$order->save();
 
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
-		$record->load_object();
+		$record->load_object( $order );
 		$fee_line_items = $record->get_fee_line_items();
 		$this->assertEquals( '20010', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$fee = new WC_Order_Item_Fee();
+
 		$fee->set_defaults();
-		$fee->set_amount( '10.00' );
+		$fee->set_name( 'test fee' );
 		$fee->set_tax_class( 'zero-rate' );
+		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
+			$fee->set_total( '10.00' );
+		} else {
+			$fee->set_amount( '10.00' );
+		}
 		$order->add_item( $fee );
 		$order->save();
 
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
-		$record->load_object();
+		$record->load_object( $order );
 		$fee_line_items = $record->get_fee_line_items();
 		$this->assertEquals( '99999', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$fee = new WC_Order_Item_Fee();
+
 		$fee->set_defaults();
-		$fee->set_amount( '10.00' );
+		$fee->set_name( 'test fee' );
 		$fee->set_tax_status( 'none' );
+		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
+			$fee->set_total( '10.00' );
+		} else {
+			$fee->set_amount( '10.00' );
+		}
 		$order->add_item( $fee );
 		$order->save();
 
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
-		$record->load_object();
+		$record->load_object( $order );
 		$fee_line_items = $record->get_fee_line_items();
 		$this->assertEquals( '99999', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 	}
@@ -437,9 +461,15 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$order->update_status( 'completed' );
 		$fee = new WC_Order_Item_Fee();
-		$fee->set_amount( '10.00' );
+
+		$fee->set_defaults();
 		$fee->set_name( 'test fee' );
-		$fee->set_total( '10.00' );
+		$fee->set_tax_class( 'clothing-rate-20010' );
+		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
+			$fee->set_total( '10.00' );
+		} else {
+			$fee->set_amount( '10.00' );
+		}
 		$order->add_item( $fee );
 		$order->calculate_totals();
 		$order->save();
@@ -449,6 +479,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->save();
 		$result = $record->sync();
 		$this->assertTrue( $result );
+
+		$result = $record->get_from_taxjar();
+		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$result = $record->delete_in_taxjar();
 	}
@@ -1379,10 +1412,15 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	function test_sync_fee_refund() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$fee = new WC_Order_Item_Fee();
+
 		$fee->set_defaults();
-		$fee->set_amount( '10.00' );
-		$fee->set_total( '10.00' );
 		$fee->set_name( 'test fee' );
+		$fee->set_tax_class( 'clothing-rate-20010' );
+		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
+			$fee->set_total( '10.00' );
+		} else {
+			$fee->set_amount( '10.00' );
+		}
 		$order->add_item( $fee );
 		$order->calculate_totals();
 		$order->save();

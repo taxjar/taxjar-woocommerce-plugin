@@ -6,12 +6,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class TaxJar_Order_Record extends TaxJar_Record {
 
-	function load_object() {
-		$order = wc_get_order( $this->get_record_id() );
-		if ( $order instanceof WC_Order ) {
-			$this->object = $order;
+	function load_object( $object = null ) {
+		if ( $object && is_a( $object, 'WC_Order' ) ) {
+			$this->object = $object;
 		} else {
-			return;
+			$order = wc_get_order( $this->get_record_id() );
+			if ( $order instanceof WC_Order ) {
+				$this->object = $order;
+			} else {
+				return;
+			}
 		}
 
 		parent::load_object();
@@ -312,12 +316,18 @@ class TaxJar_Order_Record extends TaxJar_Record {
 					$tax_code = '99999';
 				}
 
+				if ( method_exists( $fee, 'get_amount' ) ) {
+					$fee_amount = $fee->get_amount();
+				} else {
+					$fee_amount = $fee->get_total();
+				}
+
 				$line_items_data[] = array(
 					'id' => $fee->get_id(),
 					'quantity' => $fee->get_quantity(),
 					'description' => $fee->get_name(),
 					'product_tax_code' => $tax_code,
-					'unit_price' => $fee->get_amount(),
+					'unit_price' => $fee_amount,
 					'sales_tax' => $fee->get_total_tax(),
 				);
 			}

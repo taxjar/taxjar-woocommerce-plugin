@@ -32,20 +32,23 @@ class TaxJar_Order_Helper {
 		$_SERVER['REMOTE_ADDR'] = '127.0.0.1'; // Required, else wc_create_order throws an exception
 		$order 					= wc_create_order( $order_data );
 
-		// Add order products
-		$item = new WC_Order_Item_Product();
-		$item->set_props( array(
-			'product'  => $product,
-			'quantity' => 1,
-			'subtotal' => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
-			'total'    => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
-		) );
-		$item->set_taxes( array(
-			'total' => array( 7.25 ),
-			'subtotal' => array( 7.25 )
-		) );
-		$item->save();
-		$order->add_item( $item );
+		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
+			$order->add_product( $product, 1 );
+		} else {
+			$item = new WC_Order_Item_Product();
+			$item->set_props( array(
+				'product'  => $product,
+				'quantity' => 1,
+				'subtotal' => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
+				'total'    => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
+			) );
+			$item->set_taxes( array(
+				'total' => array( 7.25 ),
+				'subtotal' => array( 7.25 )
+			) );
+			$item->save();
+			$order->add_item( $item );
+		}
 
 		// Set billing address
 		$order->set_billing_first_name( 'Fname' );
@@ -441,7 +444,14 @@ class TaxJar_Order_Helper {
 			if ( $item->get_type() != 'fee' ) {
 				continue;
 			}
-			$line_refund_total = $item->get_amount();
+
+			if ( method_exists( $item, 'get_amount' ) ) {
+				$fee_amount = $item->get_amount();
+			} else {
+				$fee_amount = $item->get_total();
+			}
+
+			$line_refund_total = $fee_amount;
 			$line_refund_tax = $item->get_total_tax();
 			$refund_total += $line_refund_total;
 			$refund_total += $line_refund_tax;

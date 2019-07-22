@@ -236,12 +236,18 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 					$tax_code = '99999';
 				}
 
+				if ( method_exists( $fee, 'get_amount' ) ) {
+					$fee_amount = $fee->get_amount();
+				} else {
+					$fee_amount = $fee->get_total();
+				}
+
 				$line_items_data[] = array(
 					'id' => $fee->get_id(),
 					'quantity' => $fee->get_quantity(),
 					'description' => $fee->get_name(),
 					'product_tax_code' => $tax_code,
-					'unit_price' => $fee->get_amount(),
+					'unit_price' => $fee_amount,
 					'sales_tax' => $fee->get_total_tax(),
 				);
 			}
