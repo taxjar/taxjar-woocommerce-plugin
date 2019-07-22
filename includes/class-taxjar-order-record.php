@@ -175,8 +175,8 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$from_zip         = $store_settings['postcode'];
 		$from_city        = $store_settings['city'];
 		$from_street      = $store_settings['street'];
-
-		$amount = $this->object->get_total() - $this->object->get_total_tax();
+		
+		$amount = $this->object->get_total() - wc_round_tax_total( $this->object->get_total_tax() );
 
 		$ship_to_address = $this->get_ship_to_address();
 
