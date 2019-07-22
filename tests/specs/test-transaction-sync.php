@@ -469,6 +469,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 			$fee->set_total( '10.00' );
 		} else {
 			$fee->set_amount( '10.00' );
+			$fee->set_total( '10.00' );
 		}
 		$order->add_item( $fee );
 		$order->calculate_totals();
@@ -1420,6 +1421,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 			$fee->set_total( '10.00' );
 		} else {
 			$fee->set_amount( '10.00' );
+			$fee->set_total( '10.00' );
 		}
 		$order->add_item( $fee );
 		$order->calculate_totals();
