@@ -34,15 +34,10 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'CO',
+			'store_street' => '6060 S Quebec St',
 			'store_postcode' => '80111',
 			'store_city' => 'Greenwood Village',
 		) );
-
-		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
-			$this->action = 'woocommerce_after_calculate_totals';
-		} else {
-			$this->action = 'woocommerce_calculate_totals';
-		}
 
 		// We need this to have the calculate_totals() method calculate totals
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
@@ -284,7 +279,7 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		WC()->cart->add_to_cart( $exempt_product );
 
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		//WC()->shipping->shipping_total = 10;
+		WC()->shipping->shipping_total = 10;
 
 		WC()->cart->calculate_totals();
 
@@ -546,6 +541,7 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		$this->assertEquals( $data['total'], 110.00, '', 0.01 );
 
 		$subscription_id = $data['id'];
+		$order = wc_get_order( $subscription_id );
 		$renewal_order = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
 		$renewal_order->update_status( 'completed' );
 

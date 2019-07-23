@@ -383,11 +383,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$fee->set_defaults();
 		$fee->set_name( 'test fee' );
 		$fee->set_total_tax( '0' );
-		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
-			$fee->set_total( '10.00' );
-		} else {
+		if ( method_exists( $fee, 'set_amount' ) ) {
 			$fee->set_amount( '10.00' );
 		}
+		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
 		$order->save();
 
@@ -405,11 +404,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$fee->set_defaults();
 		$fee->set_name( 'test fee' );
 		$fee->set_tax_class( 'clothing-rate-20010' );
-		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
-			$fee->set_total( '10.00' );
-		} else {
+		if ( method_exists( $fee, 'set_amount' ) ) {
 			$fee->set_amount( '10.00' );
 		}
+		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
 		$order->save();
 
@@ -424,11 +422,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$fee->set_defaults();
 		$fee->set_name( 'test fee' );
 		$fee->set_tax_class( 'zero-rate' );
-		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
-			$fee->set_total( '10.00' );
-		} else {
+		if ( method_exists( $fee, 'set_amount' ) ) {
 			$fee->set_amount( '10.00' );
 		}
+		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
 		$order->save();
 
@@ -443,11 +440,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$fee->set_defaults();
 		$fee->set_name( 'test fee' );
 		$fee->set_tax_status( 'none' );
-		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
-			$fee->set_total( '10.00' );
-		} else {
+		if ( method_exists( $fee, 'set_amount' ) ) {
 			$fee->set_amount( '10.00' );
 		}
+		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
 		$order->save();
 
@@ -465,12 +461,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$fee->set_defaults();
 		$fee->set_name( 'test fee' );
 		$fee->set_tax_class( 'clothing-rate-20010' );
-		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
-			$fee->set_total( '10.00' );
-		} else {
+		if ( method_exists( $fee, 'set_amount' ) ) {
 			$fee->set_amount( '10.00' );
-			$fee->set_total( '10.00' );
 		}
+		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
 		$order->calculate_totals();
 		$order->save();
@@ -1417,12 +1411,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$fee->set_defaults();
 		$fee->set_name( 'test fee' );
 		$fee->set_tax_class( 'clothing-rate-20010' );
-		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
-			$fee->set_total( '10.00' );
-		} else {
+		if ( method_exists( $fee, 'set_amount' ) ) {
 			$fee->set_amount( '10.00' );
-			$fee->set_total( '10.00' );
 		}
+		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
 		$order->calculate_totals();
 		$order->save();

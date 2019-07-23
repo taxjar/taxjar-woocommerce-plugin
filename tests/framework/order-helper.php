@@ -31,23 +31,21 @@ class TaxJar_Order_Helper {
 		$_SERVER['REMOTE_ADDR'] = '127.0.0.1'; // Required, else wc_create_order throws an exception
 		$order 					= wc_create_order( $order_data );
 
-		if ( version_compare( WC()->version, '3.1.0', '<' ) ) {
-			$order->add_product( $product, 1 );
-		} else {
-			$item = new WC_Order_Item_Product();
-			$item->set_props( array(
-				'product'  => $product,
-				'quantity' => 1,
-				'subtotal' => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
-				'total'    => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
-			) );
-			$item->set_taxes( array(
-				'total' => array( 7.25 ),
-				'subtotal' => array( 7.25 )
-			) );
-			$item->save();
-			$order->add_item( $item );
-		}
+		$item = new WC_Order_Item_Product();
+		$item->set_props( array(
+			'product'  => $product,
+			'quantity' => 1,
+			'subtotal' => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
+			'total'    => wc_get_price_excluding_tax( $product, array( 'qty' => 1 ) ),
+		) );
+		$item->set_taxes( array(
+			'total' => array( 7.25 ),
+			'subtotal' => array( 7.25 )
+		) );
+		$item->set_order_id( $order->get_id() );
+		$item->save();
+		$order->add_item( $item );
+
 
 		// Set billing address
 		$order->set_billing_first_name( 'Fname' );
@@ -84,6 +82,7 @@ class TaxJar_Order_Helper {
 		foreach ( $rate->get_meta_data() as $key => $value ) {
 			$item->add_meta_data( $key, $value, true );
 		}
+		$item->save();
 		$order->add_item( $item );
 
 		// Set payment gateway
@@ -284,6 +283,7 @@ class TaxJar_Order_Helper {
 			'total' => array( 7.25 ),
 			'subtotal' => array( 7.25 )
 		) );
+		$item->set_order_id( $order->get_id() );
 		$item->save();
 		$order->add_item( $item );
 
@@ -322,7 +322,10 @@ class TaxJar_Order_Helper {
 		foreach ( $rate->get_meta_data() as $key => $value ) {
 			$item->add_meta_data( $key, $value, true );
 		}
+		$item->set_order_id( $order->get_id() );
+		$item->save();
 		$order->add_item( $item );
+
 
 		// Set payment gateway
 		$payment_gateways = WC()->payment_gateways->payment_gateways();
