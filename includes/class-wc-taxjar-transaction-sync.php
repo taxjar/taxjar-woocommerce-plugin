@@ -48,6 +48,9 @@ class WC_Taxjar_Transaction_Sync {
 			add_action( 'untrashed_post', array( $this, 'untrash_post' ), 11 );
 
 			add_action( 'woocommerce_order_status_cancelled', array( $this, 'order_cancelled' ), 10, 2 );
+
+			add_action( 'woocommerce_product_options_tax', array( $this, 'display_notice_after_product_options_tax' ), 5 );
+			add_action( 'woocommerce_variation_options_tax', array( $this, 'display_notice_after_product_options_tax' ), 5 );
 		}
 	}
 
@@ -644,6 +647,18 @@ class WC_Taxjar_Transaction_Sync {
 			as_unschedule_all_actions( self::PROCESS_QUEUE_HOOK );
 			as_unschedule_all_actions( self::PROCESS_BATCH_HOOK );
 		}
+	}
+
+	/**
+	 * Displays notice regarding tax settings on edit product page in admin
+	 */
+	public function display_notice_after_product_options_tax() {
+		$notice = '<p style="font-style: italic;">';
+		$notice .= __( 'Note: Setting a product as none taxable or having the "Zero rate" tax class will cause no tax to be calculated on the item during checkout. However these settings are not supported in the TaxJar app and will cause discrepancies between expected and collected tax. In order to properly exempt products please use product exemption codes as explained in ', 'wc-taxjar' );
+		$notice .= '<a target="_blank" href="https://support.taxjar.com/article/309-overriding-tax-rates-and-exempting-products-in-woocommerce">';
+		$notice .= __( 'this article', 'wc-taxjar' );
+		$notice .= '</a>.</p>';
+		echo $notice;
 	}
 
 }

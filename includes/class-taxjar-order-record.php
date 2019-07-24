@@ -274,10 +274,6 @@ class TaxJar_Order_Record extends TaxJar_Record {
 					$tax_code = end( $tax_class );
 				}
 
-				if ( ! $product->is_taxable() || 'zero-rate' == sanitize_title( $product->get_tax_class() ) ) {
-					$tax_code = '99999';
-				}
-
 				$line_items_data[] = array(
 					'id' => $item->get_id(),
 					'quantity' => $quantity,
@@ -306,11 +302,6 @@ class TaxJar_Order_Record extends TaxJar_Record {
 				$tax_code = '';
 				if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
 					$tax_code = end( $tax_class );
-				}
-
-				$tax_status = $fee->get_tax_status();
-				if ( $tax_status != 'taxable' || 'zero-rate' == sanitize_title( $fee->get_tax_class() ) ) {
-					$tax_code = '99999';
 				}
 
 				if ( method_exists( $fee, 'get_amount' ) ) {

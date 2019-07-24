@@ -432,7 +432,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object( $order );
 		$fee_line_items = $record->get_fee_line_items();
-		$this->assertEquals( '99999', $fee_line_items[ 0 ][ 'product_tax_code' ] );
+		$this->assertEquals( '', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$fee = new WC_Order_Item_Fee();
@@ -450,7 +450,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object( $order );
 		$fee_line_items = $record->get_fee_line_items();
-		$this->assertEquals( '99999', $fee_line_items[ 0 ][ 'product_tax_code' ] );
+		$this->assertEquals( '', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 	}
 
 	function test_order_with_fee_record_sync() {
