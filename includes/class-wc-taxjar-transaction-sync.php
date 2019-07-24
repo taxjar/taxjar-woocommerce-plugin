@@ -660,5 +660,4 @@ class WC_Taxjar_Transaction_Sync {
 		$notice .= '</a>.</p>';
 		echo $notice;
 	}
-
 }

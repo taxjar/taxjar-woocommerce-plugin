@@ -68,6 +68,7 @@ final class WC_Taxjar {
 			include_once 'includes/class-wc-taxjar-connection.php';
 			include_once 'includes/class-wc-taxjar-integration.php';
 			include_once 'includes/class-wc-taxjar-transaction-sync.php';
+			include_once 'includes/class-wc-taxjar-customer-sync.php';
 			include_once 'includes/class-wc-taxjar-install.php';
 			include_once 'includes/class-wc-taxjar-record-queue.php';
 			include_once 'includes/abstract-class-taxjar-record.php';
