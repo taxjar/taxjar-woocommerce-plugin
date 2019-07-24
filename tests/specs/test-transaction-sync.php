@@ -694,6 +694,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order->save();
 
 		$order_record->load_object();
+		$order_record->get_data_from_object();
 		$this->assertFalse( $order_record->hash_match() );
 		$new_order_hash = hash( 'md5', serialize( $order_record->get_data_from_object() ) );
 		$this->assertNotEquals( $order_hash, $new_order_hash );
@@ -703,10 +704,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
+		$order_record->get_data_from_object();
 
 		$this->assertFalse( $order_record->should_sync() );
 		$order->update_status( 'completed' );
 		$order_record->load_object();
+		$order_record->get_data_from_object();
 		$this->assertTrue( $order_record->should_sync() );
 
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
@@ -715,11 +718,13 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$empty_order->update_status( 'completed' );
 		$order_record = new TaxJar_Order_Record( $empty_order->get_id(), true );
 		$order_record->load_object();
+		$order_record->get_data_from_object();
 		$this->assertFalse( $order_record->should_sync() );
 
 		$empty_order->set_shipping_country( 'US' );
 		$empty_order->save();
 		$order_record->load_object();
+		$order_record->get_data_from_object();
 		$this->assertFalse( $order_record->should_sync() );
 
 		$empty_order->set_shipping_city( 'Greenwood Village' );
@@ -727,6 +732,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$empty_order->set_shipping_postcode( '80111' );
 		$empty_order->save();
 		$order_record->load_object();
+		$order_record->get_data_from_object();
 		$this->assertTrue( $order_record->should_sync() );
 
 		TaxJar_Order_Helper::delete_order( $empty_order->get_id() );
@@ -736,6 +742,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order->update_status( 'completed' );
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
+		$order_record->get_data_from_object();
 		update_option( 'woocommerce_currency', 'USD' );
 		$this->assertFalse( $order_record->should_sync() );
 

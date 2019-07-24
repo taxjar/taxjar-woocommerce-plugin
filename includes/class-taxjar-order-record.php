@@ -11,7 +11,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			$this->object = $object;
 		} else {
 			$order = wc_get_order( $this->get_record_id() );
-			if ( $order instanceof WC_Order ) {
+			if ( $order instanceof WC_Order && get_class( $order ) != 'WC_Subscription' ) {
 				$this->object = $order;
 			} else {
 				return;
@@ -179,7 +179,6 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$amount = $this->object->get_total() - wc_round_tax_total( $this->object->get_total_tax() );
 
 		$ship_to_address = $this->get_ship_to_address();
-
 		$order_data = array(
 			'transaction_id' => $this->get_transaction_id(),
 			'transaction_date' => $created_date->date( DateTime::ISO8601 ),
@@ -210,13 +209,8 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$tax_based_on = get_option( 'woocommerce_tax_based_on' );
 
 		$local_pickup = false;
-		$shipping_methods = $this->object->get_shipping_methods();
-		if ( !empty( $shipping_methods ) ) {
-			foreach( $shipping_methods as $shipping_method ) {
-				if ( $shipping_method->get_method_id() == 'local_pickup' ) {
-					$local_pickup = true;
-				}
-			}
+		if ( $this->object->has_shipping_method( 'local_pickup' ) ) {
+			$local_pickup = true;
 		}
 
 		if ( $local_pickup ) {

@@ -39,7 +39,7 @@ abstract class TaxJar_Record {
 	}
 
 	public function load_object() {
-		$this->data = $this->get_data_from_object();
+		//$this->data = $this->get_data_from_object();
 	}
 
 	public function read() {
