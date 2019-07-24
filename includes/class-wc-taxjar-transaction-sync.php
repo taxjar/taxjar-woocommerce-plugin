@@ -17,11 +17,17 @@ class WC_Taxjar_Transaction_Sync {
 
 	public $taxjar_integration;
 
+	/**
+	 * Constructor for class
+	 */
 	public function __construct( $integration ) {
 		$this->taxjar_integration = $integration;
 		$this->init();
 	}
 
+	/**
+	 * Add actions and filters
+	 */
 	public function init() {
 		if ( isset( $this->taxjar_integration->settings['taxjar_download'] ) && 'yes' == $this->taxjar_integration->settings['taxjar_download'] ) {
 			add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
@@ -45,6 +51,11 @@ class WC_Taxjar_Transaction_Sync {
 		}
 	}
 
+	/**
+	 * Add action to edit order page in admin.
+	 *
+	 * @return array - list of order actions
+	 */
 	public function add_order_meta_box_action( $actions ) {
 		global $theorder;
 
@@ -76,6 +87,12 @@ class WC_Taxjar_Transaction_Sync {
 		}
 	}
 
+	/**
+	 * Manually sync order - triggered from edit order page in admin
+	 *
+	 * @param WC_Order $order - order to sync to TaxJar
+	 * @return void
+	 */
 	public function manual_order_sync( $order ) {
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		if ( ! $record ) {
@@ -116,6 +133,9 @@ class WC_Taxjar_Transaction_Sync {
 		}
 	}
 
+	/**
+	 * Schedule worker to process queue into batches
+	 */
 	public static function schedule_process_queue() {
 		$next_timestamp = as_next_scheduled_action( self::PROCESS_QUEUE_HOOK );
 		$process_queue_interval = apply_filters( 'taxjar_process_queue_interval', 20 );
@@ -156,8 +176,6 @@ class WC_Taxjar_Transaction_Sync {
 
 	/**
 	 * Process the batch and sync records to TaxJar
-	 *
-	 * @return null
 	 */
 	public function process_batch( $args ) {
 		if ( empty( $args ) ) {
@@ -199,6 +217,11 @@ class WC_Taxjar_Transaction_Sync {
 		}
 	}
 
+	/**
+	 * Runs when order is updated, checks if order should be added to queue and adds it
+	 *
+	 * @param int $order_id - id of updated order
+	 */
 	public static function order_updated( $order_id ) {
 		$queue_id = TaxJar_Order_Record::find_active_in_queue( $order_id );
 		if ( $queue_id ) {
@@ -223,6 +246,12 @@ class WC_Taxjar_Transaction_Sync {
 		$record->save();
 	}
 
+	/**
+	 * Runs when refund is created and maybe adds it to queue
+	 *
+	 * @param int $order_id - id of parent order
+	 * @param int $refund_id - id of refund
+	 */
 	public static function refund_created( $order_id, $refund_id ) {
 		$queue_id = TaxJar_Refund_Record::find_active_in_queue( $refund_id );
 		if ( $queue_id ) {
@@ -247,6 +276,11 @@ class WC_Taxjar_Transaction_Sync {
 		$record->save();
 	}
 
+	/**
+	 * Maybe re-enqueues order when restored from trash
+	 *
+	 * @param int $id - post id of order
+	 */
 	public function untrash_post( $id ) {
 		if ( ! $id ) {
 			return;
@@ -282,6 +316,11 @@ class WC_Taxjar_Transaction_Sync {
 		}
 	}
 
+	/**
+	 * Deletes order from TaxJar when trashed or deleted
+	 *
+	 * @param int $post_id - post id of order
+	 */
 	public function maybe_delete_transaction_from_taxjar( $post_id ) {
 		if ( 'shop_order' != get_post_type( $post_id ) ) {
 			return;
@@ -322,6 +361,11 @@ class WC_Taxjar_Transaction_Sync {
 		}
 	}
 
+	/**
+	 * Deletes refund from TaxJar when trashed or deleted
+	 *
+	 * @param int $post_id - post id of refund
+	 */
 	public function maybe_delete_refund_from_taxjar( $post_id ) {
 		if ( 'shop_order_refund' != get_post_type( $post_id ) ) {
 			return;
@@ -350,6 +394,12 @@ class WC_Taxjar_Transaction_Sync {
 		$record->delete();
 	}
 
+	/**
+	 * Deletes order from TaxJar when cancelled
+	 *
+	 * @param int $order_id - id of order
+	 * @param WC_Order $order - cancelled order
+	 */
 	public function order_cancelled( $order_id, $order ) {
 		$record = TaxJar_Order_Record::find_active_in_queue( $order_id );
 		if ( ! $record ) {
@@ -388,6 +438,15 @@ class WC_Taxjar_Transaction_Sync {
 		}
 	}
 
+	/**
+	 * Queries for and enqueues qualifying records in date range
+	 *
+	 * @param string $start_date - start date of query
+	 * @param string $end_date - end date of query
+	 * @param boolean $force - determines whether or not to ignore last sync time
+	 *
+	 * @return int - number of records back filled
+	 */
 	public function transaction_backfill( $start_date = null, $end_date = null, $force = false ) {
 		global $wpdb;
 		$queue_table = WC_Taxjar_Record_Queue::get_queue_table_name();
@@ -484,6 +543,13 @@ class WC_Taxjar_Transaction_Sync {
 		return count( $transaction_ids );
 	}
 
+	/**
+	 * @param string $start_date - start date of query
+	 * @param string $end_date - end date of query
+	 * @param bool $force - determines whether or not to ignore last sync time
+	 *
+	 * @return array - order ids that need back filled
+	 */
 	public function get_orders_to_backfill( $start_date = null, $end_date = null, $force = false ) {
 		global $wpdb;
 
@@ -539,6 +605,11 @@ class WC_Taxjar_Transaction_Sync {
 		return call_user_func_array( 'array_merge', $posts );
 	}
 
+	/**
+	 * @param array $order_ids - order ids that may contain refunds to back fill
+	 *
+	 * @return array - ids of refunds to back fill
+	 */
 	public function get_refunds_to_backfill( $order_ids ) {
 		if ( empty( $order_ids ) ) {
 			return array();
@@ -565,6 +636,9 @@ class WC_Taxjar_Transaction_Sync {
 		return call_user_func_array( 'array_merge', $posts );
 	}
 
+	/**
+	 * Unschedules all queue actions
+	 */
 	public static function unschedule_actions() {
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			as_unschedule_all_actions( self::PROCESS_QUEUE_HOOK );

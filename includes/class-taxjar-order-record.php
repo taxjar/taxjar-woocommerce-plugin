@@ -6,6 +6,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class TaxJar_Order_Record extends TaxJar_Record {
 
+	/**
+	 * @param WC_Order $object - allows loading of object without additional queries if available
+	 */
 	function load_object( $object = null ) {
 		if ( $object && is_a( $object, 'WC_Order' ) ) {
 			$this->object = $object;
