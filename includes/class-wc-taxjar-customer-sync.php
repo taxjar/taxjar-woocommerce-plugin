@@ -112,10 +112,18 @@ class WC_Taxjar_Customer_Sync {
 									<?php endforeach; ?>
 								</select>
 							<?php elseif ( ! empty( $field['type'] ) && 'multi-select' === $field['type'] ) : ?>
-							<select multiple name="<?php echo esc_attr( $key ); ?>" id="<?php echo esc_attr( $key ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>" style="width: 25em;">
+							<select multiple name="<?php echo esc_attr( $key ); ?>[]" id="<?php echo esc_attr( $key ); ?>" class="<?php echo esc_attr( $field['class'] ); ?>" style="width: 25em;">
 								<?php
-								$selected = esc_attr( get_user_meta( $user->ID, $key, true ) );
+								$saved_value = esc_attr( get_user_meta( $user->ID, $key, true ) );
+								if ( ! empty( $saved_value ) ) {
+								    $saved_value = explode( ',', $saved_value );
+                                }
 								foreach ( $field['options'] as $option_key => $option_value ) :
+                                    if ( ! empty( $saved_value ) && in_array( $option_key, $saved_value ) ) {
+                                        $selected = $option_key;
+                                    } else {
+                                        $selected = false;
+                                    }
 									?>
 									<option value="<?php echo esc_attr( $option_key ); ?>" <?php selected( $selected, $option_key, true ); ?>><?php echo esc_attr( $option_value ); ?></option>
 								<?php endforeach; ?>
@@ -143,8 +151,18 @@ class WC_Taxjar_Customer_Sync {
 
 		foreach ( $save_fields as $fieldset ) {
 			foreach ( $fieldset['fields'] as $key => $field ) {
-				if ( isset( $field['type'] ) && 'checkbox' === $field['type'] ) {
-					update_user_meta( $user_id, $key, isset( $_POST[ $key ] ) );
+				if ( isset( $field['type'] ) && 'multi-select' === $field['type'] ) {
+				    $prev_value = get_user_meta( $user_id, $key, true );;
+				    if ( empty( $_POST[ $key ] ) ) {
+				        $exempt_regions = '';
+                    } else {
+				        $exempt_regions = array_map( 'wc_clean',  $_POST[ $key ] );
+				        $exempt_regions = implode( ',', $exempt_regions );
+                    }
+
+				    if ( $exempt_regions != $prev_value ) {
+					    update_user_meta( $user_id, $key, $exempt_regions );
+                    }
 				} elseif ( isset( $_POST[ $key ] ) ) {
 					update_user_meta( $user_id, $key, wc_clean( $_POST[ $key ] ) );
 				}
@@ -179,7 +197,7 @@ class WC_Taxjar_Customer_Sync {
 			'IA' => 'Iowa',
 			'KS' => 'Kansas',
 			'KY' => 'Kentucky',
-			'LA' => ' Louisiana',
+			'LA' => 'Louisiana',
 			'ME' => 'Maine',
 			'MD' => 'Maryland',
 			'MA' => 'Massachusetts',
