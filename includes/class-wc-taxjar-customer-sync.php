@@ -69,7 +69,7 @@ class WC_Taxjar_Customer_Sync {
 							'description' => __( 'All customers are presumed non-exempt unless otherwise selected.', 'wc-taxjar' ),
 							'class'       => '',
 							'type'        => 'select',
-							'options'     => array( '' => __( 'None', 'wc-taxjar' ) ) + self::get_customer_exemption_types(),
+							'options'     => array( '' => __( 'Non-Exempt', 'wc-taxjar' ) ) + self::get_customer_exemption_types(),
 						),
 						'tax_exempt_regions' => array(
 							'label'       => __( 'Exempt States', 'wc-taxjar' ),
@@ -154,7 +154,7 @@ class WC_Taxjar_Customer_Sync {
 
 	public static function get_customer_exemption_types() {
 		return array(
-			'wholesale' => __( 'Wholesale', 'wc-taxjar' ),
+			'wholesale' => __( 'Wholesale / Resale', 'wc-taxjar' ),
 			'government' => __( 'Government', 'wc-taxjar' ),
 			'other' => __( 'Other', 'wc-taxjar' ),
 		);
