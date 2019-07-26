@@ -134,4 +134,50 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $should_sync );
 	}
 
+	function test_get_customer_data() {
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$data = $record->get_data();
+
+		$expected_data = array(
+			'customer_id' => $customer->get_id(),
+			'exemption_type' => 'wholesale',
+			'name' => 'First Last',
+			'exempt_regions' => array(
+				array(
+					'country' => 'US',
+					'state' => 'CO'
+				),
+				array(
+					'country' => 'US',
+					'state' => 'UT'
+				)
+			),
+			'country' => 'US',
+			'state' => 'CO',
+			'zip' => '80111',
+			'city' => 'Greenwood Village',
+			'street' => '123 Test St'
+		);
+
+		$this->assertEquals( $expected_data[ 'customer_id' ], $data[ 'customer_id' ] );
+		$this->assertEquals( $expected_data[ 'exemption_type' ], $data[ 'exemption_type' ] );
+		$this->assertEquals( $expected_data[ 'name' ], $data[ 'name' ] );
+		$this->assertEquals( $expected_data[ 'exempt_regions' ], $data[ 'exempt_regions' ] );
+		$this->assertEquals( $expected_data[ 'country' ], $data[ 'country' ] );
+		$this->assertEquals( $expected_data[ 'state' ], $data[ 'state' ] );
+		$this->assertEquals( $expected_data[ 'zip' ], $data[ 'zip' ] );
+		$this->assertEquals( $expected_data[ 'city' ], $data[ 'city' ] );
+		$this->assertEquals( $expected_data[ 'street' ], $data[ 'street' ] );
+	}
+
+	function test_sync_customer() {
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+
+	}
 }
