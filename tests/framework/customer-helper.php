@@ -31,4 +31,15 @@ class TaxJar_Customer_Helper {
 		return $customer;
 	}
 
+	public static function create_non_exempt_customer() {
+		$customer = self::create_customer();
+		$customer->set_email( 'test@test.com' );
+		$customer->set_billing_first_name( 'First' );
+		$customer->set_billing_last_name( 'Last' );
+		$customer->set_shipping_address_1( '123 Test St' );
+
+		$customer->save();
+		return $customer;
+	}
+
 }
