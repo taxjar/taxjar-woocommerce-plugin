@@ -13,6 +13,37 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		WC_Taxjar_Record_Queue::clear_queue();
 	}
 
+	function test_get_exemption_type() {
+		$customer = TaxJar_Customer_Helper::create_customer();
+		$customer->set_email( 'test@test.com' );
+		$customer->save();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$exemption_type = $record->get_exemption_type();
+		$this->assertEquals( 'non_exempt', $exemption_type );
+
+		update_user_meta( $customer->get_id(), 'tax_exemption_type', 'wholesale' );
+		$exemption_type = $record->get_exemption_type();
+		$this->assertEquals( 'wholesale', $exemption_type );
+
+		update_user_meta( $customer->get_id(), 'tax_exemption_type', 'government' );
+		$exemption_type = $record->get_exemption_type();
+		$this->assertEquals( 'government', $exemption_type );
+
+		update_user_meta( $customer->get_id(), 'tax_exemption_type', 'other' );
+		$exemption_type = $record->get_exemption_type();
+		$this->assertEquals( 'other', $exemption_type );
+
+		update_user_meta( $customer->get_id(), 'tax_exemption_type', 'non_exempt' );
+		$exemption_type = $record->get_exemption_type();
+		$this->assertEquals( 'non_exempt', $exemption_type );
+
+		update_user_meta( $customer->get_id(), 'tax_exemption_type', 'invalid_type' );
+		$exemption_type = $record->get_exemption_type();
+		$this->assertEquals( 'non_exempt', $exemption_type );
+	}
+
 	function test_customer_sync_validation() {
 		$customer = TaxJar_Customer_Helper::create_customer();
 		$customer->set_email( 'test@test.com' );
