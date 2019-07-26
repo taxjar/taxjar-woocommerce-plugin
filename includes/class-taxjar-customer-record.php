@@ -264,7 +264,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	public function get_exempt_regions() {
 		$states = WC_Taxjar_Customer_Sync::get_all_exempt_regions();
 		$valid_exempt_regions = array_keys( $states );
-		$exempt_meta = get_user_meta( $this->object->get_id(), 'tax_exemption_type', true );
+		$exempt_meta = get_user_meta( $this->object->get_id(), 'tax_exempt_regions', true );
 		$saved_regions = explode( ',', $exempt_meta );
 		$intersect = array_intersect( $valid_exempt_regions, $saved_regions );
 		$exempt_regions = array();
