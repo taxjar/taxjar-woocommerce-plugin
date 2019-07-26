@@ -79,6 +79,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 */
 	public function sync_success() {
 		parent::sync_success();
+		$this->add_object_sync_metadata();
 	}
 
 	/**
