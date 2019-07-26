@@ -173,11 +173,54 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$this->assertEquals( $expected_data[ 'street' ], $data[ 'street' ] );
 	}
 
-	function test_sync_customer() {
+	function test_customer_api_requests() {
 		$customer = TaxJar_Customer_Helper::create_exempt_customer();
 
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
 		$record->load_object();
+		$record->delete_in_taxjar();
 
+		// test create new customer in TaxJar
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$response = $record->create_in_taxjar();
+		$this->assertEquals( 201, $response['response']['code'] );
+
+		// test update existing customer in TaxJar
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$response = $record->update_in_taxjar();
+		$this->assertEquals( 200, $response['response']['code'] );
+
+		// test get customer from TaxJar
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$response = $record->get_from_taxjar();
+		$this->assertEquals( 200, $response['response']['code'] );
+		$body = json_decode( $response[ 'body' ] );
+		$this->assertEquals( 'wholesale', $body->customer->exemption_type );
+		$this->assertEquals( 'First Last', $body->customer->name );
+		$this->assertEquals( 'US', $body->customer->country );
+		$this->assertEquals( 'CO', $body->customer->state );
+		$this->assertEquals( '80111', $body->customer->zip );
+		$this->assertEquals( 'Greenwood Village', $body->customer->city );
+		$this->assertEquals( '123 Test St', $body->customer->street );
+
+		$this->assertEquals( 'US', $body->customer->exempt_regions[ 0 ]->country );
+		$this->assertEquals( 'CO', $body->customer->exempt_regions[ 0 ]->state );
+		$this->assertEquals( 'US', $body->customer->exempt_regions[ 1 ]->country );
+		$this->assertEquals( 'UT', $body->customer->exempt_regions[ 1 ]->state );
+
+		// test get customer from TaxJar
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$response = $record->delete_in_taxjar();
+		$this->assertEquals( 200, $response['response']['code'] );
+
+		// test get customer after deletion from TaxJar
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$response = $record->get_from_taxjar();
+		$this->assertEquals( 404, $response['response']['code'] );
 	}
 }
