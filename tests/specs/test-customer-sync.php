@@ -211,7 +211,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$this->assertEquals( 'US', $body->customer->exempt_regions[ 1 ]->country );
 		$this->assertEquals( 'UT', $body->customer->exempt_regions[ 1 ]->state );
 
-		// test get customer from TaxJar
+		// test delete customer from TaxJar
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
 		$record->load_object();
 		$response = $record->delete_in_taxjar();
@@ -259,6 +259,39 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$record->set_force_push( true );
 		$result = $record->sync();
 		$this->assertTrue( $result );
+
+		$record->delete_in_taxjar();
+	}
+
+	function test_sync_on_customer_save() {
+		$customer = TaxJar_Customer_Helper::create_non_exempt_customer();
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+
+		$customer_id = $customer->get_id();
+
+		$_POST[ 'user_id' ] = $customer->get_id();
+		$_POST[ 'tax_exemption_type' ] = 'wholesale';
+		$_POST[ 'tax_exempt_regions' ] = array( 'UT', 'CO' );
+
+		$current_user = wp_get_current_user();
+		$current_user->add_cap( 'manage_woocommerce' );
+
+		do_action( 'edit_user_profile_update', $customer->get_id() );
+
+		$this->assertGreaterThan( 0, did_action( 'taxjar_customer_exemption_settings_updated' ) );
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$response = $record->get_from_taxjar();
+		$this->assertEquals( 200, $response['response']['code'] );
+		$body = json_decode( $response[ 'body' ] );
+		$this->assertEquals( 'wholesale', $body->customer->exemption_type );
+		$this->assertEquals( 'US', $body->customer->exempt_regions[ 0 ]->country );
+		$this->assertEquals( 'CO', $body->customer->exempt_regions[ 0 ]->state );
+		$this->assertEquals( 'US', $body->customer->exempt_regions[ 1 ]->country );
+		$this->assertEquals( 'UT', $body->customer->exempt_regions[ 1 ]->state );
 
 		$record->delete_in_taxjar();
 	}
