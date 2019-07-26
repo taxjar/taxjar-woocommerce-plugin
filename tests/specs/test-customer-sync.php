@@ -223,4 +223,43 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$response = $record->get_from_taxjar();
 		$this->assertEquals( 404, $response['response']['code'] );
 	}
+
+	function test_sync_customer() {
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+
+		// test sync new customer
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		// test sync non updated customer already in TaxJar
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertFalse( $result );
+
+		// test sync updated customer already in TaxJar
+		update_user_meta( $customer->get_id(), 'tax_exemption_type', 'other' );
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$record->delete_in_taxjar();
+
+		// test sync updated customer not in TaxJar
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$record->set_status( 'awaiting' );
+		$record->set_force_push( true );
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$record->delete_in_taxjar();
+	}
 }
