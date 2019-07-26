@@ -198,7 +198,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 		}
 		$customer_data[ 'name' ] = $name;
 
-		$customer_data[ 'exempt_regions' ] = $this->get_exemption_regions();
+		$customer_data[ 'exempt_regions' ] = $this->get_exempt_regions();
 
 		$country = $this->object->get_shipping_country();
 		if ( empty( $country ) ) {
@@ -240,9 +240,9 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 			$customer_data[ 'street' ] = $address;
 		}
 
-		$this->data = $customer_date;
+		$this->data = $customer_data;
 
-		return $customer_date;
+		return $customer_data;
 	}
 
 	/**

@@ -32,7 +32,7 @@ class WC_Taxjar_Customer_Sync {
 			add_action( 'personal_options_update', array( $this, 'save_customer_meta_fields' ) );
 			add_action( 'edit_user_profile_update', array( $this, 'save_customer_meta_fields' ) );
 
-			add_acttion( 'taxjar_customer_exemption_settings_updated', array( $this, 'maybe_sync_customer_on_update' ) );
+			add_action( 'taxjar_customer_exemption_settings_updated', array( $this, 'maybe_sync_customer_on_update' ) );
 		}
 	}
 
