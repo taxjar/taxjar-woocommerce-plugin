@@ -48,6 +48,22 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 			return false;
 		}
 
+		$data = $this->get_data();
+		if ( empty( $data[ 'customer_id' ] ) ) {
+			$this->add_error( __( 'Customer failed validation, customer missing required field: customer_id.', 'wc-taxjar' ) );
+			return false;
+		}
+
+		if ( empty( $data[ 'exemption_type' ] ) ) {
+			$this->add_error( __( 'Customer failed validation, customer missing required field: exemption_type.', 'wc-taxjar' ) );
+			return false;
+		}
+
+		if ( empty( $data[ 'name' ] ) ) {
+			$this->add_error( __( 'Customer failed validation, customer missing required field: name.', 'wc-taxjar' ) );
+			return false;
+		}
+
 		if ( ! $this->get_force_push() ) {
 			if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
 				$this->add_error( __( 'Customer failed validation, customer data not different than previous sync.', 'wc-taxjar' ) );
@@ -171,7 +187,15 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 
 		$first_name = $this->object->get_billing_first_name();
 		$last_name = $this->object->get_billing_last_name();
-		$name = $first_name . ' ' . $last_name;
+		if ( empty( $first_name ) && empty( $last_name ) ) {
+			$name = '';
+		} else if ( empty( $first_name ) ) {
+			$name = $last_name;
+		} else if ( empty( $last_name ) ) {
+			$name = $first_name;
+		} else {
+			$name = $first_name . ' ' . $last_name;
+		}
 		$customer_data[ 'name' ] = $name;
 
 		$customer_data[ 'exempt_regions' ] = $this->get_exemption_regions();
@@ -229,10 +253,31 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	}
 
 	public function get_exemption_type() {
-		return '';
+		$valid_types = array( 'wholesale', 'government', 'other', 'non_exempt' );
+		$exemption_type = get_user_meta( $this->object->get_id(), 'tax_exemption_type', true );
+		if ( ! in_array( $exemption_type, $valid_types ) ) {
+			$exemption_type = 'non_exempt';
+		}
+		return $exemption_type;
 	}
 
 	public function get_exempt_regions() {
-		return array();
+		$states = WC_Taxjar_Customer_Sync::get_all_exempt_regions();
+		$valid_exempt_regions = array_keys( $states );
+		$exempt_meta = get_user_meta( $this->object->get_id(), 'tax_exemption_type', true );
+		$saved_regions = explode( ',', $exempt_meta );
+		$intersect = array_intersect( $valid_exempt_regions, $saved_regions );
+		$exempt_regions = array();
+
+		if ( ! empty( $intersect ) ) {
+			foreach( $intersect as $region ) {
+				$exempt_regions[] = array(
+					'country' => 'US',
+					'state'   => $region
+				);
+			}
+		}
+
+		return $exempt_regions;
 	}
 }

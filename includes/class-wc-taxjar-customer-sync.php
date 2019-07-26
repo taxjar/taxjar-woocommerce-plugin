@@ -31,6 +31,8 @@ class WC_Taxjar_Customer_Sync {
 
 			add_action( 'personal_options_update', array( $this, 'save_customer_meta_fields' ) );
 			add_action( 'edit_user_profile_update', array( $this, 'save_customer_meta_fields' ) );
+
+			add_acttion( 'taxjar_customer_exemption_settings_updated', array( $this, 'maybe_sync_customer_on_update' ) );
 		}
 	}
 
@@ -148,11 +150,11 @@ class WC_Taxjar_Customer_Sync {
 		}
 
 		$save_fields = $this->get_customer_meta_fields();
-
+		$change = false;
 		foreach ( $save_fields as $fieldset ) {
 			foreach ( $fieldset['fields'] as $key => $field ) {
 				if ( isset( $field['type'] ) && 'multi-select' === $field['type'] ) {
-				    $prev_value = get_user_meta( $user_id, $key, true );;
+				    $prev_value = get_user_meta( $user_id, $key, true );
 				    if ( empty( $_POST[ $key ] ) ) {
 				        $exempt_regions = '';
                     } else {
@@ -162,13 +164,39 @@ class WC_Taxjar_Customer_Sync {
 
 				    if ( $exempt_regions != $prev_value ) {
 					    update_user_meta( $user_id, $key, $exempt_regions );
+					    $change = true;
                     }
 				} elseif ( isset( $_POST[ $key ] ) ) {
-					update_user_meta( $user_id, $key, wc_clean( $_POST[ $key ] ) );
+					$prev_value = get_user_meta( $user_id, $key, true );
+					$new_value = wc_clean( $_POST[ $key ] );
+					if ( $prev_value != $new_value ) {
+						update_user_meta( $user_id, $key, $new_value );
+						$change = true;
+                    }
 				}
 			}
 		}
+
+		if ( $change ) {
+		    do_action( 'taxjar_customer_exemption_settings_updated', $user_id );
+        }
 	}
+
+	public function maybe_sync_customer_on_update( $user_id ) {
+		$record = TaxJar_Customer_Record::find_active_in_queue( $user_id );
+		if ( ! $record ) {
+			$record = new TaxJar_Customer_Record( $user_id, true );
+		}
+		$record->load_object();
+
+		$this->_log( 'Customer sync for customer # ' . $record->get_record_id() . ' (Queue # ' . $record->get_queue_id() . ') triggered.' );
+
+		if ( ! apply_filters( 'taxjar_should_sync_order', $record->should_sync() ) ) {
+			return;
+		}
+
+		$result = $record->sync();
+    }
 
 	public static function get_customer_exemption_types() {
 		return array(
