@@ -16,4 +16,14 @@ class TaxJar_Customer_Helper {
 		return $customer;
 	}
 
+	public static function create_complete_customer() {
+		$customer = self::create_customer();
+		$customer->set_email( 'test@test.com' );
+		$customer->set_billing_first_name( 'Test' );
+		$customer->set_billing_last_name( 'Test' );
+
+		$customer->save();
+		return $customer;
+	}
+
 }
