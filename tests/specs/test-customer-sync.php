@@ -44,6 +44,70 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$this->assertEquals( 'non_exempt', $exemption_type );
 	}
 
+	function test_get_exempt_regions() {
+		$customer = TaxJar_Customer_Helper::create_customer();
+		$customer->set_email( 'test@test.com' );
+		$customer->save();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$exempt_regions = $record->get_exempt_regions();
+		$this->assertEquals( array(), $exempt_regions );
+
+		$exempt_regions_string = 'AL,AK';
+		update_user_meta( $customer->get_id(), 'tax_exempt_regions', $exempt_regions_string );
+		$exempt_regions = $record->get_exempt_regions();
+		$expected = array(
+			array(
+				'country' => 'US',
+				'state' => 'AL'
+			),
+			array(
+				'country' => 'US',
+				'state' => 'AK'
+			)
+		);
+		$this->assertEquals( $expected, $exempt_regions );
+
+		// test invalid state string
+		$exempt_regions_string = 'AL,XX';
+		update_user_meta( $customer->get_id(), 'tax_exempt_regions', $exempt_regions_string );
+		$exempt_regions = $record->get_exempt_regions();
+		$expected = array(
+			array(
+				'country' => 'US',
+				'state' => 'AL'
+			)
+		);
+		$this->assertEquals( $expected, $exempt_regions );
+
+		$exempt_regions_string = 'AL';
+		update_user_meta( $customer->get_id(), 'tax_exempt_regions', $exempt_regions_string );
+		$exempt_regions = $record->get_exempt_regions();
+		$expected = array(
+			array(
+				'country' => 'US',
+				'state' => 'AL'
+			)
+		);
+		$this->assertEquals( $expected, $exempt_regions );
+
+		$exempt_regions_string = 'AL,,AK';
+		update_user_meta( $customer->get_id(), 'tax_exempt_regions', $exempt_regions_string );
+		$exempt_regions = $record->get_exempt_regions();
+		$expected = array(
+			array(
+				'country' => 'US',
+				'state' => 'AL'
+			),
+			array(
+				'country' => 'US',
+				'state' => 'AK'
+			)
+		);
+		$this->assertEquals( $expected, $exempt_regions );
+	}
+
 	function test_customer_sync_validation() {
 		$customer = TaxJar_Customer_Helper::create_customer();
 		$customer->set_email( 'test@test.com' );
