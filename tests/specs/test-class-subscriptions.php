@@ -555,4 +555,38 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
+	function test_correct_taxes_for_subscription_recurring_order_with_exempt_customer() {
+		wp_set_current_user( $this->user );
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$request = TaxJar_Subscription_Helper::prepare_subscription_request( array( 'customer_id' => $customer->get_id() ) );
+		$response = $this->server->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertEquals( $data['total'], 110.00, '', 0.01 );
+
+		$subscription_id = $data['id'];
+		$renewal_order = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
+
+		$this->assertEquals( $renewal_order->get_shipping_tax(), 0, '', 0.01 );
+		$this->assertEquals( $renewal_order->get_cart_tax(), 0, '', 0.01 );
+		$this->assertEquals( $renewal_order->get_total(), 110 , '', 0.01 );
+
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		// test to ensure subscription tax has been correctly calculated and updated
+		$this->assertEquals( $subscription->get_shipping_tax(), 0, '', 0.01 );
+		$this->assertEquals( $subscription->get_cart_tax(), 0, '', 0.01 );
+		$this->assertEquals( $subscription->get_total(), 110 , '', 0.01 );
+
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+		$record->delete_in_taxjar();
+	}
+
 }
