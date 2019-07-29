@@ -364,4 +364,22 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		WC()->session->set( 'chosen_shipping_methods', array() );
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
+
+	function test_maybe_delete_customer() {
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$data = $record->get_from_taxjar();
+		$this->assertEquals( 200, $data[ 'response' ][ 'code'] );
+
+		wp_delete_user( $customer->get_id() );
+
+		$data = $record->get_from_taxjar();
+		$this->assertEquals( 404, $data[ 'response' ][ 'code'] );
+
+		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );
+	}
 }
