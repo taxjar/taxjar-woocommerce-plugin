@@ -318,6 +318,8 @@ abstract class TaxJar_Record {
 			$record = new TaxJar_Order_Record( $record_row[ 'record_id'] );
 		} elseif ( $record_row[ 'record_type' ] == 'refund' ) {
 			$record = new TaxJar_Refund_Record( $record_row[ 'record_id'] );
+		} elseif ( $record_row[ 'record_type' ] == 'customer' ) {
+			$record = new TaxJar_Customer_Record( $record_row[ 'record_id'] );
 		} else {
 			// remove record from queue as it's of a type not supported
 			$record = new TaxJar_Order_Record( $record_row[ 'record_id' ] );
