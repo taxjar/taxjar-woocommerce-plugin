@@ -828,6 +828,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			$shipping = $order->get_total_shipping(); // Woo 2.6
 		}
 
+		$customer_id = $order->get_customer_id();
+
 		$taxes = $this->calculate_tax( array(
 			'to_country' => $address['to_country'],
 			'to_state' => $address['to_state'],
@@ -836,6 +838,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'to_street' => $address['to_street'],
 			'shipping_amount' => $shipping,
 			'line_items' => $line_items,
+            'customer_id' => $customer_id,
 		) );
 
 		if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
@@ -904,6 +907,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		    $shipping = $order->get_total_shipping(); // Woo 2.6
 	    }
 
+	    $customer_id = $order->get_customer_id();
+
 	    $taxes = $this->calculate_tax( array(
 		    'to_country' => $address[ 'to_country' ],
 		    'to_state' => $address[ 'to_state' ],
@@ -912,6 +917,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		    'to_street' => $address[ 'to_street' ],
 		    'shipping_amount' => $shipping,
 		    'line_items' => $line_items,
+            'customer_id' => $customer_id,
 	    ) );
 
 	    if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
