@@ -16,8 +16,8 @@ class TaxJar_Customer_Helper {
 		return $customer;
 	}
 
-	public static function create_exempt_customer() {
-		$customer = self::create_customer();
+	public static function create_exempt_customer( $opts = array() ) {
+		$customer = self::create_customer( $opts );
 		$customer->set_email( 'test@test.com' );
 		$customer->set_billing_first_name( 'First' );
 		$customer->set_billing_last_name( 'Last' );
@@ -40,6 +40,10 @@ class TaxJar_Customer_Helper {
 
 		$customer->save();
 		return $customer;
+	}
+
+	public static function delete_customer( $customer_id ) {
+		wp_delete_user( $customer_id );
 	}
 
 }
