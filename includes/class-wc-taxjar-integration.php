@@ -478,10 +478,13 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		}
 
 		// validate customer exemption before sending API call
+        $customer_id = 0;
 		if ( is_object( WC()->customer ) ) {
 		    if ( WC()->customer->is_vat_exempt() ) {
 		        return false;
             }
+
+		    $customer_id = WC()->customer->get_id();
         }
 
 		// Valid zip codes to prevent unnecessary API requests
@@ -525,6 +528,10 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'shipping' => $shipping_amount,
 			'plugin' => 'woo',
 		);
+
+		if ( ! empty( $customer_id ) && $customer_id > 0 ) {
+		    $body[ 'customer_id' ] = $customer_id;
+        }
 
 		// Either `amount` or `line_items` parameters are required to perform tax calculations.
 		if ( empty( $line_items ) ) {
