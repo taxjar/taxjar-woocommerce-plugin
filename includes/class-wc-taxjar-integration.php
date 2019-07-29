@@ -458,6 +458,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'to_street' => null,
 			'shipping_amount' => null, // WC()->shipping->shipping_total
 			'line_items' => null,
+            'customer_id' => 0,
 		), $options) );
 
 		$taxes = array(
@@ -478,14 +479,11 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		}
 
 		// validate customer exemption before sending API call
-        $customer_id = 0;
 		if ( is_object( WC()->customer ) ) {
-		    if ( WC()->customer->is_vat_exempt() ) {
-		        return false;
-            }
-
-		    $customer_id = WC()->customer->get_id();
-        }
+			if ( WC()->customer->is_vat_exempt() ) {
+				return false;
+			}
+		}
 
 		// Valid zip codes to prevent unnecessary API requests
         if ( ! $this->is_postal_code_valid( $to_country, $to_state, $to_zip ) ) {
@@ -736,6 +734,11 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		$address = $this->get_address( $wc_cart_object );
 		$line_items = $this->get_line_items( $wc_cart_object );
 
+		$customer_id = 0;
+		if ( is_object( WC()->customer ) ) {
+			$customer_id = WC()->customer->get_id();
+		}
+
 		$taxes = $this->calculate_tax( array(
 			'to_country' => $address['to_country'],
 			'to_zip' => $address['to_zip'],
@@ -744,6 +747,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'to_street' => $address['to_street'],
 			'shipping_amount' => WC()->shipping->shipping_total,
 			'line_items' => $line_items,
+            'customer_id' => $customer_id,
 		) );
 
 		$this->response_rate_ids = $taxes['rate_ids'];
