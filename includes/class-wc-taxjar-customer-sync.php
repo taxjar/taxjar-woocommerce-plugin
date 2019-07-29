@@ -33,6 +33,8 @@ class WC_Taxjar_Customer_Sync {
 			add_action( 'edit_user_profile_update', array( $this, 'save_customer_meta_fields' ) );
 
 			add_action( 'taxjar_customer_exemption_settings_updated', array( $this, 'maybe_sync_customer_on_update' ) );
+
+			add_action( 'delete_user', array( $this, 'maybe_delete_customer' ) );
 		}
 	}
 
@@ -260,5 +262,23 @@ class WC_Taxjar_Customer_Sync {
 			'WY' => 'Wyoming',
 		);
 	}
+
+	/**
+     * Deletes customer from TaxJar when synced customer is deleted in WordPress
+	 * @param $id - user id
+	 */
+	public function maybe_delete_customer( $id ) {
+		$last_sync = get_user_meta( $id, '_taxjar_last_sync', true );
+		$hash = get_user_meta( $id, '_taxjar_hash', true );
+		if ( $last_sync || $hash ) {
+		    $record = TaxJar_Customer_Record::find_active_in_queue( $id );
+			if ( ! $record ) {
+				$record = new TaxJar_Customer_Record( $id, true );
+			}
+
+			$record->delete_in_taxjar();
+			$record->delete();
+        }
+    }
 
 }
