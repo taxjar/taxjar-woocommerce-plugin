@@ -269,8 +269,6 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$record->load_object();
 		$record->delete_in_taxjar();
 
-		$customer_id = $customer->get_id();
-
 		$_POST[ 'user_id' ] = $customer->get_id();
 		$_POST[ 'tax_exemption_type' ] = 'wholesale';
 		$_POST[ 'tax_exempt_regions' ] = array( 'UT', 'CO' );
@@ -332,6 +330,57 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$record->delete_in_taxjar();
 		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );
 
+		WC()->session->set( 'chosen_shipping_methods', array() );
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+	}
+
+	function test_tax_calculation_with_previously_exempt_customer() {
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		WC()->cart->add_to_cart( $product );
+		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
+		WC()->shipping->shipping_total = 10;
+
+		// test tax calculation for exempt customer
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		WC()->customer = $customer;
+		WC()->cart->calculate_totals();
+		$this->assertEquals( 0, WC()->cart->tax_total, '', 0.01 );
+		$this->assertEquals( 0, WC()->cart->shipping_tax_total, '', 0.01 );
+		$this->assertEquals( 0, WC()->cart->get_taxes_total(), '', 0.01 );
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$this->assertEquals( 0, $item['line_tax'], '', 0.01 );
+		}
+
+		// test when customer updated to non exempt
+		update_user_meta( $customer->get_id(), 'tax_exemption_type', 'non_exempt' );
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		WC()->cart->empty_cart();
+		WC()->cart->add_to_cart( $product, 2 );
+		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
+		WC()->shipping->shipping_total = 10;
+		WC()->customer = $customer;
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( 1.45, WC()->cart->tax_total, '', 0.01 );
+		$this->assertEquals( .73, WC()->cart->shipping_tax_total, '', 0.01 );
+		$this->assertEquals( 2.19, WC()->cart->get_taxes_total(), '', 0.01 );
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$this->assertEquals( 1.45, $item['line_tax'], '', 0.01 );
+		}
+
+		$record->delete_in_taxjar();
+		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );
 		WC()->session->set( 'chosen_shipping_methods', array() );
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
