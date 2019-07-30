@@ -736,7 +736,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 
 		$customer_id = 0;
 		if ( is_object( WC()->customer ) ) {
-			$customer_id = WC()->customer->get_id();
+			$customer_id = apply_filters( 'taxjar_get_customer_id', WC()->customer->get_id(), WC()->customer );
 		}
 
 		$taxes = $this->calculate_tax( array(
@@ -828,7 +828,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			$shipping = $order->get_total_shipping(); // Woo 2.6
 		}
 
-		$customer_id = $order->get_customer_id();
+		$customer_id = apply_filters( 'taxjar_get_customer_id', $order->get_customer_id() );
 
 		$taxes = $this->calculate_tax( array(
 			'to_country' => $address['to_country'],
@@ -907,7 +907,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		    $shipping = $order->get_total_shipping(); // Woo 2.6
 	    }
 
-	    $customer_id = $order->get_customer_id();
+	    $customer_id = apply_filters( 'taxjar_get_customer_id', $order->get_customer_id() );
 
 	    $taxes = $this->calculate_tax( array(
 		    'to_country' => $address[ 'to_country' ],
