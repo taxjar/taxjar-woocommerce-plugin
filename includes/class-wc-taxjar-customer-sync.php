@@ -77,7 +77,7 @@ class WC_Taxjar_Customer_Sync {
 						),
 						'tax_exempt_regions' => array(
 							'label'       => __( 'Exempt States', 'wc-taxjar' ),
-							'description' => __( 'Hold CTRL to select multiple states.', 'wc-taxjar' ),
+							'description' => __( 'Hold CTRL to select multiple states. If no states are selected the customer will be considered exempt in all states.', 'wc-taxjar' ),
 							'class'       => '',
 							'type'        => 'multi-select',
 							'options'     => self::get_all_exempt_regions(),
