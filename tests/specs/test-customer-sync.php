@@ -382,4 +382,37 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 
 		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );
 	}
+
+	function test_process_queue_with_customer_record() {
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$record->save();
+
+		$batches = $this->tj->transaction_sync->process_queue();
+		$batch_timestamp = as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK );
+		$this->assertNotFalse( $batch_timestamp );
+		foreach( $batches as $batch_id ) {
+			$batch = get_post( $batch_id );
+			$args = json_decode( $batch->post_content, true );
+			$this->assertContains( $record->get_queue_id(), $args[ 'queue_ids' ] );
+		}
+
+		$this->tj->transaction_sync->process_batch(  $args[ 'queue_ids' ] );
+
+		$new_record = TaxJar_Customer_Record::find_active_in_queue( $customer->get_id() );
+		$this->assertFalse( $new_record );
+
+		$record->read();
+		$record->load_object();
+
+		$this->assertEquals( 'completed', $record->get_status() );
+		$last_sync = $record->object->get_meta( '_taxjar_last_sync', true );
+		$hash = $record->object->get_meta( '_taxjar_hash', true );
+		$this->assertNotEmpty( $last_sync );
+		$this->assertNotEmpty( $hash );
+
+		$record->delete_in_taxjar();
+		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );
+	}
 }
