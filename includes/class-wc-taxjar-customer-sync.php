@@ -44,15 +44,15 @@ class WC_Taxjar_Customer_Sync {
 	 * @return void
 	 */
 	public function _log( $message ) {
-		do_action( 'taxjar_transaction_sync_log', $message );
+		do_action( 'taxjar_customer_sync_log', $message );
 		if ( $this->taxjar_integration->debug ) {
 			if ( ! isset( $this->log ) ) {
 				$this->log = new WC_Logger();
 			}
 			if ( is_array( $message ) || is_object( $message ) ) {
-				$this->log->add( 'taxjar-transaction-sync', print_r( $message, true ) );
+				$this->log->add( 'taxjar-customer-sync', print_r( $message, true ) );
 			} else {
-				$this->log->add( 'taxjar-transaction-sync', $message );
+				$this->log->add( 'taxjar-customer-sync', $message );
 			}
 		}
 	}
