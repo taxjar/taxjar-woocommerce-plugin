@@ -181,13 +181,28 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 * @return array
 	 */
 	public function get_data_from_object() {
-		$customer_date = array();
+		$customer_data = array();
 
 		$customer_data[ 'customer_id' ] = $this->get_customer_id();
 		$customer_data[ 'exemption_type' ] = $this->get_exemption_type();
 
-		$first_name = $this->object->get_billing_first_name();
-		$last_name = $this->object->get_billing_last_name();
+		$first_name = $this->object->get_shipping_first_name();
+		$last_name = $this->object->get_shipping_last_name();
+
+		if ( empty( $first_name ) ) {
+			$first_name = $this->object->get_billing_first_name();
+			if ( empty( $first_name ) ) {
+				$first_name = $this->object->get_first_name();
+			}
+		}
+
+		if ( empty( $last_name ) ) {
+			$last_name = $this->object->get_billing_last_name();
+			if ( empty( $last_name ) ) {
+				$last_name = $this->object->get_last_name();
+			}
+		}
+
 		if ( empty( $first_name ) && empty( $last_name ) ) {
 			$name = '';
 		} else if ( empty( $first_name ) ) {
