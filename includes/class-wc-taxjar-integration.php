@@ -163,16 +163,20 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	public function output_transaction_backfill() {
 		global $hide_save_button;
 		$hide_save_button = true;
-        $current_date = current_time( 'Y-m-d' );
-        ?>
-        <table class="form-table">
-            <tbody>
+
+		if ( isset( $this->settings['taxjar_download'] ) && 'yes' == $this->settings['taxjar_download'] ) {
+			$current_date = current_time( 'Y-m-d' );
+			?>
+            <table class="form-table">
+                <tbody>
                 <tr valign="top">
                     <th scope="row" class="titledesc">
                         <label for="start_date">Backfill Start Date</label>
                     </th>
                     <td class="start_date_field">
-                        <input type="text" class="taxjar-datepicker" style="" name="start_date" id="start_date" value="<?php echo $current_date; ?>" placeholder="YYYY-MM-DD" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])">
+                        <input type="text" class="taxjar-datepicker" style="" name="start_date" id="start_date"
+                               value="<?php echo $current_date; ?>" placeholder="YYYY-MM-DD"
+                               pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])">
                     </td>
                 </tr>
                 <tr valign="top">
@@ -180,7 +184,9 @@ class WC_Taxjar_Integration extends WC_Settings_API {
                         <label for="end_date">Backfill End Date</label>
                     </th>
                     <td class="end_date_field">
-                        <input type="text" class="taxjar-datepicker" style="" name="end_date" id="end_date" value="<?php echo $current_date; ?>" placeholder="YYYY-MM-DD" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])">
+                        <input type="text" class="taxjar-datepicker" style="" name="end_date" id="end_date"
+                               value="<?php echo $current_date; ?>" placeholder="YYYY-MM-DD"
+                               pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])">
                     </td>
                 </tr>
                 <tr valign="top" class="">
@@ -189,15 +195,24 @@ class WC_Taxjar_Integration extends WC_Settings_API {
                         <fieldset>
                             <legend class="screen-reader-text"><span>Force Sync</span></legend>
                             <label for="force_sync">
-                                <input name="force_sync" id="force_sync" type="checkbox" class="" value="1"> If enabled, all orders and refunds will be added to the queue to sync to TaxJar, regardless of if they have been updated since they were lasted synced.
+                                <input name="force_sync" id="force_sync" type="checkbox" class="" value="1"> If enabled,
+                                all orders and refunds will be added to the queue to sync to TaxJar, regardless of if
+                                they have been updated since they were lasted synced.
                             </label>
                         </fieldset>
                     </td>
                 </tr>
-            </tbody>
-        </table>
-        <p><button class='button js-wc-taxjar-transaction-backfill'>Run Backfill</button></p>
-        <?php
+                </tbody>
+            </table>
+            <p>
+                <button class='button js-wc-taxjar-transaction-backfill'>Run Backfill</button>
+            </p>
+			<?php
+		} else {
+		    ?>
+                <p>Sales Tax Reporting must be enabled in order to use transaction back fill.</p>
+            <?php
+        }
     }
 
 	/**
@@ -207,8 +222,14 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		global $hide_save_button;
 		$hide_save_button = true;
 
-		$report = new WC_Taxjar_Queue_List();
-		$report->output_report();
+		if ( isset( $this->settings['taxjar_download'] ) && 'yes' == $this->settings['taxjar_download'] ) {
+			$report = new WC_Taxjar_Queue_List();
+			$report->output_report();
+		} else {
+			?>
+                <p>Enable Sales Tax Reporting in order to view the transaction queue.</p>
+			<?php
+        }
 	}
 
 	/**
