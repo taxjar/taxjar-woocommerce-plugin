@@ -173,6 +173,46 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$this->assertEquals( $expected_data[ 'street' ], $data[ 'street' ] );
 	}
 
+	function test_get_name_fallback() {
+		$customer = TaxJar_Customer_Helper::create_customer();
+		$customer->set_email( 'name_fallback@test.com' );
+		$customer->save();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$data = $record->get_data();
+		$this->assertEquals( '' , $data[ 'name' ] );
+
+		$customer->set_first_name( 'First' );
+		$customer->set_last_name( 'Last' );
+		$customer->save();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$data = $record->get_data();
+		$this->assertEquals( 'First Last' , $data[ 'name' ] );
+
+		$customer->set_billing_first_name( 'Bfirst' );
+		$customer->set_billing_last_name( 'Blast' );
+		$customer->save();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$data = $record->get_data();
+		$this->assertEquals( 'Bfirst Blast' , $data[ 'name' ] );
+
+		$customer->set_shipping_first_name( 'Sfirst' );
+		$customer->set_shipping_last_name( 'Slast' );
+		$customer->save();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$data = $record->get_data();
+		$this->assertEquals( 'Sfirst Slast' , $data[ 'name' ] );
+
+		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );
+	}
+
 	function test_customer_api_requests() {
 		$customer = TaxJar_Customer_Helper::create_exempt_customer();
 
