@@ -25,17 +25,17 @@ class WC_Taxjar_Customer_Sync {
 	 * Add actions and filters
 	 */
 	public function init() {
-		if ( isset( $this->taxjar_integration->settings['taxjar_download'] ) && 'yes' == $this->taxjar_integration->settings['taxjar_download'] ) {
-			add_action( 'show_user_profile', array( $this, 'add_customer_meta_fields' ) );
-			add_action( 'edit_user_profile', array( $this, 'add_customer_meta_fields' ) );
+		if ( apply_filters( 'taxjar_enabled', isset( $this->taxjar_integration->settings['enabled'] ) && 'yes' == $this->taxjar_integration->settings['enabled'] ) ) {
+            add_action( 'show_user_profile', array( $this, 'add_customer_meta_fields' ) );
+            add_action( 'edit_user_profile', array( $this, 'add_customer_meta_fields' ) );
 
-			add_action( 'personal_options_update', array( $this, 'save_customer_meta_fields' ) );
-			add_action( 'edit_user_profile_update', array( $this, 'save_customer_meta_fields' ) );
+            add_action( 'personal_options_update', array( $this, 'save_customer_meta_fields' ) );
+            add_action( 'edit_user_profile_update', array( $this, 'save_customer_meta_fields' ) );
 
-			add_action( 'taxjar_customer_exemption_settings_updated', array( $this, 'maybe_sync_customer_on_update' ) );
+            add_action( 'taxjar_customer_exemption_settings_updated', array( $this, 'maybe_sync_customer_on_update' ) );
 
-			add_action( 'delete_user', array( $this, 'maybe_delete_customer' ) );
-		}
+            add_action( 'delete_user', array( $this, 'maybe_delete_customer' ) );
+	    }
 	}
 
 	/**
