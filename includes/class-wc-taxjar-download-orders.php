@@ -31,12 +31,6 @@ class WC_Taxjar_Download_Orders {
 		}
 		$value = apply_filters( 'taxjar_download_orders', $value );
 
-		if ( $value != $previous_value ) {
-			if ( $value !== 'yes' ) {
-				WC_Taxjar_Transaction_Sync::unschedule_actions();
-			}
-		}
-
 		return $value;
 	}
 

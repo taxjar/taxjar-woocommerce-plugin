@@ -30,6 +30,7 @@ class WC_Taxjar_Transaction_Sync {
 	 */
 	public function init() {
 		if ( apply_filters( 'taxjar_enabled', isset( $this->taxjar_integration->settings['enabled'] ) && 'yes' == $this->taxjar_integration->settings['enabled'] ) ) {
+			add_filter( 'cron_schedules', array( $this, 'add_twenty_minute_cron_interval' ) );
 			add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
 			add_action( self::PROCESS_QUEUE_HOOK, array( __CLASS__, 'process_queue' ) );
 			add_action( self::PROCESS_BATCH_HOOK, array( $this, 'process_batch' ) );
@@ -142,12 +143,29 @@ class WC_Taxjar_Transaction_Sync {
 	 * Schedule worker to process queue into batches
 	 */
 	public static function schedule_process_queue() {
+		$next_timestamp = wp_next_scheduled( self::PROCESS_QUEUE_HOOK );
+		$process_queue_interval = apply_filters( 'taxjar_process_queue_interval', 20 );
+
+		if ( ! $next_timestamp ) {
+			wp_schedule_event( time(), 'twenty_minutes', self::PROCESS_QUEUE_HOOK );
+		}
+
+		/**
 		$next_timestamp = as_next_scheduled_action( self::PROCESS_QUEUE_HOOK );
 		$process_queue_interval = apply_filters( 'taxjar_process_queue_interval', 20 );
 
 		if ( ! $next_timestamp ) {
 			as_schedule_recurring_action( time(), MINUTE_IN_SECONDS * $process_queue_interval, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
 		}
+		 **/
+	}
+
+	function add_twenty_minute_cron_interval( $schedules ) {
+		$schedules['twenty_minutes'] = array(
+			'interval' => MINUTE_IN_SECONDS * 20,
+			'display' => __( 'Every Twenty Minutes', 'wc-taxjar=' )
+		);
+		return $schedules;
 	}
 
 	/**
@@ -645,6 +663,11 @@ class WC_Taxjar_Transaction_Sync {
 	 * Unschedules all queue actions
 	 */
 	public static function unschedule_actions() {
+		$timestamp = wp_next_scheduled( self::PROCESS_QUEUE_HOOK );
+		if ( $timestamp ) {
+			wp_unschedule_event( $timestamp, self::PROCESS_QUEUE_HOOK );
+		}
+
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			as_unschedule_all_actions( self::PROCESS_QUEUE_HOOK );
 			as_unschedule_all_actions( self::PROCESS_BATCH_HOOK );
