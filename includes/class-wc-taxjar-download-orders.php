@@ -31,6 +31,12 @@ class WC_Taxjar_Download_Orders {
 		}
 		$value = apply_filters( 'taxjar_download_orders', $value );
 
+		if ( $value != $previous_value ) {
+			if ( $value == 'no' ) {
+				WC_Taxjar_Record_Queue::clear_active_transaction_records();
+			}
+		}
+
 		return $value;
 	}
 

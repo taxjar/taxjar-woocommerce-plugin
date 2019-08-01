@@ -115,4 +115,18 @@ class WC_Taxjar_Record_Queue {
 		return $result;
 	}
 
+	/**
+	 * Remove all active orders and refunds from queue
+	 */
+	static function clear_active_transaction_records() {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+
+		$query = "DELETE FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) AND record_type IN ( 'order', 'refund' )";
+		$results = $wpdb->query( $query );
+
+		return $results;
+	}
+
 }
