@@ -181,6 +181,13 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 		$amount = $this->object->get_total() - wc_round_tax_total( $this->object->get_total_tax() );
 
+		// gift card use with Smart Coupons plugin cause discrepancy between total and sum of line items
+		if ( class_exists( 'WC_SC_Order_Fields' ) ) {
+			$smart_coupons_order_fields = WC_SC_Order_Fields::get_instance();
+			$total_credit_used = $smart_coupons_order_fields->get_total_credit_used_in_order( $this->object );
+			$amount += $total_credit_used;
+		}
+
 		$ship_to_address = $this->get_ship_to_address();
 		$order_data = array(
 			'transaction_id' => $this->get_transaction_id(),
