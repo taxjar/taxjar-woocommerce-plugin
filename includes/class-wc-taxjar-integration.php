@@ -1073,7 +1073,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			}
 		}
 
-		return $line_items;
+		return apply_filters( 'taxjar_cart_get_line_items', $line_items, $wc_cart_object );
 	}
 
 	/**
@@ -1127,7 +1127,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			}
 		}
 
-		return $line_items;
+		return apply_filters( 'taxjar_order_calculation_get_line_items', $line_items, $order );
 	}
 
 	protected function get_line_item( $id, $line_items ) {
