@@ -16,6 +16,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 	function test_get_exemption_type() {
 		$customer = TaxJar_Customer_Helper::create_customer();
 		$customer->set_email( 'test@test.com' );
+		$customer->set_password('password');
 		$customer->save();
 
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
@@ -47,6 +48,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 	function test_get_exempt_regions() {
 		$customer = TaxJar_Customer_Helper::create_customer();
 		$customer->set_email( 'test@test.com' );
+		$customer->set_password('password');
 		$customer->save();
 
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
@@ -111,6 +113,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 	function test_customer_sync_validation() {
 		$customer = TaxJar_Customer_Helper::create_customer();
 		$customer->set_email( 'test@test.com' );
+		$customer->set_password('password');
 		$customer->save();
 
 		// test no object loaded
@@ -176,6 +179,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 	function test_get_name_fallback() {
 		$customer = TaxJar_Customer_Helper::create_customer();
 		$customer->set_email( 'name_fallback@test.com' );
+		$customer->set_password('password');
 		$customer->save();
 
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );

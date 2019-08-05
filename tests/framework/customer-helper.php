@@ -22,7 +22,7 @@ class TaxJar_Customer_Helper {
 		$customer->set_billing_first_name( 'First' );
 		$customer->set_billing_last_name( 'Last' );
 		$customer->set_shipping_address_1( '123 Test St' );
-
+		$customer->set_password('password');
 		$customer->save();
 
 		update_user_meta( $customer->get_id(), 'tax_exempt_regions', 'UT,CO' );
@@ -37,7 +37,7 @@ class TaxJar_Customer_Helper {
 		$customer->set_billing_first_name( 'First' );
 		$customer->set_billing_last_name( 'Last' );
 		$customer->set_shipping_address_1( '123 Test St' );
-
+		$customer->set_password('password');
 		$customer->save();
 		return $customer;
 	}
