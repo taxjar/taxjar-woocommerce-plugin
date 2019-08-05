@@ -296,8 +296,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 		$fees = $this->get_fee_line_items();
 
-
-		return array_merge( $line_items_data, $fees );
+		return apply_filters( 'taxjar_order_sync_get_line_items', array_merge( $line_items_data, $fees ), $this->object );
 	}
 
 	public function get_fee_line_items() {
