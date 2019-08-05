@@ -365,10 +365,7 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.77, '', 0.01 );
 		}
 	}
-
-	/**
-	 * @expectedDeprecated get_used_coupons
-	 */
+	
 	function test_correct_taxes_for_subscription_recurring_order() {
 		wp_set_current_user( $this->user );
 
@@ -398,9 +395,6 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
-	/**
-	 * @expectedDeprecated get_used_coupons
-	 */
 	function test_correct_taxes_for_subscription_recurring_order_with_one_month_trial() {
 		wp_set_current_user( $this->user );
 
@@ -441,9 +435,6 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
-	/**
-	 * @expectedDeprecated get_used_coupons
-	 */
 	function test_correct_taxes_for_subscription_recurring_order_with_trial_and_signup_fee() {
 		wp_set_current_user( $this->user );
 
@@ -484,9 +475,6 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
-	/**
-	 * @expectedDeprecated get_used_coupons
-	 */
 	function test_correct_taxes_for_subscription_recurring_order_with_multiple_products() {
 		wp_set_current_user( $this->user );
 
@@ -542,9 +530,6 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
-	/**
-	 * @expectedDeprecated get_used_coupons
-	 */
 	function test_renewal_order_transaction_sync() {
 		wp_set_current_user( $this->user );
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
@@ -570,9 +555,6 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
-	/**
-	 * @expectedDeprecated get_used_coupons
-	 */
 	function test_correct_taxes_for_subscription_recurring_order_with_exempt_customer() {
 		wp_set_current_user( $this->user );
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
