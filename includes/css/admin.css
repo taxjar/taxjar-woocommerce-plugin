@@ -11,3 +11,39 @@
 .add-order-tax {
 	display: none !important;
 }
+
+.widefat .column-taxjar_actions a.button {
+	display: block;
+	text-indent: -9999px;
+	position: relative;
+	height: 1em;
+	width: 1em;
+	display: inline-block;
+	margin: 2px 4px 2px 0;
+	padding: 0!important;
+	height: 2em!important;
+	width: 2em;
+	overflow: hidden;
+	vertical-align: middle;
+}
+
+.widefat .column-taxjar_actions a.button::after {
+	font-family: Dashicons;
+	speak: none;
+	font-weight: 400;
+	font-variant: normal;
+	text-transform: none;
+	margin: 0;
+	text-indent: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	text-align: center;
+	line-height: 1.85;
+}
+
+.widefat .column-taxjar_actions a.view::after {
+	content: "\f177";
+}

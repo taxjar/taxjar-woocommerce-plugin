@@ -28,26 +28,23 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 		WC()->cart->recurring_carts = array();
-		$this->tj = WC()->integrations->integrations['taxjar-integration'];
+		$this->tj = TaxJar();
 
 		// Reset shipping origin
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'CO',
+			'store_street' => '6060 S Quebec St',
 			'store_postcode' => '80111',
 			'store_city' => 'Greenwood Village',
 		) );
-
-		if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
-			$this->action = 'woocommerce_after_calculate_totals';
-		} else {
-			$this->action = 'woocommerce_calculate_totals';
-		}
 
 		// We need this to have the calculate_totals() method calculate totals
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
+
+		update_option( 'woocommerce_currency', 'USD' );
 	}
 
 	function tearDown() {
@@ -368,7 +365,7 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 			$this->assertEquals( $recurring_cart->get_taxes_total(), 1.77, '', 0.01 );
 		}
 	}
-
+	
 	function test_correct_taxes_for_subscription_recurring_order() {
 		wp_set_current_user( $this->user );
 
@@ -531,6 +528,65 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		}
 
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+	}
+
+	function test_renewal_order_transaction_sync() {
+		wp_set_current_user( $this->user );
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+		$request = TaxJar_Subscription_Helper::prepare_subscription_request();
+		$response = $this->server->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertEquals( $data['total'], 110.00, '', 0.01 );
+
+		$subscription_id = $data['id'];
+		$order = wc_get_order( $subscription_id );
+		$renewal_order = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
+		$renewal_order->update_status( 'completed' );
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $renewal_order->get_id() );
+		$this->assertNotFalse( $record );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+		$result = $record->delete_in_taxjar();
+
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+	}
+
+	function test_correct_taxes_for_subscription_recurring_order_with_exempt_customer() {
+		wp_set_current_user( $this->user );
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$request = TaxJar_Subscription_Helper::prepare_subscription_request( array( 'customer_id' => $customer->get_id() ) );
+		$response = $this->server->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertEquals( $data['total'], 110.00, '', 0.01 );
+
+		$subscription_id = $data['id'];
+		$renewal_order = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
+
+		$this->assertEquals( $renewal_order->get_shipping_tax(), 0, '', 0.01 );
+		$this->assertEquals( $renewal_order->get_cart_tax(), 0, '', 0.01 );
+		$this->assertEquals( $renewal_order->get_total(), 110 , '', 0.01 );
+
+		$subscription = wcs_get_subscription( $subscription_id );
+
+		// test to ensure subscription tax has been correctly calculated and updated
+		$this->assertEquals( $subscription->get_shipping_tax(), 0, '', 0.01 );
+		$this->assertEquals( $subscription->get_cart_tax(), 0, '', 0.01 );
+		$this->assertEquals( $subscription->get_total(), 110 , '', 0.01 );
+
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+		$record->delete_in_taxjar();
 	}
 
 }

@@ -1,3 +1,13 @@
+# 3.0.0 (2019-08-06)
+* Added transaction sync order push to TaxJar
+* Added customer sync to TaxJar
+* Full support for product exemptions
+* Full support for customer exemptions
+* Fix local pickup expected tax reports mismatch in TaxJar
+* Full support for partial refunds
+* Full support for fees in tax reporting in TaxJar
+* Fix expected tax mismatch when order contains gift card in TaxJar reports
+
 # 2.3.0 (2019-05-16)
 * Added full support for WooCommerce Subscriptions
 * Fix performance issue with recalculating shipping

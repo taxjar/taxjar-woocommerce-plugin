@@ -22,6 +22,7 @@ class TaxJar_Subscription_Helper {
 			'payment_method' => 'stripe',
 			'payment_method_title'       => 'Credit Card (Stripe)',
 			'set_paid'             => true,
+			'currency'             => 'USD',
 			'billing'              => array(
 				'first_name' => 'John',
 				'last_name'  => 'Doe',
