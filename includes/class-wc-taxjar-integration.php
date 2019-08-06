@@ -548,8 +548,14 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'plugin' => 'woo',
 		);
 
-		if ( ! empty( $customer_id ) && $customer_id > 0 ) {
-		    $body[ 'customer_id' ] = $customer_id;
+		if ( is_int ( $customer_id ) ) {
+		    if ( $customer_id > 0 ) {
+			    $body[ 'customer_id' ] = $customer_id;
+            }
+        } else {
+		    if ( ! empty( $customer_id ) ) {
+			    $body[ 'customer_id' ] = $customer_id;
+            }
         }
 
 		// Either `amount` or `line_items` parameters are required to perform tax calculations.
@@ -849,7 +855,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			$shipping = $order->get_total_shipping(); // Woo 2.6
 		}
 
-		$customer_id = isset( $_POST[ 'customer_user' ] ) ? wc_clean( $_POST[ 'customer_user' ] ) : 0;
+		$customer_id = apply_filters( 'taxjar_get_customer_id', isset( $_POST[ 'customer_user' ] ) ? wc_clean( $_POST[ 'customer_user' ] ) : 0 );
 
 		$taxes = $this->calculate_tax( array(
 			'to_country' => $address['to_country'],

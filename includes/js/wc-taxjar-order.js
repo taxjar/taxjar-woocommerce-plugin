@@ -10,6 +10,7 @@ jQuery( document ).ready( function() {
 
 					if ( 'woocommerce_calc_line_taxes' === data.action ) {
 						var street = '';
+						var customer_user = '';
 
 						if ( 'shipping' === woocommerce_admin_meta_boxes.tax_based_on ) {
 							street = $( '#_shipping_address_1' ).val();
@@ -19,7 +20,6 @@ jQuery( document ).ready( function() {
 							street = $( '#_billing_address_1' ).val();
 						}
 
-						var customer_user = '';
 						if ( $( '#customer_user' ).val() ) {
 							customer_user = $( '#customer_user' ).val();
 						}
