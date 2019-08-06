@@ -1070,4 +1070,17 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->session->set( 'chosen_shipping_methods', array() );
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
+
+	function test_tax_lookup_state_with_space() {
+		$location = array(
+			'to_country' => 'GB',
+			'to_state' => 'West Sussex',
+			'to_zip' => 'BN15 1S2',
+			'to_city' => 'London'
+		);
+		$rate_id = $this->tj->create_or_update_tax_rate( $location, 10 );
+		$found_rate_id = $this->tj->create_or_update_tax_rate( $location, 10 );
+
+		$this->assertEquals( $rate_id, $found_rate_id );
+	}
 }
