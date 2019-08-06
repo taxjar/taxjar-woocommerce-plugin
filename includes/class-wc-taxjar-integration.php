@@ -461,7 +461,7 @@ class WC_Taxjar_Integration extends WC_Integration {
 
 		$wc_rate = WC_Tax::find_rates( array(
 			'country' => $location['to_country'],
-			'state' => $location['to_state'],
+			'state' => sanitize_key( $location['to_state'] ),
 			'postcode' => $location['to_zip'],
 			'city' => $location['to_city'],
 			'tax_class' => $tax_class,
