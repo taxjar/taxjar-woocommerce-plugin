@@ -19,7 +19,13 @@ jQuery( document ).ready( function() {
 							street = $( '#_billing_address_1' ).val();
 						}
 
+						var customer_user = '';
+						if ( $( '#customer_user' ).val() ) {
+							customer_user = $( '#customer_user' ).val();
+						}
+
 						data.street = street;
+						data.customer_user = customer_user;
 						settings.data = $.param( data );
 					}
 				} catch ( e ) {
