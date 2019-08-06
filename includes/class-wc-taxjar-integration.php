@@ -849,7 +849,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			$shipping = $order->get_total_shipping(); // Woo 2.6
 		}
 
-		$customer_id = apply_filters( 'taxjar_get_customer_id', $order->get_customer_id() );
+		$customer_id = isset( $_POST[ 'customer_user' ] ) ? wc_clean( $_POST[ 'customer_user' ] ) : 0;
 
 		$taxes = $this->calculate_tax( array(
 			'to_country' => $address['to_country'],
