@@ -470,8 +470,9 @@ class WC_Taxjar_Integration extends WC_Integration {
 		if ( version_compare( WC()->version, '3.2.0', '>=' ) ) {
 			$rate_lookup['state'] = sanitize_key( $location['to_state'] );
 		}
-		
+
 		$wc_rate = WC_Tax::find_rates( $rate_lookup );
+
 		if ( ! empty( $wc_rate ) ) {
 			$this->_log( ':: Tax Rate Found ::' );
 			$this->_log( $wc_rate );
