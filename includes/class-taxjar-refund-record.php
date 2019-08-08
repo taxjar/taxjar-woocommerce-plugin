@@ -122,6 +122,11 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			$refund_data[ 'customer_id' ] = $customer_id;
 		}
 
+		$exemption_type = apply_filters( 'taxjar_refund_sync_exemption_type', '', $this->object );
+		if ( WC_Taxjar_Integration::is_valid_exemption_type( $exemption_type ) ) {
+			$refund_data[ 'exemption_type' ] = $exemption_type;
+		}
+
 		$this->data = $refund_data;
 		return $refund_data;
 	}
