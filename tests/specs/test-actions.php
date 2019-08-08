@@ -1070,4 +1070,17 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->session->set( 'chosen_shipping_methods', array() );
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
+
+	function test_order_level_exemption_on_cart_calculation() {
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		WC()->cart->add_to_cart( $product );
+
+		add_filter( 'taxjar_cart_exemption_type', function ( $cart ) {
+			return 'wholesale';
+		} );
+
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( 0, WC()->cart->get_taxes_total() );
+	}
 }
