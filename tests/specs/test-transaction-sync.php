@@ -1463,4 +1463,16 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$in_queue = WC_Taxjar_Record_Queue::get_all_active_in_queue();
 		$this->assertEmpty( $in_queue );
 	}
+
+	function test_partial_refund_sync_on_order_completion() {
+		$order = TaxJar_Order_Helper::create_order_quantity_two( 1 );
+		$refund = TaxJar_Order_Helper::create_partial_refund_from_order( $order->get_id() );
+		$order->update_status( 'completed' );
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+
+		$this->assertNotFalse( $record );
+		$this->assertNotFalse( $refund_record );
+	}
 }
