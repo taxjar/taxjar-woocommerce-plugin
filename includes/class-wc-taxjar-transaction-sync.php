@@ -264,6 +264,32 @@ class WC_Taxjar_Transaction_Sync {
 		$taxjar_last_sync = $record->get_last_sync_time();
 		if ( ! empty( $taxjar_last_sync ) ) {
 			$record->set_status( 'awaiting' );
+		} else {
+			$refunds = $record->object->get_refunds();
+			foreach ( $refunds as $refund ) {
+				$refund_queue_id = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+				if ( $refund_queue_id ) {
+					continue;
+				}
+
+				$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+
+				$refund_record->load_object();
+				if ( ! $refund_record->object ) {
+					continue;
+				}
+
+				if ( ! apply_filters( 'taxjar_should_sync_refund', $refund_record->should_sync() ) ) {
+					continue;
+				}
+
+				$refund_last_sync = $refund_record->get_last_sync_time();
+				if ( ! empty( $refund_last_sync ) ) {
+					$refund_record->set_status( 'awaiting' );
+				}
+
+				$refund_record->save();
+			}
 		}
 
 		$record->save();
