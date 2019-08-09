@@ -1520,6 +1520,26 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$refund_record->delete_in_taxjar();
 	}
 
+	function test_partial_line_item_refund() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_partial_line_item_refund_from_order( $order->get_id() );
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
+
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		$refund_record->load_object();
+		$result = $refund_record->sync();
+		$this->assertTrue( $result );
+
+		$record->delete_in_taxjar();
+		$refund_record->delete_in_taxjar();
+	}
+
 	function test_sync_fee_refund() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$fee = new WC_Order_Item_Fee();
