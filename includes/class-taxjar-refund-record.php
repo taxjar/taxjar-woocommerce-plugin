@@ -193,7 +193,12 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 				$product = $item->get_product();
 
 				$quantity = $item->get_quantity();
-				$unit_price = $item->get_subtotal() / $quantity;
+				if ( $quantity <= 0 ) {
+					$unit_price = $item->get_subtotal();
+					$quantity = 1;
+				} else {
+					$unit_price = $item->get_subtotal() / $quantity;
+				}
 				$discount = $item->get_subtotal() - $item->get_total();
 
 				$tax_class = explode( '-', $product->get_tax_class() );
