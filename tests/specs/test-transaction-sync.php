@@ -412,6 +412,79 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( 'Billing Address', $address_data[ 'to_street' ] );
 	}
 
+	function test_refund_record_get_ship_to_address() {
+		// Tax based on shipping address
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$order_id = $record->object->get_parent_id();
+		$order = wc_get_order( $order_id );
+		$ship_to_address = $record->get_ship_to_address( $order );
+		$this->assertEquals( "Shipping Address", $ship_to_address[ 'to_street' ] );
+
+		// Tax based on store address
+		update_option( 'woocommerce_tax_based_on', 'base' );
+		$ship_to_address = $record->get_ship_to_address( $order );
+		$this->assertEquals( "6060 S Quebec St", $ship_to_address[ 'to_street' ] );
+
+		// Tax based on billing address
+		update_option( 'woocommerce_tax_based_on', 'billing' );
+		$ship_to_address = $record->get_ship_to_address( $order );
+		$this->assertEquals( "Billing Address", $ship_to_address[ 'to_street' ] );
+
+		// Local Pickup order
+		$order = TaxJar_Order_Helper::create_local_pickup_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$order_id = $record->object->get_parent_id();
+		$order = wc_get_order( $order_id );
+		$ship_to_address = $record->get_ship_to_address( $order );
+		$this->assertEquals( "6060 S Quebec St", $ship_to_address[ 'to_street' ] );
+
+		update_option( 'woocommerce_tax_based_on', 'shipping' );
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$order_id = $record->object->get_parent_id();
+		$order = wc_get_order( $order_id );
+		$address_data = $record->get_ship_to_address( $order );
+
+		$order->set_billing_address_1( 'Billing Address' );
+		$order->set_billing_city( 'Billing City' );
+		$order->set_billing_state( 'UT' );
+		$order->set_billing_postcode( '84651' );
+		$order->set_billing_country( 'GB' );
+		$order->save();
+
+		$this->assertEquals( 'US', $address_data[ 'to_country' ] );
+		$this->assertEquals( 'CO', $address_data[ 'to_state' ] );
+		$this->assertEquals( '80111', $address_data[ 'to_zip' ] );
+		$this->assertEquals( 'Greenwood Village', $address_data[ 'to_city' ] );
+		$this->assertEquals( 'Shipping Address', $address_data[ 'to_street' ] );
+
+		$order->set_shipping_address_1( '' );
+		$order->set_shipping_city( '' );
+		$order->set_shipping_state( '' );
+		$order->set_shipping_postcode( '' );
+		$order->set_shipping_country( '' );
+		$order->save();
+
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$order_id = $record->object->get_parent_id();
+		$order = wc_get_order( $order_id );
+		$address_data = $record->get_ship_to_address( $order );
+
+		$this->assertEquals( 'GB', $address_data[ 'to_country' ] );
+		$this->assertEquals( 'UT', $address_data[ 'to_state' ] );
+		$this->assertEquals( '84651', $address_data[ 'to_zip' ] );
+		$this->assertEquals( 'Billing City', $address_data[ 'to_city' ] );
+		$this->assertEquals( 'Billing Address', $address_data[ 'to_street' ] );
+	}
+
 	function test_order_record_get_fee_line_items() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$fee = new WC_Order_Item_Fee();
