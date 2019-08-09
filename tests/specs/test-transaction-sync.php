@@ -128,6 +128,43 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 	}
 
+	function test_get_order_ship_to_address() {
+		$order = TaxJar_Order_Helper::create_order();
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$address_data = $record->get_ship_to_address();
+
+		$order->set_billing_address_1( 'Billing Address' );
+		$order->set_billing_city( 'Billing City' );
+		$order->set_billing_state( 'UT' );
+		$order->set_billing_postcode( '84651' );
+		$order->set_billing_country( 'GB' );
+		$order->save();
+
+		$this->assertEquals( 'US', $address_data[ 'to_country' ] );
+		$this->assertEquals( 'CO', $address_data[ 'to_state' ] );
+		$this->assertEquals( '80111', $address_data[ 'to_zip' ] );
+		$this->assertEquals( 'Greenwood Village', $address_data[ 'to_city' ] );
+		$this->assertEquals( 'Shipping Address', $address_data[ 'to_street' ] );
+
+		$order->set_shipping_address_1( '' );
+		$order->set_shipping_city( '' );
+		$order->set_shipping_state( '' );
+		$order->set_shipping_postcode( '' );
+		$order->set_shipping_country( '' );
+		$order->save();
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$address_data = $record->get_ship_to_address();
+
+		$this->assertEquals( 'GB', $address_data[ 'to_country' ] );
+		$this->assertEquals( 'UT', $address_data[ 'to_state' ] );
+		$this->assertEquals( '84651', $address_data[ 'to_zip' ] );
+		$this->assertEquals( 'Billing City', $address_data[ 'to_city' ] );
+		$this->assertEquals( 'Billing Address', $address_data[ 'to_street' ] );
+	}
+
 	function test_get_active_order_record_in_queue() {
 		$order = TaxJar_Order_Helper::create_order();
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
