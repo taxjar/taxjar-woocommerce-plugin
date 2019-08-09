@@ -560,4 +560,37 @@ class TaxJar_Order_Helper {
 
 		return $refund;
 	}
+
+	static function create_partial_line_item_refund_from_order( $order_id ) {
+		$order       = wc_get_order( $order_id );
+		$order_items = $order->get_items( array( 'line_item', 'shipping', 'fee' ) );
+
+		$line_items = array();
+		$refund_total = 0;
+		foreach ( $order_items as $item_id => $item ) {
+			if ( $item->get_type() != 'line_item' ) {
+				continue;
+			}
+			$line_refund_total = $item->get_total() / $item->get_quantity() / 2;
+			$line_refund_tax = $item->get_total_tax() / $item->get_quantity() / 2;
+			$refund_total += $line_refund_total;
+			$refund_total += $line_refund_tax;
+			$line_items[ $item_id ] = array(
+				'qty'          => 0,
+				'refund_total' => $line_refund_total,
+				'refund_tax'   => array( $line_refund_tax )
+			);
+		}
+
+		$refund = wc_create_refund(
+			array(
+				'amount'         => $refund_total,
+				'reason'         => 'Refund Reason',
+				'order_id'       => $order_id,
+				'line_items'     => $line_items,
+			)
+		);
+
+		return $refund;
+	}
 }
