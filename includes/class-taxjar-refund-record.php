@@ -156,17 +156,17 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			$city     = $store_settings['city'];
 			$street   = $store_settings['street'];
 		} elseif ( 'billing' === $tax_based_on ) {
-			$country  = ( ! empty( $this->object->get_billing_country() ) ? $this->object->get_billing_country() : $this->object->get_shipping_country() );
-			$state  = ( ! empty( $this->object->get_billing_state() ) ? $this->object->get_billing_state() : $this->object->get_shipping_state() );
-			$postcode  = ( ! empty( $this->object->get_billing_postcode() ) ? $this->object->get_billing_postcode() : $this->object->get_shipping_postcode() );
-			$city  = ( ! empty( $this->object->get_billing_city() ) ? $this->object->get_billing_city() : $this->object->get_shipping_city() );
-			$street  = ( ! empty( $this->object->get_billing_address_1() ) ? $this->object->get_billing_address_1() : $this->object->get_shipping_address_1() );
+			$country  = ( ! empty( $order->get_billing_country() ) ? $order->get_billing_country() : $order->get_shipping_country() );
+			$state  = ( ! empty( $order->get_billing_state() ) ? $order->get_billing_state() : $order->get_shipping_state() );
+			$postcode  = ( ! empty( $order->get_billing_postcode() ) ? $order->get_billing_postcode() : $order->get_shipping_postcode() );
+			$city  = ( ! empty( $order->get_billing_city() ) ? $order->get_billing_city() : $order->get_shipping_city() );
+			$street  = ( ! empty( $order->get_billing_address_1() ) ? $order->get_billing_address_1() : $order->get_shipping_address_1() );
 		} else {
-			$country  = ( ! empty( $this->object->get_shipping_country() ) ? $this->object->get_shipping_country() : $this->object->get_billing_country() );
-			$state  = ( ! empty( $this->object->get_shipping_state() ) ? $this->object->get_shipping_state() : $this->object->get_billing_state() );
-			$postcode  = ( ! empty( $this->object->get_shipping_postcode() ) ? $this->object->get_shipping_postcode() : $this->object->get_billing_postcode() );
-			$city  = ( ! empty( $this->object->get_shipping_city() ) ? $this->object->get_shipping_city() : $this->object->get_billing_city() );
-			$street  = ( ! empty( $this->object->get_shipping_address_1() ) ? $this->object->get_shipping_address_1() : $this->object->get_billing_address_1() );
+			$country  = ( ! empty( $order->get_shipping_country() ) ? $order->get_shipping_country() : $order->get_billing_country() );
+			$state  = ( ! empty( $order->get_shipping_state() ) ? $order->get_shipping_state() : $order->get_billing_state() );
+			$postcode  = ( ! empty( $order->get_shipping_postcode() ) ? $order->get_shipping_postcode() : $order->get_billing_postcode() );
+			$city  = ( ! empty( $order->get_shipping_city() ) ? $order->get_shipping_city() : $order->get_billing_city() );
+			$street  = ( ! empty( $order->get_shipping_address_1() ) ? $order->get_shipping_address_1() : $order->get_billing_address_1() );
 		}
 
 		$to_country = isset( $country ) && ! empty( $country ) ? $country : false;
