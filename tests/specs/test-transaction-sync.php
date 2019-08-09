@@ -1475,4 +1475,41 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertNotFalse( $record );
 		$this->assertNotFalse( $refund_record );
 	}
+
+	function test_order_level_exemptions_on_sync() {
+		$order = TaxJar_Order_Helper::create_order_with_no_tax( 1 );
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+		$refund_record->load_object();
+		$refund_record->delete_in_taxjar();
+
+		add_filter( 'taxjar_order_sync_exemption_type', function ( $order ) {
+			return 'wholesale';
+		} );
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$refund_record->load_object();
+
+		$result = $record->sync();
+		$refund_result = $refund_record->sync();
+
+		remove_all_actions( 'taxjar_order_sync_exemption_type' );
+
+		$this->assertTrue( $result );
+		$this->assertTrue( $refund_result );
+
+		$order_data = $record->get_from_taxjar();
+		$body = json_decode( $order_data[ 'body' ] );
+		$this->assertEquals( 'wholesale', $body->order->exemption_type );
+
+		$record->delete_in_taxjar();
+		$refund_record->delete_in_taxjar();
+	}
 }
