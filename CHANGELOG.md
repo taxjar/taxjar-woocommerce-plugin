@@ -1,3 +1,9 @@
+# 3.0.1 (2019-08-09)
+* Add hooks to allow setting of order level exemptions during tax calculation and order syncing
+* Fix issue syncing refunds with zero quantity line items
+* Fix refunds created while order processing not syncing when order completed
+* Add fallback to billing address when shipping address is empty on sync
+
 # 3.0.0 (2019-08-06)
 * Added transaction sync order push to TaxJar
 * Added customer sync to TaxJar
