@@ -1081,6 +1081,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		WC()->cart->calculate_totals();
 
+		remove_all_filters( 'taxjar_cart_exemption_type' );
+
 		$this->assertEquals( 0, WC()->cart->get_taxes_total() );
 	}
 }
