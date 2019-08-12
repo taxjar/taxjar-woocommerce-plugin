@@ -52,13 +52,13 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 		$order_data = $this->get_data();
 
-		if ( $order_data[ 'to_country' ] != 'US' ) {
-			$this->add_error( __( 'Order failed validation, ship to country not US', 'wc-taxjar' ) );
+		if ( ! in_array( $order_data[ 'to_country' ], TaxJar_Record::allowed_countries() ) ) {
+			$this->add_error( __( 'Order failed validation, ship to country did not pass validation', 'wc-taxjar' ) );
 			return false;
 		}
 
-		if ( $this->object->get_currency() != 'USD' ) {
-			$this->add_error( __( 'Order failed validation, currency not USD.', 'wc-taxjar' ) );
+		if ( ! in_array( $this->object->get_currency(), TaxJar_Record::allowed_currencies() ) ) {
+			$this->add_error( __( 'Order failed validation, currency did not pass validation.', 'wc-taxjar' ) );
 			return false;
 		}
 
@@ -210,8 +210,14 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			$order_data[ 'customer_id' ] = $customer_id;
 		}
 
-		$this->data = $order_data;
+		$exemption_type = apply_filters( 'taxjar_order_sync_exemption_type', '', $this->object );
 
+		if ( WC_Taxjar_Integration::is_valid_exemption_type( $exemption_type ) ) {
+			$order_data[ 'exemption_type' ] = $exemption_type;
+		}
+
+		$order_data = apply_filters( 'taxjar_order_sync_data', $order_data, $this->object );
+		$this->data = $order_data;
 		return $order_data;
 	}
 
@@ -235,17 +241,17 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			$city     = $store_settings['city'];
 			$street   = $store_settings['street'];
 		} elseif ( 'billing' === $tax_based_on ) {
-			$country  = $this->object->get_billing_country();
-			$state    = $this->object->get_billing_state();
-			$postcode = $this->object->get_billing_postcode();
-			$city     = $this->object->get_billing_city();
-			$street   = $this->object->get_billing_address_1();
+			$country  = ( ! empty( $this->object->get_billing_country() ) ? $this->object->get_billing_country() : $this->object->get_shipping_country() );
+			$state  = ( ! empty( $this->object->get_billing_state() ) ? $this->object->get_billing_state() : $this->object->get_shipping_state() );
+			$postcode  = ( ! empty( $this->object->get_billing_postcode() ) ? $this->object->get_billing_postcode() : $this->object->get_shipping_postcode() );
+			$city  = ( ! empty( $this->object->get_billing_city() ) ? $this->object->get_billing_city() : $this->object->get_shipping_city() );
+			$street  = ( ! empty( $this->object->get_billing_address_1() ) ? $this->object->get_billing_address_1() : $this->object->get_shipping_address_1() );
 		} else {
-			$country  = $this->object->get_shipping_country();
-			$state    = $this->object->get_shipping_state();
-			$postcode = $this->object->get_shipping_postcode();
-			$city     = $this->object->get_shipping_city();
-			$street   = $this->object->get_shipping_address_1();
+			$country  = ( ! empty( $this->object->get_shipping_country() ) ? $this->object->get_shipping_country() : $this->object->get_billing_country() );
+			$state  = ( ! empty( $this->object->get_shipping_state() ) ? $this->object->get_shipping_state() : $this->object->get_billing_state() );
+			$postcode  = ( ! empty( $this->object->get_shipping_postcode() ) ? $this->object->get_shipping_postcode() : $this->object->get_billing_postcode() );
+			$city  = ( ! empty( $this->object->get_shipping_city() ) ? $this->object->get_shipping_city() : $this->object->get_billing_city() );
+			$street  = ( ! empty( $this->object->get_shipping_address_1() ) ? $this->object->get_shipping_address_1() : $this->object->get_billing_address_1() );
 		}
 
 		$to_country = isset( $country ) && ! empty( $country ) ? $country : false;

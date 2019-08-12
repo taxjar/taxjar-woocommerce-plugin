@@ -37,7 +37,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/3.0.0/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = 'TaxJarWordPressPlugin/3.0.1/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 		$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
@@ -480,6 +480,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'shipping_amount' => null, // WC()->shipping->shipping_total
 			'line_items' => null,
             'customer_id' => 0,
+            'exemption_type' => '',
 		), $options) );
 
 		$taxes = array(
@@ -555,6 +556,12 @@ class WC_Taxjar_Integration extends WC_Settings_API {
         } else {
 		    if ( ! empty( $customer_id ) ) {
 			    $body[ 'customer_id' ] = $customer_id;
+            }
+        }
+
+		if ( ! empty( $exemption_type ) ) {
+		    if ( self::is_valid_exemption_type( $exemption_type ) ) {
+			    $body[ 'exemption_type' ] = $exemption_type;
             }
         }
 
@@ -766,6 +773,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			$customer_id = apply_filters( 'taxjar_get_customer_id', WC()->customer->get_id(), WC()->customer );
 		}
 
+		$exemption_type = apply_filters( 'taxjar_cart_exemption_type', '', $wc_cart_object );
+
 		$taxes = $this->calculate_tax( array(
 			'to_country' => $address['to_country'],
 			'to_zip' => $address['to_zip'],
@@ -775,6 +784,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'shipping_amount' => WC()->shipping->shipping_total,
 			'line_items' => $line_items,
             'customer_id' => $customer_id,
+            'exemption_type' => $exemption_type,
 		) );
 
 		$this->response_rate_ids = $taxes['rate_ids'];
@@ -857,6 +867,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 
 		$customer_id = apply_filters( 'taxjar_get_customer_id', isset( $_POST[ 'customer_user' ] ) ? wc_clean( $_POST[ 'customer_user' ] ) : 0 );
 
+		$exemption_type = apply_filters( 'taxjar_order_calculation_exemption_type', '', $order );
+
 		$taxes = $this->calculate_tax( array(
 			'to_country' => $address['to_country'],
 			'to_state' => $address['to_state'],
@@ -866,6 +878,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'shipping_amount' => $shipping,
 			'line_items' => $line_items,
             'customer_id' => $customer_id,
+            'exemption_type' => $exemption_type,
 		) );
 
 		if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
@@ -936,6 +949,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 
 	    $customer_id = apply_filters( 'taxjar_get_customer_id', $order->get_customer_id() );
 
+	    $exemption_type = apply_filters( 'taxjar_order_calculation_exemption_type', '', $order );
+
 	    $taxes = $this->calculate_tax( array(
 		    'to_country' => $address[ 'to_country' ],
 		    'to_state' => $address[ 'to_state' ],
@@ -945,6 +960,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		    'shipping_amount' => $shipping,
 		    'line_items' => $line_items,
             'customer_id' => $customer_id,
+            'exemption_type' => $exemption_type,
 	    ) );
 
 	    if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
@@ -1560,6 +1576,11 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		wp_register_script( 'wc-taxjar-order', plugin_dir_url( __FILE__ ) . '/js/wc-taxjar-order.js' );
 		wp_enqueue_script( 'wc-taxjar-order' , array( 'jquery' ) );
 	}
+
+	static function is_valid_exemption_type( $exemption_type ) {
+		$valid_types = array( 'wholesale', 'government', 'other', 'non_exempt' );
+		return in_array( $exemption_type, $valid_types );
+    }
 
 }
 

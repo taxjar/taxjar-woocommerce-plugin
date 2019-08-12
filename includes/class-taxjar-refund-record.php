@@ -45,13 +45,13 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			}
 		}
 
-		if ( $data[ 'to_country' ] != 'US' ) {
-			$this->add_error( __( 'Refund failed validation - parent order ship to country is not US.', 'wc-taxjar' ) );
+		if ( ! in_array( $data[ 'to_country' ], TaxJar_Record::allowed_countries() ) ) {
+			$this->add_error( __( 'Refund failed validation, ship to country did not pass validation', 'wc-taxjar' ) );
 			return false;
 		}
 
-		if ( $this->object->get_currency() != 'USD' ) {
-			$this->add_error( __( 'Refund failed validation - currency is not USD.', 'wc-taxjar' ) );
+		if ( ! in_array( $this->object->get_currency(), TaxJar_Record::allowed_currencies() ) ) {
+			$this->add_error( __( 'Refund failed validation, currency did not pass validation.', 'wc-taxjar' ) );
 			return false;
 		}
 
@@ -118,10 +118,18 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		$refund_data = array_merge( $refund_data, $ship_to_address );
 
 		$customer_id = $order->get_customer_id();
+
 		if ( $customer_id ) {
 			$refund_data[ 'customer_id' ] = $customer_id;
 		}
 
+		$exemption_type = apply_filters( 'taxjar_refund_sync_exemption_type', '', $this->object );
+
+		if ( WC_Taxjar_Integration::is_valid_exemption_type( $exemption_type ) ) {
+			$refund_data[ 'exemption_type' ] = $exemption_type;
+		}
+
+		$refund_data = apply_filters( 'taxjar_refund_sync_data', $refund_data, $this->object, $order );
 		$this->data = $refund_data;
 		return $refund_data;
 	}
@@ -151,17 +159,17 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			$city     = $store_settings['city'];
 			$street   = $store_settings['street'];
 		} elseif ( 'billing' === $tax_based_on ) {
-			$country  = $order->get_billing_country();
-			$state    = $order->get_billing_state();
-			$postcode = $order->get_billing_postcode();
-			$city     = $order->get_billing_city();
-			$street   = $order->get_billing_address_1();
+			$country  = ( ! empty( $order->get_billing_country() ) ? $order->get_billing_country() : $order->get_shipping_country() );
+			$state  = ( ! empty( $order->get_billing_state() ) ? $order->get_billing_state() : $order->get_shipping_state() );
+			$postcode  = ( ! empty( $order->get_billing_postcode() ) ? $order->get_billing_postcode() : $order->get_shipping_postcode() );
+			$city  = ( ! empty( $order->get_billing_city() ) ? $order->get_billing_city() : $order->get_shipping_city() );
+			$street  = ( ! empty( $order->get_billing_address_1() ) ? $order->get_billing_address_1() : $order->get_shipping_address_1() );
 		} else {
-			$country  = $order->get_shipping_country();
-			$state    = $order->get_shipping_state();
-			$postcode = $order->get_shipping_postcode();
-			$city     = $order->get_shipping_city();
-			$street   = $order->get_shipping_address_1();
+			$country  = ( ! empty( $order->get_shipping_country() ) ? $order->get_shipping_country() : $order->get_billing_country() );
+			$state  = ( ! empty( $order->get_shipping_state() ) ? $order->get_shipping_state() : $order->get_billing_state() );
+			$postcode  = ( ! empty( $order->get_shipping_postcode() ) ? $order->get_shipping_postcode() : $order->get_billing_postcode() );
+			$city  = ( ! empty( $order->get_shipping_city() ) ? $order->get_shipping_city() : $order->get_billing_city() );
+			$street  = ( ! empty( $order->get_shipping_address_1() ) ? $order->get_shipping_address_1() : $order->get_billing_address_1() );
 		}
 
 		$to_country = isset( $country ) && ! empty( $country ) ? $country : false;
@@ -188,7 +196,13 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 				$product = $item->get_product();
 
 				$quantity = $item->get_quantity();
-				$unit_price = $item->get_subtotal() / $quantity;
+
+				if ( $quantity <= 0 ) {
+					$unit_price = $item->get_subtotal();
+					$quantity = 1;
+				} else {
+					$unit_price = $item->get_subtotal() / $quantity;
+				}
 				$discount = $item->get_subtotal() - $item->get_total();
 
 				$tax_class = explode( '-', $product->get_tax_class() );

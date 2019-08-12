@@ -3,7 +3,7 @@ Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxjar, tax, taxes, sales tax, tax calculation, sales tax compliance, sales tax filing
 Requires at least: 4.2
 Tested up to: 5.1.1
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 3.0.0
@@ -90,6 +90,14 @@ Yes. The fee is $19.95 per state, per filing.
 1. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+
+= 3.0.1 (2019-08-09)
+* Add hooks to allow setting of order level exemptions during tax calculation and order syncing
+* Fix issue syncing refunds with zero quantity line items
+* Fix refunds created while order processing not syncing when order completed
+* Add fallback to billing address when shipping address is empty on sync
+* Add filters to allow altering currency and country validation before syncing
+* Add filters to allow altering of request data before syncing orders and refunds
 
 = 3.0.0 (2019-08-06)
 * Added transaction sync order push to TaxJar
