@@ -364,6 +364,20 @@ abstract class TaxJar_Record {
 		return $wpdb->prefix . self::QUEUE_NAME;
 	}
 
+	/**
+	 * @return array - Country codes that will pass validation when syncing records
+	 */
+	public static function allowed_countries() {
+		return apply_filters( 'taxjar_sync_allowed_countries', array ( 'US' ) );
+	}
+
+	/**
+	 * @return array - Currencies that will pass validation when syncing records
+	 */
+	public static function allowed_currencies() {
+		return apply_filters( 'taxjar_sync_allowed_currencies', array ( 'USD' ) );
+	}
+
 	public function set_queue_id( $queue_id ) {
 		$this->queue_id = $queue_id;
 	}

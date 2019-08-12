@@ -45,13 +45,13 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			}
 		}
 
-		if ( $data[ 'to_country' ] != 'US' ) {
-			$this->add_error( __( 'Refund failed validation - parent order ship to country is not US.', 'wc-taxjar' ) );
+		if ( ! in_array( $data[ 'to_country' ], TaxJar_Record::allowed_countries() ) ) {
+			$this->add_error( __( 'Refund failed validation, ship to country did not pass validation', 'wc-taxjar' ) );
 			return false;
 		}
 
-		if ( $this->object->get_currency() != 'USD' ) {
-			$this->add_error( __( 'Refund failed validation - currency is not USD.', 'wc-taxjar' ) );
+		if ( ! in_array( $this->object->get_currency(), TaxJar_Record::allowed_currencies() ) ) {
+			$this->add_error( __( 'Refund failed validation, currency did not pass validation.', 'wc-taxjar' ) );
 			return false;
 		}
 

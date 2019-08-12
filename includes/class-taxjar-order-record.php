@@ -52,13 +52,13 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 		$order_data = $this->get_data();
 
-		if ( $order_data[ 'to_country' ] != 'US' ) {
-			$this->add_error( __( 'Order failed validation, ship to country not US', 'wc-taxjar' ) );
+		if ( ! in_array( $order_data[ 'to_country' ], TaxJar_Record::allowed_countries() ) ) {
+			$this->add_error( __( 'Order failed validation, ship to country did not pass validation', 'wc-taxjar' ) );
 			return false;
 		}
 
-		if ( $this->object->get_currency() != 'USD' ) {
-			$this->add_error( __( 'Order failed validation, currency not USD.', 'wc-taxjar' ) );
+		if ( ! in_array( $this->object->get_currency(), TaxJar_Record::allowed_currencies() ) ) {
+			$this->add_error( __( 'Order failed validation, currency did not pass validation.', 'wc-taxjar' ) );
 			return false;
 		}
 
