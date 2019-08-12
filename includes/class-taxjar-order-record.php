@@ -216,8 +216,8 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			$order_data[ 'exemption_type' ] = $exemption_type;
 		}
 
+		$order_data = apply_filters( 'taxjar_order_sync_data', $order_data, $this->object );
 		$this->data = $order_data;
-
 		return $order_data;
 	}
 

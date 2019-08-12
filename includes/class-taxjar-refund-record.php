@@ -129,6 +129,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			$refund_data[ 'exemption_type' ] = $exemption_type;
 		}
 
+		$refund_data = apply_filters( 'taxjar_refund_sync_data', $refund_data, $this->object, $order );
 		$this->data = $refund_data;
 		return $refund_data;
 	}
