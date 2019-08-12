@@ -3,6 +3,8 @@
 * Fix issue syncing refunds with zero quantity line items
 * Fix refunds created while order processing not syncing when order completed
 * Add fallback to billing address when shipping address is empty on sync
+* Add filters to allow altering currency and country validation before syncing
+* Add filters to allow altering of request data before syncing orders and refunds
 
 # 3.0.0 (2019-08-06)
 * Added transaction sync order push to TaxJar
