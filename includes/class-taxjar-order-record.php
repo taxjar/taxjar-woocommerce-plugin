@@ -211,6 +211,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		}
 
 		$exemption_type = apply_filters( 'taxjar_order_sync_exemption_type', '', $this->object );
+
 		if ( WC_Taxjar_Integration::is_valid_exemption_type( $exemption_type ) ) {
 			$order_data[ 'exemption_type' ] = $exemption_type;
 		}
