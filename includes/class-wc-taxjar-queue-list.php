@@ -213,6 +213,8 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 				$where .= "AND record_type = 'order' ";
 			} else if ( $_REQUEST[ 'taxjar_record_type' ] == 'refund' ) {
 				$where .= "AND record_type = 'refund' ";
+			} else if ( $_REQUEST[ 'taxjar_record_type' ] == 'customer' ) {
+				$where .= "AND record_type = 'customer' ";
 			}
 		}
 
@@ -254,6 +256,7 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 			$record_types = apply_filters( 'taxjar_record_type_dropdown', array(
 				'order'    => _x( 'Orders', 'A record type', 'wc-taxjar' ),
 				'refund'      => _x( 'Refunds', 'A record type', 'wc-taxjar' ),
+				'customer'      => _x( 'Customers', 'A record type', 'wc-taxjar' ),
 			) );
 
 			foreach ( $record_types as $record_type_key => $record_type_description ) {
