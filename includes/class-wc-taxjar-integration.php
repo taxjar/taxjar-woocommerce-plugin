@@ -1095,7 +1095,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			}
 		}
 
-		return apply_filters( 'taxjar_cart_get_line_items', $line_items, $wc_cart_object );
+		return apply_filters( 'taxjar_cart_get_line_items', $line_items, $wc_cart_object, $this );
 	}
 
 	/**
