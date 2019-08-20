@@ -1,3 +1,6 @@
+# 3.0.4 (2019-08-20)
+* Fix issue where order can sync without having previously been completed in certain circumstances
+
 # 3.0.3 (2019-08-20)
 * Added transaction sync order push to TaxJar
 * Added customer sync to TaxJar
