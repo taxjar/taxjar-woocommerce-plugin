@@ -34,6 +34,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// load the WP testing environment
 		require_once $this->wp_tests_dir . '/includes/bootstrap.php';
 
+
 		$this->includes();
 	}
 
@@ -42,6 +43,8 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
 		// load taxjar core
+		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
+		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
 	}
 
@@ -86,9 +89,23 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->tests_dir . '/framework/shipping-helper.php';
 		require_once $this->tests_dir . '/framework/wp-http-testcase.php';
 		require_once $this->tests_dir . '/framework/subscription-helper.php';
+		require_once $this->tests_dir . '/framework/order-helper.php';
 	}
 
 	public function setup() {
+		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+			define( 'WP_UNINSTALL_PLUGIN', true );
+		}
+
+		if ( ! defined( 'TAXJAR_REMOVE_ALL_DATA' ) ) {
+			define( 'TAXJAR_REMOVE_ALL_DATA', true );
+		}
+
+		include dirname( dirname( __FILE__ ) ) . '/uninstall.php';
+		delete_transient( 'taxjar_installing' );
+
+		WC_Taxjar_Install::install();
+
 		update_option( 'woocommerce_taxjar-integration_settings',
 			array(
 				'api_token' => $this->api_token,

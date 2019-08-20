@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: TaxJar - Sales Tax Automation for WooCommerce
+ * Plugin Name: TaxJar - Sales Tax Automation for WooCommerce (Beta)
  * Plugin URI: https://www.taxjar.com/woocommerce-sales-tax-plugin/
  * Description: Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculation, collection, and filing.
- * Version: 2.3.1
+ * Version: 3.0.1
  * Author: TaxJar
  * Author URI: https://www.taxjar.com
- * WC requires at least: 2.6.0
+ * WC requires at least: 3.0.0
  * WC tested up to: 3.7.0
  *
  * Copyright: © 2014-2019 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc.
@@ -20,7 +20,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-if ( ! class_exists( 'WC_Taxjar' ) ) :
+/**
+ * Check if WooCommerce is active and at the required minimum version, and if it isn't, disable plugin.
+ */
+$active_plugins = (array) get_option( 'active_plugins', array() );
+if ( is_multisite() ) {
+	$active_plugins = array_merge( self::$active_plugins, get_site_option( 'active_sitewide_plugins', array() ) );
+}
+$woocommerce_active = in_array( 'woocommerce/woocommerce.php', $active_plugins ) || array_key_exists( 'woocommerce/woocommerce.php', $active_plugins );
+
+if ( ! $woocommerce_active || version_compare( get_option( 'woocommerce_db_version' ), WC_Taxjar::$minimum_woocommerce_version, '<' ) ) {
+	add_action( 'admin_notices', 'WC_Taxjar::display_woocommmerce_inactive_notice' );
+	return;
+}
 
 /**
  * Main TaxJar WooCommerce Class.
@@ -29,6 +41,9 @@ if ( ! class_exists( 'WC_Taxjar' ) ) :
  * @version	1.3.0
  */
 final class WC_Taxjar {
+
+	static $version = '3.0.0';
+	public static $minimum_woocommerce_version = '3.0.0';
 
 	/**
 	 * Construct the plugin.
@@ -52,9 +67,21 @@ final class WC_Taxjar {
 			include_once 'includes/class-wc-taxjar-download-orders.php';
 			include_once 'includes/class-wc-taxjar-connection.php';
 			include_once 'includes/class-wc-taxjar-integration.php';
+			include_once 'includes/class-wc-taxjar-transaction-sync.php';
+			include_once 'includes/class-wc-taxjar-customer-sync.php';
+			include_once 'includes/class-wc-taxjar-install.php';
+			include_once 'includes/class-wc-taxjar-record-queue.php';
+			include_once 'includes/abstract-class-taxjar-record.php';
+			include_once 'includes/class-taxjar-order-record.php';
+			include_once 'includes/class-taxjar-refund-record.php';
+			include_once 'includes/class-taxjar-customer-record.php';
+			include_once 'includes/class-wc-taxjar-queue-list.php';
+
+			// Load Action Scheduler library
+			require_once( 'libraries/action-scheduler/action-scheduler.php' );
 
 			// Register the integration.
-			add_filter( 'woocommerce_integrations', array( $this, 'add_integration' ), 20 );
+			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );
 
 			// Display notices if applicable.
 			add_action( 'admin_notices', array( $this, 'maybe_display_admin_notices' ) );
@@ -64,9 +91,19 @@ final class WC_Taxjar {
 	/**
 	 * Add a new integration to WooCommerce.
 	 */
-	public function add_integration( $integrations ) {
-		$integrations[] = 'WC_Taxjar_Integration';
-		return $integrations;
+	public function add_integration() {
+		TaxJar();
+	}
+
+	public static function display_woocommmerce_inactive_notice() {
+		if ( current_user_can( 'activate_plugins' ) ) {
+			$admin_notice_content = sprintf( esc_html__( '%1$sTaxJar is inactive.%2$s This version of TaxJar requires WooCommerce %3$s or newer. Please install or update WooCommerce to version %3$s or newer.', 'wc-taxjar' ), '<strong>', '</strong>', self::$minimum_woocommerce_version );
+			?>
+			<div class="error">
+				<p><?php echo $admin_notice_content; ?></p>
+			</div>
+			<?php
+		}
 	}
 
 	/**
@@ -234,7 +271,7 @@ final class WC_Taxjar {
 			return;
 		}
 
-		$api_token = WC()->integrations->integrations['taxjar-integration']->get_option( 'api_token' );
+		$api_token = TaxJar()->get_option( 'api_token' );
 
 		if ( '' == $api_token && apply_filters( 'taxjar_should_display_connect_notice', true ) ) {
 			$url = $this->get_settings_url();
@@ -259,7 +296,7 @@ final class WC_Taxjar {
 	 * Adds settings link to the plugins page
 	 */
 	public function plugin_settings_link( $links ) {
-		$settings_link = '<a href="admin.php?page=wc-settings&tab=integration&section=taxjar-integration">Settings</a>';
+		$settings_link = '<a href="admin.php?page=wc-settings&tab=taxjar-integration">Settings</a>';
 		array_unshift( $links, $settings_link );
 		return $links;
 	}
@@ -268,4 +305,11 @@ final class WC_Taxjar {
 
 $WC_Taxjar = new WC_Taxjar( __FILE__ );
 
-endif;
+/**
+ * Returns the main instance of TaxJar Integration.
+ */
+function TaxJar() {
+	return WC_Taxjar_Integration::instance();
+}
+
+

@@ -3,7 +3,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 	function setUp() {
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
-		$this->tj = WC()->integrations->integrations['taxjar-integration'];
+		$this->tj = TaxJar();
 
 		// Reset shipping origin
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
@@ -1071,6 +1071,21 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
+	function test_order_level_exemption_on_cart_calculation() {
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		WC()->cart->add_to_cart( $product );
+
+		add_filter( 'taxjar_cart_exemption_type', function ( $cart ) {
+			return 'wholesale';
+		} );
+
+		WC()->cart->calculate_totals();
+
+		remove_all_filters( 'taxjar_cart_exemption_type' );
+
+		$this->assertEquals( 0, WC()->cart->get_taxes_total() );
+  }
+  
 	function test_tax_lookup_state_with_space() {
 		$location = array(
 			'to_country' => 'GB',

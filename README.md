@@ -7,7 +7,7 @@ To get started, check out our [TaxJar for WooCommerce](https://docs.woocommerce.
 ## Requirements
 
 - WordPress 4.0+
-- WooCommerce 2.6+
+- WooCommerce 3.0+
 - [TaxJar account](https://app.taxjar.com/api_sign_up) with API token
 
 ## Getting Started
