@@ -1084,5 +1084,18 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		remove_all_filters( 'taxjar_cart_exemption_type' );
 
 		$this->assertEquals( 0, WC()->cart->get_taxes_total() );
+  }
+  
+	function test_tax_lookup_state_with_space() {
+		$location = array(
+			'to_country' => 'GB',
+			'to_state' => 'West Sussex',
+			'to_zip' => 'BN15 1S2',
+			'to_city' => 'London'
+		);
+		$rate_id = $this->tj->create_or_update_tax_rate( $location, 10 );
+		$found_rate_id = $this->tj->create_or_update_tax_rate( $location, 10 );
+
+		$this->assertEquals( $rate_id, $found_rate_id );
 	}
 }

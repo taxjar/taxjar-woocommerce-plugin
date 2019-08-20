@@ -474,7 +474,7 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
-
+	
 	function test_correct_taxes_for_subscription_recurring_order_with_multiple_products() {
 		wp_set_current_user( $this->user );
 
