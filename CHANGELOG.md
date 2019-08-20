@@ -1,4 +1,4 @@
-# 3.0.2 (2019-08-20)
+# 3.0.3 (2019-08-20)
 * Added transaction sync order push to TaxJar
 * Added customer sync to TaxJar
 * Full support for product exemptions
