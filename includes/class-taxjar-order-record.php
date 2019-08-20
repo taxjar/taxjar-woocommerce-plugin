@@ -41,6 +41,11 @@ class TaxJar_Order_Record extends TaxJar_Record {
 				$this->add_error( __( 'Order failed validation - invalid status.', 'wc-taxjar' ) );
 				return false;
 			}
+
+			if ( empty( $this->object->get_date_completed() ) ) {
+				$this->add_error( __( 'Order failed validation - order has no completed date', 'wc-taxjar' ) );
+				return false;
+			}
 		}
 
 		if ( ! $this->get_force_push() ) {

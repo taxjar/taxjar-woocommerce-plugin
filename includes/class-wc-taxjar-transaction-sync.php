@@ -70,6 +70,10 @@ class WC_Taxjar_Transaction_Sync {
 			return $actions;
 		}
 
+		if ( empty( $theorder->get_date_completed() ) ) {
+			return $actions;
+		}
+
 		$actions['taxjar_sync_action'] = __( 'Sync order to TaxJar', 'taxjar' );
 		return $actions;
 	}
