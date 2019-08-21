@@ -1,3 +1,6 @@
+# 3.0.5 (2019-08-21)
+* Fix installation issue on multi sites
+
 # 3.0.4 (2019-08-20)
 * Fix issue where order can sync without having previously been completed in certain circumstances
 
