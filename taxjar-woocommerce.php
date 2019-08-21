@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 $active_plugins = (array) get_option( 'active_plugins', array() );
 if ( is_multisite() ) {
-	$active_plugins = array_merge( self::$active_plugins, get_site_option( 'active_sitewide_plugins', array() ) );
+	$active_plugins = array_merge( $active_plugins, get_site_option( 'active_sitewide_plugins', array() ) );
 }
 $woocommerce_active = in_array( 'woocommerce/woocommerce.php', $active_plugins ) || array_key_exists( 'woocommerce/woocommerce.php', $active_plugins );
 
