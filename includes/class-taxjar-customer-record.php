@@ -256,8 +256,8 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 			$customer_data[ 'street' ] = $address;
 		}
 
+		$customer_data = apply_filters( 'taxjar_customer_sync_data', $customer_data, $this->object );
 		$this->data = $customer_data;
-
 		return $customer_data;
 	}
 
