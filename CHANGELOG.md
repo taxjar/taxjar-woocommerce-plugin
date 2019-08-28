@@ -1,3 +1,7 @@
+# 3.0.6 (2019-08-28)
+* Add filter to enabled altering of customer data before sync
+* Fix naming of filter to determine if customer should sync
+
 # 3.0.5 (2019-08-21)
 * Fix installation issue on multi sites
 

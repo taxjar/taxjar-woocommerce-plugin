@@ -37,7 +37,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/3.0.5/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = 'TaxJarWordPressPlugin/3.0.6/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 		$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
