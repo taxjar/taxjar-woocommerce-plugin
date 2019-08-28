@@ -193,7 +193,7 @@ class WC_Taxjar_Customer_Sync {
 
 		$this->_log( 'Customer sync for customer # ' . $record->get_record_id() . ' (Queue # ' . $record->get_queue_id() . ') triggered.' );
 
-		if ( ! apply_filters( 'taxjar_should_sync_order', $record->should_sync() ) ) {
+		if ( ! apply_filters( 'taxjar_should_sync_customer', $record->should_sync() ) ) {
 			return;
 		}
 
