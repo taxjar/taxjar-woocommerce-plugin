@@ -1,3 +1,6 @@
+# 3.0.7 (2019-08-29)
+* Fix record sync when product does not exist
+
 # 3.0.6 (2019-08-28)
 * Add filter to enabled altering of customer data before sync
 * Fix naming of filter to determine if customer should sync
