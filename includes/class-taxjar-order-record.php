@@ -281,12 +281,19 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		if ( ! empty( $items ) ) {
 			foreach( $items as $item ) {
 				$product = $item->get_product();
+				$product_name = '';
+				$product_identifier = '';
+
+				if ( $product ) {
+					$product_name = $product->get_name();
+					$product_identifier = $product->get_sku();
+				}
 
 				$quantity = $item->get_quantity();
 				$unit_price = $item->get_subtotal() / $quantity;
 				$discount = $item->get_subtotal() - $item->get_total();
 
-				$tax_class = explode( '-', $product->get_tax_class() );
+				$tax_class = explode( '-', $item->get_tax_class() );
 				$tax_code = '';
 				if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
 					$tax_code = end( $tax_class );
@@ -295,8 +302,8 @@ class TaxJar_Order_Record extends TaxJar_Record {
 				$line_items_data[] = array(
 					'id' => $item->get_id(),
 					'quantity' => $quantity,
-					'product_identifier' => $product->get_sku(),
-					'description' => $product->get_name(),
+					'product_identifier' => $product_identifier,
+					'description' => $product_name,
 					'product_tax_code' => $tax_code,
 					'unit_price' => $unit_price,
 					'discount' => $discount,
