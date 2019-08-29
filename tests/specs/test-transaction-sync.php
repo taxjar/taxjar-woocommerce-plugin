@@ -1641,4 +1641,41 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->delete_in_taxjar();
 		$refund_record->delete_in_taxjar();
 	}
+
+	function test_order_sync_with_deleted_product() {
+		$order = TaxJar_Order_Helper::create_order();
+		$order->update_status( 'completed' );
+		$line_items = $order->get_items();
+
+		foreach( $line_items as $line_item ) {
+			$product_id = $line_item->get_product_id();
+			$product = wc_get_product( $product_id );
+			$product->delete( true );
+		}
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+
+		$this->assertTrue( $result );
+	}
+
+	function test_refund_sync_with_deleted_product() {
+		$order = TaxJar_Order_Helper::create_order();
+		$order->update_status( 'completed' );
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$line_items = $order->get_items();
+
+		foreach( $line_items as $line_item ) {
+			$product_id = $line_item->get_product_id();
+			$product = wc_get_product( $product_id );
+			$product->delete( true );
+		}
+
+		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+
+		$this->assertTrue( $result );
+	}
 }
