@@ -1428,7 +1428,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	 * Sanitize our settings
 	 */
 	public function sanitize_settings( $value, $option ) {
-
 		parse_str( $option['id'], $option_name_array );
 		$option_name  = current( array_keys( $option_name_array ) );
 		$setting_name = key( $option_name_array[ $option_name ] );
@@ -1439,7 +1438,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 
 		if ( $setting_name == 'api_token' ) {
 			if ( ! $value && '' == $value && $this->download_orders->taxjar_download ) {
-				$this->download_orders->unlink_provider( site_url() );
+				$this->download_orders->unlink_provider( home_url() );
 			}
 			return strtolower( wc_clean( $value ) );
         }
