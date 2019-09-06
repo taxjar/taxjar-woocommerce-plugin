@@ -1437,9 +1437,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
         }
 
 		if ( $setting_name == 'api_token' ) {
-			if ( ! $value && '' == $value && $this->download_orders->taxjar_download ) {
-				$this->download_orders->unlink_provider( home_url() );
-			}
 			return strtolower( wc_clean( $value ) );
         }
 
