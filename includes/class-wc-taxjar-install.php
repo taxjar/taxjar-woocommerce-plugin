@@ -33,13 +33,25 @@ class WC_Taxjar_Install {
 		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.0', '<' ) ) {
 			self::taxjar_300_update();
 		}
+
+		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.8', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
+			self::taxjar_308_update();
+		}
+	}
+
+	public static function taxjar_308_update() {
+		$tj = TaxJar();
+
+		if ( $tj->get_option( 'taxjar_download' ) == 'yes' ) {
+			$tj->download_orders->unlink_provider( home_url() );
+		}
 	}
 
 	public static function taxjar_300_update() {
 		$tj = TaxJar();
 
 		if ( $tj->get_option( 'taxjar_download' ) == 'yes' ) {
-			$tj->download_orders->unlink_provider( site_url() );
+			$tj->download_orders->unlink_provider( home_url() );
 			$start_date = date( 'Y-m-d H:i:s', strtotime( '-1 day, midnight', current_time( 'timestamp' ) ) );
 			$tj->transaction_sync->transaction_backfill( $start_date );
 			$tj->download_orders->delete_wc_taxjar_keys();

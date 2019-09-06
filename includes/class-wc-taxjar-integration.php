@@ -37,7 +37,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/3.0.7/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = 'TaxJarWordPressPlugin/3.0.8/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 		$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
@@ -1428,7 +1428,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	 * Sanitize our settings
 	 */
 	public function sanitize_settings( $value, $option ) {
-
 		parse_str( $option['id'], $option_name_array );
 		$option_name  = current( array_keys( $option_name_array ) );
 		$setting_name = key( $option_name_array[ $option_name ] );
@@ -1438,9 +1437,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
         }
 
 		if ( $setting_name == 'api_token' ) {
-			if ( ! $value && '' == $value && $this->download_orders->taxjar_download ) {
-				$this->download_orders->unlink_provider( site_url() );
-			}
 			return strtolower( wc_clean( $value ) );
         }
 

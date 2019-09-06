@@ -1,3 +1,7 @@
+# 3.0.8 (2019-09-06)
+* Fix deregister functionality to sent correct store URL
+* Remove deregister upon API key update
+
 # 3.0.7 (2019-08-29)
 * Fix record sync when product does not exist
 
