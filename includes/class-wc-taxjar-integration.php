@@ -1069,12 +1069,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			$unit_price = wc_format_decimal( $product->get_price() );
 			$line_subtotal = wc_format_decimal( $cart_item['line_subtotal'] );
 			$discount = wc_format_decimal( $cart_item['line_subtotal'] - $cart_item['line_total'] );
-			$tax_class = explode( '-', $product->get_tax_class() );
-			$tax_code = '';
-
-			if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
-				$tax_code = end( $tax_class );
-			}
+			$tax_code = self::get_tax_code_from_class( $product->get_tax_class() );
 
 			if ( ! $product->is_taxable() || 'zero-rate' == sanitize_title( $product->get_tax_class() ) ) {
 				$tax_code = '99999';
@@ -1134,11 +1129,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			$this->backend_tax_classes[$id] = $tax_class_name;
 
 			$tax_class = explode( '-', $tax_class_name );
-			$tax_code = '';
-
-            if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
-                $tax_code = end( $tax_class );
-            }
+			$tax_code = self::get_tax_code_from_class( $tax_class_name );
 
 			if ( 'taxable' !== $tax_status ) {
 				$tax_code = '99999';
@@ -1582,6 +1573,23 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	static function is_valid_exemption_type( $exemption_type ) {
 		$valid_types = array( 'wholesale', 'government', 'other', 'non_exempt' );
 		return in_array( $exemption_type, $valid_types );
+    }
+
+    /**
+     * Parse tax code from product
+     *
+     * @param $product - WC_Product
+     * @return string - tax code
+     */
+    static function get_tax_code_from_class( $tax_class ) {
+	    $tax_class = explode( '-', $tax_class );
+	    $tax_code = '';
+
+	    if ( isset( $tax_class ) ) {
+		    $tax_code = end( $tax_class );
+	    }
+
+        return $tax_code;
     }
 
 }
