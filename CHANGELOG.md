@@ -1,3 +1,7 @@
+# 3.0.9 (2019-09-18)
+* Update validation to support new TaxJar product categories
+* Fix missing filter on refund reference IDs
+
 # 3.0.8 (2019-09-06)
 * Fix deregister functionality to sent correct store URL
 * Remove deregister upon API key update
