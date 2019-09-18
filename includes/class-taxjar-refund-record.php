@@ -102,7 +102,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 
 		$refund_data = array(
 			'transaction_id' => $this->get_transaction_id(),
-			'transaction_reference_id' => $this->object->get_parent_id(),
+			'transaction_reference_id' => apply_filters( 'taxjar_get_order_transaction_id', $order_id, $order ),
 			'transaction_date' => $this->object->get_date_created()->date( DateTime::ISO8601 ),
 			'from_country' => $from_country,
 			'from_zip' => $from_zip,
