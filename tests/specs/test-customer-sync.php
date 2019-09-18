@@ -250,10 +250,11 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$this->assertEquals( 'Greenwood Village', $body->customer->city );
 		$this->assertEquals( '123 Test St', $body->customer->street );
 
+		$valid_states = array( 'UT', 'CO' );
+		$this->assertContains( $body->customer->exempt_regions[ 0 ]->state, $valid_states );
+		$this->assertContains( $body->customer->exempt_regions[ 1 ]->state, $valid_states );
 		$this->assertEquals( 'US', $body->customer->exempt_regions[ 0 ]->country );
-		$this->assertEquals( 'CO', $body->customer->exempt_regions[ 0 ]->state );
 		$this->assertEquals( 'US', $body->customer->exempt_regions[ 1 ]->country );
-		$this->assertEquals( 'UT', $body->customer->exempt_regions[ 1 ]->state );
 
 		// test delete customer from TaxJar
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
@@ -330,10 +331,12 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$this->assertEquals( 200, $response['response']['code'] );
 		$body = json_decode( $response[ 'body' ] );
 		$this->assertEquals( 'wholesale', $body->customer->exemption_type );
+
+		$valid_states = array( 'UT', 'CO' );
+		$this->assertContains( $body->customer->exempt_regions[ 0 ]->state, $valid_states );
+		$this->assertContains( $body->customer->exempt_regions[ 1 ]->state, $valid_states );
 		$this->assertEquals( 'US', $body->customer->exempt_regions[ 0 ]->country );
-		$this->assertEquals( 'CO', $body->customer->exempt_regions[ 0 ]->state );
 		$this->assertEquals( 'US', $body->customer->exempt_regions[ 1 ]->country );
-		$this->assertEquals( 'UT', $body->customer->exempt_regions[ 1 ]->state );
 
 		$record->delete_in_taxjar();
 	}

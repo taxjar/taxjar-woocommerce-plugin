@@ -293,11 +293,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 				$unit_price = $item->get_subtotal() / $quantity;
 				$discount = $item->get_subtotal() - $item->get_total();
 
-				$tax_class = explode( '-', $item->get_tax_class() );
-				$tax_code = '';
-				if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
-					$tax_code = end( $tax_class );
-				}
+				$tax_code = WC_Taxjar_Integration::get_tax_code_from_class( $item->get_tax_class() );
 
 				$line_items_data[] = array(
 					'id' => $item->get_id(),
@@ -322,11 +318,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$fees = $this->object->get_fees();
 		if ( !empty( $fees ) ) {
 			foreach( $fees as $fee ) {
-				$tax_class = explode( '-', $fee->get_tax_class() );
-				$tax_code = '';
-				if ( isset( $tax_class ) && is_numeric( end( $tax_class ) ) ) {
-					$tax_code = end( $tax_class );
-				}
+				$tax_code = WC_Taxjar_Integration::get_tax_code_from_class( $fee->get_tax_class() );
 
 				if ( method_exists( $fee, 'get_amount' ) ) {
 					$fee_amount = $fee->get_amount();
