@@ -349,6 +349,47 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->delete_in_taxjar();
 		$second_record->delete_in_taxjar();
 	}
+	
+	function test_fails_in_queue_processing() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+
+		$second_order = TaxJar_Order_Helper::create_order( 1 );
+		$second_order->update_status( 'completed' );
+		$second_order->update_status( 'pending' );
+		$second_record = TaxJar_Order_Record::find_active_in_queue( $second_order->get_id() );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+		$batch_timestamp = as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK );
+		$this->assertNotFalse( $batch_timestamp );
+
+		foreach( $batches as $batch_id ) {
+			$batch = get_post( $batch_id );
+			$args = json_decode( $batch->post_content, true );
+			$this->assertContains( $record->get_queue_id(), $args[ 'queue_ids' ] );
+			$this->assertContains( $second_record->get_queue_id(), $args[ 'queue_ids' ] );
+		}
+
+		$this->tj->transaction_sync->process_batch( $args );
+		$record->read();
+		$this->assertEquals( 'completed', $record->get_status() );
+		$second_record->read();
+		$this->assertEquals( 'new', $second_record->get_status() );
+		$this->assertEquals( 1, $second_record->get_retry_count() );
+		$this->assertEquals( 0, $second_record->get_batch_id() );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+
+		foreach( $batches as $batch_id ) {
+			$batch = get_post( $batch_id );
+			$args = json_decode( $batch->post_content, true );
+			$this->assertContains( $second_record->get_queue_id(), $args[ 'queue_ids' ] );
+		}
+
+		$record->delete_in_taxjar();
+		$second_record->delete_in_taxjar();
+	}
 
 	function test_order_record_get_ship_to_address() {
 		// Tax based on shipping address
