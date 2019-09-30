@@ -349,7 +349,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->delete_in_taxjar();
 		$second_record->delete_in_taxjar();
 	}
-	
+
 	function test_fails_in_queue_processing() {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$order->update_status( 'completed' );
@@ -1718,5 +1718,48 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$result = $record->sync();
 
 		$this->assertTrue( $result );
+	}
+
+	function test_clean_orphaned_records() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$second_order = TaxJar_Order_Helper::create_order( 1 );
+		$second_order->update_status( 'completed' );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+		$batch_id = $batches[0];
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$second_record = TaxJar_Order_Record::find_active_in_queue( $second_order->get_id() );
+		$this->assertEquals( $batch_id, $record->get_batch_id() );
+		$this->assertEquals( $batch_id, $second_record->get_batch_id() );
+
+		$second_record->set_batch_id( 9999 );
+		$second_record->save();
+
+		$third_order = TaxJar_Order_Helper::create_order( 1 );
+		$third_order->update_status( 'completed' );
+		$fourth_order = TaxJar_Order_Helper::create_order( 1 );
+		$fourth_order->update_status( 'completed' );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+		$second_batch_id = $batches[0];
+
+		$third_record = TaxJar_Order_Record::find_active_in_queue( $third_order->get_id() );
+		$fourth_record = TaxJar_Order_Record::find_active_in_queue( $fourth_order->get_id() );
+
+		$fourth_record->set_batch_id( 9999 );
+		$fourth_record->save();
+
+		WC_Taxjar_Record_Queue::clean_orphaned_records();
+		$record->read();
+		$second_record->read();
+		$third_record->read();
+		$fourth_record->read();
+
+		$this->assertEquals( $batch_id, $record->get_batch_id() );
+		$this->assertEquals( 0, $second_record->get_batch_id() );
+		$this->assertEquals( $second_batch_id, $third_record->get_batch_id() );
+		$this->assertEquals( 0, $fourth_record->get_batch_id() );
 	}
 }
