@@ -121,7 +121,7 @@ abstract class TaxJar_Record {
 			$data[ 'processed_datetime' ] =  $this->get_processed_datetime();
 		}
 
-		if ( ! empty( $this->get_batch_id() ) ) {
+		if ( $this->get_batch_id() === 0 || $this->get_batch_id() === '0' || ! empty( $this->get_batch_id() ) ) {
 			$data[ 'batch_id' ] =  $this->get_batch_id();
 		}
 
