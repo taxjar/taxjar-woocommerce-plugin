@@ -243,7 +243,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
-		$record->sync_failure();
+		$record->sync_failure( "Last Error" );
 
 		$updated_record = new TaxJar_Order_Record( $order->get_id() );
 		$updated_record->set_queue_id( $record->get_queue_id() );
@@ -251,9 +251,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$this->assertEquals( 0, $updated_record->get_batch_id() );
 		$this->assertEquals( 'new', $updated_record->get_status() );
+		$this->assertEquals( 'Last Error', $updated_record->get_last_error() );
 
 		$updated_record->set_retry_count( 2 );
-		$updated_record->sync_failure();
+		$updated_record->sync_failure( "Last Error" );
 
 		$updated_record = new TaxJar_Order_Record( $order->get_id() );
 		$updated_record->set_queue_id( $record->get_queue_id() );
@@ -261,6 +262,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$this->assertEquals( 0, $updated_record->get_batch_id() );
 		$this->assertEquals( 'failed', $updated_record->get_status() );
+		$this->assertEquals( 'Last Error', $updated_record->get_last_error() );
 
 		// Ensure updated order is not re-added to queue on failed sync
 		$active_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
