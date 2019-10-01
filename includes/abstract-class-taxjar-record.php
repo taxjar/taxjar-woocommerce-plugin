@@ -16,6 +16,7 @@ abstract class TaxJar_Record {
 	protected $created_datetime;
 	protected $processed_datetime;
 	protected $retry_count;
+	protected $last_error;
 	protected $force_push;
 
 	public $error = array();
@@ -70,6 +71,7 @@ abstract class TaxJar_Record {
 		$this->set_retry_count( $record_data[ 'retry_count' ] );
 		$this->set_status( $record_data[ 'status' ] );
 		$this->set_force_push( $record_data[ 'force_push' ] );
+		$this->set_last_error( $record_data[ 'last_error' ] );
 	}
 
 	public function create() {
@@ -89,6 +91,10 @@ abstract class TaxJar_Record {
 
 		if ( ! empty( $this->get_processed_datetime() ) ) {
 			$insert[ 'processed_datetime' ] = $this->get_processed_datetime();
+		}
+
+		if ( $this->get_last_error() === "" | ! empty( $this->get_last_error() ) ) {
+			$insert[ 'last_error' ] = $this->get_last_error();
 		}
 
 		$result = $wpdb->insert( self::get_queue_table_name(), $insert );
@@ -131,6 +137,10 @@ abstract class TaxJar_Record {
 
 		if ( ! empty( $this->get_retry_count() ) ) {
 			$data[ 'retry_count' ] =  $this->get_retry_count();
+		}
+
+		if ( $this->get_last_error() === "" | ! empty( $this->get_last_error() ) ) {
+			$data[ 'last_error' ] =  $this->get_last_error();
 		}
 
 		$where = array(
@@ -354,6 +364,7 @@ abstract class TaxJar_Record {
 		$record->set_batch_id( $record_row[ 'batch_id' ] );
 		$record->set_processed_datetime( $record_row[ 'processed_datetime' ] );
 		$record->set_force_push( $record_row[ 'force_push' ] );
+		$record->set_last_error( $record_row[ 'last_error' ] );
 		$record->load_object();
 
 		// handle records deleted after being added to queue
@@ -480,5 +491,13 @@ abstract class TaxJar_Record {
 
 	public function set_last_request( $last_request ) {
 		$this->last_request = $last_request;
+	}
+
+	public function get_last_error() {
+		return $this->last_error;
+	}
+
+	public function set_last_error( $last_error ) {
+		$this->last_error = $last_error;
 	}
 }
