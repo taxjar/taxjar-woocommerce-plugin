@@ -256,6 +256,7 @@ abstract class TaxJar_Record {
 	public function sync_success() {
 		$current_datetime =  gmdate( 'Y-m-d H:i:s' );
 		$this->set_processed_datetime( $current_datetime );
+		$this->set_last_error( "" );
 		$this->set_status( 'completed' );
 		$this->save();
 	}
