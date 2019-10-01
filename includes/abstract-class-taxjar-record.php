@@ -79,13 +79,17 @@ abstract class TaxJar_Record {
 
 		global $wpdb;
 		$insert = array(
-			'record_id'        => $this->get_record_id(),
-			'record_type'      => $this->get_record_type(),
-			'status'           => $this->get_status(),
-			'batch_id'         => $this->get_batch_id(),
-			'created_datetime' => $this->get_created_datetime(),
-			'force_push'       => $this->get_force_push()
+			'record_id'          => $this->get_record_id(),
+			'record_type'        => $this->get_record_type(),
+			'status'             => $this->get_status(),
+			'batch_id'           => $this->get_batch_id(),
+			'created_datetime'   => $this->get_created_datetime(),
+			'force_push'         => $this->get_force_push()
 		);
+
+		if ( ! empty( $this->get_processed_datetime() ) ) {
+			$insert[ 'processed_datetime' ] = $this->get_processed_datetime();
+		}
 
 		$result = $wpdb->insert( self::get_queue_table_name(), $insert );
 		$this->set_queue_id( $wpdb->insert_id );
