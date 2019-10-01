@@ -174,9 +174,11 @@ abstract class TaxJar_Record {
 			$this->log( 'Attempting to sync ' . $this->get_record_type() . ' # ' . $this->get_record_id() . ' (Queue # ' . $this->get_queue_id() . ')' );
 			if ( ! apply_filters( 'taxjar_should_sync_' . $this->get_record_type(), $this->should_sync() ) ) {
 				if ( $this->get_error() ) {
-					$this->log( $this->get_error()[ 'message' ]  );
+					$this->sync_failure( $this->get_error()[ 'message' ] );
+				} else {
+					$this->sync_failure( "" );
 				}
-				$this->sync_failure();
+
 				return false;
 			}
 
@@ -186,8 +188,7 @@ abstract class TaxJar_Record {
 			if ( $this->get_status() == 'new' ) {
 				$response = $this->create_in_taxjar();
 				if ( is_wp_error( $response ) ) {
-					$this->sync_failure();
-					$this->log( __( 'WP_Error occurred on create request - ' , 'wc-taxjar' ) . $response->get_error_message() );
+					$this->sync_failure( __( 'WP_Error occurred on create request - ' , 'wc-taxjar' ) . $response->get_error_message() );
 					return false;
 				}
 				if ( isset( $response['response']['code'] ) && $response['response']['code'] == 422 ) {
@@ -200,8 +201,7 @@ abstract class TaxJar_Record {
 			} else {
 				$response = $this->update_in_taxjar();
 				if ( is_wp_error( $response ) ) {
-					$this->sync_failure();
-					$this->log( __( 'WP_Error occurred on update request - ' , 'wc-taxjar' ) . $response->get_error_message() );
+					$this->sync_failure( __( 'WP_Error occurred on update request - ' , 'wc-taxjar' ) . $response->get_error_message() );
 					return false;
 				}
 				if ( isset( $response['response']['code'] ) && $response['response']['code'] == 404 ) {
@@ -214,20 +214,17 @@ abstract class TaxJar_Record {
 			}
 
 			if ( is_wp_error( $response ) ) {
-				$this->sync_failure();
-				$this->log( __( 'WP_Error occurred on ' . $last_request . ' request - ' , 'wc-taxjar' ) . $response->get_error_message() );
+				$this->sync_failure( __( 'WP_Error occurred on ' . $last_request . ' request - ' , 'wc-taxjar' ) . $response->get_error_message() );
 				return false;
 			}
 
 			if ( ! isset( $response[ 'response' ][ 'code' ] ) ) {
-				$this->sync_failure();
-				$this->log( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
+				$this->sync_failure( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
 				return false;
 			}
 
 			if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
-				$this->sync_failure();
-				$this->log( __(  ucfirst( $last_request ) . ' request failed with code: ' , 'wc-taxjar' ) . $response[ 'response' ][ 'code' ] . ' Request: ' . $this->get_last_request() . ' Response: ' . $response[ 'body' ] );
+				$this->sync_failure( __(  ucfirst( $last_request ) . ' request failed with code: ' , 'wc-taxjar' ) . $response[ 'response' ][ 'code' ] . ' Request: ' . $this->get_last_request() . ' Response: ' . $response[ 'body' ] );
 				return false;
 			}
 
@@ -237,13 +234,11 @@ abstract class TaxJar_Record {
 				return true;
 			}
 
-			$this->sync_failure();
-			$this->log( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
+			$this->sync_failure(  __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
 			return false;
 
 		} catch ( Exception $e ) {
-			$this->log( 'Unexpected error in sync with message: ' . $e->getMessage() );
-			$this->sync_failure();
+			$this->sync_failure( __( 'Unexpected error in sync with message: ', 'wc-taxjar' ) . $e->getMessage() );
 			return false;
 		}
 	}
@@ -292,7 +287,10 @@ abstract class TaxJar_Record {
 		}
 	}
 
-	public function sync_failure() {
+	public function sync_failure( $error_message ) {
+		$this->log( $error_message );
+		$this->set_last_error( $error_message );
+
 		$retry_count = $this->get_retry_count() + 1;
 		$this->set_retry_count( $retry_count );
 		if ( $this->get_retry_count() >= 3 ) {
