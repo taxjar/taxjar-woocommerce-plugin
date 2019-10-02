@@ -38,7 +38,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			$status = $this->object->get_status();
 			$valid_statuses = apply_filters( 'taxjar_valid_order_statuses_for_sync', array( 'completed', 'refunded' ) );
 			if ( ! in_array( $status, $valid_statuses ) ) {
-				$this->add_error( __( 'Order failed validation - invalid status.', 'wc-taxjar' ) );
+				$this->add_error( __( 'Order failed validation - invalid order status.', 'wc-taxjar' ) );
 				return false;
 			}
 

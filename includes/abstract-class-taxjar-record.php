@@ -214,7 +214,7 @@ abstract class TaxJar_Record {
 			}
 
 			if ( is_wp_error( $response ) ) {
-				$this->sync_failure( __( 'WP_Error occurred on ' . $last_request . ' request - ' , 'wc-taxjar' ) . $response->get_error_message() );
+				$this->sync_failure( __( 'WP_Error occurred on ' . $last_request . ' request. Details: ' , 'wc-taxjar' ) . $response->get_error_message() );
 				return false;
 			}
 
@@ -224,7 +224,36 @@ abstract class TaxJar_Record {
 			}
 
 			if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
-				$this->sync_failure( __(  ucfirst( $last_request ) . ' request failed with code: ' , 'wc-taxjar' ) . $response[ 'response' ][ 'code' ] . ' Request: ' . $this->get_last_request() . ' Response: ' . $response[ 'body' ] );
+
+				switch( $response[ 'response' ][ 'code' ] ) {
+					case 400:
+						if ( ! empty( $response['body'] ) ) {
+							$error_message = "Invalid request sent to TaxJar. Details: ";
+							$body = json_decode( $response['body'] );
+
+							if ( ! empty( $body->detail ) ) {
+								$error_message .= $body->detail;
+							}
+						}
+						break;
+					case 401:
+						$error_message = "Authorization error. Please check API key.";
+						break;
+					case 403:
+						$error_message = "Authorization error. Please check API key.";
+						break;
+					case 404:
+						$error_message = "Record does not exist in TaxJar, could not update.";
+						break;
+					case 429:
+						$error_message = "Rate limit reached.";
+						break;
+					default:
+						$error_message = "Error in request, TaxJar response code " . $response[ 'response' ][ 'code' ];
+				}
+
+				$this->sync_failure( $error_message );
+				$this->log( ' Request: ' . $this->get_last_request() . ' Response: ' . $response[ 'body' ] );
 				return false;
 			}
 
