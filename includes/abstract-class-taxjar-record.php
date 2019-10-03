@@ -93,7 +93,7 @@ abstract class TaxJar_Record {
 			$insert[ 'processed_datetime' ] = $this->get_processed_datetime();
 		}
 
-		if ( $this->get_last_error() === "" | ! empty( $this->get_last_error() ) ) {
+		if ( $this->get_last_error() === "" || ! empty( $this->get_last_error() ) ) {
 			$insert[ 'last_error' ] = $this->get_last_error();
 		}
 
@@ -139,7 +139,7 @@ abstract class TaxJar_Record {
 			$data[ 'retry_count' ] =  $this->get_retry_count();
 		}
 
-		if ( $this->get_last_error() === "" | ! empty( $this->get_last_error() ) ) {
+		if ( $this->get_last_error() === "" || ! empty( $this->get_last_error() ) ) {
 			$data[ 'last_error' ] =  $this->get_last_error();
 		}
 
