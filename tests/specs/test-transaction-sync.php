@@ -243,7 +243,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order = TaxJar_Order_Helper::create_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
-		$record->sync_failure();
+		$record->sync_failure( "Last Error" );
 
 		$updated_record = new TaxJar_Order_Record( $order->get_id() );
 		$updated_record->set_queue_id( $record->get_queue_id() );
@@ -251,9 +251,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$this->assertEquals( 0, $updated_record->get_batch_id() );
 		$this->assertEquals( 'new', $updated_record->get_status() );
+		$this->assertEquals( 'Last Error', $updated_record->get_last_error() );
 
 		$updated_record->set_retry_count( 2 );
-		$updated_record->sync_failure();
+		$updated_record->sync_failure( "Last Error" );
 
 		$updated_record = new TaxJar_Order_Record( $order->get_id() );
 		$updated_record->set_queue_id( $record->get_queue_id() );
@@ -261,6 +262,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$this->assertEquals( 0, $updated_record->get_batch_id() );
 		$this->assertEquals( 'failed', $updated_record->get_status() );
+		$this->assertEquals( 'Last Error', $updated_record->get_last_error() );
 
 		// Ensure updated order is not re-added to queue on failed sync
 		$active_record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
@@ -345,6 +347,47 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 			}
 		}
 		$this->assertTrue( $has_correct_comment );
+
+		$record->delete_in_taxjar();
+		$second_record->delete_in_taxjar();
+	}
+
+	function test_fails_in_queue_processing() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+
+		$second_order = TaxJar_Order_Helper::create_order( 1 );
+		$second_order->update_status( 'completed' );
+		$second_order->update_status( 'pending' );
+		$second_record = TaxJar_Order_Record::find_active_in_queue( $second_order->get_id() );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+		$batch_timestamp = as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK );
+		$this->assertNotFalse( $batch_timestamp );
+
+		foreach( $batches as $batch_id ) {
+			$batch = get_post( $batch_id );
+			$args = json_decode( $batch->post_content, true );
+			$this->assertContains( $record->get_queue_id(), $args[ 'queue_ids' ] );
+			$this->assertContains( $second_record->get_queue_id(), $args[ 'queue_ids' ] );
+		}
+
+		$this->tj->transaction_sync->process_batch( $args );
+		$record->read();
+		$this->assertEquals( 'completed', $record->get_status() );
+		$second_record->read();
+		$this->assertEquals( 'new', $second_record->get_status() );
+		$this->assertEquals( 1, $second_record->get_retry_count() );
+		$this->assertEquals( 0, $second_record->get_batch_id() );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+
+		foreach( $batches as $batch_id ) {
+			$batch = get_post( $batch_id );
+			$args = json_decode( $batch->post_content, true );
+			$this->assertContains( $second_record->get_queue_id(), $args[ 'queue_ids' ] );
+		}
 
 		$record->delete_in_taxjar();
 		$second_record->delete_in_taxjar();
@@ -1677,5 +1720,48 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$result = $record->sync();
 
 		$this->assertTrue( $result );
+	}
+
+	function test_clean_orphaned_records() {
+		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order->update_status( 'completed' );
+		$second_order = TaxJar_Order_Helper::create_order( 1 );
+		$second_order->update_status( 'completed' );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+		$batch_id = $batches[0];
+
+		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
+		$second_record = TaxJar_Order_Record::find_active_in_queue( $second_order->get_id() );
+		$this->assertEquals( $batch_id, $record->get_batch_id() );
+		$this->assertEquals( $batch_id, $second_record->get_batch_id() );
+
+		$second_record->set_batch_id( 9999 );
+		$second_record->save();
+
+		$third_order = TaxJar_Order_Helper::create_order( 1 );
+		$third_order->update_status( 'completed' );
+		$fourth_order = TaxJar_Order_Helper::create_order( 1 );
+		$fourth_order->update_status( 'completed' );
+
+		$batches = $this->tj->transaction_sync->process_queue();
+		$second_batch_id = $batches[0];
+
+		$third_record = TaxJar_Order_Record::find_active_in_queue( $third_order->get_id() );
+		$fourth_record = TaxJar_Order_Record::find_active_in_queue( $fourth_order->get_id() );
+
+		$fourth_record->set_batch_id( 9999 );
+		$fourth_record->save();
+
+		WC_Taxjar_Record_Queue::clean_orphaned_records();
+		$record->read();
+		$second_record->read();
+		$third_record->read();
+		$fourth_record->read();
+
+		$this->assertEquals( $batch_id, $record->get_batch_id() );
+		$this->assertEquals( 0, $second_record->get_batch_id() );
+		$this->assertEquals( $second_batch_id, $third_record->get_batch_id() );
+		$this->assertEquals( 0, $fourth_record->get_batch_id() );
 	}
 }

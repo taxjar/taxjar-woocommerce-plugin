@@ -1,3 +1,12 @@
+# 3.0.10 (2019-10-04)
+* Fix record stuck in awaiting status in sync queue
+* Display last sync error in sync queue
+* Clear regions not in nexus from rate table when nexus is updated
+* Improve error messaging in logs
+* Set synced date on orders when sync is manually triggered
+* Display batch ID in sync queue table
+* Handle unexpected exemptions during sync
+
 # 3.0.9 (2019-09-18)
 * Update validation to support new TaxJar product categories
 * Fix missing filter on refund reference IDs

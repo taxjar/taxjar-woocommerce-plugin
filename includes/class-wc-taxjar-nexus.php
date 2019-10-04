@@ -120,6 +120,7 @@ class WC_Taxjar_Nexus {
 		if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
 			$this->integration->_log( ':::: Nexus addresses updated ::::' );
 			$body = json_decode( $response['body'] );
+			$this->clear_non_nexus_rates( $body->regions );
 			return $body->regions;
 		}
 
@@ -140,6 +141,27 @@ class WC_Taxjar_Nexus {
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Clear non US nexus states from rates table to prevent tax calculation when nexus is removed in a state
+	 * @param $regions - array of nexus regions from API request
+	 */
+	public function clear_non_nexus_rates( $regions ) {
+		global $wpdb;
+		$nexus_states = array();
+
+		foreach( $regions as $region ) {
+			if ( ! empty( $region->country_code ) && $region->country_code === 'US' ) {
+				if ( ! empty( $region->region_code ) ) {
+					$nexus_states[] = $region->region_code;
+				}
+			}
+		}
+
+		$nexus_states_string = join( "','", $nexus_states );
+		$query = "DELETE FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = 'US' AND tax_rate_state NOT IN ('{$nexus_states_string}')";
+		$results = $wpdb->query( $query );
 	}
 
 } // End WC_Taxjar_Nexus.

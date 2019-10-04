@@ -129,4 +129,24 @@ class WC_Taxjar_Record_Queue {
 		return $results;
 	}
 
+	/**
+	 * Cleans up queue where batches have finished but records never updated queue ID to 0
+	 */
+	public static function clean_orphaned_records() {
+		global $wpdb;
+		$table_name = self::get_queue_table_name();
+
+		$args = array(
+			'hook' => WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK,
+			'status' => ActionScheduler_Store::STATUS_PENDING,
+			'per_page' => 0,
+		);
+		$active_batches = as_get_scheduled_actions( $args, 'ids' );
+		$active_batches[] = 0;
+		$active_batches_string = join( "','", $active_batches );
+
+		$query = "UPDATE {$table_name} SET batch_id = 0 WHERE batch_id NOT IN ('{$active_batches_string}') AND status IN ('new', 'awaiting')";
+		$results = $wpdb->get_results( $query );
+	}
+
 }

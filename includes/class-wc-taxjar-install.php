@@ -37,6 +37,14 @@ class WC_Taxjar_Install {
 		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.8', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
 			self::taxjar_308_update();
 		}
+
+		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.10', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
+			self::taxjar_3010_update();
+		}
+	}
+
+	public static function taxjar_3010_update() {
+		WC_Taxjar_Record_Queue::clean_orphaned_records();
 	}
 
 	public static function taxjar_308_update() {
@@ -133,6 +141,7 @@ CREATE TABLE {$wpdb->prefix}taxjar_record_queue (
   created_datetime datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   processed_datetime datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   retry_count smallint(4) NOT NULL DEFAULT 0,
+  last_error text NOT NULL DEFAULT '',
   PRIMARY KEY  (queue_id),
   KEY record_id (record_id)
   ) $collate;

@@ -16,6 +16,7 @@ abstract class TaxJar_Record {
 	protected $created_datetime;
 	protected $processed_datetime;
 	protected $retry_count;
+	protected $last_error;
 	protected $force_push;
 
 	public $error = array();
@@ -70,6 +71,7 @@ abstract class TaxJar_Record {
 		$this->set_retry_count( $record_data[ 'retry_count' ] );
 		$this->set_status( $record_data[ 'status' ] );
 		$this->set_force_push( $record_data[ 'force_push' ] );
+		$this->set_last_error( $record_data[ 'last_error' ] );
 	}
 
 	public function create() {
@@ -79,13 +81,21 @@ abstract class TaxJar_Record {
 
 		global $wpdb;
 		$insert = array(
-			'record_id'        => $this->get_record_id(),
-			'record_type'      => $this->get_record_type(),
-			'status'           => $this->get_status(),
-			'batch_id'         => $this->get_batch_id(),
-			'created_datetime' => $this->get_created_datetime(),
-			'force_push'       => $this->get_force_push()
+			'record_id'          => $this->get_record_id(),
+			'record_type'        => $this->get_record_type(),
+			'status'             => $this->get_status(),
+			'batch_id'           => $this->get_batch_id(),
+			'created_datetime'   => $this->get_created_datetime(),
+			'force_push'         => $this->get_force_push()
 		);
+
+		if ( ! empty( $this->get_processed_datetime() ) ) {
+			$insert[ 'processed_datetime' ] = $this->get_processed_datetime();
+		}
+
+		if ( $this->get_last_error() === "" || ! empty( $this->get_last_error() ) ) {
+			$insert[ 'last_error' ] = $this->get_last_error();
+		}
 
 		$result = $wpdb->insert( self::get_queue_table_name(), $insert );
 		$this->set_queue_id( $wpdb->insert_id );
@@ -121,12 +131,16 @@ abstract class TaxJar_Record {
 			$data[ 'processed_datetime' ] =  $this->get_processed_datetime();
 		}
 
-		if ( ! empty( $this->get_batch_id() ) ) {
+		if ( $this->get_batch_id() === 0 || $this->get_batch_id() === '0' || ! empty( $this->get_batch_id() ) ) {
 			$data[ 'batch_id' ] =  $this->get_batch_id();
 		}
 
 		if ( ! empty( $this->get_retry_count() ) ) {
 			$data[ 'retry_count' ] =  $this->get_retry_count();
+		}
+
+		if ( $this->get_last_error() === "" || ! empty( $this->get_last_error() ) ) {
+			$data[ 'last_error' ] =  $this->get_last_error();
 		}
 
 		$where = array(
@@ -155,76 +169,106 @@ abstract class TaxJar_Record {
 	}
 
 	public function sync() {
-		$this->clear_error();
-		$this->log( 'Attempting to sync ' . $this->get_record_type() . ' # ' . $this->get_record_id() . ' (Queue # ' . $this->get_queue_id() . ')' );
-		if ( ! apply_filters( 'taxjar_should_sync_' . $this->get_record_type(), $this->should_sync() ) ) {
-			if ( $this->get_error() ) {
-				$this->log( $this->get_error()[ 'message' ]  );
-			}
-			$this->sync_failure();
-			return false;
-		}
+		try {
+			$this->clear_error();
+			$this->log( 'Attempting to sync ' . $this->get_record_type() . ' # ' . $this->get_record_id() . ' (Queue # ' . $this->get_queue_id() . ')' );
+			if ( ! apply_filters( 'taxjar_should_sync_' . $this->get_record_type(), $this->should_sync() ) ) {
+				if ( $this->get_error() ) {
+					$this->sync_failure( $this->get_error()[ 'message' ] );
+				} else {
+					$this->sync_failure( "" );
+				}
 
-		$error_responses = array( 400, 401, 403, 404, 405, 406, 410, 429, 500, 503 );
-		$success_responses = array( 200, 201 );
-
-		if ( $this->get_status() == 'new' ) {
-			$response = $this->create_in_taxjar();
-			if ( is_wp_error( $response ) ) {
-				$this->sync_failure();
-				$this->log( __( 'WP_Error occurred on create request - ' , 'wc-taxjar' ) . $response->get_error_message() );
 				return false;
 			}
-			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 422 ) {
-				$this->log( 'Record already exists in TaxJar so could not create, attempting to update instead.' );
-				$last_request = 'update';
-				$response = $this->update_in_taxjar();
-			} else {
-				$last_request = 'create';
-			}
-		} else {
-			$response = $this->update_in_taxjar();
-			if ( is_wp_error( $response ) ) {
-				$this->sync_failure();
-				$this->log( __( 'WP_Error occurred on update request - ' , 'wc-taxjar' ) . $response->get_error_message() );
-				return false;
-			}
-			if ( isset( $response['response']['code'] ) && $response['response']['code'] == 404 ) {
-				$this->log( 'Record does not exist in TaxJar so could not update, attempting to create instead.' );
-				$last_request = 'create';
+
+			$error_responses = array( 400, 401, 403, 404, 405, 406, 410, 429, 500, 503 );
+			$success_responses = array( 200, 201 );
+
+			if ( $this->get_status() == 'new' ) {
 				$response = $this->create_in_taxjar();
+				if ( is_wp_error( $response ) ) {
+					$this->sync_failure( __( 'WP_Error occurred on create request - ' , 'wc-taxjar' ) . $response->get_error_message() );
+					return false;
+				}
+				if ( isset( $response['response']['code'] ) && $response['response']['code'] == 422 ) {
+					$this->log( 'Record already exists in TaxJar so could not create, attempting to update instead.' );
+					$last_request = 'update';
+					$response = $this->update_in_taxjar();
+				} else {
+					$last_request = 'create';
+				}
 			} else {
-				$last_request = 'update';
+				$response = $this->update_in_taxjar();
+				if ( is_wp_error( $response ) ) {
+					$this->sync_failure( __( 'WP_Error occurred on update request - ' , 'wc-taxjar' ) . $response->get_error_message() );
+					return false;
+				}
+				if ( isset( $response['response']['code'] ) && $response['response']['code'] == 404 ) {
+					$this->log( 'Record does not exist in TaxJar so could not update, attempting to create instead.' );
+					$last_request = 'create';
+					$response = $this->create_in_taxjar();
+				} else {
+					$last_request = 'update';
+				}
 			}
-		}
 
-		if ( is_wp_error( $response ) ) {
-			$this->sync_failure();
-			$this->log( __( 'WP_Error occurred on ' . $last_request . ' request - ' , 'wc-taxjar' ) . $response->get_error_message() );
+			if ( is_wp_error( $response ) ) {
+				$this->sync_failure( __( 'WP_Error occurred on ' . $last_request . ' request. Details: ' , 'wc-taxjar' ) . $response->get_error_message() );
+				return false;
+			}
+
+			if ( ! isset( $response[ 'response' ][ 'code' ] ) ) {
+				$this->sync_failure( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
+				return false;
+			}
+
+			if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
+				switch( $response[ 'response' ][ 'code' ] ) {
+					case 400:
+						if ( ! empty( $response['body'] ) ) {
+							$error_message = "Invalid request sent to TaxJar. Details: ";
+							$body = json_decode( $response['body'] );
+
+							if ( ! empty( $body->detail ) ) {
+								$error_message .= $body->detail;
+							}
+						}
+						break;
+					case 401:
+						$error_message = "Authorization error. Please check API key.";
+						break;
+					case 403:
+						$error_message = "Authorization error. Please check API key.";
+						break;
+					case 404:
+						$error_message = "Record does not exist in TaxJar, could not update.";
+						break;
+					case 429:
+						$error_message = "Rate limit reached.";
+						break;
+					default:
+						$error_message = "Error in request, TaxJar response code " . $response[ 'response' ][ 'code' ];
+				}
+
+				$this->sync_failure( $error_message );
+				$this->log( ' Request: ' . $this->get_last_request() . ' Response: ' . $response[ 'body' ] );
+				return false;
+			}
+
+			if ( in_array( $response[ 'response' ][ 'code' ], $success_responses ) ) {
+				$this->sync_success();
+				$this->log( __(  ucfirst( $last_request ) . ' request successful ' , 'wc-taxjar' ) . ' Request: ' . $this->get_last_request() . ' Response: ' . $response[ 'body' ] );
+				return true;
+			}
+
+			$this->sync_failure(  __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
+			return false;
+
+		} catch ( Exception $e ) {
+			$this->sync_failure( __( 'Unexpected error in sync with message: ', 'wc-taxjar' ) . $e->getMessage() );
 			return false;
 		}
-
-		if ( ! isset( $response[ 'response' ][ 'code' ] ) ) {
-			$this->sync_failure();
-			$this->log( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
-			return false;
-		}
-
-		if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
-			$this->sync_failure();
-			$this->log( __(  ucfirst( $last_request ) . ' request failed with code: ' , 'wc-taxjar' ) . $response[ 'response' ][ 'code' ] . ' Request: ' . $this->get_last_request() . ' Response: ' . $response[ 'body' ] );
-			return false;
-		}
-
-		if ( in_array( $response[ 'response' ][ 'code' ], $success_responses ) ) {
-			$this->sync_success();
-			$this->log( __(  ucfirst( $last_request ) . ' request successful ' , 'wc-taxjar' ) . ' Request: ' . $this->get_last_request() . ' Response: ' . $response[ 'body' ] );
-			return true;
-		}
-
-		$this->sync_failure();
-		$this->log( __( 'Unknown error occurred in sync.' , 'wc-taxjar' ) );
-		return false;
 	}
 
 	public function log( $message ) {
@@ -240,6 +284,7 @@ abstract class TaxJar_Record {
 	public function sync_success() {
 		$current_datetime =  gmdate( 'Y-m-d H:i:s' );
 		$this->set_processed_datetime( $current_datetime );
+		$this->set_last_error( "" );
 		$this->set_status( 'completed' );
 		$this->save();
 	}
@@ -271,7 +316,10 @@ abstract class TaxJar_Record {
 		}
 	}
 
-	public function sync_failure() {
+	public function sync_failure( $error_message ) {
+		$this->log( $error_message );
+		$this->set_last_error( $error_message );
+
 		$retry_count = $this->get_retry_count() + 1;
 		$this->set_retry_count( $retry_count );
 		if ( $this->get_retry_count() >= 3 ) {
@@ -343,6 +391,7 @@ abstract class TaxJar_Record {
 		$record->set_batch_id( $record_row[ 'batch_id' ] );
 		$record->set_processed_datetime( $record_row[ 'processed_datetime' ] );
 		$record->set_force_push( $record_row[ 'force_push' ] );
+		$record->set_last_error( $record_row[ 'last_error' ] );
 		$record->load_object();
 
 		// handle records deleted after being added to queue
@@ -469,5 +518,13 @@ abstract class TaxJar_Record {
 
 	public function set_last_request( $last_request ) {
 		$this->last_request = $last_request;
+	}
+
+	public function get_last_error() {
+		return $this->last_error;
+	}
+
+	public function set_last_error( $last_error ) {
+		$this->last_error = $last_error;
 	}
 }
