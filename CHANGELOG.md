@@ -1,4 +1,4 @@
-# 3.0.10 (2019-10-2)
+# 3.0.10 (2019-10-04)
 * Fix record stuck in awaiting status in sync queue
 * Display last sync error in sync queue
 * Clear regions not in nexus from rate table when nexus is updated

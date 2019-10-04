@@ -181,7 +181,7 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 			'processed_datetime'    => __( 'Sync Time', 'wc-taxjar' ),
 			'retry_count'           => __( 'Retry Count', 'wc-taxjar' ),
 			'batch_id'              => __( 'Batch ID', 'wc-taxjar' ),
-			'last_error'              => __( 'Last Error', 'wc-taxjar' ),
+			'last_error'            => __( 'Last Error', 'wc-taxjar' ),
 			'taxjar_actions'        => __( 'Actions', 'wc-taxjar' ),
 		);
 

@@ -152,7 +152,7 @@ class WC_Taxjar_Nexus {
 		$nexus_states = array();
 
 		foreach( $regions as $region ) {
-			if ( ! empty( $region->country_code ) && $region->country_code === 'US' ){
+			if ( ! empty( $region->country_code ) && $region->country_code === 'US' ) {
 				if ( ! empty( $region->region_code ) ) {
 					$nexus_states[] = $region->region_code;
 				}

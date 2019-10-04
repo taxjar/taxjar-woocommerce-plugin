@@ -224,7 +224,6 @@ abstract class TaxJar_Record {
 			}
 
 			if ( in_array( $response[ 'response' ][ 'code' ], $error_responses ) ) {
-
 				switch( $response[ 'response' ][ 'code' ] ) {
 					case 400:
 						if ( ! empty( $response['body'] ) ) {
