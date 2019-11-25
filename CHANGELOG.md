@@ -1,3 +1,7 @@
+# 3.0.11 (2019-11-25)
+* Fix Action Scheduler load order
+* Update WooCommerce supported version to 3.8.0
+
 # 3.0.10 (2019-10-04)
 * Fix record stuck in awaiting status in sync queue
 * Display last sync error in sync queue
