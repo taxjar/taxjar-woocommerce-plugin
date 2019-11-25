@@ -49,6 +49,7 @@ final class WC_Taxjar {
 	 * Construct the plugin.
 	 */
 	public function __construct() {
+	    add_action( 'plugins_loaded', array( $this, 'load_action_scheduler' ), -10 );
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), array( $this, 'plugin_settings_link' ) );
 		register_activation_hook( __FILE__, array( 'WC_Taxjar', 'plugin_registration_hook' ) );
@@ -77,9 +78,6 @@ final class WC_Taxjar {
 			include_once 'includes/class-taxjar-customer-record.php';
 			include_once 'includes/class-wc-taxjar-queue-list.php';
 
-			// Load Action Scheduler library
-			require_once( 'libraries/action-scheduler/action-scheduler.php' );
-
 			// Register the integration.
 			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );
 
@@ -87,6 +85,13 @@ final class WC_Taxjar {
 			add_action( 'admin_notices', array( $this, 'maybe_display_admin_notices' ) );
 		}
 	}
+
+	/**
+	 * Load Action Scheduler library
+	 */
+	public function load_action_scheduler() {
+		require_once( 'libraries/action-scheduler/action-scheduler.php' );
+    }
 
 	/**
 	 * Add a new integration to WooCommerce.
