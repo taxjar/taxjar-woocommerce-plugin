@@ -70,7 +70,7 @@ class WC_Taxjar_Transaction_Sync {
 			return $actions;
 		}
 
-		if ( apply_filters( 'taxjar_should_validate_order_completed_date', true ) ) {
+		if ( WC_Taxjar_Transaction_Sync::should_validate_order_completed_date() ) {
 			if ( empty( $theorder->get_date_completed() ) ) {
 				return $actions;
 			}
@@ -471,7 +471,7 @@ class WC_Taxjar_Transaction_Sync {
 
 		if ( $record->get_object_hash() || $record->get_last_sync_time() ) {
 			$should_delete = true;
-		} else if ( apply_filters( 'taxjar_should_validate_order_completed_date', true ) ) {
+		} else if ( WC_Taxjar_Transaction_Sync::should_validate_order_completed_date() ) {
 			if ( $order->get_date_completed() ) {
 				if ( $record->should_sync( true ) ) {
 					$should_delete = true;
@@ -625,7 +625,7 @@ class WC_Taxjar_Transaction_Sync {
 		$valid_post_statuses = apply_filters( 'taxjar_valid_post_statuses_for_sync', array( 'wc-completed', 'wc-refunded' ) );
 		$post_status_string = "( '" . implode( "', '", $valid_post_statuses ) . " ')";
 
-		$should_validate_completed_date = apply_filters( 'taxjar_should_validate_order_completed_date', true );
+		$should_validate_completed_date = WC_Taxjar_Transaction_Sync::should_validate_order_completed_date();
 
 		if ( $force ) {
 			$query = "SELECT p.id FROM {$wpdb->posts} AS p ";
@@ -723,5 +723,15 @@ class WC_Taxjar_Transaction_Sync {
 		$notice .= __( 'this article', 'wc-taxjar' );
 		$notice .= '</a>.</p>';
 		echo $notice;
+	}
+
+	/**
+	 * Checks whether or not completed date should be validated before syncing order or refund to TaxJar
+	 *
+	 * @return bool
+	 */
+	public static function should_validate_order_completed_date() {
+		$default_value = true;
+		return apply_filters( 'taxjar_should_validate_order_completed_date', $default_value );
 	}
 }

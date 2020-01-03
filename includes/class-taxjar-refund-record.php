@@ -27,7 +27,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			return false;
 		}
 
-		if ( apply_filters( 'taxjar_should_validate_order_completed_date', true ) ) {
+		if ( WC_Taxjar_Transaction_Sync::should_validate_order_completed_date() ) {
 			if ( empty( $this->order_completed_date ) ) {
 				$this->add_error( __( 'Refund failed validation - parent order has no completed date.', 'wc-taxjar' ) );
 				return false;
