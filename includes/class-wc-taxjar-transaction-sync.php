@@ -76,7 +76,6 @@ class WC_Taxjar_Transaction_Sync {
 			}
 		}
 
-
 		$actions['taxjar_sync_action'] = __( 'Sync order to TaxJar', 'taxjar' );
 		return $actions;
 	}
@@ -631,7 +630,7 @@ class WC_Taxjar_Transaction_Sync {
 			$query = "SELECT p.id FROM {$wpdb->posts} AS p ";
 
 			if ( $should_validate_completed_date ) {
-				$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id )  AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+				$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
 			}
 
 			$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
@@ -645,10 +644,10 @@ class WC_Taxjar_Transaction_Sync {
 			$query = "SELECT p.id FROM {$wpdb->posts} AS p ";
 
 			if ( $should_validate_completed_date ) {
-				$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id )  AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+				$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
 			}
 
-			$query .= "LEFT JOIN {$wpdb->postmeta} AS order_meta_last_sync ON ( p.id = order_meta_last_sync.post_id )  AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' ) ";
+			$query .= "LEFT JOIN {$wpdb->postmeta} AS order_meta_last_sync ON ( p.id = order_meta_last_sync.post_id ) AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' ) ";
 			$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
 
 			if ( $should_validate_completed_date ) {
