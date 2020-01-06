@@ -70,8 +70,10 @@ class WC_Taxjar_Transaction_Sync {
 			return $actions;
 		}
 
-		if ( empty( $theorder->get_date_completed() ) ) {
-			return $actions;
+		if ( WC_Taxjar_Transaction_Sync::should_validate_order_completed_date() ) {
+			if ( empty( $theorder->get_date_completed() ) ) {
+				return $actions;
+			}
 		}
 
 		$actions['taxjar_sync_action'] = __( 'Sync order to TaxJar', 'taxjar' );
@@ -468,9 +470,11 @@ class WC_Taxjar_Transaction_Sync {
 
 		if ( $record->get_object_hash() || $record->get_last_sync_time() ) {
 			$should_delete = true;
-		} else if ( $order->get_date_completed() ) {
-			if ( $record->should_sync( true ) ) {
-				$should_delete = true;
+		} else if ( WC_Taxjar_Transaction_Sync::should_validate_order_completed_date() ) {
+			if ( $order->get_date_completed() ) {
+				if ( $record->should_sync( true ) ) {
+					$should_delete = true;
+				}
 			}
 		}
 
@@ -620,39 +624,40 @@ class WC_Taxjar_Transaction_Sync {
 		$valid_post_statuses = apply_filters( 'taxjar_valid_post_statuses_for_sync', array( 'wc-completed', 'wc-refunded' ) );
 		$post_status_string = "( '" . implode( "', '", $valid_post_statuses ) . " ')";
 
+		$should_validate_completed_date = WC_Taxjar_Transaction_Sync::should_validate_order_completed_date();
+
 		if ( $force ) {
-			$posts = $wpdb->get_results(
-					"
-				SELECT p.id 
-				FROM {$wpdb->posts} AS p 
-				INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id )  AND ( order_meta_completed_date.meta_key = '_completed_date' ) 
-				WHERE p.post_type = 'shop_order' 
-				AND p.post_status IN {$post_status_string} 
-				AND p.post_date >= '{$start_date}' 
-				AND p.post_date < '{$end_date}' 
-				AND order_meta_completed_date.meta_value IS NOT NULL 
-				AND order_meta_completed_date.meta_value != '' 
-				ORDER BY p.post_date ASC
-				", ARRAY_N
-			);
+			$query = "SELECT p.id FROM {$wpdb->posts} AS p ";
+
+			if ( $should_validate_completed_date ) {
+				$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+			}
+
+			$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
+
+			if ( $should_validate_completed_date ) {
+				$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
+			}
+
+			$query .= "ORDER BY p.post_date ASC";
 		} else {
-			$posts = $wpdb->get_results(
-					"
-				SELECT p.id 
-				FROM {$wpdb->posts} AS p 
-				INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id )  AND ( order_meta_completed_date.meta_key = '_completed_date' ) 
-				LEFT JOIN {$wpdb->postmeta} AS order_meta_last_sync ON ( p.id = order_meta_last_sync.post_id )  AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' )
-				WHERE p.post_type = 'shop_order' 
-				AND p.post_status IN {$post_status_string} 
-				AND p.post_date >= '{$start_date}' 
-				AND p.post_date < '{$end_date}' 
-				AND order_meta_completed_date.meta_value IS NOT NULL 
-				AND order_meta_completed_date.meta_value != '' 
-				AND ((order_meta_last_sync.meta_value IS NULL) OR (p.post_modified_gmt > order_meta_last_sync.meta_value)) 
-				ORDER BY p.post_date ASC
-				", ARRAY_N
-			);
+			$query = "SELECT p.id FROM {$wpdb->posts} AS p ";
+
+			if ( $should_validate_completed_date ) {
+				$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+			}
+
+			$query .= "LEFT JOIN {$wpdb->postmeta} AS order_meta_last_sync ON ( p.id = order_meta_last_sync.post_id ) AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' ) ";
+			$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
+
+			if ( $should_validate_completed_date ) {
+				$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
+			}
+
+			$query .= "AND ((order_meta_last_sync.meta_value IS NULL) OR (p.post_modified_gmt > order_meta_last_sync.meta_value)) ORDER BY p.post_date ASC";
 		}
+
+		$posts = $wpdb->get_results( $query, ARRAY_N );
 
 		if ( empty( $posts ) ) {
 			return array();
@@ -717,5 +722,15 @@ class WC_Taxjar_Transaction_Sync {
 		$notice .= __( 'this article', 'wc-taxjar' );
 		$notice .= '</a>.</p>';
 		echo $notice;
+	}
+
+	/**
+	 * Checks whether or not completed date should be validated before syncing order or refund to TaxJar
+	 *
+	 * @return bool
+	 */
+	public static function should_validate_order_completed_date() {
+		$default_value = true;
+		return apply_filters( 'taxjar_should_validate_order_completed_date', $default_value );
 	}
 }

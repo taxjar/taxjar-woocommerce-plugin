@@ -42,9 +42,11 @@ class TaxJar_Order_Record extends TaxJar_Record {
 				return false;
 			}
 
-			if ( empty( $this->object->get_date_completed() ) ) {
-				$this->add_error( __( 'Order failed validation - order has no completed date', 'wc-taxjar' ) );
-				return false;
+			if ( WC_Taxjar_Transaction_Sync::should_validate_order_completed_date() ) {
+				if ( empty( $this->object->get_date_completed() ) ) {
+					$this->add_error( __( 'Order failed validation - order has no completed date', 'wc-taxjar' ) );
+					return false;
+				}
 			}
 		}
 
