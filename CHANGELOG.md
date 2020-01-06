@@ -1,3 +1,7 @@
+# 3.0.12 (2020-01-06)
+* Update supported WooCommerce version to 3.9.0
+* Add filter to disable date validation on transaction sync
+
 # 3.0.11 (2019-11-25)
 * Fix Action Scheduler load order
 * Update WooCommerce supported version to 3.8.0
