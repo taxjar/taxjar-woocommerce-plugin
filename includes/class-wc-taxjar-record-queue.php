@@ -22,23 +22,6 @@ class WC_Taxjar_Record_Queue {
 	}
 
 	/**
-	 * Update record status and batch id in queue
-	 *
-	 * @param array $queue_ids - array of queue ids that were added to batch
-	 * @param array $batch_id - id of batch
-	 * @return null
-	 */
-	static function add_records_to_batch( $queue_ids, $batch_id ) {
-		global $wpdb;
-
-		$table_name = self::get_queue_table_name();
-		$queue_ids_string = join( "','", $queue_ids );
-
-		$query = "UPDATE {$table_name} SET batch_id = {$batch_id} WHERE queue_id IN ('{$queue_ids_string}')";
-		$wpdb->get_results( $query );
-	}
-
-	/**
 	 * Get the queue ids of all active (new and awaiting) records in queue that are not in a batch
 	 *
 	 * @return array|bool - if active records are found returns array, otherwise returns false
@@ -48,8 +31,41 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 
-		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) AND batch_id = 0";
+		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )";
 		$results = $wpdb->get_results( $query,  ARRAY_A );
+
+		return $results;
+	}
+
+	/**
+	 * Get the queue ids of a set number of active (new and awaiting) records in queue
+	 *
+	 * @param int $number_to_process - number of records to get from queue
+	 * @return array|bool - if active records are found returns array, otherwise returns false
+	 */
+	static function get_active_records_to_process( $number_to_process ) {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+
+		$query = "SELECT * FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) LIMIT {$number_to_process}";
+		$results = $wpdb->get_results( $query,  ARRAY_A );
+
+		return $results;
+	}
+
+	/**
+	 * Gets the total number of records in queue that need processing
+	 *
+	 * @return int
+	 */
+	static function get_active_record_count() {
+		global $wpdb;
+
+		$table_name = self::get_queue_table_name();
+
+		$query = "SELECT COUNT(*) FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )";
+		$results = $wpdb->get_var( $query );
 
 		return $results;
 	}
