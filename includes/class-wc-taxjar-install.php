@@ -41,6 +41,15 @@ class WC_Taxjar_Install {
 		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.10', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
 			self::taxjar_3010_update();
 		}
+
+		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.13', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
+			self::taxjar_3013_update();
+		}
+	}
+
+	public static function taxjar_3013_update() {
+		as_unschedule_all_actions( WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK );
+		wp_clear_scheduled_hook( WC_Taxjar_Transaction_Sync::PROCESS_QUEUE_HOOK );
 	}
 
 	public static function taxjar_3010_update() {
