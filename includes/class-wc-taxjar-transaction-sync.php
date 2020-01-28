@@ -30,10 +30,8 @@ class WC_Taxjar_Transaction_Sync {
 	 */
 	public function init() {
 		if ( apply_filters( 'taxjar_enabled', isset( $this->taxjar_integration->settings['enabled'] ) && 'yes' == $this->taxjar_integration->settings['enabled'] ) ) {
-			add_filter( 'cron_schedules', array( $this, 'add_twenty_minute_cron_interval' ) );
 			add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
-			add_action( self::PROCESS_QUEUE_HOOK, array( __CLASS__, 'process_queue' ) );
-			add_action( self::PROCESS_BATCH_HOOK, array( $this, 'process_batch' ) );
+			add_action( self::PROCESS_QUEUE_HOOK, array( $this, 'process_queue' ) );
 
 			if ( isset( $this->taxjar_integration->settings['taxjar_download'] ) && 'yes' == $this->taxjar_integration->settings['taxjar_download'] ) {
 				add_action( 'woocommerce_new_order', array( __CLASS__, 'order_updated' ) );
@@ -149,89 +147,39 @@ class WC_Taxjar_Transaction_Sync {
 	 * Schedule worker to process queue into batches
 	 */
 	public static function schedule_process_queue() {
-		$next_timestamp = wp_next_scheduled( self::PROCESS_QUEUE_HOOK );
-		$process_queue_interval = apply_filters( 'taxjar_process_queue_interval', 20 );
-
-		if ( ! $next_timestamp ) {
-			wp_schedule_event( time(), 'twenty_minutes', self::PROCESS_QUEUE_HOOK );
-		}
-
-		/**
 		$next_timestamp = as_next_scheduled_action( self::PROCESS_QUEUE_HOOK );
-		$process_queue_interval = apply_filters( 'taxjar_process_queue_interval', 20 );
 
 		if ( ! $next_timestamp ) {
-			as_schedule_recurring_action( time(), MINUTE_IN_SECONDS * $process_queue_interval, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
+			$process_queue_interval = apply_filters( 'taxjar_process_queue_interval', 20 );
+			$next_queue_process_time = time() + ( MINUTE_IN_SECONDS * $process_queue_interval );
+			as_schedule_single_action( $next_queue_process_time, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
 		}
-		 **/
-	}
-
-	function add_twenty_minute_cron_interval( $schedules ) {
-		$schedules['twenty_minutes'] = array(
-			'interval' => MINUTE_IN_SECONDS * 20,
-			'display' => __( 'Every Twenty Minutes', 'wc-taxjar=' )
-		);
-		return $schedules;
 	}
 
 	/**
-	 * Process the record queue and schedule batches
-	 *
-	 * @return array - array of batch IDs that were created
+	 * Process the record queue
 	 */
-	public static function process_queue() {
-		$active_records = WC_Taxjar_Record_Queue::get_all_active_in_queue();
+	public function process_queue() {
+		$batch_size = apply_filters( 'taxjar_record_batch_size', 50 );
+		$total_records_to_process = intval( WC_Taxjar_Record_Queue::get_active_record_count() );
+		$active_records = WC_Taxjar_Record_Queue::get_active_records_to_process( $batch_size );
+		$process_queue_interval = apply_filters( 'taxjar_process_queue_interval', 20 );
 
 		if ( empty( $active_records ) ) {
+			$next_queue_process_time = time() + ( MINUTE_IN_SECONDS * $process_queue_interval );
+			as_schedule_single_action( $next_queue_process_time, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
 			return;
 		}
 
-		$active_records = array_map( function( $arr ) {
-			return (int)$arr[ 'queue_id' ];
-		}, $active_records );
-
-		// Allow batch size to be altered through a filter, may need this to be adjustable for performance
-		$batches = array_chunk( $active_records, apply_filters( 'taxjar_record_batch_size', 50 ) );
-
-		$batch_ids = array();
-		foreach( $batches as $batch ) {
-			$batch_id = as_schedule_single_action( time(), self::PROCESS_BATCH_HOOK, array( 'queue_ids' => $batch ), self::QUEUE_GROUP );
-			$batch_ids[] = $batch_id;
-			WC_Taxjar_Record_Queue::add_records_to_batch( $batch, $batch_id );
-		}
-
-		return $batch_ids;
-	}
-
-	/**
-	 * Process the batch and sync records to TaxJar
-	 */
-	public function process_batch( $args ) {
-		if ( empty( $args ) ) {
-			return;
-		}
-
-		if ( empty( $args[ 'queue_ids' ] ) ) {
-			$queue_ids = $args;
-		} else {
-			$queue_ids = $args[ 'queue_ids' ];
-		}
-
-		$record_rows = WC_Taxjar_Record_Queue::get_data_for_batch( $queue_ids );
-		foreach( $record_rows as $record_row ) {
+		foreach( $active_records as $record_row ) {
 			$record = TaxJar_Record::create_from_record_row( $record_row );
 			if ( $record == false ) {
 				continue;
 			}
-			$this->_log( 'Record # ' . $record->get_record_id() . ' (Queue # ' . $record->get_queue_id() . ') triggered to sync by batch # ' . $record->get_batch_id() );
+			$this->_log( 'Record # ' . $record->get_record_id() . ' (Queue # ' . $record->get_queue_id() . ') triggered to sync.' );
 
 			if ( $record->get_status() != 'new' && $record->get_status() != 'awaiting' ) {
 				$this->_log( 'Record could not sync due to invalid status.' );
-				continue;
-			}
-
-			if ( empty( $record->get_batch_id() ) ) {
-				$this->_log( 'Record could not sync due to invalid batch ID.' );
 				continue;
 			}
 
@@ -244,6 +192,14 @@ class WC_Taxjar_Transaction_Sync {
 				}
 			}
 		}
+
+		if ( $total_records_to_process > $batch_size ) {
+			as_schedule_single_action( time(), self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
+			return;
+		}
+
+		$next_queue_process_time = time() + ( MINUTE_IN_SECONDS * $process_queue_interval );
+		as_schedule_single_action( $next_queue_process_time, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
 	}
 
 	/**

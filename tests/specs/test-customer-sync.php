@@ -485,16 +485,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$record->load_object();
 		$record->save();
 
-		$batches = $this->tj->transaction_sync->process_queue();
-		$batch_timestamp = as_next_scheduled_action( WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK );
-		$this->assertNotFalse( $batch_timestamp );
-		foreach( $batches as $batch_id ) {
-			$batch = get_post( $batch_id );
-			$args = json_decode( $batch->post_content, true );
-			$this->assertContains( $record->get_queue_id(), $args[ 'queue_ids' ] );
-		}
-
-		$this->tj->transaction_sync->process_batch(  $args[ 'queue_ids' ] );
+		$this->tj->transaction_sync->process_queue();
 
 		$new_record = TaxJar_Customer_Record::find_active_in_queue( $customer->get_id() );
 		$this->assertFalse( $new_record );

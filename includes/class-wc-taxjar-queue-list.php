@@ -122,9 +122,6 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 			case 'retry_count':
 				return $record->retry_count;
 
-            case 'batch_id':
-                return ( ! empty( $record->batch_id ) ? $record->batch_id : "" );
-
             case 'last_error':
                 return $record->last_error;
 
@@ -180,7 +177,6 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 			'created_datetime'      => __( 'Created Time', 'wc-taxjar' ),
 			'processed_datetime'    => __( 'Sync Time', 'wc-taxjar' ),
 			'retry_count'           => __( 'Retry Count', 'wc-taxjar' ),
-			'batch_id'              => __( 'Batch ID', 'wc-taxjar' ),
 			'last_error'            => __( 'Last Error', 'wc-taxjar' ),
 			'taxjar_actions'        => __( 'Actions', 'wc-taxjar' ),
 		);
