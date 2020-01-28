@@ -165,7 +165,10 @@ class WC_Taxjar_Transaction_Sync {
 		$active_records = WC_Taxjar_Record_Queue::get_active_records_to_process( $batch_size );
 		$process_queue_interval = apply_filters( 'taxjar_process_queue_interval', 20 );
 
-		if ( empty( $active_records ) ) {
+		$params['status'] = ActionScheduler_Store::STATUS_PENDING;
+		$job_id = ActionScheduler::store()->find_action( self::PROCESS_QUEUE_HOOK, $params );
+
+		if ( empty( $active_records ) && !$job_id ) {
 			$next_queue_process_time = time() + ( MINUTE_IN_SECONDS * $process_queue_interval );
 			as_schedule_single_action( $next_queue_process_time, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
 			return;
@@ -193,13 +196,15 @@ class WC_Taxjar_Transaction_Sync {
 			}
 		}
 
-		if ( $total_records_to_process > $batch_size ) {
-			as_schedule_single_action( time(), self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
-			return;
-		}
+		if ( !$job_id ) {
+			if ( $total_records_to_process > $batch_size ) {
+				as_schedule_single_action( time(), self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
+				return;
+			}
 
-		$next_queue_process_time = time() + ( MINUTE_IN_SECONDS * $process_queue_interval );
-		as_schedule_single_action( $next_queue_process_time, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
+			$next_queue_process_time = time() + ( MINUTE_IN_SECONDS * $process_queue_interval );
+			as_schedule_single_action( $next_queue_process_time, self::PROCESS_QUEUE_HOOK, array(), self::QUEUE_GROUP );
+		}
 	}
 
 	/**
