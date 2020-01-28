@@ -1,3 +1,7 @@
+# 3.0.13 (2020-01-28)
+* Update queue processing to fully support Action Scheduler 3.0
+* Alter queue processing to handle scheduled actions that fail or timeout
+
 # 3.0.12 (2020-01-06)
 * Update supported WooCommerce version to 3.9.0
 * Add filter to disable date validation on transaction sync
