@@ -32,7 +32,7 @@ class WC_Taxjar_Record_Queue {
 		$table_name = self::get_queue_table_name();
 
 		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )";
-		$results = $wpdb->get_results( $query,  ARRAY_A );
+		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		return $results;
 	}
@@ -49,7 +49,7 @@ class WC_Taxjar_Record_Queue {
 		$table_name = self::get_queue_table_name();
 
 		$query = "SELECT * FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) LIMIT {$number_to_process}";
-		$results = $wpdb->get_results( $query,  ARRAY_A );
+		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		return $results;
 	}
@@ -96,7 +96,7 @@ class WC_Taxjar_Record_Queue {
 		$table_name = self::get_queue_table_name();
 
 		$query = "SELECT queue_id, record_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )";
-		$results = $wpdb->get_results( $query,  ARRAY_A );
+		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		return $results;
 	}
@@ -113,7 +113,7 @@ class WC_Taxjar_Record_Queue {
 		$queue_ids_string = join( "','", $queue_ids );
 
 		$query = "SELECT * FROM {$table_name} WHERE queue_id IN ('{$queue_ids_string}')";
-		$results = $wpdb->get_results( $query,  ARRAY_A );
+		$results = $wpdb->get_results( $query, ARRAY_A );
 
 		return $results;
 	}
