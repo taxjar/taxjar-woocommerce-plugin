@@ -1,3 +1,6 @@
+# 3.0.14 (2020-01-29)
+* Ensure no extra actions are scheduled and clean up unnecessary actions
+
 # 3.0.13 (2020-01-28)
 * Update queue processing to fully support Action Scheduler 3.0
 * Alter queue processing to handle scheduled actions that fail or timeout
