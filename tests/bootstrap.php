@@ -25,15 +25,11 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// load WC
 		tests_add_filter( 'muplugins_loaded', array( $this, 'load_wc' ) );
 
-		// install WC Subscriptions
-		tests_add_filter( 'plugins_loaded', array( $this, 'install_subscriptions' ), -1 );
-
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
 
 		// load the WP testing environment
 		require_once $this->wp_tests_dir . '/includes/bootstrap.php';
-
 
 		$this->includes();
 	}
@@ -46,12 +42,6 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
-	}
-
-	public function install_subscriptions() {
-		// load woocommerce subscriptions
-		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
-		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 	}
 
