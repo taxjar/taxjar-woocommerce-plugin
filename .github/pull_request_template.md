@@ -12,20 +12,28 @@ After applying the PR, this should happen.
 
 **Click-Test Versions**
 
+- [ ] Woo 4.0
+- [ ] Woo 3.9
+- [ ] Woo 3.8
+- [ ] Woo 3.7
+- [ ] Woo 3.6
 - [ ] Woo 3.5
 - [ ] Woo 3.4
 - [ ] Woo 3.3
 - [ ] Woo 3.2
 - [ ] Woo 3.1
 - [ ] Woo 3.0
-- [ ] Woo 2.6
 
 **Specs Passing**
 
+- [ ] Woo 4.0
+- [ ] Woo 3.9
+- [ ] Woo 3.8
+- [ ] Woo 3.7
+- [ ] Woo 3.6
 - [ ] Woo 3.5
 - [ ] Woo 3.4
 - [ ] Woo 3.3
 - [ ] Woo 3.2
 - [ ] Woo 3.1
 - [ ] Woo 3.0
-- [ ] Woo 2.6
