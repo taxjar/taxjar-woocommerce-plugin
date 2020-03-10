@@ -25,9 +25,9 @@ jQuery( document ).ready( function() {
 					action: 'wc_taxjar_update_nexus_cache',
 					security: woocommerce_taxjar_admin.update_nexus_nonce,
 				}
-			}).done(function( data ) {
+			}).done( function( data ) {
 				if ( data ) {
-					if (data.success == 1) {
+					if ( data.success == 1 ) {
 						alert( 'Nexus Addresses Synced' );
 					} else {
 						alert( 'Error occurred during nexus sync. Please try again.' );
@@ -62,20 +62,20 @@ jQuery( document ).ready( function() {
 							alert( 'No records found to add to queue.' );
 						} else {
 							if ( data.records_updated == 1 ) {
-								alert(data.records_updated + ' record added to queue and will sync to TaxJar shortly.');
+								alert( data.records_updated + ' record added to queue and will sync to TaxJar shortly.' );
 							} else {
-								alert(data.records_updated + ' records added to queue and will sync to TaxJar shortly.');
+								alert( data.records_updated + ' records added to queue and will sync to TaxJar shortly.' );
 							}
 						}
 					} else {
 						if ( data.error == "transaction sync disabled" ) {
 							alert( 'Sales tax reporting must be enabled to perform transaction backfill. Please enable this setting and try again.' );
 						} else {
-							alert('Error adding records to queue.');
+							alert( 'Error adding records to queue.' );
 						}
 					}
 				} else {
-					alert('Error occurred during transaction backfill.');
+					alert( 'Error occurred during transaction backfill.' );
 				}
 				$("body").css("cursor", "default");
 			});

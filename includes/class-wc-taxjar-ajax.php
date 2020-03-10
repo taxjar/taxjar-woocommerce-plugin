@@ -35,6 +35,7 @@ class WC_Taxjar_AJAX {
 		$response = array(
 			'success' => 1
 		);
+
 		wp_send_json( $response );
 	}
 
