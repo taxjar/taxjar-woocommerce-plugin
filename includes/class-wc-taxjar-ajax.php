@@ -23,12 +23,28 @@ class WC_Taxjar_AJAX {
 	}
 
 	public function wc_taxjar_update_nexus_cache() {
+		check_admin_referer( 'taxjar-update-nexus', 'security' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_die();
+		}
+
 		$taxjar_nexus = new WC_Taxjar_Nexus( new WC_Taxjar_Integration );
 		$taxjar_nexus->get_or_update_cached_nexus( true );
-		die();
+
+		$response = array(
+			'success' => 1
+		);
+		wp_send_json( $response );
 	}
 
 	public function wc_taxjar_run_transaction_backfill() {
+		check_admin_referer( 'taxjar-transaction-backfill', 'security' );
+
+		if ( ! current_user_can( 'edit_shop_orders' ) ) {
+			wp_die();
+		}
+
 		$date_format = 'Y-m-d';
 
 		$start_date = current_time( $date_format );
