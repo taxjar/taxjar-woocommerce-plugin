@@ -1,3 +1,7 @@
+# 3.0.15 (2020-03-11)
+* Ensure referer and user permissions are validated for ajax methods
+* Confirm compatibility with WooCommerce 4.0
+
 # 3.0.14 (2020-01-29)
 * Ensure no extra actions are scheduled and clean up unnecessary actions
 
