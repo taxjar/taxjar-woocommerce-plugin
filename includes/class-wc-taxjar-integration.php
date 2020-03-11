@@ -1543,11 +1543,11 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'wc-taxjar-admin',
 			'woocommerce_taxjar_admin',
 			array(
-				'ajax_url'         => admin_url( 'admin-ajax.php' ),
-				'update_api_nonce' => wp_create_nonce( 'update-api-key' ),
-				'current_user'     => get_current_user_id(),
-				'integration_uri'  => $this->integration_uri,
-				'api_token'        => $this->post_or_setting( 'api_token' ),
+				'ajax_url'                      => admin_url( 'admin-ajax.php' ),
+				'transaction_backfill_nonce'    => wp_create_nonce( 'taxjar-transaction-backfill' ),
+				'update_nexus_nonce'            => wp_create_nonce( 'taxjar-update-nexus' ),
+				'current_user'                  => get_current_user_id(),
+				'integration_uri'               => $this->integration_uri,
 			)
 		);
 
