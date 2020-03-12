@@ -793,6 +793,10 @@ class WC_Taxjar_Integration extends WC_Settings_API {
             'exemption_type' => $exemption_type,
 		) );
 
+		if ( ! $taxes ) {
+			return;
+		}
+
 		$this->response_rate_ids = $taxes['rate_ids'];
 		$this->response_line_items = $taxes['line_items'];
 
