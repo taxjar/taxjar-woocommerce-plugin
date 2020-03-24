@@ -1601,7 +1601,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
         $curl_version = '';
         if ( function_exists( 'curl_version' ) ) {
             $curl_version = curl_version();
-            $curl_version = $curl_version['version'] . ', ' . $curl_version['ssl_version'];
+            $curl_version = $curl_version['version'] . '; ' . $curl_version['ssl_version'];
         }
 
         $php_version = phpversion();
@@ -1609,7 +1609,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
         $woo_version = WC()->version;
         $wordpress_version = get_bloginfo( 'version' );
         $site_url = get_bloginfo( 'url' );
-        $user_agent = "TaxJarWordPressPlugin/$taxjar_version/WordPress/$wordpress_version/WooCommerce/$woo_version/PHP/$php_version/CURL/$curl_version; $site_url";
+        $user_agent = "TaxJar/WooCommerce (PHP $php_version; cURL $curl_version; WordPress $wordpress_version; WooCommerce $woo_version) WC_Taxjar/$taxjar_version $site_url";
         return $user_agent;
     }
 
