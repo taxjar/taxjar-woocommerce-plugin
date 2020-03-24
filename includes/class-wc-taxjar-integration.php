@@ -793,6 +793,10 @@ class WC_Taxjar_Integration extends WC_Settings_API {
             'exemption_type' => $exemption_type,
 		) );
 
+		if ( $taxes === false ) {
+			return;
+		}
+
 		$this->response_rate_ids = $taxes['rate_ids'];
 		$this->response_line_items = $taxes['line_items'];
 
@@ -887,6 +891,10 @@ class WC_Taxjar_Integration extends WC_Settings_API {
             'exemption_type' => $exemption_type,
 		) );
 
+		if ( $taxes === false ) {
+			return;
+		}
+
 		if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
 			foreach ( $order->get_items() as $item_key => $item ) {
 				$product_id = $item->get_product_id();
@@ -968,6 +976,10 @@ class WC_Taxjar_Integration extends WC_Settings_API {
             'customer_id' => $customer_id,
             'exemption_type' => $exemption_type,
 	    ) );
+
+	    if ( $taxes === false ) {
+		    return;
+	    }
 
 	    if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
 		    foreach ( $order->get_items() as $item_key => $item ) {
