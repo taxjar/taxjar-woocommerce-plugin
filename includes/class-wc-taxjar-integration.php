@@ -248,6 +248,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 				$store_settings['state'] = 'N/A';
 			}
 
+			$api_token_valid = apply_filters( 'taxjar_api_token_valid', $this->post_or_setting( 'api_token' ) && $tj_connection->api_token_valid );
+
 			$settings = array(
 				array(
 					'title' => __( 'TaxJar', 'wc-taxjar' ),
@@ -269,17 +271,62 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 					'type'  => 'title',
 					'desc'  => '',
 				),
-				array(
-					'title'   => __( 'API Token', 'wc-taxjar' ),
-					'type'    => 'text',
-					'desc'    => __( '<p><a href="' . $this->app_uri . 'account#api-access" target="_blank">Click here</a> to get your API token.</p>', 'wc-taxjar' ),
-					'default' => '',
-					'id'      => 'woocommerce_taxjar-integration_settings[api_token]'
-				),
-				array(
-					'type' => 'sectionend',
-				),
+
 			);
+
+			if ( $api_token_valid ) {
+				$connected_email = $this->post_or_setting( 'connected_email' );
+
+				if ( $connected_email ) {
+					array_push( $settings, array(
+						'title' => '',
+						'type'  => 'title',
+						'desc'  => '<div class="taxjar-connected><span class="dashicons dashicons-yes-alt"></span><p>' . $connected_email . '</p></div>',
+						'id'	=> 'connected-to-taxjar'
+					) );
+				} else {
+					array_push( $settings, array(
+						'title' => '',
+						'type'  => 'title',
+						'desc'  => '<div class="taxjar-connected><span class="dashicons dashicons-yes-alt"></span><p>Connected To TaxJar</p></div>',
+						'id'	=> 'connected-to-taxjar'
+					) );
+				}
+
+				array_push( $settings, array(
+					'title' => '',
+					'type'  => 'title',
+					'desc'  => __( '<button id="disconnect-from-taxjar" name="disconnect-from-taxjar" class="button-primary" type="submit" value="Disconnect">Disconnect From TaxJar</button><p><a href="#" id="connect-manual-edit">Click here to edit API Token manually.</a></p>', 'wc-taxjar' ),
+				) );
+			} else {
+				array_push( $settings, array(
+					'title' => '',
+					'type'  => 'title',
+					'desc'  => __( '<button id="connect-to-taxjar" name="connect-to-taxjar" class="button-primary" type="submit" value="Connect">Connect To TaxJar</button><p>Already have an API Token? <a href="#" id="connect-manual-edit">Click here to manually edit.</a></p>', 'wc-taxjar' ),
+				) );
+			}
+
+			array_push( $settings, array(
+				'title'   => '',
+				'type'	=> 'text',
+				'desc'	=> __( '<p class="hidden tj-api-token-title"><a href="' . $this->app_uri . 'account#api-access" target="_blank">Click here</a> to get your API token.</p>', 'wc-taxjar' ),
+				'default' => '',
+				'class'   => 'hidden',
+				'id'	  => 'woocommerce_taxjar-integration_settings[api_token]'
+			) );
+			array_push( $settings, array(
+				'type' => 'sectionend',
+			) );
+			array_push( $settings, array(
+				'title'	   => '',
+				'type'		=> 'email',
+				'desc'		=> '',
+				'class'	   => 'hidden',
+				'id'	      => 'woocommerce_taxjar-integration_settings[connected_email]'
+			) );
+			array_push( $settings, array(
+				'type' => 'sectionend',
+			) );
 
 			if ( ! $tj_connection->can_connect || ! $tj_connection->api_token_valid ) {
 				array_push( $settings, $tj_connection->get_form_settings_field() );
@@ -288,7 +335,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 				) );
 			}
 
-			$api_token_valid = apply_filters( 'taxjar_api_token_valid', $this->post_or_setting( 'api_token' ) && $tj_connection->api_token_valid );
 			if ( $api_token_valid ) {
 				array_push( $settings, array(
 					'title' => __( 'Step 2: Configure your sales tax settings', 'wc-taxjar' ),
@@ -329,7 +375,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 						'type' => 'title',
 					);
 					$settings[] = array(
-						'title'    => __( 'Ship From Address', 'wc-taxjar' ),
+						'title'	=> __( 'Ship From Address', 'wc-taxjar' ),
 						'type'     => 'text',
 						'desc'     => __( 'Enter the street address where your store ships from.', 'wc-taxjar' ),
 						'desc_tip' => true,
@@ -393,7 +439,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 				$settings[] = array(
 					'type' => 'sectionend',
 				);
-			} // End if().
+			}
 		}
 
 		return apply_filters( 'woocommerce_get_settings_' . $this->id, $settings );
@@ -1548,6 +1594,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 				'update_nexus_nonce'            => wp_create_nonce( 'taxjar-update-nexus' ),
 				'current_user'                  => get_current_user_id(),
 				'integration_uri'               => $this->integration_uri,
+				'connect_url'                   => $this->get_connect_url(),
+				'app_url'                       => untrailingslashit( $this->app_uri )
 			)
 		);
 
@@ -1555,6 +1603,17 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 
 		wp_enqueue_script( 'jquery-ui-datepicker' );
 		wp_enqueue_style( 'jquery-ui-datepicker' );
+	}
+
+	 /**
+	  * Generates TaxJar connect popup url
+	  *
+	  * @return string - TaxJar connect popup url
+	  */
+	public function get_connect_url() {
+		$connect_url =  $this->app_uri . 'smartcalcs/connect/magento/?store=' . urlencode( get_bloginfo( 'url' ) );
+		$connect_url .= '&plugin=magento2&version=' . WC_Taxjar::$version;
+		return esc_url( $connect_url );
 	}
 
 	/**

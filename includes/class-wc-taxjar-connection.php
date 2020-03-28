@@ -61,7 +61,7 @@ class WC_Taxjar_Connection {
 			if ( $this->integration->post_or_setting( 'api_token' ) && isset( $body->valid ) && false === $body->valid ) {
 				$description .= '<span style="color: #ff0000;"><strong>';
 				$description .= 'It looks like your API token is invalid.';
-				$description .= sprintf( '<br><a href="%s" target="_blank">Please review your API token.</a>', $this->integration->app_uri . 'account#api-access' );
+				$description .= sprintf( '<br><span style="color: black;">Please attempt to reconnect to TaxJar or </span><a href="%s" target="_blank">review your API token here.</a>', $this->integration->app_uri . 'account#api-access' );
 				$description .= '</strong></span>';
 				$this->api_token_valid = false;
 			}

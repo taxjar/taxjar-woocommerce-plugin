@@ -47,3 +47,31 @@
 .widefat .column-taxjar_actions a.view::after {
 	content: "\f177";
 }
+
+#connected-to-taxjar-description .dashicons-yes-alt {
+	color: #3FAE2A;
+	font-size: 32px;
+	display: inline-block;
+}
+
+div#connected-to-taxjar-description div {
+	display: inline-block;
+	padding: 20px;
+	padding-right: 40px;
+	padding-left: 20px;
+	background-color: white;
+	border-left: 4px solid;
+	border-color: #3FAE2A;
+}
+
+div#connected-to-taxjar-description p {
+	display: inline-block;
+	margin-left: 10px;
+	font-size: 1.3em;
+	margin-top: 3px;
+	margin-bottom: 3px;
+}
+
+#disconnect-from-taxjar {
+	margin-top: 20px;
+}
