@@ -322,7 +322,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			foreach( $fees as $fee ) {
 				$tax_code = WC_Taxjar_Integration::get_tax_code_from_class( $fee->get_tax_class() );
 
-				if ( method_exists( $fee, 'get_amount' ) ) {
+				if ( method_exists( $fee, 'get_amount' ) && $fee->get_amount() ) {
 					$fee_amount = $fee->get_amount();
 				} else {
 					$fee_amount = $fee->get_total();
