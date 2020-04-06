@@ -27,7 +27,6 @@ jQuery( document ).ready( function() {
 
 			var input = $( "<input>" ).attr( "type", "hidden" ).attr( "name", "save" ).val( "Save changes" );
 			$( '#mainform' ).append( input );
-			//$( '#mainform button.woocommerce-save-button' ).click();
 			$( '#mainform' ).submit();
 		};
 
@@ -74,7 +73,9 @@ jQuery( document ).ready( function() {
 
 			window.popup = window.open(url, title, 'scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
 
-			if (window.focus) window.popup.focus();
+			if (window.focus) {
+				window.popup.focus();
+			}
 		};
 
 		var clean_api_key = function() {

@@ -281,14 +281,14 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 					array_push( $settings, array(
 						'title' => '',
 						'type'  => 'title',
-						'desc'  => '<div class="taxjar-connected><span class="dashicons dashicons-yes-alt"></span><p>' . $connected_email . '</p></div>',
+						'desc'  => '<div class="taxjar-connected"><span class="dashicons dashicons-yes-alt"></span><p>' . $connected_email . '</p></div>',
 						'id'	=> 'connected-to-taxjar'
 					) );
 				} else {
 					array_push( $settings, array(
 						'title' => '',
 						'type'  => 'title',
-						'desc'  => '<div class="taxjar-connected><span class="dashicons dashicons-yes-alt"></span><p>Connected To TaxJar</p></div>',
+						'desc'  => '<div class="taxjar-connected"><span class="dashicons dashicons-yes-alt"></span><p>Connected To TaxJar</p></div>',
 						'id'	=> 'connected-to-taxjar'
 					) );
 				}
@@ -296,13 +296,13 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 				array_push( $settings, array(
 					'title' => '',
 					'type'  => 'title',
-					'desc'  => __( '<button id="disconnect-from-taxjar" name="disconnect-from-taxjar" class="button-primary" type="submit" value="Disconnect">Disconnect From TaxJar</button><p><a href="#" id="connect-manual-edit">Click here to edit API Token manually.</a></p>', 'wc-taxjar' ),
+					'desc'  => __( '<button id="disconnect-from-taxjar" name="disconnect-from-taxjar" class="button-primary" type="submit" value="Disconnect">Disconnect From TaxJar</button><p><a href="#" id="connect-manual-edit">Edit API Token</a></p>', 'wc-taxjar' ),
 				) );
 			} else {
 				array_push( $settings, array(
 					'title' => '',
 					'type'  => 'title',
-					'desc'  => __( '<button id="connect-to-taxjar" name="connect-to-taxjar" class="button-primary" type="submit" value="Connect">Connect To TaxJar</button><p>Already have an API Token? <a href="#" id="connect-manual-edit">Click here to manually edit.</a></p>', 'wc-taxjar' ),
+					'desc'  => __( '<button id="connect-to-taxjar" name="connect-to-taxjar" class="button-primary" type="submit" value="Connect">Connect To TaxJar</button><p>Already have an API Token? <a href="#" id="connect-manual-edit">Edit API Token.</a></p>', 'wc-taxjar' ),
 				) );
 			}
 
