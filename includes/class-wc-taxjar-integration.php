@@ -32,7 +32,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	public function __construct() {
 		$this->id                 = 'taxjar-integration';
 		$this->method_title       = __( 'TaxJar', 'wc-taxjar' );
-		$this->method_description = apply_filters( 'taxjar_method_description', __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Enter your API token (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">click here to get a token</a>), city, and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable order downloads to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>. We\'ll get back to you within hours.</b>', 'wc-taxjar' ) );
+		$this->method_description = apply_filters( 'taxjar_method_description', __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Connect your TaxJar account and enter the city and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable sales tax reporting to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>. We\'ll get back to you within hours.</b>', 'wc-taxjar' ) );
 		$this->app_uri            = 'https://app.taxjar.com/';
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
@@ -254,7 +254,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 				array(
 					'title' => __( 'TaxJar', 'wc-taxjar' ),
 					'type'  => 'title',
-					'desc'  => __( "TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Enter your API token", 'wc-taxjar' ) . ' (<a href="https://app.taxjar.com/api_sign_up/" target="_blank">' . __( "click here to get a token", 'wc-taxjar' ) . '</a>)' . __( ", city, and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable order downloads to begin importing transactions from this store into your TaxJar account, all in one click!", 'wc-taxjar' ),
+					'desc'  => __( "TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Connect your TaxJar account and enter the city and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable sales tax reporting to begin importing transactions from this store into your TaxJar account, all in one click!", 'wc-taxjar' ),
 				),
 				array(
 					'type' => 'sectionend',
@@ -307,9 +307,9 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			}
 
 			array_push( $settings, array(
-				'title'   => '',
+				'title'   => 'TaxJar API Token',
 				'type'	=> 'text',
-				'desc'	=> __( '<p class="hidden tj-api-token-title"><a href="' . $this->app_uri . 'account#api-access" target="_blank">Click here</a> to get your API token.</p>', 'wc-taxjar' ),
+				'desc'	=> __( '<p class="hidden tj-api-token-title"><a href="' . $this->app_uri . 'account#api-access" target="_blank">Get API token</a></p>', 'wc-taxjar' ),
 				'default' => '',
 				'class'   => 'hidden',
 				'id'	  => 'woocommerce_taxjar-integration_settings[api_token]'

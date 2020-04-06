@@ -33,13 +33,14 @@ jQuery( document ).ready( function() {
 		var connect_manual_edit = function( e ) {
 			e.preventDefault();
 			$( '.tj-api-token-title' ).parent().parent().find( 'label' ).text( 'API Token' );
-			$( '.tj-api-token-title' ).removeClass('hidden');
-			$( '#woocommerce_taxjar-integration_settings\\[api_token\\]' ).removeClass('hidden');
+			$( '.tj-api-token-title' ).removeClass( 'hidden' );
+			$( 'label[for="woocommerce_taxjar-integration_settings[api_token]"]' ).show();
+			$( '#woocommerce_taxjar-integration_settings\\[api_token\\]' ).removeClass( 'hidden' );
 			$( 'p.submit' ).show();
 		};
 
-		var handle_connect_callback = function(e) {
-			if (e.origin !== woocommerce_taxjar_admin.app_url ) {
+		var handle_connect_callback = function( e ) {
+			if ( e.origin !== woocommerce_taxjar_admin.app_url ) {
 				return;
 			}
 
@@ -47,33 +48,33 @@ jQuery( document ).ready( function() {
 				var data = JSON.parse( e.data );
 				if ( data.api_token && data.email ) {
 					window.popup.postMessage( 'Data received', woocommerce_taxjar_admin.app_url );
-					$( '#woocommerce_taxjar-integration_settings\\[api_token\\]' ).val( data.api_token )
+					$( '#woocommerce_taxjar-integration_settings\\[api_token\\]' ).val( data.api_token );
 					$( '#woocommerce_taxjar-integration_settings\\[connected_email\\]' ).val( data.email );
 					$( '#mainform button.woocommerce-save-button' ).click();
 				} else {
 					throw 'Invalid data';
 				}
-			} catch(e) {
-				alert('Invalid API token or email provided. Please try connecting to TaxJar again or contact support@taxjar.com.');
-			}
-		};
+			} catch( e ) {
+			alert( 'Invalid API token or email provided. Please try connecting to TaxJar again or contact support@taxjar.com.' );
+		}
+	};
 
 		var open_connect_popup = function( e ) {
 			e.preventDefault();
 			openPopup( woocommerce_taxjar_admin.connect_url, "Connect to TaxJar", 400, 500 );
 		};
 
-		var openPopup = function(url, title, w, h) {
+		var openPopup = function( url, title, w, h ) {
 			var dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : screen.left;
 			var dualScreenTop = window.screenTop != undefined ? window.screenTop : screen.top;
 			var width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
 			var height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
-			var left = ((width / 2) - (w / 2)) + dualScreenLeft;
-			var top = ((height / 2) - (h / 2)) + dualScreenTop;
+			var left = ( ( width / 2 ) - ( w / 2 ) ) + dualScreenLeft;
+			var top = ( ( height / 2 ) - ( h / 2 ) ) + dualScreenTop;
 
-			window.popup = window.open(url, title, 'scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+			window.popup = window.open( url, title, 'scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left );
 
-			if (window.focus) {
+			if ( window.focus ) {
 				window.popup.focus();
 			}
 		};

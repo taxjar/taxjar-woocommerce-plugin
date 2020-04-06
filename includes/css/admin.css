@@ -52,6 +52,7 @@
 	color: #3FAE2A;
 	font-size: 32px;
 	display: inline-block;
+	margin-right: 10px;
 }
 
 div#connected-to-taxjar-description div {
@@ -74,4 +75,19 @@ div#connected-to-taxjar-description p {
 
 #disconnect-from-taxjar {
 	margin-top: 20px;
+}
+
+.dashicons-yes-alt:before {
+	content: "\2713";
+	color: white;
+	background-color: #3FAE2A;
+	border-radius: 50%;
+	padding: 3px 10px;
+	position: relative;
+	top: -3px;
+	padding-bottom: 8px;
+}
+
+.woocommerce table.form-table th label[for="woocommerce_taxjar-integration_settings[api_token]"] {
+	display: none;
 }
