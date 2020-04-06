@@ -375,7 +375,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 						'type' => 'title',
 					);
 					$settings[] = array(
-						'title'	=> __( 'Ship From Address', 'wc-taxjar' ),
+						'title'    => __( 'Ship From Address', 'wc-taxjar' ),
 						'type'     => 'text',
 						'desc'     => __( 'Enter the street address where your store ships from.', 'wc-taxjar' ),
 						'desc_tip' => true,
@@ -1611,7 +1611,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	  * @return string - TaxJar connect popup url
 	  */
 	public function get_connect_url() {
-		$connect_url =  $this->app_uri . 'smartcalcs/connect/woo/?store=' . urlencode( get_bloginfo( 'url' ) );
+		$connect_url = $this->app_uri . 'smartcalcs/connect/woo/?store=' . urlencode( get_bloginfo( 'url' ) );
 		$connect_url .= '&plugin=woo&version=' . WC_Taxjar::$version;
 		return esc_url( $connect_url );
 	}
