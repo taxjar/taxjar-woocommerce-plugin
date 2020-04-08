@@ -37,7 +37,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 		$this->regions_uri        = $this->app_uri . 'account#states';
 		$this->uri                = 'https://api.taxjar.com/v2/';
-		$this->ua                 = 'TaxJarWordPressPlugin/3.0.15/WordPress/' . get_bloginfo( 'version' ) . '+WooCommerce/' . WC()->version . '; ' . get_bloginfo( 'url' );
+		$this->ua                 = self::get_ua_header();
 		$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 		$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
@@ -1590,6 +1590,27 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	    }
 
         return $tax_code;
+    }
+
+    /**
+     * Create user agent header
+     *
+     * @return string - user agent header
+     */
+    static function get_ua_header() {
+        $curl_version = '';
+        if ( function_exists( 'curl_version' ) ) {
+            $curl_version = curl_version();
+            $curl_version = $curl_version['version'] . '; ' . $curl_version['ssl_version'];
+        }
+
+        $php_version = phpversion();
+        $taxjar_version = WC_Taxjar::$version;
+        $woo_version = WC()->version;
+        $wordpress_version = get_bloginfo( 'version' );
+        $site_url = get_bloginfo( 'url' );
+        $user_agent = "TaxJar/WooCommerce (PHP $php_version; cURL $curl_version; WordPress $wordpress_version; WooCommerce $woo_version) WC_Taxjar/$taxjar_version $site_url";
+        return $user_agent;
     }
 
 }
