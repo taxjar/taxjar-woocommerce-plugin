@@ -50,7 +50,7 @@ jQuery( document ).ready( function() {
 					window.popup.postMessage( 'Data received', woocommerce_taxjar_admin.app_url );
 					$( '#woocommerce_taxjar-integration_settings\\[api_token\\]' ).val( data.api_token );
 					$( '#woocommerce_taxjar-integration_settings\\[connected_email\\]' ).val( data.email );
-					$( '#mainform button.woocommerce-save-button' ).click();
+					$( '#mainform .woocommerce-save-button' ).click();
 				} else {
 					throw 'Invalid data';
 				}
