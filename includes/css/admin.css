@@ -55,6 +55,17 @@ div.taxjar-connected .dashicons-yes-alt {
 	margin-right: 10px;
 }
 
+div.taxjar-connected .dashicons-yes-alt:before {
+	content: "\2713";
+	color: white;
+	background-color: #3FAE2A;
+	border-radius: 50%;
+	padding: 3px 10px;
+	position: relative;
+	top: -3px;
+	padding-bottom: 8px;
+}
+
 div.taxjar-connected {
 	display: inline-block;
 	padding: 20px;
@@ -75,17 +86,6 @@ div.taxjar-connected p {
 
 #disconnect-from-taxjar {
 	margin-top: 20px;
-}
-
-div.taxjar-connected .dashicons-yes-alt:before {
-	content: "\2713";
-	color: white;
-	background-color: #3FAE2A;
-	border-radius: 50%;
-	padding: 3px 10px;
-	position: relative;
-	top: -3px;
-	padding-bottom: 8px;
 }
 
 .woocommerce table.form-table th label[for="woocommerce_taxjar-integration_settings[api_token]"] {
