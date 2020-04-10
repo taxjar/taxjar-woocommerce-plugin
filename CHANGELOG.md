@@ -1,3 +1,10 @@
+# 3.1.0 (2020-04-10)
+* Update to settings page using SmartCalcs Connect
+* Update User Agent header for requests to TaxJar
+* Prevent unnecessary logging when tax calculation not required
+* Fix orders created through the WooCommerce API with a fee not syncing
+* Confirm compatibility with WooCommerce 4.0.1 and WordPress 5.4.0
+
 # 3.0.15 (2020-03-11)
 * Ensure referer and user permissions are validated for ajax methods
 * Confirm compatibility with WooCommerce 4.0
