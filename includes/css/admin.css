@@ -48,14 +48,25 @@
 	content: "\f177";
 }
 
-#connected-to-taxjar-description .dashicons-yes-alt {
+div.taxjar-connected .dashicons-yes-alt {
 	color: #3FAE2A;
 	font-size: 32px;
 	display: inline-block;
 	margin-right: 10px;
 }
 
-div#connected-to-taxjar-description div {
+div.taxjar-connected .dashicons-yes-alt:before {
+	content: "\2713";
+	color: white;
+	background-color: #3FAE2A;
+	border-radius: 50%;
+	padding: 3px 10px;
+	position: relative;
+	top: -3px;
+	padding-bottom: 8px;
+}
+
+div.taxjar-connected {
 	display: inline-block;
 	padding: 20px;
 	padding-right: 40px;
@@ -65,7 +76,7 @@ div#connected-to-taxjar-description div {
 	border-color: #3FAE2A;
 }
 
-div#connected-to-taxjar-description p {
+div.taxjar-connected p {
 	display: inline-block;
 	margin-left: 10px;
 	font-size: 1.3em;
@@ -75,17 +86,6 @@ div#connected-to-taxjar-description p {
 
 #disconnect-from-taxjar {
 	margin-top: 20px;
-}
-
-.dashicons-yes-alt:before {
-	content: "\2713";
-	color: white;
-	background-color: #3FAE2A;
-	border-radius: 50%;
-	padding: 3px 10px;
-	position: relative;
-	top: -3px;
-	padding-bottom: 8px;
 }
 
 .woocommerce table.form-table th label[for="woocommerce_taxjar-integration_settings[api_token]"] {
