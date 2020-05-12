@@ -1023,12 +1023,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
     public function calculate_order_tax( $order ) {
 	    $address = $this->get_address_from_order( $order );
 	    $line_items = $this->get_backend_line_items( $order );
-
-	    if ( method_exists( $order, 'get_shipping_total' ) ) {
-		    $shipping = $order->get_shipping_total(); // Woo 3.0+
-	    } else {
-		    $shipping = $order->get_total_shipping(); // Woo 2.6
-	    }
+	    $shipping = $order->get_shipping_total(); // Woo 3.0+
 
 	    $customer_id = apply_filters( 'taxjar_get_customer_id', $order->get_customer_id() );
 
@@ -1050,28 +1045,18 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		    return;
 	    }
 
-	    if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
-		    foreach ( $order->get_items() as $item_key => $item ) {
-			    $product_id = $item->get_product_id();
-			    $line_item_key = $product_id . '-' . $item_key;
+        foreach ( $order->get_items() as $item_key => $item ) {
+            $product_id = $item->get_product_id();
+            $line_item_key = $product_id . '-' . $item_key;
 
-			    if ( isset( $taxes['rate_ids'][ $line_item_key ] ) ) {
-				    $rate_id = $taxes['rate_ids'][ $line_item_key ];
-				    $item_tax = new WC_Order_Item_Tax();
-				    $item_tax->set_rate( $rate_id );
-				    $item_tax->set_order_id( $order->get_id() );
-				    $item_tax->save();
-			    }
-		    }
-	    } else { // Recalculate tax for Woo 2.6 to apply new tax rates
-		    if ( class_exists( 'WC_AJAX' ) ) {
-			    remove_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
-			    if ( check_ajax_referer( 'calc-totals', 'security', false ) ) {
-				    WC_AJAX::calc_line_taxes();
-			    }
-			    add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
-		    }
-	    }
+            if ( isset( $taxes['rate_ids'][ $line_item_key ] ) ) {
+                $rate_id = $taxes['rate_ids'][ $line_item_key ];
+                $item_tax = new WC_Order_Item_Tax();
+                $item_tax->set_rate( $rate_id );
+                $item_tax->set_order_id( $order->get_id() );
+                $item_tax->save();
+            }
+        }
     }
 
 	/**
