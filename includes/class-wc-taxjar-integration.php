@@ -76,6 +76,9 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			// Calculate taxes for WooCommerce Subscriptions renewal orders
             add_filter( 'wcs_new_order_created', array( $this, 'calculate_renewal_order_totals' ), 10, 3 );
 
+            // Calculate tax on API orders
+            add_filter( 'woocommerce_rest_pre_insert_shop_order_object', array( $this, 'calculate_api_order_tax'), 20, 3);
+
 			// Settings Page
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
 
@@ -963,6 +966,26 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 				add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
 			}
 		}
+	}
+
+	/**
+	 * Calculates tax on order created through the API
+	 *
+	 * @param WC_Order $order Object object.
+	 * @param WP_REST_Request $request Request object.
+	 * @param bool $creating If is creating a new object.
+	 *
+	 * @return WC_Order
+	 */
+	public function calculate_api_order_tax( $order, $request, $creating ) {
+
+		if ( ! $creating ) {
+			return $order;
+		}
+
+		$this->calculate_order_tax( $order );
+
+		return $order;
 	}
 
 	/**
