@@ -979,13 +979,32 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	 */
 	public function calculate_api_order_tax( $order, $request, $creating ) {
 
-		if ( ! $creating ) {
+		if ( ! $this->api_order_needs_tax_calculated( $order, $request, $creating ) ) {
 			return $order;
 		}
 
 		$this->calculate_order_tax( $order );
 
 		return $order;
+	}
+
+	/**
+	 * Determines whether or not to calculate tax on and API order
+	 *
+	 * @param WC_Order $order Object object.
+	 * @param WP_REST_Request $request Request object.
+	 * @param bool $creating If is creating a new object.
+	 *
+	 * @return bool
+	 */
+	public function api_order_needs_tax_calculated( $order, $request, $creating ) {
+		$needs_tax_calculated = true;
+
+		if ( ! $creating && ! $order->is_paid() ) {
+			$needs_tax_calculated = false;
+		}
+
+		return apply_filters( 'taxjar_api_order_needs_tax_calculated', $needs_tax_calculated, $order, $request, $creating );
 	}
 
 	/**
