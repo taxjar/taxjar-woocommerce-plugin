@@ -42,6 +42,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 		$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
 		$this->customer_sync      = new WC_Taxjar_Customer_Sync( $this );
+		$this->api_calculation    = new WC_Taxjar_API_Calculation( $this );
 
 		// Load the settings.
 		$this->init_settings();
@@ -75,9 +76,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 
 			// Calculate taxes for WooCommerce Subscriptions renewal orders
             add_filter( 'wcs_new_order_created', array( $this, 'calculate_renewal_order_totals' ), 10, 3 );
-
-            // Calculate tax on API orders
-            add_filter( 'woocommerce_rest_pre_insert_shop_order_object', array( $this, 'calculate_api_order_tax'), 20, 3);
 
 			// Settings Page
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
@@ -357,7 +355,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 					'type'    => 'checkbox',
 					'label'   => __( 'Enable Tax Calculation on API Orders', 'wc-taxjar' ),
 					'default' => 'no',
-					'desc'    => __( 'If enabled, TaxJar will calculate all sales tax for orders created through the WooCommerce REST API..', 'wc-taxjar' ),
+					'desc'    => __( 'If enabled, TaxJar will calculate all sales tax for orders created through the WooCommerce REST API.', 'wc-taxjar' ),
 					'id'      => 'woocommerce_taxjar-integration_settings[api_calcs_enabled]'
 				) );
 				array_push( $settings, array(
@@ -974,45 +972,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 				add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
 			}
 		}
-	}
-
-	/**
-	 * Calculates tax on order created through the API
-	 *
-	 * @param WC_Order $order Object object.
-	 * @param WP_REST_Request $request Request object.
-	 * @param bool $creating If is creating a new object.
-	 *
-	 * @return WC_Order
-	 */
-	public function calculate_api_order_tax( $order, $request, $creating ) {
-
-		if ( ! $this->api_order_needs_tax_calculated( $order, $request, $creating ) ) {
-			return $order;
-		}
-
-		$this->calculate_order_tax( $order );
-
-		return $order;
-	}
-
-	/**
-	 * Determines whether or not to calculate tax on and API order
-	 *
-	 * @param WC_Order $order Object object.
-	 * @param WP_REST_Request $request Request object.
-	 * @param bool $creating If is creating a new object.
-	 *
-	 * @return bool
-	 */
-	public function api_order_needs_tax_calculated( $order, $request, $creating ) {
-		$needs_tax_calculated = true;
-
-		if ( ! $creating && ! $order->is_paid() ) {
-			$needs_tax_calculated = false;
-		}
-
-		return apply_filters( 'taxjar_api_order_needs_tax_calculated', $needs_tax_calculated, $order, $request, $creating );
 	}
 
 	/**
