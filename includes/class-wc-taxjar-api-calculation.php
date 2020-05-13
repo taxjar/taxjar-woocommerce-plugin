@@ -64,8 +64,10 @@ class WC_Taxjar_API_Calculation {
 	public function api_order_needs_tax_calculated( $order, $request, $creating ) {
 		$needs_tax_calculated = true;
 
-		if ( ! $creating && ! $order->is_paid() ) {
-			$needs_tax_calculated = false;
+		if ( ! $creating ) {
+			if ( ! isset( $request['billing'] ) && ! isset( $request['shipping'] ) && ! isset( $request['line_items'] ) && ! isset( $request['shipping_lines'] ) && ! isset( $request['fee_lines'] ) && ! isset( $request['coupon_lines'] ) ) {
+				$needs_tax_calculated = false;
+			}
 		}
 
 		return apply_filters( 'taxjar_api_order_needs_tax_calculated', $needs_tax_calculated, $order, $request, $creating );
