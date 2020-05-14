@@ -24,7 +24,7 @@ class WC_Taxjar_API_Calculation {
 	}
 
 	/**
-	 * Determine is tax calculation on API orders is enabled
+	 * Determines if tax calculation on API orders is enabled
 	 *
 	 * @return bool
 	 */
