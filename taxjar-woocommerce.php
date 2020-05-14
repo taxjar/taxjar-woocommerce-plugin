@@ -291,8 +291,7 @@ final class WC_Taxjar {
 	public function get_settings_url() {
 		$url = admin_url( 'admin.php' );
 		$url = add_query_arg( 'page', 'wc-settings', $url );
-		$url = add_query_arg( 'tab', 'integration', $url );
-		$url = add_query_arg( 'section', 'taxjar-integration', $url );
+		$url = add_query_arg( 'tab', 'taxjar-integration', $url );
 
 		return $url;
 	}
