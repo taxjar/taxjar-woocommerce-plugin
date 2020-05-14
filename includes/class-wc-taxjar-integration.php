@@ -347,7 +347,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 					'type'    => 'checkbox',
 					'label'   => __( 'Enable TaxJar Calculations', 'wc-taxjar' ),
 					'default' => 'no',
-					'desc'    => __( 'If enabled, TaxJar will calculate all sales tax for your store.', 'wc-taxjar' ),
+					'desc'    => __( 'If enabled, TaxJar will calculate sales tax for your store.', 'wc-taxjar' ),
 					'id'      => 'woocommerce_taxjar-integration_settings[enabled]'
 				) );
 				array_push( $settings, array(
@@ -355,7 +355,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 					'type'    => 'checkbox',
 					'label'   => __( 'Enable Tax Calculation on API Orders', 'wc-taxjar' ),
 					'default' => 'no',
-					'desc'    => __( 'If enabled, TaxJar will calculate all sales tax for orders created through the WooCommerce REST API.', 'wc-taxjar' ),
+					'desc'    => __( 'If enabled, TaxJar will calculate sales tax for orders created through the WooCommerce REST API.', 'wc-taxjar' ),
 					'id'      => 'woocommerce_taxjar-integration_settings[api_calcs_enabled]'
 				) );
 				array_push( $settings, array(

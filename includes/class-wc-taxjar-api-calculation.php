@@ -19,7 +19,7 @@ class WC_Taxjar_API_Calculation {
 
 		if ( $this->is_api_calculation_enabled() ) {
 			// Calculate tax during creation and update of order through WooCommerce REST API
-			add_filter( 'woocommerce_rest_pre_insert_shop_order_object', array( $this, 'calculate_api_order_tax'), 20, 3);
+			add_filter( 'woocommerce_rest_pre_insert_shop_order_object', array( $this, 'calculate_api_order_tax' ), 20, 3);
 		}
 	}
 
