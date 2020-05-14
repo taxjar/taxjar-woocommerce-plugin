@@ -50,7 +50,7 @@ Or you can follow these steps to install the TaxJar plugin:
 3. Find the TaxJar configuration under *WooCommerce > TaxJar*.
 4. Click the "Connect To TaxJar" button.
 5. Sign in with your TaxJar account (or create a new one) in the popup.
-6. Click the "Connect" button. The popup will automatically close and your WooCommerce store will be linked to your TaxJar account. Note: If your business exceeds 1,000 orders per month, you will be prompted to upgrade your account to TaxJar Professional, in order to activate real-time sales tax calculations through the TaxJar API.
+6. Click the "Connect" button. The popup will automatically close and your WooCommerce store will be linked to your TaxJar account. Note: If your business exceeds 1,000 orders per month, you will be prompted to upgrade your account to TaxJar Professional in order to activate real-time sales tax calculations through the TaxJar API.
 7. Fill out the rest of your settings. TaxJar requires your city and zip code from which you ship products to calculate sales tax. We automatically detect your country and state based on your WooCommerce configuration.
 8. If you have multiple [nexus](https://blog.taxjar.com/sales-tax-nexus-definition/) states where you need to collect sales tax, make sure they're [added to your TaxJar account](https://app.taxjar.com/account#states). Click the “Sync Nexus Addresses” button to import your nexus addresses into WooCommerce.
 9. Check the box next to “Enable TaxJar Calculations”.
