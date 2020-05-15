@@ -1,3 +1,8 @@
+# 3.1.1 (2020-05-15)
+* Update WordPress listing content
+* Fix bad link in connect TaxJar notification
+* Fix TaxJar product exemption codes being altered before sending to TaxJar
+
 # 3.1.0 (2020-04-10)
 * Update to settings page using SmartCalcs Connect
 * Update User Agent header for requests to TaxJar
