@@ -80,6 +80,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->tests_dir . '/framework/wp-http-testcase.php';
 		require_once $this->tests_dir . '/framework/subscription-helper.php';
 		require_once $this->tests_dir . '/framework/order-helper.php';
+		require_once $this->tests_dir . '/framework/api-order-helper.php';
 	}
 
 	public function setup() {
@@ -100,6 +101,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 			array(
 				'api_token' => $this->api_token,
 				'enabled' => 'yes',
+				'api_calcs_enabled' => 'yes',
 				'taxjar_download' => 'yes',
 				'store_postcode' => '80111',
 				'store_city' => 'Greenwood Village',
