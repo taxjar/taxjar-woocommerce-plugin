@@ -1,7 +1,20 @@
 <?php
-class TJ_WC_Test_API_Orders extends WP_HTTP_TestCase {
 
+/**
+ * Class TJ_WC_REST_Unit_Test_Case
+ */
+class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
+
+	protected $server;
+	protected $endpoint;
+	protected $user;
+	protected $factory;
+
+	/**
+	 * Sets up the fixture before each test
+	 */
 	function setUp() {
+
 		parent::setUp();
 
 		global $wp_rest_server;
@@ -10,7 +23,6 @@ class TJ_WC_Test_API_Orders extends WP_HTTP_TestCase {
 		do_action( 'rest_api_init' );
 
 		$this->factory = new WP_UnitTest_Factory();
-		$this->endpoint = new WC_REST_Orders_Controller();
 		$this->user     = $this->factory->user->create(
 			array(
 				'role' => 'administrator',
@@ -33,12 +45,20 @@ class TJ_WC_Test_API_Orders extends WP_HTTP_TestCase {
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
 	}
 
+	/**
+	 * Cleans up after each test
+	 */
 	function tearDown() {
 		parent::tearDown();
-
+		global $wp_rest_server;
+		unset( $this->server );
+		$wp_rest_server = null;
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
+	/**
+	 * Tests tax calculation on a simple order created through the WooCommerce REST API
+	 */
 	function test_simple_product_api_order_calculation() {
 		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
@@ -66,6 +86,5 @@ class TJ_WC_Test_API_Orders extends WP_HTTP_TestCase {
 			$this->assertEquals( 0.73, $item->get_total_tax() );
 		}
 	}
-
 
 }

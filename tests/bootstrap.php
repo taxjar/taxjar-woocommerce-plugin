@@ -81,6 +81,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->tests_dir . '/framework/subscription-helper.php';
 		require_once $this->tests_dir . '/framework/order-helper.php';
 		require_once $this->tests_dir . '/framework/api-order-helper.php';
+		require_once $this->tests_dir . '/framework/tj-wc-rest-unit-test-case.php';
 	}
 
 	public function setup() {
