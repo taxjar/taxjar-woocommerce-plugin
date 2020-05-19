@@ -44,6 +44,12 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 
 		wp_set_current_user( $this->user );
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
+
+		update_option( 'woocommerce_tax_classes', "Reduced rate\nZero Rate\nGift Card - 14111803A0001" );
+
+		if ( version_compare( WC()->version, '3.7.0', '>=' ) ) {
+			WC_Tax::create_tax_class( 'Gift Card - 14111803A0001' );
+		}
 	}
 
 	/**
@@ -128,11 +134,12 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	}
 
 	function test_product_exemption_on_api_order() {
-		$exempt_product_id = TaxJar_Product_Helper::create_product( 'simple', array(
+		$product = TaxJar_Product_Helper::create_product( 'simple', array(
 			'price' => '10',
 			'sku' => 'EXEMPT-GIFT-CARD',
-			'tax_class' => 'gift-card-14111803A0001',
-		) )->get_id();
+			'tax_class' => 'Gift Card - 14111803A0001',
+		) );
+		$exempt_product_id = $product->get_id();
 
 		$request = new WP_REST_Request( 'POST', $this->create_order_endpoint );
 		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
