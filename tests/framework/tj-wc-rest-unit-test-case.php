@@ -9,6 +9,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	protected $endpoint;
 	protected $user;
 	protected $factory;
+	protected $create_order_endpoint;
 
 	/**
 	 * Sets up the fixture before each test
@@ -62,7 +63,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	function test_simple_product_api_order_calculation() {
 		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
-		$request = new WP_REST_Request( 'POST', '/wc/v3/orders' );
+		$request = new WP_REST_Request( 'POST', $this->create_order_endpoint );
 		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
 			array(
 				'line_items'           => array(
