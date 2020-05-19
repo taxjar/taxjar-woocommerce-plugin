@@ -1179,8 +1179,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			}
 
 			$this->backend_tax_classes[$id] = $tax_class_name;
-
-			$tax_class = explode( '-', $tax_class_name );
 			$tax_code = self::get_tax_code_from_class( $tax_class_name );
 
 			if ( 'taxable' !== $tax_status ) {
@@ -1654,7 +1652,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		    $tax_code = end( $tax_class );
 	    }
 
-        return $tax_code;
+        return strtoupper( $tax_code );
     }
 
     /**
