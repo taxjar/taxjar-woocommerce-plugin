@@ -94,6 +94,9 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		}
 	}
 
+	/**
+	 * Test api order tax calculation on shipping
+	 */
 	function test_shipping_tax_on_api_order() {
 		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
@@ -133,6 +136,9 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		}
 	}
 
+	/**
+	 * Test tax calculation on api order containing an exempt product
+	 */
 	function test_product_exemption_on_api_order() {
 		$product = TaxJar_Product_Helper::create_product( 'simple', array(
 			'price' => '10',
@@ -144,7 +150,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$request = new WP_REST_Request( 'POST', $this->create_order_endpoint );
 		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
 			array(
-				'line_items'           => array(
+				'line_items' => array(
 					array(
 						'product_id' => $exempt_product_id,
 						'quantity'   => 1
@@ -166,4 +172,86 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		}
 	}
 
+	/**
+	 * Test tax calculation on api order containing a fee
+	 */
+	function test_fee_tax_on_api_order() {
+		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+
+		$request = new WP_REST_Request( 'POST', $this->create_order_endpoint );
+		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
+			array(
+				'line_items'           => array(
+					array(
+						'product_id' => $product_id,
+						'quantity'   => 1
+					)
+				),
+				'fee_lines' => array(
+					array(
+						'name'  => 'test fee',
+						'total' => '100.00'
+					)
+				)
+			)
+		);
+		$request->set_body_params( $request_body );
+
+		$response = $this->server->dispatch( $request );
+		$data     = $response->get_data();
+		$order    = wc_get_order( $data['id'] );
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertEquals( 7.98, $order->get_total_tax() );
+
+		foreach( $order->get_items() as $item ) {
+			$this->assertEquals( 0.73, $item->get_total_tax() );
+		}
+
+		foreach( $order->get_fees() as $fee ) {
+			$this->assertEquals( 7.25, $fee->get_total_tax() );
+		}
+	}
+
+	/**
+	 * Test tax calculation on api order containing an exempt fee
+	 */
+	function test_exempt_fee_on_api_order() {
+		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+
+		$request = new WP_REST_Request( 'POST', $this->create_order_endpoint );
+		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
+			array(
+				'line_items'           => array(
+					array(
+						'product_id' => $product_id,
+						'quantity'   => 1
+					)
+				),
+				'fee_lines' => array(
+					array(
+						'name'      => 'test fee',
+						'total'     => '100.00',
+						'tax_class' => 'gift-card-14111803a0001'
+					)
+				)
+			)
+		);
+		$request->set_body_params( $request_body );
+
+		$response = $this->server->dispatch( $request );
+		$data     = $response->get_data();
+		$order    = wc_get_order( $data['id'] );
+
+		$this->assertEquals( 201, $response->get_status() );
+		$this->assertEquals( 0.73, $order->get_total_tax() );
+
+		foreach( $order->get_items() as $item ) {
+			$this->assertEquals( 0.73, $item->get_total_tax() );
+		}
+
+		foreach( $order->get_fees() as $fee ) {
+			$this->assertEquals( 0.00, $fee->get_total_tax() );
+		}
+	}
 }

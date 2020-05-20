@@ -13,6 +13,7 @@ class TaxJar_API_Order_Helper {
 				'payment_method_title' => 'Direct Bank Transfer',
 				'set_paid'             => true,
 				'currency'             => 'USD',
+				'customer_id'          => 0,
 				'billing'              => array(
 					'first_name' => 'John',
 					'last_name'  => 'Doe',
