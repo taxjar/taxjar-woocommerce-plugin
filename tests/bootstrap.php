@@ -93,9 +93,17 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 			define( 'TAXJAR_REMOVE_ALL_DATA', true );
 		}
 
-		include dirname( dirname( __FILE__ ) ) . '/uninstall.php';
-		delete_transient( 'taxjar_installing' );
+		global $wpdb;
 
+		WC_Taxjar_Install::drop_tables();
+		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'woocommerce\_taxjar\_%';" );
+		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'taxjar\_version%';" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}actionscheduler_actions;" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}actionscheduler_claims;" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}actionscheduler_groups;" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}actionscheduler_logs;" );
+
+		delete_transient( 'taxjar_installing' );
 		WC_Taxjar_Install::install();
 
 		update_option( 'woocommerce_taxjar-integration_settings',
