@@ -5,7 +5,7 @@
  */
 class TJ_WC_Tests_API_Orders_V2 extends TJ_WC_REST_Unit_Test_Case {
 
-	protected $create_order_endpoint = '/wc/v2/orders';
+	protected $order_endpoint = '/wc/v2/';
 
 	/**
 	 * Set up fixture before each test
