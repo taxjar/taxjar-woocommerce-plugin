@@ -42,7 +42,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
-		require_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+		include_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 	}
 
 	public function install_wc() {
