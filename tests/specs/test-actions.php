@@ -543,9 +543,9 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		// Woo 3.2+ allocates fixed discounts evenly across line items
 		// Woo 2.6+ allocates fixed discounts proportionately across line items
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->tax_total, 1.56, '', 0.01 );
-			$this->assertEquals( WC()->cart->get_taxes_total(), 1.56, '', 0.01 );
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 283 - 10 + 1.56, '', 0.01 );
+			$this->assertEquals( WC()->cart->tax_total, 1.88, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_taxes_total(), 1.88, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 283 - 10 + 1.88, '', 0.01 );
 		} else {
 			$this->assertEquals( WC()->cart->tax_total, 1.42, '', 0.01 );
 			$this->assertEquals( WC()->cart->get_taxes_total(), 1.42, '', 0.01 );
