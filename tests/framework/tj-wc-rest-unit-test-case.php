@@ -63,6 +63,18 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
 
+	static function tearDownAfterClass() {
+		global $wpdb;
+
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}woocommerce_order_itemmeta;" );
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}woocommerce_order_items;" );
+		$wpdb->query( "DELETE FROM {$wpdb->comments} WHERE comment_type = 'order_note';" );
+		$wpdb->query( "DELETE FROM {$wpdb->postmeta} WHERE post_id IN ( SELECT ID FROM wp_posts WHERE post_type = 'shop_order' );" );
+		$wpdb->query( "DELETE FROM {$wpdb->posts} WHERE post_type = 'shop_order';" );
+
+		parent::tearDownAfterClass();
+	}
+
 	/**
 	 * Tests tax calculation on a simple order created through the WooCommerce REST API
 	 */

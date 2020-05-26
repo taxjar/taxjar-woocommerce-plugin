@@ -20,11 +20,21 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function tearDown() {
+		global $wpdb;
+
 		// Empty the cart
-		WC()->cart->empty_cart();
+		WC()->cart->empty_cart( true );
+
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE ('_transient_%');" );
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE ('_site_transient_%');" );
+
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+
+		parent::tearDown();
 	}
 
 	function test_taxjar_calculate_totals() {
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		WC()->cart->add_to_cart( $product );
 		WC()->cart->calculate_totals();
@@ -36,14 +46,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
 		WC()->cart->add_to_cart( $product );
-
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 5;
-
 		WC()->cart->calculate_totals();
 
 		$this->assertEquals( WC()->cart->tax_total, 0.73, '', 0.01 );
-		$this->assertEquals( WC()->cart->shipping_tax_total, 0.36, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_shipping_tax(), 0.36, '', 0.01 );
 
 		if ( method_exists( WC()->cart, 'get_shipping_taxes' ) ) {
 			$this->assertEquals( array_values( WC()->cart->get_shipping_taxes() )[0], 0.36, '', 0.01 );
