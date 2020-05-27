@@ -28,8 +28,8 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
 
-		tests_add_filter( 'taxjar_get_order_transaction_id', array( $this, 'add_tests_prefix') );
-		tests_add_filter( 'taxjar_get_refund_transaction_id', array( $this, 'add_tests_prefix') );
+		tests_add_filter( 'taxjar_get_order_transaction_id', array( $this, 'add_tests_prefix' ) );
+		tests_add_filter( 'taxjar_get_refund_transaction_id', array( $this, 'add_tests_prefix' ) );
 
 		// load the WP testing environment
 		require_once $this->wp_tests_dir . '/includes/bootstrap.php';
@@ -83,12 +83,12 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->tests_dir . '/framework/coupon-helper.php';
 		require_once $this->tests_dir . '/framework/customer-helper.php';
 		require_once $this->tests_dir . '/framework/product-helper.php';
-		require_once $this->tests_dir . '/framework/shipping-helper.php';
+		require_once $this->tests_dir . '/framework/class-taxjar-shipping-helper.php';
 		require_once $this->tests_dir . '/framework/wp-http-testcase.php';
 		require_once $this->tests_dir . '/framework/subscription-helper.php';
 		require_once $this->tests_dir . '/framework/order-helper.php';
-		require_once $this->tests_dir . '/framework/api-order-helper.php';
-		require_once $this->tests_dir . '/framework/tj-wc-rest-unit-test-case.php';
+		require_once $this->tests_dir . '/framework/class-taxjar-api-order-helper.php';
+		require_once $this->tests_dir . '/framework/class-tj-wc-rest-unit-test-case.php';
 	}
 
 	public function setup() {

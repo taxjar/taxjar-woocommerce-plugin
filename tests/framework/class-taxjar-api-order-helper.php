@@ -39,8 +39,8 @@ class TaxJar_API_Order_Helper {
 				'line_items'           => array(
 					array(
 						'product_id' => 1,
-						'quantity'   => 1
-					)
+						'quantity'   => 1,
+					),
 				),
 				'shipping_lines'       => array(
 					array(

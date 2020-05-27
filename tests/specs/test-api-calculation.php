@@ -17,13 +17,16 @@ class TJ_WC_Tests_API_Calculation extends WP_UnitTestCase {
 		$this->tj = TaxJar();
 
 		// Reset shipping origin
-		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
-			'store_country'  => 'US',
-			'store_state'    => 'CO',
-			'store_street'   => '6060 S Quebec St',
-			'store_postcode' => '80111',
-			'store_city'     => 'Greenwood Village',
-		) );
+		TaxJar_Woocommerce_Helper::set_shipping_origin(
+			$this->tj,
+			array(
+				'store_country'  => 'US',
+				'store_state'    => 'CO',
+				'store_street'   => '6060 S Quebec St',
+				'store_postcode' => '80111',
+				'store_city'     => 'Greenwood Village',
+			)
+		);
 
 		update_option( 'woocommerce_currency', 'USD' );
 	}
@@ -42,7 +45,7 @@ class TJ_WC_Tests_API_Calculation extends WP_UnitTestCase {
 	 */
 	function update_taxjar_settings( $opts = array() ) {
 		$current_settings = get_option( 'woocommerce_taxjar-integration_settings' );
-		$new_settings = array_replace_recursive( $current_settings, $opts );
+		$new_settings     = array_replace_recursive( $current_settings, $opts );
 		update_option( 'woocommerce_taxjar-integration_settings', $new_settings );
 		$this->tj->init_settings();
 	}

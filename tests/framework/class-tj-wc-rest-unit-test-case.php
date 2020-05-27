@@ -24,7 +24,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		do_action( 'rest_api_init' );
 
 		$this->factory = new WP_UnitTest_Factory();
-		$this->user     = $this->factory->user->create(
+		$this->user    = $this->factory->user->create(
 			array(
 				'role' => 'administrator',
 			)
@@ -32,13 +32,16 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 
 		$this->tj = TaxJar();
 
-		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
-			'store_country' => 'US',
-			'store_state' => 'CO',
-			'store_street' => '6060 S Quebec St',
-			'store_postcode' => '80111',
-			'store_city' => 'Greenwood Village',
-		) );
+		TaxJar_Woocommerce_Helper::set_shipping_origin(
+			$this->tj,
+			array(
+				'store_country'  => 'US',
+				'store_state'    => 'CO',
+				'store_street'   => '6060 S Quebec St',
+				'store_postcode' => '80111',
+				'store_city'     => 'Greenwood Village',
+			)
+		);
 
 		update_option( 'woocommerce_currency', 'USD' );
 
@@ -81,15 +84,15 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	function test_simple_product_tax_on_api_order() {
 		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
-		$request = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
+		$request      = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
 		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
 			array(
-				'line_items'           => array(
+				'line_items' => array(
 					array(
 						'product_id' => $product_id,
-						'quantity'   => 1
-					)
-				)
+						'quantity'   => 1,
+					),
+				),
 			)
 		);
 		$request->set_body_params( $request_body );
@@ -101,7 +104,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$this->assertEquals( 201, $response->get_status() );
 		$this->assertEquals( 0.73, $order->get_total_tax(), '', 0.01 );
 
-		foreach( $order->get_items() as $item ) {
+		foreach ( $order->get_items() as $item ) {
 			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 		}
 	}
@@ -112,10 +115,10 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	function test_shipping_tax_on_api_order() {
 		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
-		$request = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
+		$request      = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
 		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
 			array(
-				'shipping'             => array(
+				'shipping'   => array(
 					'first_name' => 'Test',
 					'last_name'  => 'Customer',
 					'address_1'  => '123 Main St.',
@@ -125,12 +128,12 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 					'postcode'   => '80111',
 					'country'    => 'US',
 				),
-				'line_items'           => array(
+				'line_items' => array(
 					array(
 						'product_id' => $product_id,
-						'quantity'   => 1
-					)
-				)
+						'quantity'   => 1,
+					),
+				),
 			)
 		);
 		$request->set_body_params( $request_body );
@@ -143,7 +146,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$this->assertEquals( 1.46, $order->get_total_tax(), '', 0.02 );
 		$this->assertEquals( 0.73, $order->get_shipping_tax(), '', 0.01 );
 
-		foreach( $order->get_items() as $item ) {
+		foreach ( $order->get_items() as $item ) {
 			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 		}
 	}
@@ -152,22 +155,25 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	 * Test tax calculation on api order containing an exempt product
 	 */
 	function test_product_exemption_on_api_order() {
-		$product = TaxJar_Product_Helper::create_product( 'simple', array(
-			'price' => '10',
-			'sku' => 'EXEMPT-GIFT-CARD',
-			'tax_class' => 'Gift Card - 14111803A0001',
-		) );
+		$product           = TaxJar_Product_Helper::create_product(
+			'simple',
+			array(
+				'price'     => '10',
+				'sku'       => 'EXEMPT-GIFT-CARD',
+				'tax_class' => 'Gift Card - 14111803A0001',
+			)
+		);
 		$exempt_product_id = $product->get_id();
 
-		$request = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
+		$request      = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
 		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
 			array(
 				'line_items' => array(
 					array(
 						'product_id' => $exempt_product_id,
-						'quantity'   => 1
-					)
-				)
+						'quantity'   => 1,
+					),
+				),
 			)
 		);
 		$request->set_body_params( $request_body );
@@ -179,7 +185,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$this->assertEquals( 201, $response->get_status() );
 		$this->assertEquals( 0.00, $order->get_total_tax(), '', 0.01 );
 
-		foreach( $order->get_items() as $item ) {
+		foreach ( $order->get_items() as $item ) {
 			$this->assertEquals( 0.00, $item->get_total_tax() );
 		}
 	}
@@ -190,21 +196,21 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	function test_fee_tax_on_api_order() {
 		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
-		$request = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
+		$request      = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
 		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
 			array(
-				'line_items'           => array(
+				'line_items' => array(
 					array(
 						'product_id' => $product_id,
-						'quantity'   => 1
-					)
+						'quantity'   => 1,
+					),
 				),
-				'fee_lines' => array(
+				'fee_lines'  => array(
 					array(
 						'name'  => 'test fee',
-						'total' => '100.00'
-					)
-				)
+						'total' => '100.00',
+					),
+				),
 			)
 		);
 		$request->set_body_params( $request_body );
@@ -216,11 +222,11 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$this->assertEquals( 201, $response->get_status() );
 		$this->assertEquals( 7.98, $order->get_total_tax(), '', 0.01 );
 
-		foreach( $order->get_items() as $item ) {
+		foreach ( $order->get_items() as $item ) {
 			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 		}
 
-		foreach( $order->get_fees() as $fee ) {
+		foreach ( $order->get_fees() as $fee ) {
 			$this->assertEquals( 7.25, $fee->get_total_tax() );
 		}
 	}
@@ -231,22 +237,22 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	function test_exempt_fee_on_api_order() {
 		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
-		$request = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
+		$request      = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
 		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
 			array(
-				'line_items'           => array(
+				'line_items' => array(
 					array(
 						'product_id' => $product_id,
-						'quantity'   => 1
-					)
+						'quantity'   => 1,
+					),
 				),
-				'fee_lines' => array(
+				'fee_lines'  => array(
 					array(
 						'name'      => 'test fee',
 						'total'     => '100.00',
-						'tax_class' => 'gift-card-14111803a0001'
-					)
-				)
+						'tax_class' => 'gift-card-14111803a0001',
+					),
+				),
 			)
 		);
 		$request->set_body_params( $request_body );
@@ -258,11 +264,11 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$this->assertEquals( 201, $response->get_status() );
 		$this->assertEquals( 0.73, $order->get_total_tax(), '', 0.01 );
 
-		foreach( $order->get_items() as $item ) {
+		foreach ( $order->get_items() as $item ) {
 			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 		}
 
-		foreach( $order->get_fees() as $fee ) {
+		foreach ( $order->get_fees() as $fee ) {
 			$this->assertEquals( 0.00, $fee->get_total_tax() );
 		}
 	}
@@ -273,37 +279,37 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	function test_batch_order_creation_through_api() {
 		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
-		$request = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders/batch' );
+		$request      = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders/batch' );
 		$order_params = TaxJar_API_Order_Helper::create_order_request_body(
 			array(
-				'line_items'           => array(
+				'line_items' => array(
 					array(
 						'product_id' => $product_id,
-						'quantity'   => 1
-					)
-				)
+						'quantity'   => 1,
+					),
+				),
 			)
 		);
 		$request_body = array(
 			'create' => array(
 				$order_params,
-				$order_params
-			)
+				$order_params,
+			),
 		);
 
 		$request->set_body_params( $request_body );
 
 		$response = $this->server->dispatch( $request );
-		$data = $response->get_data();
+		$data     = $response->get_data();
 
 		$this->assertEquals( 200, $response->get_status() );
 
-		foreach( $data['create'] as $order_response ) {
+		foreach ( $data['create'] as $order_response ) {
 			$order = wc_get_order( $order_response['id'] );
 
 			$this->assertEquals( 0.73, $order->get_total_tax(), '', 0.01 );
 
-			foreach( $order->get_items() as $item ) {
+			foreach ( $order->get_items() as $item ) {
 				$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 			}
 		}
