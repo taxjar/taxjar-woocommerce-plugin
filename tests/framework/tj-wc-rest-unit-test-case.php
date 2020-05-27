@@ -99,10 +99,10 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$order    = wc_get_order( $data['id'] );
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( 0.73, $order->get_total_tax() );
+		$this->assertEquals( 0.73, $order->get_total_tax(), '', 0.01 );
 
 		foreach( $order->get_items() as $item ) {
-			$this->assertEquals( 0.73, $item->get_total_tax() );
+			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 		}
 	}
 
@@ -140,11 +140,11 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$order    = wc_get_order( $data['id'] );
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( 1.46, $order->get_total_tax() );
-		$this->assertEquals( 0.73, $order->get_shipping_tax() );
+		$this->assertEquals( 1.46, $order->get_total_tax(), '', 0.02 );
+		$this->assertEquals( 0.73, $order->get_shipping_tax(), '', 0.01 );
 
 		foreach( $order->get_items() as $item ) {
-			$this->assertEquals( 0.73, $item->get_total_tax() );
+			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 		}
 	}
 
@@ -177,7 +177,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$order    = wc_get_order( $data['id'] );
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( 0.00, $order->get_total_tax() );
+		$this->assertEquals( 0.00, $order->get_total_tax(), '', 0.01 );
 
 		foreach( $order->get_items() as $item ) {
 			$this->assertEquals( 0.00, $item->get_total_tax() );
@@ -214,10 +214,10 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$order    = wc_get_order( $data['id'] );
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( 7.98, $order->get_total_tax() );
+		$this->assertEquals( 7.98, $order->get_total_tax(), '', 0.01 );
 
 		foreach( $order->get_items() as $item ) {
-			$this->assertEquals( 0.73, $item->get_total_tax() );
+			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 		}
 
 		foreach( $order->get_fees() as $fee ) {
@@ -256,10 +256,10 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$order    = wc_get_order( $data['id'] );
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( 0.73, $order->get_total_tax() );
+		$this->assertEquals( 0.73, $order->get_total_tax(), '', 0.01 );
 
 		foreach( $order->get_items() as $item ) {
-			$this->assertEquals( 0.73, $item->get_total_tax() );
+			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 		}
 
 		foreach( $order->get_fees() as $fee ) {
@@ -301,10 +301,10 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		foreach( $data['create'] as $order_response ) {
 			$order = wc_get_order( $order_response['id'] );
 
-			$this->assertEquals( 0.73, $order->get_total_tax() );
+			$this->assertEquals( 0.73, $order->get_total_tax(), '', 0.01 );
 
 			foreach( $order->get_items() as $item ) {
-				$this->assertEquals( 0.73, $item->get_total_tax() );
+				$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
 			}
 		}
 	}
