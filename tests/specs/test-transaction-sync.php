@@ -1489,6 +1489,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_partial_refund() {
 		$order = TaxJar_Order_Helper::create_order_quantity_two( 1 );
+		array_push($this->synced_order_ids, $order->get_id());
 		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_partial_refund_from_order( $order->get_id() );
 		array_push($this->synced_refund_ids, $refund->get_id());
@@ -1515,6 +1516,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	function test_partial_line_item_refund() {
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
+		array_push($this->synced_order_ids, $order->get_id());
 		$refund = TaxJar_Order_Helper::create_partial_line_item_refund_from_order( $order->get_id() );
 		array_push($this->synced_refund_ids, $refund->get_id());
 
