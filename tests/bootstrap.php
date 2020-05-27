@@ -28,10 +28,17 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
 
+		tests_add_filter( 'taxjar_get_order_transaction_id', array( $this, 'add_tests_prefix') );
+		tests_add_filter( 'taxjar_get_refund_transaction_id', array( $this, 'add_tests_prefix') );
+
 		// load the WP testing environment
 		require_once $this->wp_tests_dir . '/includes/bootstrap.php';
 
 		$this->includes();
+	}
+
+	public function add_tests_prefix( $transaction_id ) {
+		return 'WOOTEST' . $transaction_id;
 	}
 
 	public function load_wc() {
