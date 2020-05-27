@@ -527,4 +527,12 @@ abstract class TaxJar_Record {
 	public function set_last_error( $last_error ) {
 		$this->last_error = $last_error;
 	}
+
+	/**
+	 * Generates the plugin parameter used to identify requests in the TaxJar API
+	 * @return string
+	 */
+	public function get_plugin_parameter() {
+		return 'woo';
+	}
 }
