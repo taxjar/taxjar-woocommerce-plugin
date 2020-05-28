@@ -95,6 +95,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$data = $this->get_data();
 		$url = self::API_URI . 'transactions/orders';
 		$data[ 'provider' ] = $this->get_provider();
+		$data[ 'plugin' ] = $this->get_plugin_parameter();
 		$body = wp_json_encode( $data );
 
 		$response = wp_remote_post( $url, array(
@@ -116,6 +117,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 		$url = self::API_URI . 'transactions/orders/' . $order_id;
 		$data[ 'provider' ] = $this->get_provider();
+		$data[ 'plugin' ] = $this->get_plugin_parameter();
 		$body = wp_json_encode( $data );
 
 		$response = wp_remote_request( $url, array(
@@ -137,7 +139,8 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$url = self::API_URI . 'transactions/orders/' . $order_id;
 		$data = array(
 			'transaction_id' => $order_id,
-			'provider' => $this->get_provider()
+			'provider' => $this->get_provider(),
+			'plugin' => $this->get_plugin_parameter()
 		);
 		$body = wp_json_encode( $data );
 
@@ -157,7 +160,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 	public function get_from_taxjar() {
 		$order_id = $this->get_transaction_id();
-		$url = self::API_URI . 'transactions/orders/' . $order_id . '?provider=woo';
+		$url = self::API_URI . 'transactions/orders/' . $order_id . '?provider=' . $this->get_provider() . '&plugin=' . $this->get_plugin_parameter();
 
 		$response = wp_remote_request( $url, array(
 			'method' => 'GET',
