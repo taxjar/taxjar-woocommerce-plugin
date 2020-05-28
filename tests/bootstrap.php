@@ -28,10 +28,17 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
 
+		tests_add_filter( 'taxjar_get_order_transaction_id', array( $this, 'add_tests_prefix' ) );
+		tests_add_filter( 'taxjar_get_refund_transaction_id', array( $this, 'add_tests_prefix' ) );
+
 		// load the WP testing environment
 		require_once $this->wp_tests_dir . '/includes/bootstrap.php';
 
 		$this->includes();
+	}
+
+	public function add_tests_prefix( $transaction_id ) {
+		return 'WOOTEST' . $transaction_id;
 	}
 
 	public function load_wc() {
@@ -42,7 +49,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
-		require_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+		include_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 	}
 
 	public function install_wc() {
@@ -76,10 +83,12 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->tests_dir . '/framework/coupon-helper.php';
 		require_once $this->tests_dir . '/framework/customer-helper.php';
 		require_once $this->tests_dir . '/framework/product-helper.php';
-		require_once $this->tests_dir . '/framework/shipping-helper.php';
+		require_once $this->tests_dir . '/framework/class-taxjar-shipping-helper.php';
 		require_once $this->tests_dir . '/framework/wp-http-testcase.php';
 		require_once $this->tests_dir . '/framework/subscription-helper.php';
 		require_once $this->tests_dir . '/framework/order-helper.php';
+		require_once $this->tests_dir . '/framework/class-taxjar-api-order-helper.php';
+		require_once $this->tests_dir . '/framework/class-tj-wc-rest-unit-test-case.php';
 	}
 
 	public function setup() {
@@ -91,15 +100,24 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 			define( 'TAXJAR_REMOVE_ALL_DATA', true );
 		}
 
-		include dirname( dirname( __FILE__ ) ) . '/uninstall.php';
-		delete_transient( 'taxjar_installing' );
+		global $wpdb;
 
+		WC_Taxjar_Install::drop_tables();
+		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'woocommerce\_taxjar\_%';" );
+		$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name LIKE 'taxjar\_version%';" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}actionscheduler_actions;" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}actionscheduler_claims;" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}actionscheduler_groups;" );
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}actionscheduler_logs;" );
+
+		delete_transient( 'taxjar_installing' );
 		WC_Taxjar_Install::install();
 
 		update_option( 'woocommerce_taxjar-integration_settings',
 			array(
 				'api_token' => $this->api_token,
 				'enabled' => 'yes',
+				'api_calcs_enabled' => 'yes',
 				'taxjar_download' => 'yes',
 				'store_postcode' => '80111',
 				'store_city' => 'Greenwood Village',

@@ -1,5 +1,9 @@
 <?php
+
 class TJ_WC_Test_Sync extends WP_UnitTestCase {
+
+	public $synced_order_ids = [];
+	public $synced_refund_ids = [];
 
 	function setUp() {
 		parent::setUp();
@@ -17,12 +21,72 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		) );
 
 		update_option( 'woocommerce_currency', 'USD' );
+
+		global $wpdb;
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}taxjar_record_queue;" );
 	}
 
 	function tearDown() {
 		parent::tearDown();
 
 		WC_Taxjar_Record_Queue::clear_queue();
+
+		$this->clean_up_transactions_in_taxjar();
+	}
+
+	/**
+	 * Deletes all orders and refunds created in TaxJar
+	 */
+	function clean_up_transactions_in_taxjar() {
+		foreach( $this->synced_order_ids as $order_id ) {
+			$record = new TaxJar_Order_Record( $order_id );
+			$record->delete_in_taxjar();
+		}
+		$this->synced_order_ids = [];
+
+		foreach( $this->synced_refund_ids as $refund_id ) {
+			$record = new TaxJar_Refund_Record( $refund_id );
+			$record->delete_in_taxjar();
+		}
+		$this->synced_refund_ids = [];
+	}
+
+	/**
+	 * Creates a test order and adds order ID to array to be cleaned up during teardown
+	 * @param int $customer_id - customer ID for order
+	 * @param array $order_options - option array to override default test order options
+	 *
+	 * @return WC_Order|WP_Error
+	 */
+	function create_test_order( $customer_id = 1, $order_options = array() ) {
+		$order = TaxJar_Order_Helper::create_order( $customer_id = 1, $order_options = array() );
+		array_push( $this->synced_order_ids, $order->get_id() );
+		return $order;
+	}
+
+	/**
+	 * Creates a test refund and adds the refund ID to array to be cleaned up during teardown
+	 * @param $order_id - ID or order to create refund for
+	 *
+	 * @return WC_Order_Refund|WP_Error
+	 */
+	function create_test_refund( $order_id ) {
+		$refund = TaxJar_Order_Helper::create_refund_from_order( $order_id );
+		array_push( $this->synced_refund_ids, $refund->get_id() );
+		return $refund;
+	}
+
+	/**
+	 * Creates a test order with no tax and adds the order ID to array to be cleaned up during teardown
+	 * @param int $customer_id - customer ID for order
+	 * @param array $order_options - option array to override default test order options
+	 *
+	 * @return WC_Order|WP_Error
+	 */
+	function create_test_order_with_no_tax( $customer_id = 1, $order_options = array() ) {
+		$order = TaxJar_Order_Helper::create_order_with_no_tax( $customer_id = 1, $order_options = array() );
+		array_push( $this->synced_order_ids, $order->get_id() );
+		return $order;
 	}
 
 	function test_install_and_uninstall() {
@@ -56,7 +120,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_create_new_order_record() {
-		$order = TaxJar_Order_Helper::create_order();
+		$order = $this->create_test_order();
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 
@@ -68,7 +132,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_get_order_record_by_queue_id() {
-		$order = TaxJar_Order_Helper::create_order();
+		$order = $this->create_test_order();
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->save();
 
@@ -85,7 +149,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_get_order_data() {
-		$order = TaxJar_Order_Helper::create_order();
+		$order = $this->create_test_order();
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 		$order_data = $record->get_data();
@@ -129,7 +193,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_get_active_order_record_in_queue() {
-		$order = TaxJar_Order_Helper::create_order();
+		$order = $this->create_test_order();
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->save();
 
@@ -142,7 +206,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_new_completed_order_add_to_queue() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
@@ -156,19 +220,18 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_create_order_in_taxjar() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
-		$record->delete_in_taxjar();
-
 		$result = $record->create_in_taxjar();
 
+		$this->synced_order_ids = [$order->get_id()];
+
 		$this->assertEquals( 201, $result[ 'response' ][ 'code' ] );
-		$result = $record->delete_in_taxjar();
 	}
 
 	function test_update_order_in_taxjar() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 		$result = $record->create_in_taxjar();
@@ -181,12 +244,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$result = $new_record->update_in_taxjar();
 
 		$this->assertEquals( 200, $result[ 'response' ][ 'code' ] );
-
-		$record->delete_in_taxjar();
 	}
 
 	function test_order_record_sync_success() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 		$record->sync_success();
@@ -213,7 +274,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_order_record_sync_failure() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 		$record->sync_failure( "Last Error" );
@@ -246,11 +307,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_order_record_sync() {
 		// new status not in TaxJar
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		$record->load_object();
 		$result = $record->sync();
+
 		$this->assertTrue( $result );
 
 		// new status already exists in TaxJar
@@ -281,11 +343,11 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_fails_in_queue_processing() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 
-		$second_order = TaxJar_Order_Helper::create_order( 1 );
+		$second_order = $this->create_test_order( 1 );
 		$second_order->update_status( 'completed' );
 		$second_order->update_status( 'pending' );
 		$second_record = TaxJar_Order_Record::find_active_in_queue( $second_order->get_id() );
@@ -298,14 +360,11 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( 'new', $second_record->get_status() );
 		$this->assertEquals( 1, $second_record->get_retry_count() );
 		$this->assertEquals( 0, $second_record->get_batch_id() );
-
-		$record->delete_in_taxjar();
-		$second_record->delete_in_taxjar();
 	}
 
 	function test_order_record_get_ship_to_address() {
 		// Tax based on shipping address
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 		$ship_to_address = $record->get_ship_to_address();
@@ -329,7 +388,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( "6060 S Quebec St", $ship_to_address[ 'to_street' ] );
 
 		update_option( 'woocommerce_tax_based_on', 'shipping' );
-		$order = TaxJar_Order_Helper::create_order();
+		$order = $this->create_test_order();
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 		$address_data = $record->get_ship_to_address();
@@ -367,7 +426,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_refund_record_get_ship_to_address() {
 		// Tax based on shipping address
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
 		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$record->load_object();
@@ -397,7 +456,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( "6060 S Quebec St", $ship_to_address[ 'to_street' ] );
 
 		update_option( 'woocommerce_tax_based_on', 'shipping' );
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
 		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$record->load_object();
@@ -439,7 +498,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_order_record_get_fee_line_items() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$fee = new WC_Order_Item_Fee();
 
 		$fee->set_defaults();
@@ -460,7 +519,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( '0', $fee_line_items[ 0 ][ 'sales_tax' ] );
 		$this->assertEquals( 1, $fee_line_items[ 0 ][ 'quantity' ] );
 
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$fee = new WC_Order_Item_Fee();
 
 		$fee->set_defaults();
@@ -478,7 +537,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$fee_line_items = $record->get_fee_line_items();
 		$this->assertEquals( '20010', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$fee = new WC_Order_Item_Fee();
 
 		$fee->set_defaults();
@@ -496,7 +555,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$fee_line_items = $record->get_fee_line_items();
 		$this->assertEquals( 'RATE', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$fee = new WC_Order_Item_Fee();
 
 		$fee->set_defaults();
@@ -516,7 +575,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_order_with_fee_record_sync() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$fee = new WC_Order_Item_Fee();
 
@@ -539,19 +598,19 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$result = $record->get_from_taxjar();
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
-
-		$result = $record->delete_in_taxjar();
 	}
 
 	function test_create_refund_in_taxjar() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
+		$record_delete = $record->delete_in_taxjar();
 		$result = $record->create_in_taxjar();
 
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$refund_record->load_object();
+		$refund_delete = $refund_record->delete_in_taxjar();
 		$refund_result = $refund_record->create_in_taxjar();
 
 		$this->assertEquals( 201, $refund_result[ 'response' ][ 'code' ] );
@@ -562,15 +621,16 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_update_refund_in_taxjar() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 		$result = $record->create_in_taxjar();
 
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$refund_record->load_object();
 		$refund_record->delete_in_taxjar();
+		$this->synced_refund_ids = [$refund->get_id()];
 
 		$update_result = $refund_record->update_in_taxjar();
 		$this->assertEquals( 404, $update_result[ 'response' ][ 'code' ] );
@@ -580,15 +640,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$second_update_result = $refund_record->update_in_taxjar();
 		$this->assertEquals( 200, $second_update_result[ 'response' ][ 'code' ] );
-
-		$result = $record->delete_in_taxjar();
-		$delete_result = $refund_record->delete_in_taxjar();
 	}
 
 	function test_refund_record_sync() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$record->load_object();
 		$record->delete_in_taxjar();
@@ -616,14 +673,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->object->update_meta_data( '_taxjar_hash', '' );
 		$result = $record->sync();
 		$this->assertTrue( $result );
-
-		$result = $record->delete_in_taxjar();
 	}
 
 	function test_refund_queue_process() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 		$record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
 		$record->load_object();
 		$record->delete_in_taxjar();
@@ -647,11 +702,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertFalse( $active_record );
 
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
-		$record->delete_in_taxjar();
 	}
 
 	function test_manual_order_sync() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$this->tj->transaction_sync->manual_order_sync( $order );
 
@@ -678,9 +732,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->load_object();
 		$record->delete_in_taxjar();
 
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
+
 		$this->tj->transaction_sync->manual_order_sync( $order );
 
 		$refund = wc_get_order( $refund->get_id() );
@@ -712,8 +767,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_record_hash() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$order = $this->create_test_order( 1 );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
@@ -754,7 +809,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_order_record_validation() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
 		$order_record->get_data_from_object();
@@ -791,7 +846,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		TaxJar_Order_Helper::delete_order( $empty_order->get_id() );
 
 		update_option( 'woocommerce_currency', 'GBP' );
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
@@ -803,9 +858,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_refund_record_validation() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 		$order = wc_get_order( $order->get_id() );
 
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
@@ -823,7 +878,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 
 		$empty_order = TaxJar_Order_Helper::create_order_with_no_customer_information( 1 );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $empty_order->get_id() );
+		$refund = $this->create_test_refund( $empty_order->get_id() );
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$refund_record->load_object();
 		$this->assertFalse( $refund_record->should_sync() );
@@ -846,8 +901,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		TaxJar_Order_Helper::delete_order( $empty_order->get_id() );
 
 		update_option( 'woocommerce_currency', 'GBP' );
-		$order = TaxJar_Order_Helper::create_order( 1 );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$order = $this->create_test_order( 1 );
+		$refund = $this->create_test_refund( $order->get_id() );
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$refund_record->load_object();
 		update_option( 'woocommerce_currency', 'USD' );
@@ -857,8 +912,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_sync_deleted_records() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$order = $this->create_test_order( 1 );
+		$refund = $this->create_test_refund( $order->get_id() );
+
 		$refund_id = $refund->get_id();
 		$order_id = $order->get_id();
 		$refund->delete();
@@ -880,8 +936,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$result = $order_record->sync();
 		$this->assertFalse( $result );
 
-		$order = TaxJar_Order_Helper::create_order( 1 );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$order = $this->create_test_order( 1 );
+		$refund = $this->create_test_refund( $order->get_id() );
+
 		$refund_id = $refund->get_id();
 		$order_id = $order->get_id();
 		$refund->delete( true );
@@ -905,7 +962,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_get_order_from_taxjar() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
@@ -914,14 +971,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$result = $order_record->get_from_taxjar();
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
-
-		$order_record->delete_in_taxjar();
 	}
 
 	function test_get_refund_from_taxjar() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$record->load_object();
@@ -930,12 +985,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$result = $record->get_from_taxjar();
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
-
-		$record->delete_in_taxjar();
 	}
 
 	function test_trash_order() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
@@ -954,7 +1007,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_force_delete_order() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
@@ -973,7 +1026,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_trash_order_no_metadata() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
@@ -995,9 +1048,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_delete_refund() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$record->load_object();
@@ -1013,9 +1066,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_delete_refund_no_metatdata() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$record->load_object();
@@ -1034,9 +1087,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_trash_order_with_refund() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
@@ -1067,9 +1120,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_force_delete_order_with_refund() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
@@ -1100,9 +1153,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_cancel_order_with_refund() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
 		$order_record->load_object();
@@ -1133,18 +1186,18 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_get_orders_to_backfill() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 
-		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
+		$noncomplete_order = $this->create_test_order( 1 );
 
-		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order = $this->create_test_order( 1 );
 		$synced_order->update_status( 'completed' );
 		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
 		$synced_order_record->load_object();
 		$synced_order_record->sync_success();
 
-		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order = $this->create_test_order( 1 );
 		$updated_order->update_status( 'completed' );
 		$updated_order_record = new TaxJar_Order_Record( $updated_order->get_id(), true );
 		$updated_order_record->load_object();
@@ -1158,18 +1211,18 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_get_all_active_record_ids_in_queue() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 
-		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
+		$noncomplete_order = $this->create_test_order( 1 );
 
-		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order = $this->create_test_order( 1 );
 		$synced_order->update_status( 'completed' );
 		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
 		$synced_order_record->load_object();
 		$synced_order_record->sync_success();
 
-		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order = $this->create_test_order( 1 );
 		$updated_order->update_status( 'completed' );
 		$updated_order_record = new TaxJar_Order_Record( $updated_order->get_id(), true );
 		$updated_order_record->load_object();
@@ -1186,34 +1239,34 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_transaction_backfill() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 
-		$refunded_order = TaxJar_Order_Helper::create_order( 1 );
+		$refunded_order = $this->create_test_order( 1 );
 		$refunded_order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $refunded_order->get_id() );
+		$refund = $this->create_test_refund( $refunded_order->get_id() );
 		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
 		$refund_record->delete();
 
-		$order_two = TaxJar_Order_Helper::create_order( 1 );
+		$order_two = $this->create_test_order( 1 );
 		$order_two->update_status( 'completed' );
 		$order_two_record = TaxJar_Order_Record::find_active_in_queue( $order_two->get_id() );
 		$order_two_record->delete();
 
-		$order_three = TaxJar_Order_Helper::create_order( 1 );
+		$order_three = $this->create_test_order( 1 );
 		$order_three->update_status( 'completed' );
 		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
 		$order_three_record->delete();
 
-		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
+		$noncomplete_order = $this->create_test_order( 1 );
 
-		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order = $this->create_test_order( 1 );
 		$synced_order->update_status( 'completed' );
 		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
 		$synced_order_record->load_object();
 		$synced_order_record->sync_success();
 
-		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order = $this->create_test_order( 1 );
 		$updated_order->update_status( 'completed' );
 		$prior_datetime = date( 'Y-m-d H:i:s', time() - 5 );
 		$updated_order->update_meta_data( '_taxjar_last_sync', $prior_datetime );
@@ -1256,28 +1309,28 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_force_order_backfill() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 
-		$order_two = TaxJar_Order_Helper::create_order( 1 );
+		$order_two = $this->create_test_order( 1 );
 		$order_two->update_status( 'completed' );
 		$order_two_record = TaxJar_Order_Record::find_active_in_queue( $order_two->get_id() );
 		$order_two_record->delete();
 
-		$order_three = TaxJar_Order_Helper::create_order( 1 );
+		$order_three = $this->create_test_order( 1 );
 		$order_three->update_status( 'completed' );
 		$order_three_record = TaxJar_Order_Record::find_active_in_queue( $order_three->get_id() );
 		$order_three_record->delete();
 
-		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
+		$noncomplete_order = $this->create_test_order( 1 );
 
-		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order = $this->create_test_order( 1 );
 		$synced_order->update_status( 'completed' );
 		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
 		$synced_order_record->load_object();
 		$synced_order_record->sync_success();
 
-		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order = $this->create_test_order( 1 );
 		$updated_order->update_status( 'completed' );
 		$prior_datetime = date( 'Y-m-d H:i:s', time() - 5 );
 		$updated_order->update_meta_data( '_taxjar_last_sync', $prior_datetime );
@@ -1315,7 +1368,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	public function test_force_sync_order() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		$record->load_object();
@@ -1328,14 +1381,13 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->set_force_push( true );
 		$result = $record->sync();
 		$this->assertTrue( $result );
-
-		$record->delete_in_taxjar();
 	}
 
 	public function test_force_sync_refund() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
+
 		$record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
 		$record->load_object();
 		$result = $record->sync();
@@ -1347,28 +1399,26 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->set_force_push( true );
 		$result = $record->sync();
 		$this->assertTrue( $result );
-
-		$record->delete_in_taxjar();
 	}
 
 	public function test_get_refunds_to_backfill() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
-		$noncomplete_order = TaxJar_Order_Helper::create_order( 1 );
-		$noncomplete_order_refund = TaxJar_Order_Helper::create_refund_from_order( $noncomplete_order->get_id() );
+		$noncomplete_order = $this->create_test_order( 1 );
+		$noncomplete_order_refund = $this->create_test_refund( $noncomplete_order->get_id() );
 		
-		$synced_order = TaxJar_Order_Helper::create_order( 1 );
+		$synced_order = $this->create_test_order( 1 );
 		$synced_order->update_status( 'completed' );
-		$synced_order_refund = TaxJar_Order_Helper::create_refund_from_order( $synced_order->get_id() );
+		$synced_order_refund = $this->create_test_refund( $synced_order->get_id() );
 		$synced_order_record = TaxJar_Order_Record::find_active_in_queue( $synced_order->get_id() );
 		$synced_order_record->load_object();
 		$synced_order_record->sync_success();
 
-		$updated_order = TaxJar_Order_Helper::create_order( 1 );
+		$updated_order = $this->create_test_order( 1 );
 		$updated_order->update_status( 'completed' );
-		$updated_order_refund = TaxJar_Order_Helper::create_refund_from_order( $updated_order->get_id() );
+		$updated_order_refund = $this->create_test_refund( $updated_order->get_id() );
 		$prior_datetime = date( 'Y-m-d H:i:s', time() - 5 );
 		$updated_order->update_meta_data( '_taxjar_last_sync', $prior_datetime );
 		$updated_order->save();
@@ -1389,9 +1439,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_enqueue_untrashed_orders_refunds() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 		$refund_id = $refund->get_id();
 		$order_id = $order->get_id();
 		$order->delete();
@@ -1412,9 +1462,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_get_provider() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
@@ -1439,8 +1489,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 	function test_partial_refund() {
 		$order = TaxJar_Order_Helper::create_order_quantity_two( 1 );
+		array_push( $this->synced_order_ids, $order->get_id() );
 		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_partial_refund_from_order( $order->get_id() );
+		array_push( $this->synced_refund_ids, $refund->get_id() );
 
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
@@ -1459,15 +1511,13 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( "-7.25", $response->refund->sales_tax );
 		$this->assertEquals( "-100.0", $response->refund->line_items[0]->unit_price );
 		$this->assertEquals( "-7.25", $response->refund->line_items[0]->sales_tax );
-
-		$record->delete_in_taxjar();
-		$refund_record->delete_in_taxjar();
 	}
 
 	function test_partial_line_item_refund() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_partial_line_item_refund_from_order( $order->get_id() );
+		array_push( $this->synced_refund_ids, $refund->get_id() );
 
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
@@ -1479,13 +1529,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$refund_record->load_object();
 		$result = $refund_record->sync();
 		$this->assertTrue( $result );
-
-		$record->delete_in_taxjar();
-		$refund_record->delete_in_taxjar();
 	}
 
 	function test_sync_fee_refund() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$fee = new WC_Order_Item_Fee();
 
 		$fee->set_defaults();
@@ -1500,6 +1547,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order->save();
 		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_fee_refund_from_order( $order->get_id() );
+		array_push( $this->synced_refund_ids, $refund->get_id() );
 
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
 		$refund_record = TaxJar_Refund_Record::find_active_in_queue( $refund->get_id() );
@@ -1518,15 +1566,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( "0.0", $response->refund->sales_tax );
 		$this->assertEquals( "-10.0", $response->refund->line_items[0]->unit_price );
 		$this->assertEquals( "0.0", $response->refund->line_items[0]->sales_tax );
-
-		$record->delete_in_taxjar();
-		$refund_record->delete_in_taxjar();
 	}
 
 	function test_clear_active_transaction_records() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$in_queue = WC_Taxjar_Record_Queue::get_all_active_in_queue();
 		$this->assertNotEmpty( $in_queue );
@@ -1550,9 +1595,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_order_level_exemptions_on_sync() {
-		$order = TaxJar_Order_Helper::create_order_with_no_tax( 1 );
+		$order = $this->create_test_order_with_no_tax( 1 );
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
@@ -1581,13 +1626,10 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order_data = $record->get_from_taxjar();
 		$body = json_decode( $order_data[ 'body' ] );
 		$this->assertEquals( 'wholesale', $body->order->exemption_type );
-
-		$record->delete_in_taxjar();
-		$refund_record->delete_in_taxjar();
 	}
 
 	function test_order_sync_with_deleted_product() {
-		$order = TaxJar_Order_Helper::create_order();
+		$order = $this->create_test_order();
 		$order->update_status( 'completed' );
 		$line_items = $order->get_items();
 
@@ -1605,9 +1647,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_refund_sync_with_deleted_product() {
-		$order = TaxJar_Order_Helper::create_order();
+		$order = $this->create_test_order();
 		$order->update_status( 'completed' );
-		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
+		$refund = $this->create_test_refund( $order->get_id() );
 		$line_items = $order->get_items();
 
 		foreach( $line_items as $line_item ) {
@@ -1624,7 +1666,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_clean_orphaned_records() {
-		$order = TaxJar_Order_Helper::create_order( 1 );
+		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );

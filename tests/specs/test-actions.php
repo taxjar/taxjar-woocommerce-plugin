@@ -20,11 +20,21 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function tearDown() {
+		global $wpdb;
+
 		// Empty the cart
-		WC()->cart->empty_cart();
+		WC()->cart->empty_cart( true );
+
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE ('_transient_%');" );
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE `option_name` LIKE ('_site_transient_%');" );
+
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+
+		parent::tearDown();
 	}
 
 	function test_taxjar_calculate_totals() {
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		WC()->cart->add_to_cart( $product );
 		WC()->cart->calculate_totals();
@@ -36,10 +46,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
 		WC()->cart->add_to_cart( $product );
-
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 5;
-
 		WC()->cart->calculate_totals();
 
 		$this->assertEquals( WC()->cart->tax_total, 0.73, '', 0.01 );
@@ -140,6 +147,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_with_local_pickup() {
+		TaxJar_Shipping_Helper::create_local_pickup_rate();
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
 		// NY shipping address
@@ -150,13 +158,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		) );
 
 		WC()->cart->add_to_cart( $product );
-
-		// Set local pickup shipping method and ship to CO address instead
-		WC()->session->set( 'chosen_shipping_methods', array() );
-		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 		WC()->session->set( 'chosen_shipping_methods', array( 'local_pickup' ) );
-		update_option( 'woocommerce_tax_based_on', 'base' );
-
 		WC()->cart->calculate_totals();
 
 		$this->assertEquals( WC()->cart->tax_total, 0.73, '', 0.01 );
@@ -169,6 +171,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		WC()->session->set( 'chosen_shipping_methods', array() );
 		update_option( 'woocommerce_tax_based_on', 'shipping' );
+		TaxJar_Shipping_Helper::delete_local_pickup_rate();
 	}
 
 	function test_correct_taxes_for_multiple_products() {
@@ -543,9 +546,9 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		// Woo 3.2+ allocates fixed discounts evenly across line items
 		// Woo 2.6+ allocates fixed discounts proportionately across line items
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->tax_total, 1.56, '', 0.01 );
-			$this->assertEquals( WC()->cart->get_taxes_total(), 1.56, '', 0.01 );
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 283 - 10 + 1.56, '', 0.01 );
+			$this->assertEquals( WC()->cart->tax_total, 1.88, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_taxes_total(), 1.88, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 283 - 10 + 1.88, '', 0.01 );
 		} else {
 			$this->assertEquals( WC()->cart->tax_total, 1.42, '', 0.01 );
 			$this->assertEquals( WC()->cart->get_taxes_total(), 1.42, '', 0.01 );
