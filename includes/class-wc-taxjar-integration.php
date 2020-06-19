@@ -1399,7 +1399,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 
         if ( isset( $_POST[ 'woocommerce_taxjar-integration_settings' ][ $key ] ) ) {
             $val = $_POST[ 'woocommerce_taxjar-integration_settings' ][ $key ];
-        } else {
+        } elseif ( isset( $this->settings[ $key ] ) ) {
             $val = $this->settings[ $key ];
         }
 
