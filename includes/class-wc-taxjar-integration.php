@@ -43,6 +43,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
 		$this->customer_sync      = new WC_Taxjar_Customer_Sync( $this );
 		$this->api_calculation    = new WC_Taxjar_API_Calculation( $this );
+		$this->cart_calculation    = new WC_Taxjar_Cart_Calculation( $this );
 
 		// Load the settings.
 		$this->init_settings();
@@ -66,7 +67,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		if ( apply_filters( 'taxjar_enabled', isset( $this->settings['enabled'] ) && 'yes' == $this->settings['enabled'] ) ) {
 			// Calculate Taxes at Cart / Checkout
 			if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
-				add_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
+				//add_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 			} else {
 				add_action( 'woocommerce_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 			}
@@ -81,7 +82,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
 
 			// Filters
-			add_filter( 'woocommerce_calc_tax', array( $this, 'override_woocommerce_tax_rates' ), 10, 3 );
+			//add_filter( 'woocommerce_calc_tax', array( $this, 'override_woocommerce_tax_rates' ), 10, 3 );
 			add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
 			add_filter( 'woocommerce_matched_rates', array( $this, 'allow_street_address_for_matched_rates' ), 10, 2 );
 
@@ -647,6 +648,10 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 					}
 					$taxes['line_items'] = $line_items;
 				}
+
+				if ( ! empty( $taxjar_response->breakdown->shipping ) ) {
+				    $taxes[ 'shipping_collectable' ] = $taxjar_response->breakdown->shipping->tax_collectable;
+                }
 			}
 		}
 
@@ -704,6 +709,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	 * @return void
 	 */
 	public function create_or_update_tax_rate( $location, $rate, $tax_class = '', $freight_taxable = 1 ) {
+	    return;
 		$tax_rate = array(
 			'tax_rate_country' => $location['to_country'],
 			'tax_rate_state' => $location['to_state'],
@@ -1047,7 +1053,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	 *
 	 * @return array
 	 */
-	protected function get_address() {
+	public function get_address() {
 		$taxable_address = $this->get_taxable_address();
 		$taxable_address = is_array( $taxable_address ) ? $taxable_address : array();
 
@@ -1108,7 +1114,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	 *
 	 * @return array
 	 */
-	protected function get_line_items( $wc_cart_object ) {
+	public function get_line_items( $wc_cart_object ) {
 		$line_items = array();
 
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
@@ -1196,7 +1202,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		return apply_filters( 'taxjar_order_calculation_get_line_items', $line_items, $order );
 	}
 
-	protected function get_line_item( $id, $line_items ) {
+	public function get_line_item( $id, $line_items ) {
 		foreach ( $line_items as $line_item ) {
 			if ( $line_item['id'] === $id ) {
 				return $line_item;
