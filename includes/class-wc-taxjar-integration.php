@@ -638,6 +638,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			$taxes['freight_taxable']    = (int) $taxjar_response->freight_taxable;
 			$taxes['has_nexus']          = (int) $taxjar_response->has_nexus;
 			$taxes['tax_rate']           = $taxjar_response->rate;
+			$taxes['shipping_rate']      = $taxjar_response->breakdown->shipping->combined_tax_rate;
 
 			if ( ! empty( $taxjar_response->breakdown ) ) {
 				if ( ! empty( $taxjar_response->breakdown->line_items ) ) {
@@ -689,7 +690,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			// Add shipping tax rate
 			$taxes['rate_ids']['shipping'] = $this->create_or_update_tax_rate(
 				$location,
-				$taxes['tax_rate'] * 100,
+				$taxes['shipping_rate'] * 100,
 				'',
 				$taxes['freight_taxable']
 			);
@@ -825,6 +826,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 
 		$address = $this->get_address( $wc_cart_object );
 		$line_items = $this->get_line_items( $wc_cart_object );
+		$shipping_total = $wc_cart_object->get_shipping_total();
 
 		$customer_id = 0;
 		if ( is_object( WC()->customer ) ) {
@@ -839,7 +841,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			'to_state' => $address['to_state'],
 			'to_city' => $address['to_city'],
 			'to_street' => $address['to_street'],
-			'shipping_amount' => WC()->shipping->shipping_total,
+			'shipping_amount' => $shipping_total,
 			'line_items' => $line_items,
             'customer_id' => $customer_id,
             'exemption_type' => $exemption_type,

@@ -17,6 +17,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
+
+
 	}
 
 	function tearDown() {
@@ -66,6 +68,48 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		WC()->session->set( 'chosen_shipping_methods', array() );
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+	}
+
+	function test_taxes_with_different_shipping_and_item_rates() {
+		update_option( 'woocommerce_tax_classes', "Reduced rate\nZero Rate\nnon-prescription-51010" );
+		TaxJar_Shipping_Helper::create_simple_flat_rate();
+
+		if ( version_compare( WC()->version, '3.7.0', '>=' ) ) {
+			WC_Tax::create_tax_class( 'non-prescription-51010' );
+		}
+
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'US',
+			'store_state' => 'TX',
+			'store_postcode' => '77090',
+			'store_city' => 'Houston'
+		) );
+
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'IL',
+			'zip' => '62294',
+			'city' => 'Troy',
+		) );
+
+		$product_options = array(
+			'tax_class' => 'non-prescription-51010',
+			'name'          => 'Test Prescription',
+			'price'         => 11.99,
+			'sku'           => 'TEST-PRES'
+		);
+		$product = TaxJar_Product_Helper::create_product( 'simple', $product_options )->get_id();
+
+		WC()->cart->add_to_cart( $product, 3 );
+		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
+
+		WC()->cart->calculate_totals();
+
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
+			$this->assertEquals( $item['line_tax'],  0.36, '', 0.01 );
+		}
+
+		$this->assertEquals( WC()->cart->get_shipping_tax(), 0.63, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_total_tax(),  0.99, '', 0.01 );
 	}
 
 	function test_correct_taxes_with_exempt_shipping() {
