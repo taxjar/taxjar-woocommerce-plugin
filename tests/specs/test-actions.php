@@ -18,7 +18,6 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			define( 'WOOCOMMERCE_CHECKOUT', true );
 		}
 
-
 	}
 
 	function tearDown() {
@@ -47,23 +46,29 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'state' => 'NY',
+			'zip' => '10001',
+			'city' => 'New York City',
+		) );
+
 		WC()->cart->add_to_cart( $product );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 0.73, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_shipping_tax(), 0.36, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 0.89, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_shipping_tax(), 0.44, '', 0.01 );
 
 		if ( method_exists( WC()->cart, 'get_shipping_taxes' ) ) {
-			$this->assertEquals( array_values( WC()->cart->get_shipping_taxes() )[0], 0.36, '', 0.01 );
+			$this->assertEquals( array_values( WC()->cart->get_shipping_taxes() )[0], 0.44, '', 0.01 );
 		} else {
-			$this->assertEquals( array_values( WC()->cart->shipping_taxes )[0], 0.36, '', 0.01 );
+			$this->assertEquals( array_values( WC()->cart->shipping_taxes )[0], 0.44, '', 0.01 );
 		}
 
-		$this->assertEquals( WC()->cart->get_taxes_total(), 1.09, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 1.33, '', 0.01 );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( $item['line_tax'], 0.73, '', 0.01 );
+			$this->assertEquals( $item['line_tax'], 0.89, '', 0.01 );
 		}
 
 		WC()->session->set( 'chosen_shipping_methods', array() );

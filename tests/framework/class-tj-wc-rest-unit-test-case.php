@@ -123,9 +123,9 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 					'last_name'  => 'Customer',
 					'address_1'  => '123 Main St.',
 					'address_2'  => '',
-					'city'       => 'Greenwood Village',
-					'state'      => 'CO',
-					'postcode'   => '80111',
+					'city'       => 'New York City',
+					'state'      => 'NY',
+					'postcode'   => '10001',
 					'country'    => 'US',
 				),
 				'line_items' => array(
@@ -143,11 +143,11 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$order    = wc_get_order( $data['id'] );
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( 1.46, $order->get_total_tax(), '', 0.02 );
-		$this->assertEquals( 0.73, $order->get_shipping_tax(), '', 0.01 );
+		$this->assertEquals( 1.78, $order->get_total_tax(), '', 0.02 );
+		$this->assertEquals( 0.89, $order->get_shipping_tax(), '', 0.01 );
 
 		foreach ( $order->get_items() as $item ) {
-			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
+			$this->assertEquals( 0.89, $item->get_total_tax(), '', 0.01 );
 		}
 	}
 

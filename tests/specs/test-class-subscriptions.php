@@ -381,16 +381,16 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		$subscription_id = $data['id'];
 		$renewal_order = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
 
-		$this->assertEquals( $renewal_order->get_shipping_tax(), 0.73, '', 0.01 );
+		$this->assertEquals( $renewal_order->get_shipping_tax(), 0, '', 0.01 );
 		$this->assertEquals( $renewal_order->get_cart_tax(), 7.25, '', 0.01 );
-		$this->assertEquals( $renewal_order->get_total(), 117.98 , '', 0.01 );
+		$this->assertEquals( $renewal_order->get_total(), 117.25 , '', 0.01 );
 
 		$subscription = wcs_get_subscription( $subscription_id );
 
 		// test to ensure subscription tax has been correctly calculated and updated
-		$this->assertEquals( $subscription->get_shipping_tax(), 0.73, '', 0.01 );
+		$this->assertEquals( $subscription->get_shipping_tax(), 0, '', 0.01 );
 		$this->assertEquals( $subscription->get_cart_tax(), 7.25, '', 0.01 );
-		$this->assertEquals( $subscription->get_total(), 117.98 , '', 0.01 );
+		$this->assertEquals( $subscription->get_total(), 117.25 , '', 0.01 );
 
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
@@ -428,9 +428,9 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		$subscription_id = $data['id'];
 		$renewal_order = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
 
-		$this->assertEquals( $renewal_order->get_shipping_tax(), 0.73, '', 0.01 );
+		$this->assertEquals( $renewal_order->get_shipping_tax(), 0, '', 0.01 );
 		$this->assertEquals( $renewal_order->get_cart_tax(), 7.25, '', 0.01 );
-		$this->assertEquals( $renewal_order->get_total(), 117.98 , '', 0.01 );
+		$this->assertEquals( $renewal_order->get_total(), 117.25 , '', 0.01 );
 
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
@@ -468,9 +468,9 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		$subscription_id = $data['id'];
 		$renewal_order = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
 
-		$this->assertEquals( $renewal_order->get_shipping_tax(), 0.73, '', 0.01 );
+		$this->assertEquals( $renewal_order->get_shipping_tax(), 0, '', 0.01 );
 		$this->assertEquals( $renewal_order->get_cart_tax(), 7.25, '', 0.01 );
-		$this->assertEquals( $renewal_order->get_total(), 117.98 , '', 0.01 );
+		$this->assertEquals( $renewal_order->get_total(), 117.25 , '', 0.01 );
 
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
@@ -517,15 +517,9 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 		$subscription_id = $data['id'];
 		$renewal_order = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
 
-		$this->assertEquals( $renewal_order->get_shipping_tax(), 0.73, '', 0.01 );
+		$this->assertEquals( $renewal_order->get_shipping_tax(), 0, '', 0.01 );
 		$this->assertEquals( $renewal_order->get_cart_tax(), 10.88, '', 0.01 );
-
-		// handle rounding difference is woocommerce versions
-		if ( version_compare( WC()->version, '3.2.0', '<=' ) ) {
-			$this->assertEquals( $renewal_order->get_total(), 171.60, '', 0.01 );
-		} else {
-			$this->assertEquals( $renewal_order->get_total(), 171.61, '', 0.01 );
-		}
+		$this->assertEquals( $renewal_order->get_total(), 170.88, '', 0.01 );
 
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
 	}
