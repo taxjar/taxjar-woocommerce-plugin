@@ -637,7 +637,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			// Update Properties based on Response
 			$taxes['freight_taxable']    = (int) $taxjar_response->freight_taxable;
 			$taxes['has_nexus']          = (int) $taxjar_response->has_nexus;
-			$taxes['tax_rate']           = $taxjar_response->rate;
 			$taxes['shipping_rate']      = $taxjar_response->rate;
 
 			if ( ! empty( $taxjar_response->breakdown ) ) {

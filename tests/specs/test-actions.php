@@ -76,11 +76,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_taxes_with_different_shipping_and_item_rates() {
-		update_option( 'woocommerce_tax_classes', "Reduced rate\nZero Rate\nnon-prescription-51010" );
+		update_option( 'woocommerce_tax_classes', "Reduced rate\nZero Rate\nNon-Prescription-51010" );
 		TaxJar_Shipping_Helper::create_simple_flat_rate();
 
 		if ( version_compare( WC()->version, '3.7.0', '>=' ) ) {
-			WC_Tax::create_tax_class( 'non-prescription-51010' );
+			WC_Tax::create_tax_class( 'Non-Prescription-51010' );
 		}
 
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
@@ -97,7 +97,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		) );
 
 		$product_options = array(
-			'tax_class' => 'non-prescription-51010',
+			'tax_class' => 'Non-Prescription-51010',
 			'name'          => 'Test Prescription',
 			'price'         => 11.99,
 			'sku'           => 'TEST-PRES'
