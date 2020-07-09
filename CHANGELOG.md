@@ -1,3 +1,9 @@
+# 3.2.1 (2020-07-09)
+* Fix for undefined settings issue
+* Fix for wrong shipping rates
+* Increment supported WooCommerce version to 4.3.0
+* Increase minimum WooCommerce version to 3.2.0
+
 # 3.2.0 (2020-05-28)
 * Add support for tax calculation on orders created through WooCommerce REST API V2 & V3
 * Include plugin parameter for requests to TaxJar API
