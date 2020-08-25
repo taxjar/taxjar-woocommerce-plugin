@@ -1133,9 +1133,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			// Get WC Subscription sign-up fees for calculations
 			if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
 				if ( 'none' == WC_Subscriptions_Cart::get_calculation_type() ) {
-					if ( class_exists( 'WC_Subscriptions_Synchroniser' ) ) {
-						WC_Subscriptions_Synchroniser::maybe_set_free_trial();
-					}
 					$unit_price = WC_Subscriptions_Cart::set_subscription_prices_for_calculation( $unit_price, $product );
 				}
 			}
@@ -1171,14 +1168,6 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 				$discount = wc_format_decimal( $item->get_subtotal() - $item->get_total() );
 				$tax_class_name = $item->get_tax_class();
 				$tax_status = $item->get_tax_status();
-			} else { // Woo 2.6
-				$id = $item['product_id'];
-				$quantity = $item['qty'];
-				$unit_price = wc_format_decimal( $item['line_subtotal'] / $quantity );
-				$discount = wc_format_decimal( $item['line_subtotal'] - $item['line_total'] );
-				$tax_class_name = $item['tax_class'];
-				$product = $order->get_product_from_item( $item );
-				$tax_status = $product ? $product->get_tax_status() : 'taxable';
 			}
 
 			$this->backend_tax_classes[$id] = $tax_class_name;
