@@ -69,7 +69,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			return false;
 		}
 
-		if ( empty( $order_data[ 'from_country' ] ) || empty( $order_data[ 'from_state' ] ) || empty( $order_data[ 'from_zip' ] ) || empty( $order_data[ 'from_city' ] ) ) {
+		if ( ! $this->has_valid_ship_from_address() ) {
 			$this->add_error( __( 'Order failed validation, missing required ship from field', 'wc-taxjar' ) );
 			return false;
 		}

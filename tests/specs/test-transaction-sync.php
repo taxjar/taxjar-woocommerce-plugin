@@ -1679,4 +1679,65 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->read();
 		$this->assertEquals( 0, $record->get_batch_id() );
 	}
+
+	function test_has_valid_ship_from_address() {
+		$record = new TaxJar_Order_Record( null, false );
+
+		// test US address will all necessary data
+		$record->data = array(
+			'from_country' => 'US',
+			'from_city' => 'from city',
+			'from_zip' => 'from zip',
+			'from_state' => 'UT'
+		);
+		$this->assertTrue( $record->has_valid_ship_from_address() );
+
+		// test missing state in US from address
+		$record->data = array(
+			'from_country' => 'US',
+			'from_city' => 'from city',
+			'from_zip' => '11111',
+		);
+		$this->assertFalse( $record->has_valid_ship_from_address() );
+
+		// test missing zip
+		$record->data = array(
+			'from_country' => 'US',
+			'from_city' => 'from city',
+			'from_state' => 'UT',
+		);
+		$this->assertFalse( $record->has_valid_ship_from_address() );
+
+		// test missing city
+		$record->data = array(
+			'from_country' => 'US',
+			'from_zip' => '11111',
+			'from_state' => 'UT',
+		);
+		$this->assertFalse( $record->has_valid_ship_from_address() );
+
+		// test missing country
+		$record->data = array(
+			'from_city' => 'test',
+			'from_zip' => '11111',
+			'from_state' => 'UT',
+		);
+		$this->assertFalse( $record->has_valid_ship_from_address() );
+
+		// test missing state in international address
+		$record->data = array(
+			'from_country' => 'UK',
+			'from_city' => 'test',
+			'from_zip' => '11111',
+		);
+		$this->assertTrue( $record->has_valid_ship_from_address() );
+
+		// test missing state in Canada address
+		$record->data = array(
+			'from_country' => 'CA',
+			'from_city' => 'test',
+			'from_zip' => '11111',
+		);
+		$this->assertFalse( $record->has_valid_ship_from_address() );
+	}
 }
