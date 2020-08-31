@@ -58,7 +58,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		}
 
 		if ( ! $this->has_valid_ship_from_address() ) {
-			$this->add_error( __( 'Order failed validation, missing required ship from field', 'wc-taxjar' ) );
+			$this->add_error( __( 'Refund failed validation - missing required ship from field on parent order', 'wc-taxjar' ) );
 			return false;
 		}
 
