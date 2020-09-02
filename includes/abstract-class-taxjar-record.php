@@ -427,6 +427,26 @@ abstract class TaxJar_Record {
 		return apply_filters( 'taxjar_sync_allowed_currencies', array ( 'USD' ) );
 	}
 
+	/**
+	 * Validates that required fields are present on records prior to syncing
+	 * @return bool
+	 */
+	public function has_valid_ship_from_address() {
+		$order_data = $this->get_data();
+
+		if ( empty( $order_data[ 'from_country' ] ) || empty( $order_data[ 'from_zip' ] ) || empty( $order_data[ 'from_city' ] ) ) {
+			return false;
+		}
+
+		if ( in_array( $order_data[ 'from_country' ], array( 'US', 'CA' ) ) ) {
+			if ( empty( $order_data['from_state'] ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public function set_queue_id( $queue_id ) {
 		$this->queue_id = $queue_id;
 	}
