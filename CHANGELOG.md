@@ -1,3 +1,7 @@
+# 3.2.2 (2020-09-02)
+* Fix international store address validation
+* Fix synchronized renewal non applicable message
+
 # 3.2.1 (2020-07-09)
 * Fix for undefined settings issue
 * Fix for wrong shipping rates
