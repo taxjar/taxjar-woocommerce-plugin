@@ -77,6 +77,9 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 			// Calculate taxes for WooCommerce Subscriptions renewal orders
             add_filter( 'wcs_new_order_created', array( $this, 'calculate_renewal_order_totals' ), 10, 3 );
 
+            add_action( 'wc_csv_import_suite_create_order', array( $this, 'calculate_import_order_tax'), 10, 3);
+            add_action( 'wc_csv_import_suite_update_order', array( $this, 'calculate_import_order_tax'), 10, 3);
+
 			// Settings Page
 			add_action( 'woocommerce_sections_tax',  array( $this, 'output_sections_before' ),  9 );
 
@@ -1666,6 +1669,15 @@ class WC_Taxjar_Integration extends WC_Settings_API {
         $site_url = get_bloginfo( 'url' );
         $user_agent = "TaxJar/WooCommerce (PHP $php_version; cURL $curl_version; WordPress $wordpress_version; WooCommerce $woo_version) WC_Taxjar/$taxjar_version $site_url";
         return $user_agent;
+    }
+
+
+    function calculate_import_order_tax( $order_id, $data, $options ) {
+	    if ( $options['recalculate_totals'] ) {
+		    $order = wc_get_order( $order_id );
+		    $this->calculate_order_tax( $order );
+		    $order->calculate_totals();
+	    }
     }
 
 }
