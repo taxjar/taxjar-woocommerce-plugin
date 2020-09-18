@@ -88,7 +88,7 @@ class WC_Taxjar_Nexus {
 			}
 		}
 
-		return false;
+		return apply_filters( 'taxjar_nexus_check', false, $country, $state, $nexus_areas );
 	}
 
 	public function get_or_update_cached_nexus( $force_update = false ) {
