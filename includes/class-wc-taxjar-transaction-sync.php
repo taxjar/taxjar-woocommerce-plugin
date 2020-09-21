@@ -29,10 +29,14 @@ class WC_Taxjar_Transaction_Sync {
 	 * Add actions and filters
 	 */
 	public function init() {
-		if ( isset( $this->taxjar_integration->settings['taxjar_download'] ) && 'yes' == $this->taxjar_integration->settings['taxjar_download'] ) {
+		$sales_tax_enabled = apply_filters( 'taxjar_enabled', isset( $this->taxjar_integration->settings['enabled'] ) && 'yes' == $this->taxjar_integration->settings['enabled'] );
+		$transaction_sync_enabled = isset( $this->taxjar_integration->settings['taxjar_download'] ) && 'yes' == $this->taxjar_integration->settings['taxjar_download'];
+		if ( $sales_tax_enabled || $transaction_sync_enabled ) {
 			add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
 			add_action( self::PROCESS_QUEUE_HOOK, array( $this, 'process_queue' ) );
+		}
 
+		if ( $transaction_sync_enabled ) {
 			add_action( 'woocommerce_new_order', array( __CLASS__, 'order_updated' ) );
 			add_action( 'woocommerce_update_order', array( __CLASS__, 'order_updated' ) );
 
