@@ -102,7 +102,7 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		$this->assertFalse( $this->tj_nexus->has_nexus_check( 'AA' ) );
 
 		add_filter( 'taxjar_nexus_check', function( $has_nexus, $country, $state, $nexus_areas ) {
-			if ($country !== 'US' ) {
+			if ( $country !== 'US' ) {
 				return true;
 			}
 			return $has_nexus;
