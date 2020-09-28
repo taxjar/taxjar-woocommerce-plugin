@@ -50,6 +50,7 @@ class WC_Taxjar_Nexus {
 	}
 
 	public function has_nexus_check( $country, $state = null ) {
+		$has_nexus = false;
 		$store_settings   = $this->integration->get_store_settings();
 		$from_country     = $store_settings['country'];
 		$from_state       = $store_settings['state'];
@@ -57,7 +58,7 @@ class WC_Taxjar_Nexus {
 		$nexus_areas = $this->get_or_update_cached_nexus();
 
 		if ( count( $nexus_areas ) == 0 ) {
-			return true;
+			$has_nexus = true;
 		}
 
 		array_push(
@@ -71,24 +72,24 @@ class WC_Taxjar_Nexus {
 		foreach ( $nexus_areas as $key => $nexus ) {
 			if ( isset( $nexus->country_code ) && isset( $nexus->region_code ) && 'US' == $nexus->country_code ) {
 				if ( $country == $nexus->country_code && $state == $nexus->region_code ) {
-					return true;
+					$has_nexus = true;
 				}
 			} elseif ( isset( $nexus->country_code ) ) {
 				if ( $country == $nexus->country_code ) {
-					return true;
+					$has_nexus = true;
 				}
 
 				if ( 'GB' == $country && 'UK' == $nexus->country_code ) {
-					return true;
+					$has_nexus = true;
 				}
 
 				if ( 'GR' == $country && 'EL' == $nexus->country_code ) {
-					return true;
+					$has_nexus = true;
 				}
 			}
 		}
 
-		return apply_filters( 'taxjar_nexus_check', false, $country, $state, $nexus_areas );
+		return apply_filters( 'taxjar_nexus_check', $has_nexus, $country, $state, $nexus_areas );
 	}
 
 	public function get_or_update_cached_nexus( $force_update = false ) {
