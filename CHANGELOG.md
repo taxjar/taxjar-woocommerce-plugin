@@ -1,3 +1,7 @@
+# 3.2.3 (2020-09-28)
+* Add filter to nexus check
+* Decouple tax calculation and transaction sync settings
+
 # 3.2.2 (2020-09-02)
 * Fix international store address validation
 * Fix synchronized renewal non applicable message
