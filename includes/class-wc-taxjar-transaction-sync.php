@@ -29,29 +29,32 @@ class WC_Taxjar_Transaction_Sync {
 	 * Add actions and filters
 	 */
 	public function init() {
-		if ( apply_filters( 'taxjar_enabled', isset( $this->taxjar_integration->settings['enabled'] ) && 'yes' == $this->taxjar_integration->settings['enabled'] ) ) {
+		$sales_tax_enabled = apply_filters( 'taxjar_enabled', isset( $this->taxjar_integration->settings['enabled'] ) && 'yes' == $this->taxjar_integration->settings['enabled'] );
+		$transaction_sync_enabled = isset( $this->taxjar_integration->settings['taxjar_download'] ) && 'yes' == $this->taxjar_integration->settings['taxjar_download'];
+
+		if ( $sales_tax_enabled || $transaction_sync_enabled ) {
 			add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
 			add_action( self::PROCESS_QUEUE_HOOK, array( $this, 'process_queue' ) );
+		}
 
-			if ( isset( $this->taxjar_integration->settings['taxjar_download'] ) && 'yes' == $this->taxjar_integration->settings['taxjar_download'] ) {
-				add_action( 'woocommerce_new_order', array( __CLASS__, 'order_updated' ) );
-				add_action( 'woocommerce_update_order', array( __CLASS__, 'order_updated' ) );
+		if ( $transaction_sync_enabled ) {
+			add_action( 'woocommerce_new_order', array( __CLASS__, 'order_updated' ) );
+			add_action( 'woocommerce_update_order', array( __CLASS__, 'order_updated' ) );
 
-				add_action( 'woocommerce_order_refunded', array( __CLASS__, 'refund_created' ), 10, 2 );
+			add_action( 'woocommerce_order_refunded', array( __CLASS__, 'refund_created' ), 10, 2 );
 
-				add_filter( 'woocommerce_order_actions', array( $this, 'add_order_meta_box_action' ) );
-				add_action( 'woocommerce_order_action_taxjar_sync_action', array( $this, 'manual_order_sync' ) );
+			add_filter( 'woocommerce_order_actions', array( $this, 'add_order_meta_box_action' ) );
+			add_action( 'woocommerce_order_action_taxjar_sync_action', array( $this, 'manual_order_sync' ) );
 
-				add_action( 'wp_trash_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
-				add_action( 'before_delete_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
-				add_action( 'before_delete_post', array( $this, 'maybe_delete_refund_from_taxjar' ), 9, 1 );
-				add_action( 'untrashed_post', array( $this, 'untrash_post' ), 11 );
+			add_action( 'wp_trash_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
+			add_action( 'before_delete_post', array( $this, 'maybe_delete_transaction_from_taxjar' ), 9, 1 );
+			add_action( 'before_delete_post', array( $this, 'maybe_delete_refund_from_taxjar' ), 9, 1 );
+			add_action( 'untrashed_post', array( $this, 'untrash_post' ), 11 );
 
-				add_action( 'woocommerce_order_status_cancelled', array( $this, 'order_cancelled' ), 10, 2 );
+			add_action( 'woocommerce_order_status_cancelled', array( $this, 'order_cancelled' ), 10, 2 );
 
-				add_action( 'woocommerce_product_options_tax', array( $this, 'display_notice_after_product_options_tax' ), 5 );
-				add_action( 'woocommerce_variation_options_tax', array( $this, 'display_notice_after_product_options_tax' ), 5 );
-			}
+			add_action( 'woocommerce_product_options_tax', array( $this, 'display_notice_after_product_options_tax' ), 5 );
+			add_action( 'woocommerce_variation_options_tax', array( $this, 'display_notice_after_product_options_tax' ), 5 );
 		}
 	}
 
