@@ -146,42 +146,109 @@ class WC_Taxjar_Customer_Sync {
 		endforeach;
 	}
 
+	/**
+     * Saves tax exemption user meta if necessary
+     *
+	 * @param $user_id - Id of user to update
+	 */
 	public function save_customer_meta_fields( $user_id ) {
 		if ( ! apply_filters( 'taxjar_current_user_can_edit_customer_meta_fields', current_user_can( 'manage_woocommerce' ), $user_id ) ) {
 			return;
 		}
 
-		$save_fields = $this->get_customer_meta_fields();
-		$change = false;
-		foreach ( $save_fields as $fieldset ) {
-			foreach ( $fieldset['fields'] as $key => $field ) {
-				if ( isset( $field['type'] ) && 'multi-select' === $field['type'] ) {
-				    $prev_value = get_user_meta( $user_id, $key, true );
-				    if ( empty( $_POST[ $key ] ) ) {
-				        $exempt_regions = '';
-                    } else {
-				        $exempt_regions = array_map( 'wc_clean',  $_POST[ $key ] );
-				        $exempt_regions = implode( ',', $exempt_regions );
-                    }
+		$exemption_settings_changed = false;
 
-				    if ( $exempt_regions != $prev_value ) {
-					    update_user_meta( $user_id, $key, $exempt_regions );
-					    $change = true;
-                    }
-				} elseif ( isset( $_POST[ $key ] ) ) {
-					$prev_value = get_user_meta( $user_id, $key, true );
-					$new_value = wc_clean( $_POST[ $key ] );
-					if ( $prev_value != $new_value ) {
-						update_user_meta( $user_id, $key, $new_value );
-						$change = true;
-                    }
-				}
-			}
+		if ( $this->has_exemption_type_changed( $user_id) ) {
+			update_user_meta( $user_id, 'tax_exemption_type', $this->get_posted_exemption_type() );
+			$exemption_settings_changed = true;
+        }
+
+		if ( $this->have_exempt_regions_changed( $user_id ) ) {
+			update_user_meta( $user_id, 'tax_exempt_regions', $this->get_posted_exempt_regions() );
+			$exemption_settings_changed = true;
 		}
 
-		if ( $change ) {
+		if ( $exemption_settings_changed ) {
 		    do_action( 'taxjar_customer_exemption_settings_updated', $user_id );
         }
+	}
+
+	/**
+     * Checks if exemption type has changed when saving a user
+     *
+	 * @param $user_id - Id of customer
+	 *
+	 * @return bool - Whether or not the exemption type has been changed
+	 */
+	public function has_exemption_type_changed( $user_id ) {
+	    $saved_exemption_type = self::get_saved_exemption_type( $user_id );
+		$new_exemption_type = $this->get_posted_exemption_type();
+		if ( $new_exemption_type != $saved_exemption_type ) {
+		    return true;
+		}
+
+		return false;
+    }
+
+	/**
+     * Gets the submitted tax exemption type during user save
+     *
+	 * @return array|string - value to save
+	 */
+    public function get_posted_exemption_type() {
+	    return wc_clean( $_POST[ 'tax_exemption_type' ] );
+    }
+
+	/**
+     * Checks if exempt regions have changed for a user
+     *
+	 * @param $user_id - Id of user to check
+	 *
+	 * @return bool - Whether or not the exempt regions have changed
+	 */
+	public function have_exempt_regions_changed( $user_id ) {
+		$saved_exempt_regions = self::get_saved_exempt_regions( $user_id );
+		$new_exemption_type = $this->get_posted_exempt_regions();
+		if ( $new_exemption_type != $saved_exempt_regions ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+     * Gets the submitted exempt regions value during user save
+     *
+	 * @return string - Concatenated string containing the exempt regions
+	 */
+	public function get_posted_exempt_regions() {
+		if ( empty( $_POST[ 'tax_exempt_regions' ] ) ) {
+			return '';
+		} else {
+			return implode( ',', wc_clean( $_POST[ 'tax_exempt_regions' ] ) );
+		}
+	}
+
+	/**
+     * Gets the exemption type user meta
+     *
+	 * @param $user_id - ID of user
+	 *
+	 * @return mixed
+	 */
+	public static function get_saved_exemption_type( $user_id ) {
+		return get_user_meta( $user_id, 'tax_exemption_type', true );
+	}
+
+	/**
+     * Gets the exempt regions user metadata
+     * 
+	 * @param $user_id - ID of user
+	 *
+	 * @return mixed
+	 */
+	public static function get_saved_exempt_regions( $user_id ) {
+		return get_user_meta( $user_id, 'tax_exempt_regions', true );
 	}
 
 	public function maybe_sync_customer_on_update( $user_id ) {
