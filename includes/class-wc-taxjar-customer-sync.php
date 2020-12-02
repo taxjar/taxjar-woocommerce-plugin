@@ -25,17 +25,17 @@ class WC_Taxjar_Customer_Sync {
 	 * Add actions and filters
 	 */
 	public function init() {
-		if ( apply_filters( 'taxjar_enabled', isset( $this->taxjar_integration->settings['enabled'] ) && 'yes' == $this->taxjar_integration->settings['enabled'] ) ) {
-            add_action( 'show_user_profile', array( $this, 'add_customer_meta_fields' ) );
-            add_action( 'edit_user_profile', array( $this, 'add_customer_meta_fields' ) );
+		if ( apply_filters( 'taxjar_enabled', isset( $this->taxjar_integration->settings['enabled'] ) && 'yes' === $this->taxjar_integration->settings['enabled'] ) ) {
+			add_action( 'show_user_profile', array( $this, 'add_customer_meta_fields' ) );
+			add_action( 'edit_user_profile', array( $this, 'add_customer_meta_fields' ) );
 
-            add_action( 'personal_options_update', array( $this, 'save_customer_meta_fields' ) );
-            add_action( 'edit_user_profile_update', array( $this, 'save_customer_meta_fields' ) );
+			add_action( 'personal_options_update', array( $this, 'save_customer_meta_fields' ) );
+			add_action( 'edit_user_profile_update', array( $this, 'save_customer_meta_fields' ) );
 
-            add_action( 'taxjar_customer_exemption_settings_updated', array( $this, 'maybe_sync_customer_on_update' ) );
+			add_action( 'taxjar_customer_exemption_settings_updated', array( $this, 'maybe_sync_customer_on_update' ) );
 
-            add_action( 'delete_user', array( $this, 'maybe_delete_customer' ) );
-	    }
+			add_action( 'delete_user', array( $this, 'maybe_delete_customer' ) );
+		}
 	}
 
 	/**
@@ -64,11 +64,12 @@ class WC_Taxjar_Customer_Sync {
 	 */
 	public function get_customer_meta_fields() {
 		$show_fields = apply_filters(
-			'taxjar_customer_meta_fields', array(
-				'exemptions'  => array(
+			'taxjar_customer_meta_fields',
+			array(
+				'exemptions' => array(
 					'title'  => __( 'TaxJar Sales Tax Exemptions', 'wc-taxjar' ),
 					'fields' => array(
-						'tax_exemption_type'  => array(
+						'tax_exemption_type' => array(
 							'label'       => __( 'Exemption Type', 'wc-taxjar' ),
 							'description' => __( 'All customers are presumed non-exempt unless otherwise selected.', 'wc-taxjar' ),
 							'class'       => '',
@@ -89,6 +90,11 @@ class WC_Taxjar_Customer_Sync {
 		return $show_fields;
 	}
 
+	/**
+	 * Adds customer exemption fields to edit user page
+	 *
+	 * @param $user
+	 */
 	public function add_customer_meta_fields( $user ) {
 		if ( ! apply_filters( 'taxjar_current_user_can_edit_customer_meta_fields', current_user_can( 'manage_woocommerce' ), $user->ID ) ) {
 			return;
@@ -120,14 +126,14 @@ class WC_Taxjar_Customer_Sync {
 								<?php
 								$saved_value = esc_attr( get_user_meta( $user->ID, $key, true ) );
 								if ( ! empty( $saved_value ) ) {
-								    $saved_value = explode( ',', $saved_value );
-                                }
+									$saved_value = explode( ',', $saved_value );
+								}
 								foreach ( $field['options'] as $option_key => $option_value ) :
-                                    if ( ! empty( $saved_value ) && in_array( $option_key, $saved_value ) ) {
-                                        $selected = $option_key;
-                                    } else {
-                                        $selected = false;
-                                    }
+									if ( ! empty( $saved_value ) && in_array( $option_key, $saved_value, true ) ) {
+										$selected = $option_key;
+									} else {
+										$selected = false;
+									}
 									?>
 									<option value="<?php echo esc_attr( $option_key ); ?>" <?php selected( $selected, $option_key, true ); ?>><?php echo esc_attr( $option_value ); ?></option>
 								<?php endforeach; ?>
@@ -142,13 +148,13 @@ class WC_Taxjar_Customer_Sync {
 					</tr>
 				<?php endforeach; ?>
 			</table>
-		<?php
+			<?php
 		endforeach;
 	}
 
 	/**
-     * Saves tax exemption user meta if necessary
-     *
+	 * Saves tax exemption user meta if necessary
+	 *
 	 * @param $user_id - Id of user to update
 	 */
 	public function save_customer_meta_fields( $user_id ) {
@@ -164,42 +170,16 @@ class WC_Taxjar_Customer_Sync {
 	}
 
 	/**
-     * Checks if exemption type has changed when saving a user
-     *
+	 * Checks if exemption type has changed when saving a user
+	 *
 	 * @param $user_id - Id of customer
 	 *
 	 * @return bool - Whether or not the exemption type has been changed
 	 */
 	public function has_exemption_type_changed( $user_id ) {
-	    $saved_exemption_type = self::get_saved_exemption_type( $user_id );
-		$new_exemption_type = $this->get_posted_exemption_type();
-		if ( $new_exemption_type != $saved_exemption_type ) {
-		    return true;
-		}
-
-		return false;
-    }
-
-	/**
-     * Gets the submitted tax exemption type during user save
-     *
-	 * @return array|string - value to save
-	 */
-    public function get_posted_exemption_type() {
-	    return wc_clean( $_POST[ 'tax_exemption_type' ] );
-    }
-
-	/**
-     * Checks if exempt regions have changed for a user
-     *
-	 * @param $user_id - Id of user to check
-	 *
-	 * @return bool - Whether or not the exempt regions have changed
-	 */
-	public function have_exempt_regions_changed( $user_id ) {
-		$saved_exempt_regions = self::get_saved_exempt_regions( $user_id );
-		$new_exemption_type = $this->get_posted_exempt_regions();
-		if ( $new_exemption_type != $saved_exempt_regions ) {
+		$saved_exemption_type = self::get_saved_exemption_type( $user_id );
+		$new_exemption_type   = $this->get_posted_exemption_type();
+		if ( $new_exemption_type !== $saved_exemption_type ) {
 			return true;
 		}
 
@@ -207,21 +187,47 @@ class WC_Taxjar_Customer_Sync {
 	}
 
 	/**
-     * Gets the submitted exempt regions value during user save
-     *
+	 * Gets the submitted tax exemption type during user save
+	 *
+	 * @return array|string - value to save
+	 */
+	public function get_posted_exemption_type() {
+		return wc_clean( $_POST['tax_exemption_type'] );
+	}
+
+	/**
+	 * Checks if exempt regions have changed for a user
+	 *
+	 * @param $user_id - Id of user to check
+	 *
+	 * @return bool - Whether or not the exempt regions have changed
+	 */
+	public function have_exempt_regions_changed( $user_id ) {
+		$saved_exempt_regions = self::get_saved_exempt_regions( $user_id );
+		$new_exemption_type   = $this->get_posted_exempt_regions();
+		if ( $new_exemption_type !== $saved_exempt_regions ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Gets the submitted exempt regions value during user save
+	 *
 	 * @return string - Concatenated string containing the exempt regions
 	 */
 	public function get_posted_exempt_regions() {
-		if ( empty( $_POST[ 'tax_exempt_regions' ] ) ) {
+		if ( empty( $_POST['tax_exempt_regions'] ) ) {
 			return '';
 		} else {
-			return implode( ',', wc_clean( $_POST[ 'tax_exempt_regions' ] ) );
+			return implode( ',', wc_clean( $_POST['tax_exempt_regions'] ) );
 		}
 	}
 
 	/**
-     * Gets the exemption type user meta
-     *
+	 * Gets the exemption type user meta
+	 *
 	 * @param $user_id - ID of user
 	 *
 	 * @return mixed
@@ -231,8 +237,8 @@ class WC_Taxjar_Customer_Sync {
 	}
 
 	/**
-     * Gets the exempt regions user metadata
-     * 
+	 * Gets the exempt regions user metadata
+	 *
 	 * @param $user_id - ID of user
 	 *
 	 * @return mixed
@@ -241,6 +247,11 @@ class WC_Taxjar_Customer_Sync {
 		return get_user_meta( $user_id, 'tax_exempt_regions', true );
 	}
 
+	/**
+	 * Syncs customer record to TaxJar if all validation passes
+	 *
+	 * @param $user_id
+	 */
 	public function maybe_sync_customer_on_update( $user_id ) {
 		$record = TaxJar_Customer_Record::find_active_in_queue( $user_id );
 		if ( ! $record ) {
@@ -255,16 +266,26 @@ class WC_Taxjar_Customer_Sync {
 		}
 
 		$result = $record->sync();
-    }
+	}
 
+	/**
+	 * Creates array of valid option for customer exemption type dropdown
+	 *
+	 * @return array - customer exemption type options
+	 */
 	public static function get_customer_exemption_types() {
 		return array(
-			'wholesale' => __( 'Wholesale / Resale', 'wc-taxjar' ),
+			'wholesale'  => __( 'Wholesale / Resale', 'wc-taxjar' ),
 			'government' => __( 'Government', 'wc-taxjar' ),
-			'other' => __( 'Other', 'wc-taxjar' ),
+			'other'      => __( 'Other', 'wc-taxjar' ),
 		);
 	}
 
+	/**
+	 * Creates array of all valid exempt regions (states)
+	 *
+	 * @return array - available exempt regions
+	 */
 	public static function get_all_exempt_regions() {
 		return array(
 			'AL' => 'Alabama',
@@ -321,21 +342,22 @@ class WC_Taxjar_Customer_Sync {
 	}
 
 	/**
-     * Deletes customer from TaxJar when synced customer is deleted in WordPress
+	 * Deletes customer from TaxJar when synced customer is deleted in WordPress
+	 *
 	 * @param $id - user id
 	 */
 	public function maybe_delete_customer( $id ) {
 		$last_sync = get_user_meta( $id, '_taxjar_last_sync', true );
-		$hash = get_user_meta( $id, '_taxjar_hash', true );
+		$hash      = get_user_meta( $id, '_taxjar_hash', true );
 		if ( $last_sync || $hash ) {
-		    $record = TaxJar_Customer_Record::find_active_in_queue( $id );
+			$record = TaxJar_Customer_Record::find_active_in_queue( $id );
 			if ( ! $record ) {
 				$record = new TaxJar_Customer_Record( $id, true );
 			}
 
 			$record->delete_in_taxjar();
 			$record->delete();
-        }
-    }
+		}
+	}
 
 }
