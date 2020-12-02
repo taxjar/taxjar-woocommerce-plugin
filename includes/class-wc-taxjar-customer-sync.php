@@ -156,21 +156,10 @@ class WC_Taxjar_Customer_Sync {
 			return;
 		}
 
-		$exemption_settings_changed = false;
+		update_user_meta( $user_id, 'tax_exemption_type', $this->get_posted_exemption_type() );
+		update_user_meta( $user_id, 'tax_exempt_regions', $this->get_posted_exempt_regions() );
 
-		if ( $this->has_exemption_type_changed( $user_id) ) {
-			update_user_meta( $user_id, 'tax_exemption_type', $this->get_posted_exemption_type() );
-			$exemption_settings_changed = true;
-        }
-
-		if ( $this->have_exempt_regions_changed( $user_id ) ) {
-			update_user_meta( $user_id, 'tax_exempt_regions', $this->get_posted_exempt_regions() );
-			$exemption_settings_changed = true;
-		}
-
-		if ( $exemption_settings_changed ) {
-		    do_action( 'taxjar_customer_exemption_settings_updated', $user_id );
-        }
+		do_action( 'taxjar_customer_exemption_settings_updated', $user_id );
 	}
 
 	/**

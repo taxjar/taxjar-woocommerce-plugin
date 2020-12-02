@@ -504,4 +504,33 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$record->delete_in_taxjar();
 		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );
 	}
+
+	function test_sync_validation_on_unchanged_customer() {
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+
+		// test sync new customer
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		// test sync validation on already synced unchanged customer record
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$validation_result = $record->should_sync();
+		$this->assertFalse( $validation_result );
+
+		// test sync validation after change to exemption settings
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		update_user_meta( $record->get_customer_id(), 'tax_exemption_type', 'government' );
+		$validation_result = $record->should_sync();
+		$this->assertTrue( $validation_result );
+
+		$record->delete_in_taxjar();
+	}
 }
