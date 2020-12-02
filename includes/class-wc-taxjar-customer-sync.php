@@ -152,7 +152,8 @@ class WC_Taxjar_Customer_Sync {
 	 * @param $user_id - Id of user to update
 	 */
 	public function save_customer_meta_fields( $user_id ) {
-		if ( ! apply_filters( 'taxjar_current_user_can_edit_customer_meta_fields', current_user_can( 'manage_woocommerce' ), $user_id ) ) {
+		$has_permission = current_user_can( 'manage_woocommerce' ) || current_user_can( 'edit_users' );
+		if ( ! apply_filters( 'taxjar_current_user_can_edit_customer_meta_fields', $has_permission, $user_id ) ) {
 			return;
 		}
 
