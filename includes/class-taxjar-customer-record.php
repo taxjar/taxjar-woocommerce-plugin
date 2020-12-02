@@ -184,36 +184,8 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 		$customer_data = array();
 
 		$customer_data[ 'customer_id' ] = $this->get_customer_id();
+		$customer_data[ 'name' ] = $this->get_customer_name();
 		$customer_data[ 'exemption_type' ] = $this->get_exemption_type();
-
-		$first_name = $this->object->get_shipping_first_name();
-		$last_name = $this->object->get_shipping_last_name();
-
-		if ( empty( $first_name ) ) {
-			$first_name = $this->object->get_billing_first_name();
-			if ( empty( $first_name ) ) {
-				$first_name = $this->object->get_first_name();
-			}
-		}
-
-		if ( empty( $last_name ) ) {
-			$last_name = $this->object->get_billing_last_name();
-			if ( empty( $last_name ) ) {
-				$last_name = $this->object->get_last_name();
-			}
-		}
-
-		if ( empty( $first_name ) && empty( $last_name ) ) {
-			$name = '';
-		} else if ( empty( $first_name ) ) {
-			$name = $last_name;
-		} else if ( empty( $last_name ) ) {
-			$name = $first_name;
-		} else {
-			$name = $first_name . ' ' . $last_name;
-		}
-		$customer_data[ 'name' ] = $name;
-
 		$customer_data[ 'exempt_regions' ] = $this->get_exempt_regions();
 
 		$country = $this->object->get_shipping_country();
@@ -259,6 +231,47 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 		$customer_data = apply_filters( 'taxjar_customer_sync_data', $customer_data, $this->object );
 		$this->data = $customer_data;
 		return $customer_data;
+	}
+
+	/**
+	 * Retrieves the name of the customer.
+	 * Falls back to username if no shipping, billing or account names are available.
+	 *
+	 * @return string - Customer's name
+	 */
+	public function get_customer_name() {
+		$first_name = $this->object->get_shipping_first_name();
+		$last_name = $this->object->get_shipping_last_name();
+
+		if ( empty( $first_name ) ) {
+			$first_name = $this->object->get_billing_first_name();
+			if ( empty( $first_name ) ) {
+				$first_name = $this->object->get_first_name();
+			}
+		}
+
+		if ( empty( $last_name ) ) {
+			$last_name = $this->object->get_billing_last_name();
+			if ( empty( $last_name ) ) {
+				$last_name = $this->object->get_last_name();
+			}
+		}
+
+		if ( empty( $first_name ) && empty( $last_name ) ) {
+			$name = '';
+		} else if ( empty( $first_name ) ) {
+			$name = $last_name;
+		} else if ( empty( $last_name ) ) {
+			$name = $first_name;
+		} else {
+			$name = $first_name . ' ' . $last_name;
+		}
+
+		if ( empty( $name ) ) {
+			$name = $this->object->get_username();
+		}
+
+		return $name;
 	}
 
 	/**
