@@ -367,6 +367,47 @@ class TJ_WC_Class_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	/**
+	 * Tests that the correct PTC and tax are applied to subscription products
+	 * Tests problem in ISSUE-1782q
+	 *
+	 * @throws Exception
+	 */
+	function test_tax_for_exempt_subscription() {
+		$subscription_product = TaxJar_Product_Helper::create_product( 'subscription', array(
+			'price' => '19.99',
+			'sign_up_fee' => 0,
+			'trial_length' => 1,
+			'tax_class' => 'Gift Card - 14111803A0001'
+		) )->get_id();
+
+		WC()->cart->add_to_cart( $subscription_product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 0, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0, '', 0.01 );
+
+		// Since get_line_items is being run outside the normal calculation flow, some values have to be manually set.
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			WC()->cart->cart_contents[ $cart_item_key ][ 'line_subtotal' ] = 19.99;
+		}
+
+		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
+
+		$line_items = $this->tj->get_line_items( WC()->cart );
+
+		$this->assertNotEmpty( $line_items );
+
+		foreach( $line_items as $line_item ) {
+			$this->assertEquals( '14111803A0001', $line_item[ 'product_tax_code' ] );
+		}
+
+		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
+			$this->assertEquals( $recurring_cart->tax_total, 0, '', 0.01 );
+			$this->assertEquals( $recurring_cart->get_taxes_total(), 0, '', 0.01 );
+		}
+	}
+
+	/**
 	 * @expectedDeprecated WC_Abstract_Legacy_Order::get_product_from_item
 	 */
 	function test_correct_taxes_for_subscription_recurring_order() {

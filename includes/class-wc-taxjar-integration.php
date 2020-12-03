@@ -1114,7 +1114,7 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 	 *
 	 * @return array
 	 */
-	protected function get_line_items( $wc_cart_object ) {
+	public function get_line_items( $wc_cart_object ) {
 		$line_items = array();
 
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
