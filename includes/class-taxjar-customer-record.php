@@ -14,7 +14,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 			$this->object = $object;
 		} else {
 			try {
-				$customer =  new WC_Customer( $this->get_record_id() );
+				$customer = new WC_Customer( $this->get_record_id() );
 				if ( $customer instanceof WC_Customer ) {
 					$this->object = $customer;
 				} else {
@@ -49,17 +49,17 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 		}
 
 		$data = $this->get_data();
-		if ( empty( $data[ 'customer_id' ] ) ) {
+		if ( empty( $data['customer_id'] ) ) {
 			$this->add_error( __( 'Customer failed validation, customer missing required field: customer_id.', 'wc-taxjar' ) );
 			return false;
 		}
 
-		if ( empty( $data[ 'exemption_type' ] ) ) {
+		if ( empty( $data['exemption_type'] ) ) {
 			$this->add_error( __( 'Customer failed validation, customer missing required field: exemption_type.', 'wc-taxjar' ) );
 			return false;
 		}
 
-		if ( empty( $data[ 'name' ] ) ) {
+		if ( empty( $data['name'] ) ) {
 			$this->add_error( __( 'Customer failed validation, customer missing required field: name.', 'wc-taxjar' ) );
 			return false;
 		}
@@ -88,17 +88,20 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 */
 	public function create_in_taxjar() {
 		$data = $this->get_data();
-		$url = self::API_URI . 'customers';
+		$url  = self::API_URI . 'customers';
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_post( $url, array(
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-			'body' => $body,
-		) );
+		$response = wp_remote_post(
+			$url,
+			array(
+				'headers'    => array(
+					'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
+					'Content-Type'  => 'application/json',
+				),
+				'user-agent' => $this->taxjar_integration->ua,
+				'body'       => $body,
+			)
+		);
 
 		$this->set_last_request( $body );
 		return $response;
@@ -108,22 +111,25 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 * Update customer API request
 	 * @return array|WP_Error - API response or WP_Error if request fails
 	 */
-	public function update_in_taxjar(){
+	public function update_in_taxjar() {
 		$customer_id = $this->get_customer_id();
-		$data = $this->get_data();
+		$data        = $this->get_data();
 
-		$url = self::API_URI . 'customers/' . $customer_id;
+		$url  = self::API_URI . 'customers/' . $customer_id;
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_request( $url, array(
-			'method' => 'PUT',
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-			'body' => $body,
-		) );
+		$response = wp_remote_request(
+			$url,
+			array(
+				'method'     => 'PUT',
+				'headers'    => array(
+					'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
+					'Content-Type'  => 'application/json',
+				),
+				'user-agent' => $this->taxjar_integration->ua,
+				'body'       => $body,
+			)
+		);
 
 		$this->set_last_request( $body );
 		return $response;
@@ -133,23 +139,26 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 * Delete customer API request
 	 * @return array|WP_Error - API response or WP_Error if request fails
 	 */
-	public function delete_in_taxjar(){
+	public function delete_in_taxjar() {
 		$customer_id = $this->get_customer_id();
-		$url = self::API_URI . 'customers/' . $customer_id;
-		$data = array(
+		$url         = self::API_URI . 'customers/' . $customer_id;
+		$data        = array(
 			'customer_id' => $customer_id,
 		);
-		$body = wp_json_encode( $data );
+		$body        = wp_json_encode( $data );
 
-		$response = wp_remote_request( $url, array(
-			'method' => 'DELETE',
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-			'body' => $body,
-		) );
+		$response = wp_remote_request(
+			$url,
+			array(
+				'method'     => 'DELETE',
+				'headers'    => array(
+					'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
+					'Content-Type'  => 'application/json',
+				),
+				'user-agent' => $this->taxjar_integration->ua,
+				'body'       => $body,
+			)
+		);
 
 		$this->set_last_request( $body );
 		return $response;
@@ -161,16 +170,19 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 */
 	public function get_from_taxjar() {
 		$customer_id = $this->get_customer_id();
-		$url = self::API_URI . 'customers/' . $customer_id;
+		$url         = self::API_URI . 'customers/' . $customer_id;
 
-		$response = wp_remote_request( $url, array(
-			'method' => 'GET',
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-		) );
+		$response = wp_remote_request(
+			$url,
+			array(
+				'method'     => 'GET',
+				'headers'    => array(
+					'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
+					'Content-Type'  => 'application/json',
+				),
+				'user-agent' => $this->taxjar_integration->ua,
+			)
+		);
 
 		$this->set_last_request( $customer_id );
 		return $response;
@@ -183,17 +195,17 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	public function get_data_from_object() {
 		$customer_data = array();
 
-		$customer_data[ 'customer_id' ] = $this->get_customer_id();
-		$customer_data[ 'name' ] = $this->get_customer_name();
-		$customer_data[ 'exemption_type' ] = $this->get_exemption_type();
-		$customer_data[ 'exempt_regions' ] = $this->get_exempt_regions();
+		$customer_data['customer_id']    = $this->get_customer_id();
+		$customer_data['name']           = $this->get_customer_name();
+		$customer_data['exemption_type'] = $this->get_exemption_type();
+		$customer_data['exempt_regions'] = $this->get_exempt_regions();
 
 		$country = $this->object->get_shipping_country();
 		if ( empty( $country ) ) {
 			$country = $this->object->get_billing_country();
 		}
 		if ( ! empty( $country ) ) {
-			$customer_data[ 'country' ] = $country;
+			$customer_data['country'] = $country;
 		}
 
 		$state = $this->object->get_shipping_state();
@@ -201,7 +213,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 			$state = $this->object->get_billing_state();
 		}
 		if ( ! empty( $state ) ) {
-			$customer_data[ 'state' ] = $state;
+			$customer_data['state'] = $state;
 		}
 
 		$postcode = $this->object->get_shipping_postcode();
@@ -209,7 +221,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 			$postcode = $this->object->get_billing_postcode();
 		}
 		if ( ! empty( $postcode ) ) {
-			$customer_data[ 'zip' ] = $postcode;
+			$customer_data['zip'] = $postcode;
 		}
 
 		$city = $this->object->get_shipping_city();
@@ -217,7 +229,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 			$city = $this->object->get_billing_city();
 		}
 		if ( ! empty( $city ) ) {
-			$customer_data[ 'city' ] = $city;
+			$customer_data['city'] = $city;
 		}
 
 		$address = $this->object->get_shipping_address();
@@ -225,11 +237,11 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 			$address = $this->object->get_billing_address();
 		}
 		if ( ! empty( $address ) ) {
-			$customer_data[ 'street' ] = $address;
+			$customer_data['street'] = $address;
 		}
 
 		$customer_data = apply_filters( 'taxjar_customer_sync_data', $customer_data, $this->object );
-		$this->data = $customer_data;
+		$this->data    = $customer_data;
 		return $customer_data;
 	}
 
@@ -241,7 +253,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 */
 	public function get_customer_name() {
 		$first_name = $this->object->get_shipping_first_name();
-		$last_name = $this->object->get_shipping_last_name();
+		$last_name  = $this->object->get_shipping_last_name();
 
 		if ( empty( $first_name ) ) {
 			$first_name = $this->object->get_billing_first_name();
@@ -259,9 +271,9 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 
 		if ( empty( $first_name ) && empty( $last_name ) ) {
 			$name = '';
-		} else if ( empty( $first_name ) ) {
+		} elseif ( empty( $first_name ) ) {
 			$name = $last_name;
-		} else if ( empty( $last_name ) ) {
+		} elseif ( empty( $last_name ) ) {
 			$name = $first_name;
 		} else {
 			$name = $first_name . ' ' . $last_name;
@@ -275,34 +287,46 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	}
 
 	/**
+	 * Gets the user ID of the record (customer)
+	 *
 	 * @return int|string
 	 */
 	public function get_customer_id() {
 		return apply_filters( 'taxjar_get_customer_id', $this->get_record_id(), $this->object );
 	}
 
+	/**
+	 * Gets the exemption type saved on the user
+	 *
+	 * @return mixed|string - exemption type
+	 */
 	public function get_exemption_type() {
-		$valid_types = array( 'wholesale', 'government', 'other', 'non_exempt' );
+		$valid_types    = array( 'wholesale', 'government', 'other', 'non_exempt' );
 		$exemption_type = get_user_meta( $this->object->get_id(), 'tax_exemption_type', true );
-		if ( ! in_array( $exemption_type, $valid_types ) ) {
+		if ( ! in_array( $exemption_type, $valid_types, true ) ) {
 			$exemption_type = 'non_exempt';
 		}
 		return $exemption_type;
 	}
 
+	/**
+	 * Get the exempt regions saved on the user
+	 *
+	 * @return array - array of exemption regions
+	 */
 	public function get_exempt_regions() {
-		$states = WC_Taxjar_Customer_Sync::get_all_exempt_regions();
+		$states               = WC_Taxjar_Customer_Sync::get_all_exempt_regions();
 		$valid_exempt_regions = array_keys( $states );
-		$exempt_meta = get_user_meta( $this->object->get_id(), 'tax_exempt_regions', true );
-		$saved_regions = explode( ',', $exempt_meta );
-		$intersect = array_intersect( $valid_exempt_regions, $saved_regions );
-		$exempt_regions = array();
+		$exempt_meta          = get_user_meta( $this->object->get_id(), 'tax_exempt_regions', true );
+		$saved_regions        = explode( ',', $exempt_meta );
+		$intersect            = array_intersect( $valid_exempt_regions, $saved_regions );
+		$exempt_regions       = array();
 
 		if ( ! empty( $intersect ) ) {
-			foreach( $intersect as $region ) {
+			foreach ( $intersect as $region ) {
 				$exempt_regions[] = array(
 					'country' => 'US',
-					'state'   => $region
+					'state'   => $region,
 				);
 			}
 		}
