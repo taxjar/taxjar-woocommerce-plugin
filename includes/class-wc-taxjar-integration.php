@@ -1118,8 +1118,8 @@ class WC_Taxjar_Integration extends WC_Settings_API {
 		$line_items = array();
 
 		foreach ( $wc_cart_object->get_cart() as $cart_item_key => $cart_item ) {
-			$product = $cart_item['data'];
-			$id = $product->get_id();
+			$id = $cart_item[ 'data' ]->get_id();
+			$product = wc_get_product( $id );
 			$quantity = $cart_item['quantity'];
 			$unit_price = wc_format_decimal( $product->get_price() );
 			$line_subtotal = wc_format_decimal( $cart_item['line_subtotal'] );
