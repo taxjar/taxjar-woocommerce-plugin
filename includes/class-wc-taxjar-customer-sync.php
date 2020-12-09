@@ -204,8 +204,8 @@ class WC_Taxjar_Customer_Sync {
 	 */
 	public function have_exempt_regions_changed( $user_id ) {
 		$saved_exempt_regions = self::get_saved_exempt_regions( $user_id );
-		$new_exemption_type   = $this->get_posted_exempt_regions();
-		if ( $new_exemption_type !== $saved_exempt_regions ) {
+		$new_exempt_regions   = $this->get_posted_exempt_regions();
+		if ( $new_exempt_regions !== $saved_exempt_regions ) {
 			return true;
 		}
 
