@@ -252,38 +252,25 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 * @return string - Customer's name
 	 */
 	public function get_customer_name() {
-		$first_name = $this->object->get_shipping_first_name();
-		$last_name  = $this->object->get_shipping_last_name();
+		$name = $this->object->get_shipping_first_name() . ' ' . $this->object->get_shipping_last_name();
 
-		if ( empty( $first_name ) ) {
-			$first_name = $this->object->get_billing_first_name();
-			if ( empty( $first_name ) ) {
-				$first_name = $this->object->get_first_name();
-			}
+		if ( ! empty( trim( $name ) ) ) {
+			return $name;
 		}
 
-		if ( empty( $last_name ) ) {
-			$last_name = $this->object->get_billing_last_name();
-			if ( empty( $last_name ) ) {
-				$last_name = $this->object->get_last_name();
-			}
+		$name = $this->object->get_billing_first_name() . ' ' . $this->object->get_billing_last_name();
+
+		if ( ! empty( trim( $name ) ) ) {
+			return $name;
 		}
 
-		if ( empty( $first_name ) && empty( $last_name ) ) {
-			$name = '';
-		} elseif ( empty( $first_name ) ) {
-			$name = $last_name;
-		} elseif ( empty( $last_name ) ) {
-			$name = $first_name;
-		} else {
-			$name = $first_name . ' ' . $last_name;
+		$name = $this->object->get_first_name() . ' ' . $this->object->get_last_name();
+
+		if ( ! empty( trim( $name ) ) ) {
+			return $name;
 		}
 
-		if ( empty( $name ) ) {
-			$name = $this->object->get_username();
-		}
-
-		return $name;
+		return $this->object->get_username();
 	}
 
 	/**
