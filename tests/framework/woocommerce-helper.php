@@ -31,10 +31,11 @@ class TaxJar_Woocommerce_Helper {
 
 		// Set default tax classes
 		// WooCommerce 3.2 checks for a valid class
-		update_option( 'woocommerce_tax_classes', "Reduced rate\nZero Rate\nClothing Rate - 20010" );
+		update_option( 'woocommerce_tax_classes', "Reduced rate\nZero Rate\nClothing Rate - 20010\nGift Card - 14111803A0001" );
 
 		if ( version_compare( WC()->version, '3.7.0', '>=' ) ) {
 			WC_Tax::create_tax_class( 'Clothing Rate - 20010' );
+			WC_Tax::create_tax_class( 'Gift Card - 14111803A0001' );
 		}
 
 		// Allow calculate_totals to run in specs for WooCommerce < 3.2
