@@ -1,6 +1,8 @@
 <?php
 class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 
+	public $tj;
+
 	function setUp() {
 		parent::setUp();
 
@@ -121,11 +123,11 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$should_sync = $record->should_sync();
 		$this->assertFalse( $should_sync );
 
-		// test no name
+		// test no name, falls back to username and should still sync
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
 		$record->load_object();
 		$should_sync = $record->should_sync();
-		$this->assertFalse( $should_sync );
+		$this->assertTrue( $should_sync );
 
 		$customer->set_billing_first_name( 'Test' );
 		$customer->set_billing_last_name( 'Test' );
@@ -184,8 +186,8 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
 		$record->load_object();
-		$data = $record->get_data();
-		$this->assertEquals( '' , $data[ 'name' ] );
+		$name = $record->get_customer_name();
+		$this->assertEquals( 'name_fallback' , $name );
 
 		$customer->set_first_name( 'First' );
 		$customer->set_last_name( 'Last' );
@@ -193,8 +195,8 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
 		$record->load_object();
-		$data = $record->get_data();
-		$this->assertEquals( 'First Last' , $data[ 'name' ] );
+		$name = $record->get_customer_name();
+		$this->assertEquals( 'First Last' , $name );
 
 		$customer->set_billing_first_name( 'Bfirst' );
 		$customer->set_billing_last_name( 'Blast' );
@@ -202,8 +204,8 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
 		$record->load_object();
-		$data = $record->get_data();
-		$this->assertEquals( 'Bfirst Blast' , $data[ 'name' ] );
+		$name = $record->get_customer_name();
+		$this->assertEquals( 'Bfirst Blast' , $name );
 
 		$customer->set_shipping_first_name( 'Sfirst' );
 		$customer->set_shipping_last_name( 'Slast' );
@@ -211,8 +213,8 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
 		$record->load_object();
-		$data = $record->get_data();
-		$this->assertEquals( 'Sfirst Slast' , $data[ 'name' ] );
+		$name = $record->get_customer_name();
+		$this->assertEquals( 'Sfirst Slast' , $name );
 
 		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );
 	}
@@ -501,5 +503,34 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 
 		$record->delete_in_taxjar();
 		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );
+	}
+
+	function test_sync_validation_on_unchanged_customer() {
+		$customer = TaxJar_Customer_Helper::create_exempt_customer();
+
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$record->delete_in_taxjar();
+
+		// test sync new customer
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$result = $record->sync();
+		$this->assertTrue( $result );
+
+		// test sync validation on already synced unchanged customer record
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		$validation_result = $record->should_sync();
+		$this->assertFalse( $validation_result );
+
+		// test sync validation after change to exemption settings
+		$record = new TaxJar_Customer_Record( $customer->get_id(), true );
+		$record->load_object();
+		update_user_meta( $record->get_customer_id(), 'tax_exemption_type', 'government' );
+		$validation_result = $record->should_sync();
+		$this->assertTrue( $validation_result );
+
+		$record->delete_in_taxjar();
 	}
 }
