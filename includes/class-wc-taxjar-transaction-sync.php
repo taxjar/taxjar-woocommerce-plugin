@@ -518,7 +518,13 @@ class WC_Taxjar_Transaction_Sync {
 					$count++;
 				}
 			}
+
 			$wpdb->query( $query );
+
+			if ( $wpdb->last_error === "Table 'wordpress.wp_taxjar_record_queue' doesn't exist" ) {
+				return 'record queue table does not exist';
+			}
+
 		}
 
 		$refunds_diff = array_diff( $refund_ids, $record_ids );
