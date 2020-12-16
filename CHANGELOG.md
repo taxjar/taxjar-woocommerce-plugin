@@ -1,3 +1,8 @@
+# 3.2.4 (2020-12-15)
+* Fix occasional missing PTC from subscription orders
+* Fix issues that prevented exempt customers from syncing to TaxJar
+* WooCommerce 4.8.0 and WordPress 5.6 support
+
 # 3.2.3 (2020-09-28)
 * Add filter to nexus check
 * Decouple tax calculation and transaction sync settings
