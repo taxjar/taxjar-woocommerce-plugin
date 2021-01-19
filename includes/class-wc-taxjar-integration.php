@@ -1027,6 +1027,16 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		 */
 		public function calculate_renewal_order_totals( $order, $subscription, $type ) {
 
+			// Skip tax calculation if order total is 0.
+			if ( 0 == $order->get_total() ) {
+				return $order;
+			}
+
+			// Tax is calculated by default but can be overridden if needed.
+			if ( ! apply_filters( 'taxjar_renewal_order_should_calculate_tax', true, $order, $subscription ) ) {
+				return $order;
+			}
+
 			if ( ! is_object( $subscription ) ) {
 				$subscription = wcs_get_subscription( $subscription );
 			}
@@ -1053,6 +1063,12 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		 * @return null
 		 */
 		public function calculate_order_tax( $order ) {
+
+			// Tax is calculated by default but can be overridden if needed.
+			if ( ! apply_filters( 'taxjar_order_should_calculate_tax', true, $order ) ) {
+				return;
+			}
+
 			$address    = $this->get_address_from_order( $order );
 			$line_items = $this->get_backend_line_items( $order );
 			$shipping   = $order->get_shipping_total(); // Woo 3.0+
