@@ -1150,4 +1150,15 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( $rate_id, $found_rate_id );
 	}
+
+	function test_should_calculate_cart_zero_total() {
+		$product = TaxJar_Product_Helper::create_product( 'simple', array( 'price' => 0 ) )->get_id();
+		WC()->cart->add_to_cart( $product );
+
+		WC()->cart->calculate_totals();
+		$this->assertEquals( 0, WC()->cart->get_total( null ) );
+		$should_calculate = $this->tj->should_calculate_cart_tax( WC()->cart );
+
+		$this->assertFalse( $should_calculate );
+	}
 }

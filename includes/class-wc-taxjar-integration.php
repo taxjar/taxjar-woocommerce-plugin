@@ -839,20 +839,41 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		}
 
 		/**
+         * Determines whether TaxJar should calculate tax on the cart
+         *
+		 * @param WC_Cart $wc_cart_object
+		 * @return bool - whether or not TaxJar should calculate tax
+		 */
+		public function should_calculate_cart_tax( $wc_cart_object ) {
+		    $should_calculate = true;
+
+			// If outside of cart and checkout page or within mini-cart, skip calculations
+			if ( ( ! is_cart() && ! is_checkout() ) || ( is_cart() && is_ajax() ) ) {
+				$should_calculate = false;
+			}
+
+			// prevent unnecessary calls to API during add to cart process
+			if ( doing_action( 'woocommerce_add_to_cart' ) ) {
+				$should_calculate = false;
+			}
+
+			if ( floatval( $wc_cart_object->get_total( null ) ) === 0.0 ) {
+				$should_calculate = false;
+            }
+
+		    return apply_filters( 'taxjar_should_calculate_cart_tax', $should_calculate );
+        }
+
+		/**
 		 * Calculate tax / totals using TaxJar at checkout
 		 *
 		 * @return void
 		 */
 		public function calculate_totals( $wc_cart_object ) {
-			// If outside of cart and checkout page or within mini-cart, skip calculations
-			if ( ( ! is_cart() && ! is_checkout() ) || ( is_cart() && is_ajax() ) ) {
-				return;
-			}
 
-			// prevent unnecessary calls to API during add to cart process
-			if ( doing_action( 'woocommerce_add_to_cart' ) ) {
-				return;
-			}
+		    if ( ! $this->should_calculate_cart_tax( $wc_cart_object ) ) {
+		        return false;
+            }
 
 			$cart_taxes     = array();
 			$cart_tax_total = 0;
