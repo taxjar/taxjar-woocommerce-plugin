@@ -314,4 +314,36 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 			}
 		}
 	}
+
+	function test_zero_total_api_order_tax_calculation() {
+		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+		TaxJar_Shipping_Helper::create_simple_flat_rate( 0 );
+		$product_id = TaxJar_Product_Helper::create_product( 'simple', array( 'price' => 0 ) )->get_id();
+
+		$request      = new WP_REST_Request( 'POST', $this->order_endpoint . 'orders' );
+		$request_body = TaxJar_API_Order_Helper::create_order_request_body(
+			array(
+				'line_items' => array(
+					array(
+						'product_id' => $product_id,
+						'quantity'   => 1,
+					),
+				),
+				'shipping_lines'       => array(
+					array(
+						'method_id'    => 'flat_rate',
+						'method_title' => 'Flat rate',
+						'total'        => '0',
+					),
+				)
+			)
+		);
+		$request->set_body_params( $request_body );
+
+		$response = $this->server->dispatch( $request );
+		$data     = $response->get_data();
+		$order    = wc_get_order( $data['id'] );
+
+		$this->assertFalse( $this->tj->should_calculate_order_tax( $order ) );
+	}
 }

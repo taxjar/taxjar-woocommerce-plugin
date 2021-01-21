@@ -1069,11 +1069,37 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		}
 
 		/**
+		 * Determines whether or not TaxJar should calculate tax on an order
+		 * @param $order
+		 * @return bool
+		 */
+		public function should_calculate_order_tax( $order ) {
+			$should_calculate = true;
+
+			// Cannot use $order->get_total() as it is not available yet when creating orders through the REST API
+			$total = 0;
+			foreach( $order->get_items( 'line_item', 'shipping', 'fee' ) as $item ) {
+				$total += $item->get_total();
+			}
+
+			if ( $total === 0 ) {
+				$should_calculate = false;
+			}
+
+			return apply_filters( 'taxjar_should_calculate_order_tax', $should_calculate );
+		}
+
+		/**
 		 * Calculate tax on an order
 		 *
 		 * @return null
 		 */
 		public function calculate_order_tax( $order ) {
+
+			if ( ! $this->should_calculate_order_tax( $order ) ) {
+				return false;
+			}
+
 			$address    = $this->get_address_from_order( $order );
 			$line_items = $this->get_backend_line_items( $order );
 			$shipping   = $order->get_shipping_total(); // Woo 3.0+
