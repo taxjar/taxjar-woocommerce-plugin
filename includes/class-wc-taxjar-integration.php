@@ -861,7 +861,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 				$should_calculate = false;
             }
 
-		    return apply_filters( 'taxjar_should_calculate_cart_tax', $should_calculate );
+		    return apply_filters( 'taxjar_should_calculate_cart_tax', $should_calculate, $wc_cart_object );
         }
 
 		/**
@@ -1086,7 +1086,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 				$should_calculate = false;
 			}
 
-			return apply_filters( 'taxjar_should_calculate_order_tax', $should_calculate );
+			return apply_filters( 'taxjar_should_calculate_order_tax', $should_calculate, $order );
 		}
 
 		/**
