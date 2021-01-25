@@ -70,6 +70,16 @@ class WC_Taxjar_API_Calculation {
 			}
 		}
 
+		$total = 0;
+
+		foreach( $order->get_items( 'line_item', 'tax', 'shipping' ) as $item ) {
+			$total += floatval( $item->get_total() );
+		}
+
+		if ( $total <= 0 ) {
+			$needs_tax_calculated = false;
+		}
+
 		return apply_filters( 'taxjar_api_order_needs_tax_calculated', $needs_tax_calculated, $order, $request, $creating );
 	}
 

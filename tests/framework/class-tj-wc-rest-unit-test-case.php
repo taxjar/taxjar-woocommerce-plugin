@@ -327,6 +327,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 					array(
 						'product_id' => $product_id,
 						'quantity'   => 1,
+						'total'      => '0',
 					),
 				),
 				'shipping_lines'       => array(
@@ -344,6 +345,6 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$data     = $response->get_data();
 		$order    = wc_get_order( $data['id'] );
 
-		$this->assertFalse( $this->tj->should_calculate_order_tax( $order ) );
+		$this->assertFalse( $this->tj->api_calculation->api_order_needs_tax_calculated( $order, $request, true ) );
 	}
 }
