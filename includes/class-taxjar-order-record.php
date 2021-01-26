@@ -93,42 +93,26 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 	public function create_in_taxjar() {
 		$data = $this->get_data();
-		$url = self::API_URI . 'transactions/orders';
 		$data[ 'provider' ] = $this->get_provider();
 		$data[ 'plugin' ] = $this->get_plugin_parameter();
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_post( $url, array(
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-			'body' => $body,
-		) );
+		$request = new TaxJar_API_Request( 'transactions/orders', $body, 'post' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $body );
 		return $response;
 	}
 
 	public function update_in_taxjar(){
-		$order_id = $this->get_transaction_id();
 		$data = $this->get_data();
-
-		$url = self::API_URI . 'transactions/orders/' . $order_id;
 		$data[ 'provider' ] = $this->get_provider();
 		$data[ 'plugin' ] = $this->get_plugin_parameter();
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_request( $url, array(
-			'method' => 'PUT',
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-			'body' => $body,
-		) );
+		$endpoint = 'transactions/orders/' . $this->get_transaction_id();
+		$request = new TaxJar_API_Request( $endpoint, $body, 'put' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $body );
 		return $response;
@@ -136,7 +120,6 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 	public function delete_in_taxjar(){
 		$order_id = $this->get_transaction_id();
-		$url = self::API_URI . 'transactions/orders/' . $order_id;
 		$data = array(
 			'transaction_id' => $order_id,
 			'provider' => $this->get_provider(),
@@ -144,15 +127,9 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		);
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_request( $url, array(
-			'method' => 'DELETE',
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-			'body' => $body,
-		) );
+		$endpoint = 'transactions/orders/' . $order_id;
+		$request = new TaxJar_API_Request( $endpoint, $body, 'delete' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $body );
 		return $response;
@@ -160,16 +137,9 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 	public function get_from_taxjar() {
 		$order_id = $this->get_transaction_id();
-		$url = self::API_URI . 'transactions/orders/' . $order_id . '?provider=' . $this->get_provider() . '&plugin=' . $this->get_plugin_parameter();
-
-		$response = wp_remote_request( $url, array(
-			'method' => 'GET',
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-		) );
+		$endpoint = 'transactions/orders/' . $order_id . '?provider=' . $this->get_provider() . '&plugin=' . $this->get_plugin_parameter();
+		$request = new TaxJar_API_Request( $endpoint, null, 'get' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $order_id );
 		return $response;
