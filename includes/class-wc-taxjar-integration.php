@@ -798,20 +798,9 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		public function smartcalcs_request( $json ) {
 			$response = apply_filters( 'taxjar_smartcalcs_request', false, $json );
 			if ( ! $response ) {
-				$url = $this->uri . 'taxes';
-				$this->_log( 'Requesting: ' . $this->uri . 'taxes - ' . $json );
 
-				$response = wp_remote_post(
-					$url,
-					array(
-						'headers'    => array(
-							'Authorization' => 'Token token="' . $this->settings['api_token'] . '"',
-							'Content-Type'  => 'application/json',
-						),
-						'user-agent' => $this->ua,
-						'body'       => $json,
-					)
-				);
+			    $request = new TaxJar_API_Request( 'taxes', $json );
+			    $response = $request->send_request();
 			}
 
 			if ( is_wp_error( $response ) ) {
