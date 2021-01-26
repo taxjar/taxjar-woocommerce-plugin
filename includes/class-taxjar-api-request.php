@@ -12,16 +12,18 @@ class TaxJar_API_Request {
 	private $request_type;
 	private $request_body;
 	private $base_url;
+	private $content_type;
 
 	public static $x_api_version = '2020-08-07';
 
-	public function __construct( $endpoint, $body = null, $type = 'post' ) {
+	public function __construct( $endpoint, $body = null, $type = 'post', $content_type = 'application/json' ) {
 		$this->set_api_token( TaxJar()->settings['api_token'] );
 		$this->set_user_agent( TaxJar()->ua );
 		$this->set_base_url( TaxJar()->uri );
 		$this->set_request_type( $type );
 		$this->set_endpoint( $endpoint );
 		$this->set_request_body( $body );
+		$this->set_content_type( $content_type );
 	}
 
 	public function _log( $message ) {
@@ -45,11 +47,19 @@ class TaxJar_API_Request {
 		$request_args = array(
 			'headers'    => array(
 				'Authorization' => 'Token token="' . $this->get_api_token() . '"',
-				'Content-Type'  => 'application/json',
+				'Content-Type'  => $this->get_content_type(),
 				'x-api-version' => self::get_x_api_version()
 			),
 			'user-agent' => $this->ua
 		);
+
+		if ( $this->get_request_type() === 'put' ) {
+			$request_args[ 'method' ] = 'PUT';
+		}
+
+		if ( $this->get_request_type() === 'delete' ) {
+			$request_args[ 'method' ] = 'DELETE';
+		}
 
 		if ( !empty( $this->get_request_body() ) ) {
 			$request_args[ 'body' ] = $this->get_request_body();
@@ -65,6 +75,9 @@ class TaxJar_API_Request {
 				break;
 			case 'put':
 				return $this->send_put_request();
+				break;
+			case 'delete':
+				return $this->send_delete_request();
 				break;
 			default:
 				return $this->send_post_request();
@@ -83,7 +96,13 @@ class TaxJar_API_Request {
 	}
 
 	public function send_put_request() {
+		$url = $this->get_full_url();
+		return wp_remote_request( $url, $this->get_request_args() );
+	}
 
+	public function send_delete_request() {
+		$url = $this->get_full_url();
+		return wp_remote_request( $url, $this->get_request_args() );
 	}
 
 	public static function get_x_api_version() {
@@ -140,6 +159,14 @@ class TaxJar_API_Request {
 
 	public function set_base_url( $url ) {
 		$this->base_url = $url;
+	}
+
+	public function get_content_type() {
+		return $this->content_type;
+	}
+
+	public function set_content_type( $content_type ) {
+		$this->content_type = $content_type;
 	}
 
 
