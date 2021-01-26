@@ -4,7 +4,7 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 	function setUp() {
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 
-		$this->tj = new WC_Taxjar_Integration();
+		$this->tj = TaxJar();
 		$this->tj_nexus = new WC_Taxjar_Nexus( $this->tj );
 		$this->cache_key = 'tj_nexus';
 

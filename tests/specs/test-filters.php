@@ -8,7 +8,7 @@ class TJ_WC_Filters extends WP_UnitTestCase {
 	function test_append_base_address_to_customer_taxable_address() {
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 
-		$tj = new WC_Taxjar_Integration();
+		$tj = TaxJar();
 		WC()->session->set( 'chosen_shipping_methods', array( 'local_pickup' ) );
 
 		$address = array( 'US', 'CO', '81210', 'Denver', '1437 Bannock St' );

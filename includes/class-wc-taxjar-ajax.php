@@ -29,7 +29,7 @@ class WC_Taxjar_AJAX {
 			wp_die();
 		}
 
-		$taxjar_nexus = new WC_Taxjar_Nexus( new WC_Taxjar_Integration );
+		$taxjar_nexus = new WC_Taxjar_Nexus( TaxJar() );
 		$taxjar_nexus->get_or_update_cached_nexus( true );
 
 		$response = array(
