@@ -48,7 +48,7 @@ class TaxJar_API_Request {
 				'Content-Type'  => $this->get_content_type(),
 				'x-api-version' => $this->get_x_api_version()
 			),
-			'user-agent' => $this->ua
+			'user-agent' => $this->get_user_agent()
 		);
 
 		if ( $this->get_request_type() === 'put' ) {
@@ -205,7 +205,7 @@ class TaxJar_API_Request {
 	 * @return mixed
 	 */
 	public function get_user_agent() {
-		return $this->user_agent;
+		return $this->ua;
 	}
 
 	/**
