@@ -37,29 +37,7 @@ class TaxJar_API_Request {
 	}
 
 	/**
-	 * Logs message to error log
-	 *
-	 * @param string|array $message
-	 */
-	public function _log( $message ) {
-
-		if ( $this->endpoint === 'taxes' ) {
-			do_action( 'taxjar_log', $message );
-
-			if ( TaxJar()->debug ) {
-				$logger = new WC_Logger();
-
-				if ( is_array( $message ) || is_object( $message ) ) {
-					$logger->add( 'taxjar', print_r( $message, true ) );
-				} else {
-					$logger->add( 'taxjar', $message );
-				}
-			}
-		}
-	}
-
-	/**
-	 * Generates the request log to use with wp_remote_request
+	 * Generates the request args to use with wp_remote_request
 	 *
 	 * @return array
 	 */
@@ -116,7 +94,6 @@ class TaxJar_API_Request {
 	 */
 	public function send_post_request() {
 		$url = $this->get_full_url();
-		$this->_log( 'Requesting: ' . $url . ' - ' . $this->get_request_body() );
 		return wp_remote_post( $url, $this->get_request_args() );
 	}
 

@@ -793,9 +793,10 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 
 		public function smartcalcs_request( $json ) {
 			$response = apply_filters( 'taxjar_smartcalcs_request', false, $json );
-			if ( ! $response ) {
 
+			if ( ! $response ) {
 			    $request = new TaxJar_API_Request( 'taxes', $json );
+				$this->_log( 'Requesting: ' . $request->get_full_url() . ' - ' . $json );
 			    $response = $request->send_request();
 			}
 
