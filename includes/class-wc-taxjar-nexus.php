@@ -108,15 +108,8 @@ class WC_Taxjar_Nexus {
 	}
 
 	public function get_nexus_from_api() {
-		$url = $this->integration->uri . 'nexus/regions';
-
-		$response = wp_remote_get( $url, array(
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->integration->post_or_setting( 'api_token' ) . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->integration->ua,
-		) );
+		$request = new TaxJar_API_Request( 'nexus/regions', null, 'get' );
+		$response = $request->send_request();
 
 		if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
 			$this->integration->_log( ':::: Nexus addresses updated ::::' );

@@ -260,42 +260,25 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 
 	public function create_in_taxjar() {
 		$data = $this->get_data();
-		$url = self::API_URI . 'transactions/refunds';
 		$data[ 'provider' ] = $this->get_provider();
 		$data[ 'plugin' ] = $this->get_plugin_parameter();
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_post( $url, array(
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-			'body' => $body,
-		) );
+		$request = new TaxJar_API_Request( 'transactions/refunds', $body, 'post' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $body );
 		return $response;
 	}
 
 	public function update_in_taxjar() {
-		$refund_id = $this->get_transaction_id();
 		$data = $this->get_data();
-
-		$url = self::API_URI . 'transactions/refunds/' . $refund_id;
 		$data[ 'provider' ] = $this->get_provider();
 		$data[ 'plugin' ] = $this->get_plugin_parameter();
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_request( $url, array(
-			'method' => 'PUT',
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-			'body' => $body,
-		) );
+		$request = new TaxJar_API_Request( 'transactions/refunds/' . $this->get_transaction_id(), $body, 'put' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $body );
 		return $response;
@@ -303,7 +286,6 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 
 	public function delete_in_taxjar() {
 		$refund_id = $this->get_transaction_id();
-		$url = self::API_URI . 'transactions/refunds/' . $refund_id;
 		$data = array(
 			'transaction_id' => $refund_id,
 			'provider' => $this->get_provider(),
@@ -311,34 +293,22 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		);
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_request( $url, array(
-			'method' => 'DELETE',
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-			'body' => $body,
-		) );
+		$request = new TaxJar_API_Request( 'transactions/refunds/' . $refund_id, $body, 'delete' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $body );
 		return $response;
 	}
 
 	public function get_from_taxjar() {
-		$refund_id = $this->get_transaction_id();
-		$url = self::API_URI . 'transactions/refunds/' . $refund_id . '?provider=' . $this->get_provider() . '&plugin=' . $this->get_plugin_parameter();
+		$request = new TaxJar_API_Request(
+			'transactions/refunds/' . $this->get_transaction_id() . '?provider=' . $this->get_provider() . '&plugin=' . $this->get_plugin_parameter(),
+			null,
+			'get'
+		);
+		$response = $request->send_request();
 
-		$response = wp_remote_request( $url, array(
-			'method' => 'GET',
-			'headers' => array(
-				'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-				'Content-Type' => 'application/json',
-			),
-			'user-agent' => $this->taxjar_integration->ua,
-		) );
-
-		$this->set_last_request( $refund_id );
+		$this->set_last_request( $this->get_transaction_id() );
 		return $response;
 	}
 

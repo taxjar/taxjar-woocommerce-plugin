@@ -88,20 +88,10 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 */
 	public function create_in_taxjar() {
 		$data = $this->get_data();
-		$url  = self::API_URI . 'customers';
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_post(
-			$url,
-			array(
-				'headers'    => array(
-					'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-					'Content-Type'  => 'application/json',
-				),
-				'user-agent' => $this->taxjar_integration->ua,
-				'body'       => $body,
-			)
-		);
+		$request = new TaxJar_API_Request( 'customers', $body, 'post' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $body );
 		return $response;
@@ -112,24 +102,11 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 * @return array|WP_Error - API response or WP_Error if request fails
 	 */
 	public function update_in_taxjar() {
-		$customer_id = $this->get_customer_id();
 		$data        = $this->get_data();
-
-		$url  = self::API_URI . 'customers/' . $customer_id;
 		$body = wp_json_encode( $data );
 
-		$response = wp_remote_request(
-			$url,
-			array(
-				'method'     => 'PUT',
-				'headers'    => array(
-					'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-					'Content-Type'  => 'application/json',
-				),
-				'user-agent' => $this->taxjar_integration->ua,
-				'body'       => $body,
-			)
-		);
+		$request = new TaxJar_API_Request( 'customers/' . $this->get_customer_id(), $body, 'put' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $body );
 		return $response;
@@ -140,25 +117,13 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 * @return array|WP_Error - API response or WP_Error if request fails
 	 */
 	public function delete_in_taxjar() {
-		$customer_id = $this->get_customer_id();
-		$url         = self::API_URI . 'customers/' . $customer_id;
 		$data        = array(
-			'customer_id' => $customer_id,
+			'customer_id' => $this->get_customer_id(),
 		);
 		$body        = wp_json_encode( $data );
 
-		$response = wp_remote_request(
-			$url,
-			array(
-				'method'     => 'DELETE',
-				'headers'    => array(
-					'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-					'Content-Type'  => 'application/json',
-				),
-				'user-agent' => $this->taxjar_integration->ua,
-				'body'       => $body,
-			)
-		);
+		$request = new TaxJar_API_Request( 'customers/' . $this->get_customer_id(), $body, 'delete' );
+		$response = $request->send_request();
 
 		$this->set_last_request( $body );
 		return $response;
@@ -169,22 +134,10 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	 * @return array|WP_Error - API response or WP_Error if request fails
 	 */
 	public function get_from_taxjar() {
-		$customer_id = $this->get_customer_id();
-		$url         = self::API_URI . 'customers/' . $customer_id;
+		$request = new TaxJar_API_Request( 'customers/' . $this->get_customer_id(), null, 'get' );
+		$response = $request->send_request();
 
-		$response = wp_remote_request(
-			$url,
-			array(
-				'method'     => 'GET',
-				'headers'    => array(
-					'Authorization' => 'Token token="' . $this->taxjar_integration->settings['api_token'] . '"',
-					'Content-Type'  => 'application/json',
-				),
-				'user-agent' => $this->taxjar_integration->ua,
-			)
-		);
-
-		$this->set_last_request( $customer_id );
+		$this->set_last_request( $this->get_customer_id() );
 		return $response;
 	}
 

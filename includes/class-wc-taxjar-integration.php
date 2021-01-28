@@ -36,8 +36,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			$this->app_uri            = 'https://app.taxjar.com/';
 			$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
 			$this->regions_uri        = $this->app_uri . 'account#states';
-			$this->uri                = 'https://api.taxjar.com/v2/';
-			$this->ua                 = self::get_ua_header();
 			$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 			$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 			$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
@@ -620,8 +618,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 
 			$this->_log( ':::: TaxJar API called ::::' );
 
-			$url = $this->uri . 'taxes';
-
 			$body = array(
 				'from_country' => $from_country,
 				'from_state'   => $from_state,
@@ -797,21 +793,11 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 
 		public function smartcalcs_request( $json ) {
 			$response = apply_filters( 'taxjar_smartcalcs_request', false, $json );
-			if ( ! $response ) {
-				$url = $this->uri . 'taxes';
-				$this->_log( 'Requesting: ' . $this->uri . 'taxes - ' . $json );
 
-				$response = wp_remote_post(
-					$url,
-					array(
-						'headers'    => array(
-							'Authorization' => 'Token token="' . $this->settings['api_token'] . '"',
-							'Content-Type'  => 'application/json',
-						),
-						'user-agent' => $this->ua,
-						'body'       => $json,
-					)
-				);
+			if ( ! $response ) {
+			    $request = new TaxJar_API_Request( 'taxes', $json );
+				$this->_log( 'Requesting: ' . $request->get_full_url() . ' - ' . $json );
+			    $response = $request->send_request();
 			}
 
 			if ( is_wp_error( $response ) ) {
@@ -1682,27 +1668,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			}
 
 			return strtoupper( $tax_code );
-		}
-
-		/**
-		 * Create user agent header
-		 *
-		 * @return string - user agent header
-		 */
-		static function get_ua_header() {
-			$curl_version = '';
-			if ( function_exists( 'curl_version' ) ) {
-				$curl_version = curl_version();
-				$curl_version = $curl_version['version'] . '; ' . $curl_version['ssl_version'];
-			}
-
-			$php_version       = phpversion();
-			$taxjar_version    = WC_Taxjar::$version;
-			$woo_version       = WC()->version;
-			$wordpress_version = get_bloginfo( 'version' );
-			$site_url          = get_bloginfo( 'url' );
-			$user_agent        = "TaxJar/WooCommerce (PHP $php_version; cURL $curl_version; WordPress $wordpress_version; WooCommerce $woo_version) WC_Taxjar/$taxjar_version $site_url";
-			return $user_agent;
 		}
 
 	}

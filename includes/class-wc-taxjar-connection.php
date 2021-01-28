@@ -32,18 +32,15 @@ class WC_Taxjar_Connection {
 		}
 
 		$description = '';
-		$url         = $this->integration->uri . 'verify';
 		$body_string = 'token=' . $this->integration->post_or_setting( 'api_token' );
 
-		$response = wp_remote_post( $url, array(
-			'timeout'     => 60,
-			'headers'     => array(
-								'Authorization' => 'Token token="' . $this->integration->post_or_setting( 'api_token' ) . '"',
-								'Content-Type' => 'application/x-www-form-urlencoded',
-							),
-			'user-agent'  => $this->integration->ua,
-			'body'        => $body_string,
-		) );
+		$request = new TaxJar_API_Request(
+			'verify',
+			$body_string,
+			'post',
+			'application/x-www-form-urlencoded'
+		);
+		$response = $request->send_request();
 
 		$this->api_token_valid = true;
 

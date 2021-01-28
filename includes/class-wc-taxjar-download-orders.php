@@ -57,44 +57,6 @@ class WC_Taxjar_Download_Orders {
 	}
 
 	/**
-	 * Connect this store to the user's Taxjar account
-	 *
-	 * @return boolean
-	 */
-	private function link_provider( $consumer_key, $consumer_secret, $store_url ) {
-		$url = $this->integration->uri . 'plugins/woo/register';
-		$body_string = sprintf( 'consumer_key=%s&consumer_secret=%s&store_url=%s',
-							$consumer_key,
-							$consumer_secret,
-							$store_url
-						);
-
-		$response = wp_remote_post( $url, array(
-			'timeout'     => 60,
-			'headers'     => array(
-								'Authorization' => 'Token token="' . $this->integration->settings['api_token'] . '"',
-								'Content-Type' => 'application/x-www-form-urlencoded',
-							),
-			'user-agent'  => $this->integration->ua,
-			'body'        => $body_string,
-		) );
-
-		// Fail loudly if we get an error from wp_remote_post
-		if ( is_wp_error( $response ) ) {
-			new WP_Error( 'request', __( "There was an error linking this store to your TaxJar account. Please contact support@taxjar.com" ) );
-			return false;
-		} elseif ( 201 == $response['response']['code'] ) {
-			$this->integration->_log( 'Successfully linked shop to TaxJar account' );
-		} else {
-			// Log Response Error
-			$this->integration->_log( "Received (" . $response['response']['code'] . "): " . $response['body'] );
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
 	 * Disconnect this store from the user's Taxjar account
 	 *
 	 * @return boolean
@@ -105,16 +67,13 @@ class WC_Taxjar_Download_Orders {
 		$url = $this->integration->uri . 'plugins/woo/deregister';
 		$body_string = sprintf( 'store_url=%s', $store_url );
 
-		$response = wp_remote_request( $url, array(
-			'timeout'     => 60,
-			'headers'     => array(
-												'Authorization' => 'Token token="' . $this->integration->settings['api_token'] . '"',
-												'Content-Type' => 'application/x-www-form-urlencoded',
-											 ),
-			'user-agent'  => $this->integration->ua,
-			'body'        => $body_string,
-			'method'      => 'DELETE',
-		) );
+		$request = new TaxJar_API_Request(
+			'plugins/woo/deregister',
+			$body_string,
+			'delete',
+			'application/x-www-form-urlencoded'
+		);
+		$response = $request->send_request();
 
 		if ( is_wp_error( $response ) ) {
 			new WP_Error( 'request', __( "There was an error unlinking this store to your TaxJar account. Please contact support@taxjar.com" ) );
