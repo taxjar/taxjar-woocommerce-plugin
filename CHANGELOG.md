@@ -1,3 +1,8 @@
+# 3.2.5 (2021-01-28)
+* Prevent tax calculation for orders with $0 total
+* Add x-api-version header to TaxJar API requests
+* WooCommerce 4.9.2 support
+
 # 3.2.4 (2020-12-15)
 * Fix occasional missing PTC from subscription orders
 * Fix issues that prevented exempt customers from syncing to TaxJar

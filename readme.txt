@@ -3,11 +3,11 @@ Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxjar, tax, taxes, sales tax, tax calculation, sales tax compliance, sales tax filing
 Requires at least: 4.2
 Tested up to: 5.6.0
-Stable tag: 3.2.4
+Stable tag: 3.2.5
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
-WC requires at least: 3.6.0
-WC tested up to: 4.8.0
+WC requires at least: 4.3.0
+WC tested up to: 4.9.2
 
 Trusted by more than 20,000 businesses, TaxJar’s award-winning solution makes it easy to automate sales tax reporting and filing, and determine economic nexus with a single click.
 
@@ -95,6 +95,11 @@ Our plans come with filings included, with additional filings available for purc
 3. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+
+= 3.2.5 (2021-01-28)
+* Prevent tax calculation for orders with $0 total
+* Add x-api-version header to TaxJar API requests
+* WooCommerce 4.9.2 support
 
 = 3.2.4 (2020-12-15)
 * Fix occasional missing PTC from subscription orders
