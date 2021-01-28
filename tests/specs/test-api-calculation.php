@@ -68,15 +68,24 @@ class TJ_WC_Tests_API_Calculation extends WP_UnitTestCase {
 	}
 
 	function test_api_order_needs_tax_calculated() {
-		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( null, null, true ) );
-		$this->assertFalse( $this->tj->api_calculation->api_order_needs_tax_calculated( null, null, false ) );
+		$order = new WC_Order();
+		$item = new WC_Order_Item_Product( '' );
+		$product_id = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		$product = wc_get_product( $product_id );
+		$item->set_total( '10.00' );
+		$item->set_subtotal( '10.0' );
+		$item->set_quantity( 1 );
+		$order->add_item( $item );
 
-		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( null, array( 'billing' => 1 ), true ) );
-		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( null, array( 'shipping' => 1 ), true ) );
-		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( null, array( 'line_items' => 1 ), true ) );
-		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( null, array( 'shipping_lines' => 1 ), true ) );
-		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( null, array( 'fee_lines' => 1 ), true ) );
-		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( null, array( 'coupon_lines' => 1 ), true ) );
+		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( $order, null, true ) );
+		$this->assertFalse( $this->tj->api_calculation->api_order_needs_tax_calculated( $order, null, false ) );
+
+		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( $order, array( 'billing' => 1 ), true ) );
+		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( $order, array( 'shipping' => 1 ), true ) );
+		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( $order, array( 'line_items' => 1 ), true ) );
+		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( $order, array( 'shipping_lines' => 1 ), true ) );
+		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( $order, array( 'fee_lines' => 1 ), true ) );
+		$this->assertTrue( $this->tj->api_calculation->api_order_needs_tax_calculated( $order, array( 'coupon_lines' => 1 ), true ) );
 	}
 
 }
