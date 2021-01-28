@@ -1086,7 +1086,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			$should_calculate = true;
 			$total = 0;
 
-			foreach( $order->get_items( 'line_item', 'tax', 'shipping' ) as $item ) {
+			foreach( $order->get_items( array( 'line_item', 'fee', 'shipping' ) ) as $item ) {
 				$total += floatval( $item->get_total() );
 			}
 
