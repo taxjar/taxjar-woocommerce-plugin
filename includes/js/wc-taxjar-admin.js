@@ -139,6 +139,8 @@ jQuery( document ).ready( function() {
 					} else {
 						if ( data.error == "transaction sync disabled" ) {
 							alert( 'Sales tax reporting must be enabled to perform transaction backfill. Please enable this setting and try again.' );
+						} else if ( data.error == "record queue table does not exist" ) {
+							alert( 'The TaxJar record queue database table does not exist. Please try to reinstall the TaxJar plugin in order to fix the installation.' );
 						} else {
 							alert( 'Error adding records to queue.' );
 						}
