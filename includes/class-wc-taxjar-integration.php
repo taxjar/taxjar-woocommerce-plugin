@@ -1115,6 +1115,8 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 				return;
 			}
 
+			$order->remove_order_items( 'tax' );
+
 			foreach ( $order->get_items() as $item_key => $item ) {
 				$product_id    = $item->get_product_id();
 				$line_item_key = $product_id . '-' . $item_key;
