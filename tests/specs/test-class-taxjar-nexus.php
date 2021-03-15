@@ -5,7 +5,7 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 
 		$this->tj = TaxJar();
-		$this->tj_nexus = new WC_Taxjar_Nexus( $this->tj );
+		$this->tj_nexus = new WC_Taxjar_Nexus();
 		$this->cache_key = 'tj_nexus';
 
 		// Reset shipping origin

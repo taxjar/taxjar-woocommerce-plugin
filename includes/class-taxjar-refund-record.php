@@ -91,7 +91,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		$this->order_status = $order->get_status();
 		$this->order_completed_date = $order->get_date_completed();
 
-		$store_settings   = $this->taxjar_integration->get_store_settings();
+		$store_settings   = TaxJar_Settings::get_store_settings();
 		$from_country     = $store_settings['country'];
 		$from_state       = $store_settings['state'];
 		$from_zip         = $store_settings['postcode'];
@@ -154,7 +154,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		}
 
 		if ( 'base' === $tax_based_on ) {
-			$store_settings   = $this->taxjar_integration->get_store_settings();
+			$store_settings   = TaxJar_Settings::get_store_settings();
 			$country  = $store_settings['country'];
 			$state    = $store_settings['state'];
 			$postcode = $store_settings['postcode'];

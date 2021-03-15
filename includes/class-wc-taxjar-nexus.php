@@ -13,8 +13,7 @@ class WC_Taxjar_Nexus {
 
 	const INVALID_OR_EXPIRED_API_TOKEN = 'Unauthorized';
 
-	public function __construct( $integration ) {
-		$this->integration = $integration;
+	public function __construct( ) {
 		$this->nexus = $this->get_or_update_cached_nexus();
 	}
 
@@ -36,10 +35,10 @@ class WC_Taxjar_Nexus {
 				}
 			}
 		} else {
-			$desc_text .= "<p>TaxJar needs your business locations in order to calculate sales tax properly. Please add them <a href='" . $this->integration->regions_uri . "' target='_blank'>here</a>.<p>";
+			$desc_text .= "<p>TaxJar needs your business locations in order to calculate sales tax properly. Please add them <a href='" . WC_Taxjar_Integration::get_regions_uri() . "' target='_blank'>here</a>.<p>";
 		}
 
-		$desc_text .= "<p><br><button class='button js-wc-taxjar-sync-nexus-addresses'>Sync Nexus Addresses</button>&nbsp; or &nbsp;<a href='" . $this->integration->regions_uri . "' target='_blank'>Manage Nexus Locations</a></p>";
+		$desc_text .= "<p><br><button class='button js-wc-taxjar-sync-nexus-addresses'>Sync Nexus Addresses</button>&nbsp; or &nbsp;<a href='" . WC_Taxjar_Integration::get_regions_uri() . "' target='_blank'>Manage Nexus Locations</a></p>";
 
 		return array(
 			'title'             => 'Nexus Information',
@@ -51,7 +50,7 @@ class WC_Taxjar_Nexus {
 
 	public function has_nexus_check( $country, $state = null ) {
 		$has_nexus = false;
-		$store_settings   = $this->integration->get_store_settings();
+		$store_settings   = TaxJar_Settings::get_store_settings();
 		$from_country     = $store_settings['country'];
 		$from_state       = $store_settings['state'];
 
@@ -112,7 +111,7 @@ class WC_Taxjar_Nexus {
 		$response = $request->send_request();
 
 		if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
-			$this->integration->_log( ':::: Nexus addresses updated ::::' );
+			TaxJar()->_log( ':::: Nexus addresses updated ::::' );
 			$body = json_decode( $response['body'] );
 			$this->clear_non_nexus_rates( $body->regions );
 			return $body->regions;

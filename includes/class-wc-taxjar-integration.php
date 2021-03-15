@@ -13,6 +13,8 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 
 		protected static $_instance = null;
 
+		public static $app_uri = 'https://app.taxjar.com/';
+
 		/**
 		 * Main TaxJar Integration Instance.
 		 * Ensures only one instance of TaxJar Integration is loaded or can be loaded.
@@ -33,9 +35,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			$this->id                 = 'taxjar-integration';
 			$this->method_title       = __( 'TaxJar', 'wc-taxjar' );
 			$this->method_description = apply_filters( 'taxjar_method_description', __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Connect your TaxJar account and enter the city and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable sales tax reporting to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>. We\'ll get back to you within hours.</b>', 'wc-taxjar' ) );
-			$this->app_uri            = 'https://app.taxjar.com/';
-			$this->integration_uri    = $this->app_uri . 'account/apps/add/woo';
-			$this->regions_uri        = $this->app_uri . 'account#states';
+			$this->integration_uri    = self::$app_uri . 'account/apps/add/woo';
 			$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 			$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 			$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
@@ -43,7 +43,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			$this->api_calculation    = new WC_Taxjar_API_Calculation( $this );
 
 			// Load the settings.
-			$this->init_settings();
+			TaxJar_Settings::init();
 
 			// Cache rates for 1 hour.
 			$this->cache_time = HOUR_IN_SECONDS;
@@ -51,13 +51,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			if ( $this->on_settings_page() ) {
 				add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
 			}
-
-			// TaxJar Config Tab
-			add_action( 'admin_menu', array( $this, 'taxjar_admin_menu' ), 15 );
-			add_filter( 'woocommerce_settings_tabs_array', array( $this, 'add_settings_page' ), 50 );
-			add_action( 'woocommerce_sections_' . $this->id, array( $this, 'output_sections' ) );
-			add_action( 'woocommerce_settings_' . $this->id, array( $this, 'output' ) );
-			add_action( 'woocommerce_settings_save_' . $this->id, array( $this, 'save' ) );
 
 			add_filter( 'woocommerce_admin_settings_sanitize_option_woocommerce_taxjar-integration_settings', array( $this, 'sanitize_settings' ), 10, 2 );
 
@@ -112,397 +105,14 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			} // End if().
 		}
 
-		public function add_settings_page( $settings_tabs ) {
-			$settings_tabs[ $this->id ] = __( 'TaxJar', 'taxjar' );
-			return $settings_tabs;
-		}
-
 		/**
-		 * Output sections.
+         * Get the regions API endpoint URI
+         *
+		 * @return string
 		 */
-		public function output_sections() {
-			global $current_section;
-
-			$sections = $this->get_sections();
-
-			if ( empty( $sections ) || 1 === sizeof( $sections ) ) {
-				return;
-			}
-
-			echo '<ul class="subsubsub">';
-
-			$array_keys = array_keys( $sections );
-
-			foreach ( $sections as $id => $label ) {
-				echo '<li><a href="' . admin_url( 'admin.php?page=wc-settings&tab=' . $this->id . '&section=' . sanitize_title( $id ) ) . '" class="' . ( $current_section === $id ? 'current' : '' ) . '">' . $label . '</a> ' . ( end( $array_keys ) === $id ? '' : '|' ) . ' </li>';
-			}
-
-			echo '</ul><br class="clear" />';
-		}
-
-		/**
-		 * Output the settings.
-		 */
-		public function output() {
-			global $current_section;
-
-			if ( '' === $current_section ) {
-				$settings = $this->get_settings();
-				WC_Admin_Settings::output_fields( $settings );
-			} elseif ( 'transaction_backfill' === $current_section ) {
-				$this->output_transaction_backfill();
-			} elseif ( 'sync_queue' === $current_section ) {
-				$this->output_sync_queue();
-			}
-		}
-
-		/**
-		 * Output the transaction backfill settings page.
-		 */
-		public function output_transaction_backfill() {
-			global $hide_save_button;
-			$hide_save_button = true;
-
-			if ( isset( $this->settings['taxjar_download'] ) && 'yes' === $this->settings['taxjar_download'] ) {
-				$current_date = current_time( 'Y-m-d' );
-				?>
-			<table class="form-table">
-				<tbody>
-				<tr valign="top">
-					<th scope="row" class="titledesc">
-						<label for="start_date">Backfill Start Date</label>
-					</th>
-					<td class="start_date_field">
-						<input type="text" class="taxjar-datepicker" style="" name="start_date" id="start_date" value="<?php echo $current_date; ?>" placeholder="YYYY-MM-DD" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])">
-					</td>
-				</tr>
-				<tr valign="top">
-					<th scope="row" class="titledesc">
-						<label for="end_date">Backfill End Date</label>
-					</th>
-					<td class="end_date_field">
-						<input type="text" class="taxjar-datepicker" style="" name="end_date" id="end_date" value="<?php echo $current_date; ?>" placeholder="YYYY-MM-DD" pattern="[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])">
-					</td>
-				</tr>
-				<tr valign="top" class="">
-					<th scope="row" class="titledesc">Force Sync</th>
-					<td class="forminp forminp-checkbox">
-						<fieldset>
-							<legend class="screen-reader-text"><span>Force Sync</span></legend>
-							<label for="force_sync">
-								<input name="force_sync" id="force_sync" type="checkbox" class="" value="1"> If enabled, all orders and refunds will be added to the queue to sync to TaxJar, regardless of if they have been updated since they were lasted synced.
-							</label>
-						</fieldset>
-					</td>
-				</tr>
-				</tbody>
-			</table>
-			<p>
-				<button class='button js-wc-taxjar-transaction-backfill'>Run Backfill</button>
-			</p>
-				<?php
-			} else {
-				?>
-				<p>Sales Tax Reporting must be enabled in order to use transaction back fill.</p>
-				<?php
-			}
-		}
-
-		/**
-		 * Output the sync queue settings page.
-		 */
-		public function output_sync_queue() {
-			global $hide_save_button;
-			$hide_save_button = true;
-
-			if ( isset( $this->settings['taxjar_download'] ) && 'yes' === $this->settings['taxjar_download'] ) {
-				$report = new WC_Taxjar_Queue_List();
-				$report->output_report();
-			} else {
-				?>
-				<p>Enable Sales Tax Reporting in order to view the transaction queue.</p>
-				<?php
-			}
-		}
-
-		/**
-		 * Get settings array.
-		 *
-		 * @return array
-		 */
-		public function get_settings( $current_section = '' ) {
-			$settings = array();
-
-			if ( '' === $current_section ) {
-				$store_settings = $this->get_store_settings();
-				$tj_connection  = new WC_TaxJar_Connection( $this );
-
-				if ( empty( $store_settings['state'] ) ) {
-					$store_settings['state'] = 'N/A';
-				}
-
-				$api_token_valid = apply_filters( 'taxjar_api_token_valid', $this->post_or_setting( 'api_token' ) && $tj_connection->api_token_valid );
-
-				$settings = array(
-					array(
-						'title' => __( 'TaxJar', 'wc-taxjar' ),
-						'type'  => 'title',
-						'desc'  => __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Connect your TaxJar account and enter the city and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable sales tax reporting to begin importing transactions from this store into your TaxJar account, all in one click!', 'wc-taxjar' ),
-					),
-					array(
-						'type' => 'sectionend',
-					),
-					array(
-						'type' => 'title',
-						'desc' => '<strong>' . __( 'For the fastest help, please email', 'wc-taxjar' ) . ' <a href="mailto:support@taxjar.com">support@taxjar.com</a>. ' . __( "We'll get back to you within hours.", 'wc-taxjar' ),
-					),
-					array(
-						'type' => 'sectionend',
-					),
-					array(
-						'title' => __( 'Step 1: Activate your TaxJar WooCommerce Plugin', 'wc-taxjar' ),
-						'type'  => 'title',
-						'desc'  => '',
-					),
-
-				);
-
-				if ( $api_token_valid ) {
-					$connected_email = $this->post_or_setting( 'connected_email' );
-
-					if ( $connected_email ) {
-						array_push(
-							$settings,
-							array(
-								'title' => '',
-								'type'  => 'title',
-								'desc'  => '<div class="taxjar-connected"><span class="dashicons dashicons-yes-alt"></span><p>' . $connected_email . '</p></div>',
-								'id'    => 'connected-to-taxjar',
-							)
-						);
-					} else {
-						array_push(
-							$settings,
-							array(
-								'title' => '',
-								'type'  => 'title',
-								'desc'  => '<div class="taxjar-connected"><span class="dashicons dashicons-yes-alt"></span><p>Connected To TaxJar</p></div>',
-								'id'    => 'connected-to-taxjar',
-							)
-						);
-					}
-
-					array_push(
-						$settings,
-						array(
-							'title' => '',
-							'type'  => 'title',
-							'desc'  => '<button id="disconnect-from-taxjar" name="disconnect-from-taxjar" class="button-primary" type="submit" value="Disconnect">' . __( 'Disconnect From TaxJar', 'wc-taxjar' ) . '</button><p><a href="#" id="connect-manual-edit">' . __( 'Edit API Token', 'wc-taxjar' ) . '</a></p>',
-						)
-					);
-				} else {
-					array_push(
-						$settings,
-						array(
-							'title' => '',
-							'type'  => 'title',
-							'desc'  => '<button id="connect-to-taxjar" name="connect-to-taxjar" class="button-primary" type="submit" value="Connect">' . __( 'Connect To TaxJar', 'wc-taxjar' ) . '</button><p>' . __( 'Already have an API Token?', 'wc-taxjar' ) . ' <a href="#" id="connect-manual-edit">' . __( 'Edit API Token.', 'wc-taxjar' ) . '</a></p>',
-						)
-					);
-				}
-
-				array_push(
-					$settings,
-					array(
-						'title'   => 'TaxJar API Token',
-						'type'    => 'text',
-						'desc'    => '<p class="hidden tj-api-token-title"><a href="' . $this->app_uri . 'account#api-access" target="_blank">' . __( 'Get API token', 'wc-taxjar' ) . '</a></p>',
-						'default' => '',
-						'class'   => 'hidden',
-						'id'      => 'woocommerce_taxjar-integration_settings[api_token]',
-					)
-				);
-				array_push(
-					$settings,
-					array(
-						'type' => 'sectionend',
-					)
-				);
-				array_push(
-					$settings,
-					array(
-						'title' => '',
-						'type'  => 'email',
-						'desc'  => '',
-						'class' => 'hidden',
-						'id'    => 'woocommerce_taxjar-integration_settings[connected_email]',
-					)
-				);
-				array_push(
-					$settings,
-					array(
-						'type' => 'sectionend',
-					)
-				);
-
-				if ( ! $tj_connection->can_connect || ! $tj_connection->api_token_valid ) {
-					array_push( $settings, $tj_connection->get_form_settings_field() );
-					array_push(
-						$settings,
-						array(
-							'type' => 'sectionend',
-						)
-					);
-				}
-
-				if ( $api_token_valid ) {
-					array_push(
-						$settings,
-						array(
-							'title' => __( 'Step 2: Configure your sales tax settings', 'wc-taxjar' ),
-							'type'  => 'title',
-							'desc'  => '',
-						)
-					);
-					array_push(
-						$settings,
-						array(
-							'title'   => __( 'Sales Tax Calculation', 'wc-taxjar' ),
-							'type'    => 'checkbox',
-							'default' => 'no',
-							'desc'    => __( 'If enabled, TaxJar will calculate sales tax for your store.', 'wc-taxjar' ),
-							'id'      => 'woocommerce_taxjar-integration_settings[enabled]',
-						)
-					);
-					array_push(
-						$settings,
-						array(
-							'title'   => __( 'Tax Calculation on API Orders', 'wc-taxjar' ),
-							'type'    => 'checkbox',
-							'default' => 'no',
-							'desc'    => __( 'If enabled, TaxJar will calculate sales tax for orders created through the WooCommerce REST API.', 'wc-taxjar' ),
-							'id'      => 'woocommerce_taxjar-integration_settings[api_calcs_enabled]',
-						)
-					);
-					array_push(
-						$settings,
-						array(
-							'type' => 'sectionend',
-						)
-					);
-
-					if ( $this->post_or_setting( 'enabled' ) ) {
-						$tj_nexus   = new WC_Taxjar_Nexus( $this );
-						$settings[] = $tj_nexus->get_form_settings_field();
-						$settings[] = array(
-							'type' => 'sectionend',
-						);
-					}
-
-					if ( get_option( 'woocommerce_store_address' ) || get_option( 'woocommerce_store_city' ) || get_option( 'woocommerce_store_postcode' ) ) {
-						$settings[] = array(
-							'title' => __( 'Ship From Address', 'wc-taxjar' ),
-							'type'  => 'title',
-							'desc'  => __( 'We have automatically detected your ship from address:', 'wc-taxjar' ) . '<br><br>' . $store_settings['street'] . '<br>' . $store_settings['city'] . ', ' . $store_settings['state'] . ' ' . $store_settings['postcode'] . '<br>' . WC()->countries->countries[ $store_settings['country'] ] . '<br><br>' . __( 'You can change this setting at:', 'wc-taxjar' ) . '<br><a href="' . get_admin_url( null, 'admin.php?page=wc-settings' ) . '">WooCommerce -> Settings -> General -> Store Address</a>',
-						);
-						$settings[] = array(
-							'type' => 'sectionend',
-						);
-					} else {
-						$settings[] = array(
-							'type' => 'title',
-						);
-						$settings[] = array(
-							'title'    => __( 'Ship From Address', 'wc-taxjar' ),
-							'type'     => 'text',
-							'desc'     => __( 'Enter the street address where your store ships from.', 'wc-taxjar' ),
-							'desc_tip' => true,
-							'default'  => '',
-							'id'       => 'woocommerce_taxjar-integration_settings[store_street]',
-						);
-						$settings[] = array(
-							'title'       => __( 'Ship From City', 'wc-taxjar' ),
-							'type'        => 'text',
-							'description' => __( 'Enter the city where your store ships from.', 'wc-taxjar' ),
-							'desc_tip'    => true,
-							'default'     => '',
-							'id'          => 'woocommerce_taxjar-integration_settings[store_city]',
-						);
-						$settings[] = array(
-							'title'       => __( 'Ship From State', 'wc-taxjar' ),
-							'type'        => 'title',
-							'description' => __( 'We have automatically detected your ship from state as being ', 'wc-taxjar' ) . $store_settings['state'] . '.<br>' . __( 'You can change this setting at', 'wc-taxjar' ) . ' <a href="' . get_admin_url( null, 'admin.php?page=wc-settings' ) . '">WooCommerce -> Settings -> General -> Base Location</a>',
-							'class'       => 'input-text disabled regular-input',
-							'id'          => 'woocommerce_taxjar-integration_settings[store_state]',
-						);
-						$settings[] = array(
-							'title'       => __( 'Ship From Postcode / ZIP', 'wc-taxjar' ),
-							'type'        => 'text',
-							'description' => __( 'Enter the zip code from which your store ships products.', 'wc-taxjar' ),
-							'desc_tip'    => true,
-							'default'     => '',
-							'id'          => 'woocommerce_taxjar-integration_settings[store_postcode]',
-						);
-						$settings[] = array(
-							'title'       => __( 'Ship From Country', 'wc-taxjar' ),
-							'type'        => 'hidden',
-							'description' => __( 'We have automatically detected your ship from country as being ', 'wc-taxjar' ) . $store_settings['country'] . '.<br>' . __( 'You can change this setting at', 'wc-taxjar' ) . ' <a href="' . get_admin_url( null, 'admin.php?page=wc-settings' ) . '">WooCommerce -> Settings -> General -> Base Location</a>',
-							'class'       => 'input-text disabled regular-input',
-							'id'          => 'woocommerce_taxjar-integration_settings[store_country]',
-						);
-						$settings[] = array(
-							'type' => 'sectionend',
-						);
-					}
-
-					$settings[] = array(
-						'type' => 'title',
-					);
-					$settings[] = $this->download_orders->get_form_settings_field();
-					$settings[] = array(
-						'title'   => __( 'Debug Log', 'wc-taxjar' ),
-						'type'    => 'checkbox',
-						'default' => 'no',
-						'desc'    => __( 'Log events such as API requests.', 'wc-taxjar' ),
-						'id'      => 'woocommerce_taxjar-integration_settings[debug]',
-					);
-					$settings[] = array(
-						'type' => 'sectionend',
-					);
-					$settings[] = array(
-						'type' => 'title',
-						'desc' => __( 'If you find TaxJar for WooCommerce useful, please rate us <a href="https://wordpress.org/support/plugin/taxjar-simplified-taxes-for-woocommerce/reviews/#new-post" target="_blank">&#9733;&#9733;&#9733;&#9733;&#9733;</a>. Thank you!', 'wc-taxjar' ),
-					);
-					$settings[] = array(
-						'type' => 'sectionend',
-					);
-				}
-			}
-
-			return apply_filters( 'woocommerce_get_settings_' . $this->id, $settings );
-		}
-
-		/**
-		 * Get sections.
-		 *
-		 * @return array
-		 */
-		public function get_sections() {
-			$sections = array(
-				''                     => __( 'Settings', 'woocommerce' ),
-				'transaction_backfill' => __( 'Transaction Backfill', 'wc-taxjar' ),
-				'sync_queue'           => __( 'Sync Queue', 'wc-taxjar' ),
-			);
-			return apply_filters( 'woocommerce_get_sections_' . $this->id, $sections );
-		}
-
-		/**
-		 * Save settings.
-		 */
-		public function save() {
-			$settings = $this->get_settings();
-			WC_Admin_Settings::save_fields( $settings );
-		}
+		public static function get_regions_uri() {
+		    return self::$app_uri . 'account#states';
+        }
 
 		/**
 		 * Prints debug info to wp-content/uploads/wc-logs/taxjar-*.log
@@ -598,7 +208,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 				return false;
 			}
 
-			$taxjar_nexus = new WC_Taxjar_Nexus( $this );
+			$taxjar_nexus = new WC_Taxjar_Nexus();
 
 			if ( ! $taxjar_nexus->has_nexus_check( $calculation_data['to_country'], $calculation_data['to_state'] ) ) {
 				$this->_log( ':::: Order not shipping to nexus area ::::' );
@@ -608,7 +218,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			$calculation_data['to_zip'] = explode( ',', $calculation_data['to_zip'] );
 			$calculation_data['to_zip'] = array_shift( $calculation_data['to_zip'] );
 
-			$store_settings                      = $this->get_store_settings();
+			$store_settings                      = TaxJar_Settings::get_store_settings();
 			$from_country                        = $store_settings['country'];
 			$from_state                          = $store_settings['state'];
 			$from_zip                            = $store_settings['postcode'];
@@ -1351,7 +961,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			}
 
 			if ( 'base' === $tax_based_on ) {
-				$store_settings = $this->get_store_settings();
+				$store_settings = TaxJar_Settings::get_store_settings();
 				$postcode       = $store_settings['postcode'];
 				$city           = strtoupper( $store_settings['city'] );
 				$street         = $store_settings['street'];
@@ -1414,7 +1024,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			}
 
 			if ( 'base' === $tax_based_on ) {
-				$store_settings = $this->get_store_settings();
+				$store_settings = TaxJar_Settings::get_store_settings();
 				$country        = $store_settings['country'];
 				$state          = $store_settings['state'];
 				$postcode       = $store_settings['postcode'];
@@ -1474,31 +1084,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		}
 
 		/**
-		 * Return either the post value or settings value of a key
-		 *
-		 * @return MIXED
-		 */
-		public function post_or_setting( $key ) {
-			$val = null;
-
-			if ( isset( $_POST['woocommerce_taxjar-integration_settings'][ $key ] ) ) {
-				$val = $_POST['woocommerce_taxjar-integration_settings'][ $key ];
-			} elseif ( isset( $this->settings[ $key ] ) ) {
-				$val = $this->settings[ $key ];
-			}
-
-			if ( 'yes' === $val ) {
-				$val = 1;
-			}
-
-			if ( 'no' === $val ) {
-				$val = 0;
-			}
-
-			return $val;
-		}
-
-		/**
 		 * Generate Button HTML.
 		 */
 		public function generate_button_html( $key, $data ) {
@@ -1552,42 +1137,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			}
 
 			return $value;
-		}
-
-		/**
-		 * Gets the store's settings and returns them
-		 *
-		 * @return array
-		 */
-		public function get_store_settings() {
-			$store_address  = get_option( 'woocommerce_store_address' ) ? get_option( 'woocommerce_store_address' ) : $this->settings['store_street'];
-			$store_city     = get_option( 'woocommerce_store_city' ) ? get_option( 'woocommerce_store_city' ) : $this->settings['store_city'];
-			$store_country  = explode( ':', get_option( 'woocommerce_default_country' ) );
-			$store_postcode = get_option( 'woocommerce_store_postcode' ) ? get_option( 'woocommerce_store_postcode' ) : $this->settings['store_postcode'];
-
-			$store_settings = array(
-				'street'   => $store_address,
-				'city'     => $store_city,
-				'state'    => null,
-				'country'  => $store_country[0],
-				'postcode' => $store_postcode,
-			);
-
-			if ( isset( $store_country[1] ) ) {
-				$store_settings['state'] = $store_country[1];
-			}
-
-			return apply_filters( 'taxjar_store_settings', $store_settings, $this->settings );
-		}
-
-		/**
-		 * Gets the store's settings and returns them
-		 *
-		 * @return void
-		 */
-		public function taxjar_admin_menu() {
-			// Simple shortcut menu item under WooCommerce
-			add_submenu_page( 'woocommerce', __( 'TaxJar Settings', 'woocommerce' ), __( 'TaxJar', 'woocommerce' ), 'manage_woocommerce', 'admin.php?page=wc-settings&tab=taxjar-integration' );
 		}
 
 		/**
@@ -1665,7 +1214,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 					'current_user'               => get_current_user_id(),
 					'integration_uri'            => $this->integration_uri,
 					'connect_url'                => $this->get_connect_url(),
-					'app_url'                    => untrailingslashit( $this->app_uri ),
+					'app_url'                    => untrailingslashit( self::$app_uri ),
 				)
 			);
 
@@ -1681,7 +1230,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		 * @return string - TaxJar connect popup url
 		 */
 		public function get_connect_url() {
-			$connect_url  = $this->app_uri . 'smartcalcs/connect/woo/?store=' . urlencode( get_bloginfo( 'url' ) );
+			$connect_url  = self::$app_uri . 'smartcalcs/connect/woo/?store=' . urlencode( get_bloginfo( 'url' ) );
 			$connect_url .= '&plugin=woo&version=' . WC_Taxjar::$version;
 			return esc_url( $connect_url );
 		}
