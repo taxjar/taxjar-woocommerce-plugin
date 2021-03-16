@@ -2,27 +2,37 @@
 /**
  * TaxJar Connection
  *
- * @package  WC_Taxjar_Integration
+ * @package  TaxJar/Classes
  * @author   TaxJar
  */
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+/**
+ * Class WC_Taxjar_Connection
+ */
 class WC_Taxjar_Connection {
 
 	/**
-	 * @var bool
+	 * Whether or not the API token is valid.
+	 *
+	 * @var bool $api_token_valid
 	 */
 	private $api_token_valid;
 
 	/**
-	 * @var bool
+	 * Whether or not the plugin can connect to the TaxJar API.
+	 *
+	 * @var bool $can_connect
 	 */
 	private $can_connect;
 
 	/**
-	 * @var string
+	 * Setting field description to indicate error or successful connection to TaxJar.
+	 *
+	 * @var string $html_description
 	 */
 	private $html_description;
 
@@ -68,8 +78,8 @@ class WC_Taxjar_Connection {
 	 */
 	public function check_status() {
 		if ( ! apply_filters( 'taxjar_should_check_status', true ) ) {
-			$this->api_token_valid = apply_filters( 'taxjar_api_token_valid', false );
-			$this->can_connect = apply_filters( 'taxjar_can_connect', false );
+			$this->api_token_valid  = apply_filters( 'taxjar_api_token_valid', false );
+			$this->can_connect      = apply_filters( 'taxjar_can_connect', false );
 			$this->html_description = '';
 			return;
 		}
@@ -85,7 +95,7 @@ class WC_Taxjar_Connection {
 	 */
 	public function send_verify_request() {
 		$request_body = 'token=' . TaxJar_Settings::post_or_setting( 'api_token' );
-		$request = new TaxJar_API_Request(
+		$request      = new TaxJar_API_Request(
 			'verify',
 			$request_body,
 			'post',
@@ -97,23 +107,23 @@ class WC_Taxjar_Connection {
 	/**
 	 * Validates the verify response
 	 *
-	 * @param $response
+	 * @param array|WP_Error $response - response from validate request.
 	 */
 	public function validate_verify_response( $response ) {
-		$this->api_token_valid = true;
-		$this->can_connect = true;
+		$this->api_token_valid  = true;
+		$this->can_connect      = true;
 		$this->html_description = '';
 
 		if ( ! is_wp_error( $response ) && $response['response']['code'] >= 200 && $response['response']['code'] < 300 ) {
 			$body = json_decode( $response['body'] );
 
 			if ( isset( $body->enabled ) && false === $body->enabled ) {
-				$this->api_token_valid = false;
+				$this->api_token_valid  = false;
 				$this->html_description = $this->get_taxjar_account_error_message();
 			}
 
 			if ( isset( $body->valid ) && false === $body->valid ) {
-				$this->api_token_valid = false;
+				$this->api_token_valid  = false;
 				$this->html_description = $this->get_invalid_api_token_message();
 			}
 
@@ -121,10 +131,12 @@ class WC_Taxjar_Connection {
 		} else {
 			if ( is_wp_error( $response ) ) {
 				$this->html_description = $this->get_error_message_html(
+					// translators: %s: error message.
 					sprintf( __( 'Error: %s', 'wc-taxjar' ), wc_clean( $response->get_error_message() ) )
 				);
 			} else {
 				$this->html_description = $this->get_error_message_html(
+					// translators: %s: response status code.
 					sprintf( __( 'Status code: %s', 'wc-taxjar' ), wc_clean( $response['response']['code'] ) )
 				);
 			}
@@ -136,15 +148,13 @@ class WC_Taxjar_Connection {
 	/**
 	 * Gets the TaxJar status settings field
 	 *
-	 * @param $html_description
-	 *
 	 * @return array
 	 */
 	public function get_form_settings_field() {
 		return array(
-			'title'             => __( 'TaxJar Status', 'wc-taxjar' ),
-			'type'              => 'title',
-			'desc'              => $this->get_html_description(),
+			'title' => __( 'TaxJar Status', 'wc-taxjar' ),
+			'type'  => 'title',
+			'desc'  => $this->get_html_description(),
 		);
 	}
 
@@ -154,7 +164,7 @@ class WC_Taxjar_Connection {
 	 * @return string
 	 */
 	public function get_taxjar_account_error_message() {
-		$message = '<div style="color: #ff0000;"><strong>';
+		$message  = '<div style="color: #ff0000;"><strong>';
 		$message .= 'There is an issue with your TaxJar subscription.';
 		$message .= sprintf(
 			'<br><a href="%s" target="_blank">Please review your account.</a>',
@@ -170,7 +180,7 @@ class WC_Taxjar_Connection {
 	 * @return string
 	 */
 	public function get_invalid_api_token_message() {
-		$message = '<span style="color: #ff0000;"><strong>';
+		$message  = '<span style="color: #ff0000;"><strong>';
 		$message .= 'It looks like your API token is invalid.';
 		$message .= '<br><span style="color: black;">Please attempt to reconnect to TaxJar or </span>';
 		$message .= sprintf(
@@ -184,12 +194,12 @@ class WC_Taxjar_Connection {
 	/**
 	 * Gets the HTML message when verify request fails.
 	 *
-	 * @param $error_details
+	 * @param string $error_details - details of error that occurred.
 	 *
 	 * @return string
 	 */
 	public function get_error_message_html( $error_details ) {
-		$message = '<span style="color: #ff0000;">';
+		$message  = '<span style="color: #ff0000;">';
 		$message .= __(
 			'wp_remote_post() failed. TaxJar could not connect to server. Please contact your hosting provider.',
 			'wc-taxjar'
