@@ -33,6 +33,7 @@ class TaxJar_Settings {
 		add_action( 'woocommerce_sections_' . self::$id, array( __CLASS__, 'output_sections' ) );
 		add_action( 'woocommerce_settings_' . self::$id, array( __CLASS__, 'output_settings_page' ) );
 		add_action( 'woocommerce_settings_save_' . self::$id, array( __CLASS__, 'save' ) );
+		add_filter( 'woocommerce_admin_settings_sanitize_option_woocommerce_taxjar-integration_settings', array( __CLASS__, 'sanitize_settings' ), 10, 2 );
 	}
 
 	/**
@@ -586,6 +587,41 @@ class TaxJar_Settings {
 	public static function save() {
 		$settings = self::get_settings();
 		WC_Admin_Settings::save_fields( $settings );
+	}
+
+	/**
+	 * Sanitize TaxJar settings before saving
+	 *
+	 * @param mixed $value - Value of setting.
+	 * @param $option - Setting option.
+	 *
+	 * @return array|string
+	 */
+	public static function sanitize_settings( $value, $option ) {
+		parse_str( $option['id'], $option_name_array );
+		$option_name  = current( array_keys( $option_name_array ) );
+		$setting_name = key( $option_name_array[ $option_name ] );
+
+		if ( in_array( $setting_name, array( 'store_postcode', 'store_city', 'store_street' ), true ) ) {
+			return wc_clean( $value );
+		}
+
+		if ( 'api_token' === $setting_name ) {
+			return strtolower( wc_clean( $value ) );
+		}
+
+		if ( 'taxjar_download' === $setting_name ) {
+			return TaxJar()->download_orders->validate_taxjar_download_field( $setting_name );
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Output TaxJar message above tax configuration screen
+	 */
+	public static function output_sections_before() {
+		echo '<div class="updated taxjar-notice"><p><b>Powered by <a href="https://www.taxjar.com" target="_blank">TaxJar</a></b> ― Your tax rates and settings are automatically configured below.</p><p><a href="admin.php?page=wc-settings&tab=taxjar-integration" class="button-primary">Configure TaxJar</a> &nbsp; <a href="https://www.taxjar.com/contact/" class="button" target="_blank">Help &amp; Support</a></p></div>';
 	}
 
 }

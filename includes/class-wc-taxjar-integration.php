@@ -52,8 +52,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 				add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
 			}
 
-			add_filter( 'woocommerce_admin_settings_sanitize_option_woocommerce_taxjar-integration_settings', array( $this, 'sanitize_settings' ), 10, 2 );
-
 			if ( apply_filters( 'taxjar_enabled', isset( $this->settings['enabled'] ) && 'yes' === $this->settings['enabled'] ) ) {
 				// Calculate Taxes at Cart / Checkout
 				if ( class_exists( 'WC_Cart_Totals' ) ) { // Woo 3.2+
@@ -1117,29 +1115,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		}
 
 		/**
-		 * Sanitize our settings
-		 */
-		public function sanitize_settings( $value, $option ) {
-			parse_str( $option['id'], $option_name_array );
-			$option_name  = current( array_keys( $option_name_array ) );
-			$setting_name = key( $option_name_array[ $option_name ] );
-
-			if ( in_array( $setting_name, array( 'store_postcode', 'store_city', 'store_street' ), true ) ) {
-				return wc_clean( $value );
-			}
-
-			if ( 'api_token' === $setting_name ) {
-				return strtolower( wc_clean( $value ) );
-			}
-
-			if ( 'taxjar_download' === $setting_name ) {
-				return $this->download_orders->validate_taxjar_download_field( $setting_name );
-			}
-
-			return $value;
-		}
-
-		/**
 		 * Gets the value for a seting from POST given a key or returns false if box not checked
 		 *
 		 * @param mixed $key
@@ -1166,13 +1141,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 				$message = $error_key_values[ $value ];
 				echo "<div class=\"error\"><p>$message</p></div>";
 			}
-		}
-
-		/**
-		 * Output TaxJar message above tax configuration screen
-		 */
-		public function output_sections_before() {
-			echo '<div class="updated taxjar-notice"><p><b>Powered by <a href="https://www.taxjar.com" target="_blank">TaxJar</a></b> ― Your tax rates and settings are automatically configured below.</p><p><a href="admin.php?page=wc-settings&tab=integration&section=taxjar-integration" class="button-primary">Configure TaxJar</a> &nbsp; <a href="https://www.taxjar.com/contact/" class="button" target="_blank">Help &amp; Support</a></p></div>';
 		}
 
 		/**
