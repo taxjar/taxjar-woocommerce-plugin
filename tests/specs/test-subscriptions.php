@@ -439,7 +439,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 
 		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
 
-		$line_items = $this->tj->get_line_items( WC()->cart );
+		$line_items = $this->tj->tax_calculations->get_line_items( WC()->cart );
 
 		$this->assertNotEmpty( $line_items );
 

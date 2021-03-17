@@ -47,7 +47,7 @@ class WC_Taxjar_API_Calculation {
 			return $order;
 		}
 
-		$this->taxjar_integration->calculate_order_tax( $order );
+		$this->taxjar_integration->tax_calculations->calculate_order_tax( $order );
 
 		return $order;
 	}
