@@ -110,11 +110,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->calculate_totals();
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( $item['line_tax'],  0.36, '', 0.01 );
+			$this->assertEquals( $item['line_tax'],  0.58, '', 0.01 );
 		}
 
-		$this->assertEquals( WC()->cart->get_shipping_tax(), 0.63, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_total_tax(),  0.99, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_shipping_tax(), 0.69, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_total_tax(),  1.27, '', 0.01 );
 	}
 
 	function test_correct_taxes_with_exempt_shipping() {
