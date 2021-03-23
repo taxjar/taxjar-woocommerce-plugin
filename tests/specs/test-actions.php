@@ -1099,7 +1099,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 	    foreach ( $postal_array as $country => $codes ) {
 	        foreach ( $codes as $code => $expected ) {
-                $this->assertEquals( $this->tj->is_postal_code_valid( $country, null, $code ), $expected );
+                $this->assertEquals( TaxJar_Tax_Calculation::is_postal_code_valid( $country, null, $code ), $expected );
             }
         }
     }
@@ -1145,8 +1145,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			'to_zip' => 'BN15 1S2',
 			'to_city' => 'London'
 		);
-		$rate_id = $this->tj->create_or_update_tax_rate( $location, 10 );
-		$found_rate_id = $this->tj->create_or_update_tax_rate( $location, 10 );
+		$rate_id = TaxJar_Tax_Calculation::create_or_update_tax_rate( $location, 10 );
+		$found_rate_id = TaxJar_Tax_Calculation::create_or_update_tax_rate( $location, 10 );
 
 		$this->assertEquals( $rate_id, $found_rate_id );
 	}
@@ -1157,7 +1157,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		WC()->cart->calculate_totals();
 		$this->assertEquals( 0, WC()->cart->get_total( null ) );
-		$should_calculate = $this->tj->should_calculate_cart_tax( WC()->cart );
+		$should_calculate = $this->tj->tax_calculations->should_calculate_cart_tax( WC()->cart );
 
 		$this->assertFalse( $should_calculate );
 	}

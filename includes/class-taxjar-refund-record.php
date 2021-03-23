@@ -91,7 +91,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		$this->order_status = $order->get_status();
 		$this->order_completed_date = $order->get_date_completed();
 
-		$store_settings   = $this->taxjar_integration->get_store_settings();
+		$store_settings   = TaxJar_Settings::get_store_settings();
 		$from_country     = $store_settings['country'];
 		$from_state       = $store_settings['state'];
 		$from_zip         = $store_settings['postcode'];
@@ -127,7 +127,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 
 		$exemption_type = apply_filters( 'taxjar_refund_sync_exemption_type', '', $this->object );
 
-		if ( WC_Taxjar_Integration::is_valid_exemption_type( $exemption_type ) ) {
+		if ( TaxJar_Tax_Calculation::is_valid_exemption_type( $exemption_type ) ) {
 			$refund_data[ 'exemption_type' ] = $exemption_type;
 		}
 
@@ -154,7 +154,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		}
 
 		if ( 'base' === $tax_based_on ) {
-			$store_settings   = $this->taxjar_integration->get_store_settings();
+			$store_settings   = TaxJar_Settings::get_store_settings();
 			$country  = $store_settings['country'];
 			$state    = $store_settings['state'];
 			$postcode = $store_settings['postcode'];
@@ -213,7 +213,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 				}
 
 				$discount = $item->get_subtotal() - $item->get_total();
-				$tax_code = WC_Taxjar_Integration::get_tax_code_from_class( $item->get_tax_class() );
+				$tax_code = TaxJar_Tax_Calculation::get_tax_code_from_class( $item->get_tax_class() );
 
 				$line_items_data[] = array(
 					'id' => $item->get_id(),
@@ -237,7 +237,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		$fees = $this->object->get_fees();
 		if ( !empty( $fees ) ) {
 			foreach( $fees as $fee ) {
-				$tax_code = WC_Taxjar_Integration::get_tax_code_from_class( $fee->get_tax_class() );
+				$tax_code = TaxJar_Tax_Calculation::get_tax_code_from_class( $fee->get_tax_class() );
 
 				if ( method_exists( $fee, 'get_amount' ) ) {
 					$fee_amount = $fee->get_amount();
