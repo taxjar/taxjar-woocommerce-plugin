@@ -1,3 +1,8 @@
+# 3.2.6 (2021-03-23)
+* WooCommerce 5.1.0 Support
+* Fix double subscription tax display issue
+* Move calculation functions and settings functions into separate classes
+
 # 3.2.5 (2021-01-28)
 * Prevent tax calculation for orders with $0 total
 * Add x-api-version header to TaxJar API requests
