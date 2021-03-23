@@ -34,6 +34,10 @@ class TaxJar_Settings {
 		add_action( 'woocommerce_settings_' . self::$id, array( __CLASS__, 'output_settings_page' ) );
 		add_action( 'woocommerce_settings_save_' . self::$id, array( __CLASS__, 'save' ) );
 		add_filter( 'woocommerce_admin_settings_sanitize_option_woocommerce_taxjar-integration_settings', array( __CLASS__, 'sanitize_settings' ), 10, 2 );
+
+		if ( self::is_tax_calculation_enabled() ) {
+			add_action( 'woocommerce_sections_tax', array( __CLASS__, 'output_sections_before' ), 9 );
+		}
 	}
 
 	/**
@@ -53,6 +57,22 @@ class TaxJar_Settings {
 	public static function get_taxjar_settings() {
 		return WC_Admin_Settings::get_option( self::get_option_name() );
 	}
+
+	/**
+     * Checks if tax calculation through TaxJar has been enabled
+     *
+	 * @return bool
+	 */
+	public static function is_tax_calculation_enabled() {
+	    $enabled = false;
+	    $settings = self::get_taxjar_settings();
+
+	    if ( isset( $settings[ 'enabled' ] ) && 'yes' === $settings[ 'enabled' ] ) {
+	        $enabled = true;
+        }
+
+	    return apply_filters( 'taxjar_enabled', $enabled );
+    }
 
 	/**
 	 * Adds a submenu page under the WooCommerce navigation.
