@@ -62,6 +62,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'woocommerce_status_options', array( 'uninstall_data' => 1 ) );
 		include $this->plugin_dir . 'woocommerce/uninstall.php';
 
+		do_action( 'wp_enqueue_scripts' );
 		WC_Install::install();
 
 		// Reload capabilities after install, see https://core.trac.wordpress.org/ticket/28374
