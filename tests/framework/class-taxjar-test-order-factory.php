@@ -101,7 +101,7 @@ class TaxJar_Test_Order_Factory {
 	 *
 	 * @return WC_Order|WP_Error
 	 */
-	public static function create( $options_override ) {
+	public static function create( $options_override = array() ) {
 		$factory = new self( $options_override );
 		return $factory->create_order();
 	}
@@ -111,7 +111,7 @@ class TaxJar_Test_Order_Factory {
 	 *
 	 * @param array $options_override - Array of options that override the default order options.
 	 */
-	public function __construct( $options_override ) {
+	private function __construct( $options_override ) {
 		$this->order         = wc_create_order();
 		$this->order_options = $this->override_options( $options_override );
 	}
