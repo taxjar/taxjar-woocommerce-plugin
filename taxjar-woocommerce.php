@@ -80,6 +80,7 @@ final class WC_Taxjar {
 			include_once 'includes/class-taxjar-api-request.php';
 			include_once 'includes/class-taxjar-settings.php';
 			include_once 'includes/class-taxjar-tax-calculation.php';
+			include_once 'includes/class-taxjar-cache.php';
 
 			include_once 'includes/tax-calculation/class-taxjar-tax-request-body.php';
 			include_once 'includes/tax-calculation/abstract-taxjar-tax-request-body-factory.php';
