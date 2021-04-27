@@ -49,6 +49,10 @@ class TaxJar_Tax_Request_Body {
 		}
 	}
 
+	public function to_json() {
+		return wp_json_encode( $this->to_array() );
+	}
+
 	public function to_array() {
 		$request_body = array(
 			'from_country' => $this->get_from_country(),
