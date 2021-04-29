@@ -11,6 +11,10 @@ class TaxJar_Tax_Details {
 	private $line_items;
 	private $freight_taxable;
 	private $has_nexus;
+	private $country;
+	private $state;
+	private $city;
+	private $zip;
 
 	public function __construct( $tax_response ) {
 		$this->amount_to_collect = $tax_response['tax']['amount_to_collect'];
@@ -45,5 +49,37 @@ class TaxJar_Tax_Details {
 
 	public function is_shipping_taxable() {
 		return true === $this->freight_taxable;
+	}
+
+	public function set_country( $country ) {
+		$this->country = $country;
+	}
+
+	public function get_country() {
+		return $this->country;
+	}
+
+	public function set_state( $state ) {
+		$this->state = $state;
+	}
+
+	public function get_state() {
+		return $this->state;
+	}
+
+	public function set_city( $city ) {
+		$this->city = $city;
+	}
+
+	public function get_city() {
+		return $this->city;
+	}
+
+	public function set_zip( $zip ) {
+		$this->zip = $zip;
+	}
+
+	public function get_zip() {
+		return $this->zip;
 	}
 }
