@@ -1,3 +1,7 @@
+# 3.2.7 (2021-04-29)
+* WooCommerce 5.2.2 Support
+* Remove Action Scheduler Library
+
 # 3.2.6 (2021-03-23)
 * WooCommerce 5.1.0 Support
 * Fix double subscription tax display issue
