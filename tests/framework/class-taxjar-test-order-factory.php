@@ -94,6 +94,36 @@ class TaxJar_Test_Order_Factory {
 	);
 
 	/**
+	 * Creates a new zero tax test order
+	 *
+	 * @param array $options_override - Array of options that override the default order options.
+	 * @throws WC_Data_Exception Throws exception when invalid data is found.
+	 *
+	 * @return WC_Order|WP_Error
+	 */
+	public static function create_zero_tax_order( $options_override = array() ) {
+		$zero_tax_options = array(
+			'products' => array(
+				0 => array(
+					'tax_total'    => array( 0 ),
+					'tax_subtotal' => array( 0 ),
+				),
+			),
+			'shipping_method'  => array(
+				'taxes'     => array( 0 ),
+			),
+			'totals'           => array(
+				'discount_tax'   => 0,
+				'cart_tax'       => 0,
+				'shipping_tax'   => 0,
+				'total'          => 110
+			)
+		);
+		$options = array_replace_recursive( $zero_tax_options, $options_override );
+		return self::create( $options );
+	}
+
+	/**
 	 * Create a new test order
 	 *
 	 * @param array $options_override - Array of options that override the default order options.
