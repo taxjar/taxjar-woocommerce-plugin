@@ -64,4 +64,31 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 		$expected_customer_id = TaxJar_Test_Order_Factory::$default_options['customer_id'];
 		$this->assertEquals( $expected_customer_id, $request_body->get_customer_id() );
 	}
+
+	public function test_get_fee_line_items() {
+		$expected_tax_code = '20010';
+		$fee_amount = 10;
+		$order = TaxJar_Test_Order_Factory::create();
+
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_name( "Test Fee" );
+		$fee->set_amount( $fee_amount );
+		$fee->set_tax_class( 'clothing-rate-' . $expected_tax_code );
+		$fee->set_tax_status( 'taxable' );
+		$fee->set_total( $fee_amount );
+
+		$order->add_item( $fee );
+		$order->calculate_totals();
+
+		$request_body = TaxJar_Tax_Request_Body_Factory::create_request_body( $order );
+		$line_items = $request_body->get_line_items();
+
+		$this->assertEquals( 2, count( $line_items ) );
+
+		$this->assertEquals( 1, $line_items[1]['quantity'] );
+		$this->assertEquals( $fee_amount, $line_items[1]['unit_price'] );
+		$this->assertEquals( 0, $line_items[1]['discount'] );
+		$this->assertEquals( $expected_tax_code, $line_items[1]['product_tax_code'] );
+		$this->assertNotEmpty( $line_items[1]['id'] );
+	}
 }

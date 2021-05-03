@@ -10,11 +10,13 @@ abstract class TaxJar_Tax_Request_Body_Factory {
 
 	abstract protected function set_original_object( $object );
 	abstract protected function get_ship_to_address();
-	abstract protected function get_line_items();
 	abstract protected function get_shipping_amount();
 	abstract protected function get_customer_id();
 	abstract protected function get_exemption_type();
 	abstract protected function get_request_body();
+	abstract protected function get_product_line_items();
+	abstract protected function get_fee_line_items();
+
 
 	public static function create_request_body( $object ) {
 		$request_body = new TaxJar_Tax_Request_Body();
@@ -41,6 +43,11 @@ abstract class TaxJar_Tax_Request_Body_Factory {
 		$this->get_exemption_type();
 
 		return $this->get_request_body();
+	}
+
+	protected function get_line_items() {
+		$this->get_product_line_items();
+		$this->get_fee_line_items();
 	}
 
 	protected function get_from_address() {

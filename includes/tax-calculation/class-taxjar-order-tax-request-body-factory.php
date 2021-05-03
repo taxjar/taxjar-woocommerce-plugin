@@ -21,7 +21,7 @@ class TaxJar_Order_Tax_Request_Body_Factory extends TaxJar_Tax_Request_Body_Fact
 		$this->tax_request_body->set_to_street( $address[ 'address_1' ] );
 	}
 
-	protected function get_line_items() {
+	protected function get_product_line_items() {
 		foreach ( $this->order->get_items() as $item_key => $item ) {
 			$request_line_item = array(
 				'id'               => $item->get_product_id() . '-' . $item_key,
@@ -29,6 +29,20 @@ class TaxJar_Order_Tax_Request_Body_Factory extends TaxJar_Tax_Request_Body_Fact
 				'product_tax_code' => $this->get_line_item_tax_code( $item ),
 				'unit_price'       => $this->get_line_item_unit_price( $item ),
 				'discount'         => $this->get_line_item_discount_amount( $item )
+			);
+
+			$this->tax_request_body->add_line_item( $request_line_item );
+		}
+	}
+
+	protected function get_fee_line_items() {
+		foreach ( $this->order->get_items( 'fee' ) as $fee_key => $fee ) {
+			$request_line_item = array(
+				'id'               => 'fee-' . $fee_key,
+				'quantity'         => 1,
+				'product_tax_code' => $this->get_line_item_tax_code( $fee ),
+				'unit_price'       => $fee->get_amount(),
+				'discount'         => 0
 			);
 
 			$this->tax_request_body->add_line_item( $request_line_item );
