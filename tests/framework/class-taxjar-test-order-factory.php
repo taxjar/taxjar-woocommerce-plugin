@@ -22,13 +22,6 @@ class TaxJar_Test_Order_Factory {
 	private $order;
 
 	/**
-	 * Options to apply when building the order
-	 *
-	 * @var array
-	 */
-	private $order_options;
-
-	/**
 	 * Default options to apply to order
 	 *
 	 * @var array
@@ -93,6 +86,13 @@ class TaxJar_Test_Order_Factory {
 		),
 	);
 
+	public static $default_fee_details = array(
+		'name' => 'Test Fee',
+		'amount' => 10,
+		'tax_class' => '',
+		'tax_status' => 'taxable'
+	);
+
 	/**
 	 * Creates a new zero tax test order
 	 *
@@ -123,6 +123,18 @@ class TaxJar_Test_Order_Factory {
 		return self::create( $options );
 	}
 
+	public static function create_fee_only_order( $fee_details_override = array() ) {
+		$fee_details = array_replace_recursive( TaxJar_Test_Order_Factory::$default_fee_details, $fee_details_override );
+		$factory = new TaxJar_Test_Order_Factory();
+		$factory->set_customer_id( TaxJar_Test_Order_Factory::$default_options['customer_id'] );
+		$factory->set_shipping_address( TaxJar_Test_Order_Factory::$default_options['shipping_address'] );
+		$factory->set_billing_address( TaxJar_Test_Order_Factory::$default_options['billing_address'] );
+		$factory->add_shipping_item( TaxJar_Test_Order_Factory::$default_options['shipping_method'] );
+		$factory->add_fee( $fee_details );
+		$factory->set_payment_method();
+		return $factory->get_order();
+	}
+
 	/**
 	 * Create a new test order
 	 *
@@ -132,18 +144,11 @@ class TaxJar_Test_Order_Factory {
 	 * @return WC_Order|WP_Error
 	 */
 	public static function create( $options_override = array() ) {
-		$factory = new self( $options_override );
-		return $factory->create_order();
-	}
-
-	/**
-	 * TaxJar_Test_Order_Factory constructor.
-	 *
-	 * @param array $options_override - Array of options that override the default order options.
-	 */
-	private function __construct( $options_override ) {
-		$this->order         = wc_create_order();
-		$this->order_options = $this->override_options( $options_override );
+		$options = self::override_options( $options_override );
+		$factory = new self();
+		$factory->create_order_from_options( $options );
+		$factory->save_order();
+		return $factory->get_order();
 	}
 
 	/**
@@ -153,8 +158,15 @@ class TaxJar_Test_Order_Factory {
 	 *
 	 * @return array
 	 */
-	private function override_options( $options_override ) {
+	private static function override_options( $options_override ) {
 		return array_replace_recursive( self::$default_options, $options_override );
+	}
+
+	/**
+	 * TaxJar_Test_Order_Factory constructor.
+	 */
+	public function __construct() {
+		$this->order = wc_create_order();
 	}
 
 	/**
@@ -163,18 +175,14 @@ class TaxJar_Test_Order_Factory {
 	 * @return WC_Order|WP_Error
 	 * @throws WC_Data_Exception Throws exception when invalid data is found.
 	 */
-	private function create_order() {
-		$this->set_customer_id();
-		$this->set_shipping_address();
-		$this->set_billing_address();
-		$this->add_products();
-		$this->add_shipping_item();
+	public function create_order_from_options( $options = array() ) {
+		$this->set_customer_id( $options['customer_id'] );
+		$this->set_shipping_address( $options['shipping_address'] );
+		$this->set_billing_address( $options['billing_address'] );
+		$this->add_products( $options['products'] );
+		$this->add_shipping_item( $options['shipping_method'] );
 		$this->set_payment_method();
-		$this->set_totals();
-
-		$this->order->save();
-
-		return $this->order;
+		$this->set_totals( $options['totals'] );
 	}
 
 	/**
@@ -182,8 +190,8 @@ class TaxJar_Test_Order_Factory {
 	 *
 	 * @throws WC_Data_Exception Throws exception when invalid data is found.
 	 */
-	private function set_customer_id() {
-		$this->order->set_customer_id( $this->order_options['customer_id'] );
+	public function set_customer_id( $customer_id ) {
+		$this->order->set_customer_id( $customer_id );
 	}
 
 	/**
@@ -191,15 +199,15 @@ class TaxJar_Test_Order_Factory {
 	 *
 	 * @throws WC_Data_Exception Throws exception when invalid data is found.
 	 */
-	private function set_shipping_address() {
-		$this->order->set_shipping_first_name( $this->order_options['shipping_address']['first_name'] );
-		$this->order->set_shipping_last_name( $this->order_options['shipping_address']['last_name'] );
-		$this->order->set_shipping_address_1( $this->order_options['shipping_address']['address_1'] );
-		$this->order->set_shipping_address_2( $this->order_options['shipping_address']['address_2'] );
-		$this->order->set_shipping_city( $this->order_options['shipping_address']['city'] );
-		$this->order->set_shipping_state( $this->order_options['shipping_address']['state'] );
-		$this->order->set_shipping_postcode( $this->order_options['shipping_address']['postcode'] );
-		$this->order->set_shipping_country( $this->order_options['shipping_address']['country'] );
+	public function set_shipping_address( $shipping_address) {
+		$this->order->set_shipping_first_name( $shipping_address['first_name'] );
+		$this->order->set_shipping_last_name( $shipping_address['last_name'] );
+		$this->order->set_shipping_address_1( $shipping_address['address_1'] );
+		$this->order->set_shipping_address_2( $shipping_address['address_2'] );
+		$this->order->set_shipping_city( $shipping_address['city'] );
+		$this->order->set_shipping_state( $shipping_address['state'] );
+		$this->order->set_shipping_postcode( $shipping_address['postcode'] );
+		$this->order->set_shipping_country( $shipping_address['country'] );
 	}
 
 	/**
@@ -207,57 +215,60 @@ class TaxJar_Test_Order_Factory {
 	 *
 	 * @throws WC_Data_Exception Throws exception when invalid data is found.
 	 */
-	private function set_billing_address() {
-		$this->order->set_billing_first_name( $this->order_options['billing_address']['first_name'] );
-		$this->order->set_billing_last_name( $this->order_options['billing_address']['last_name'] );
-		$this->order->set_billing_address_1( $this->order_options['billing_address']['address_1'] );
-		$this->order->set_billing_address_2( $this->order_options['billing_address']['address_2'] );
-		$this->order->set_billing_city( $this->order_options['billing_address']['city'] );
-		$this->order->set_billing_state( $this->order_options['billing_address']['state'] );
-		$this->order->set_billing_postcode( $this->order_options['billing_address']['postcode'] );
-		$this->order->set_billing_country( $this->order_options['billing_address']['country'] );
-		$this->order->set_billing_email( $this->order_options['billing_address']['email'] );
-		$this->order->set_billing_phone( $this->order_options['billing_address']['phone'] );
+	public function set_billing_address( $billing_address ) {
+		$this->order->set_billing_first_name( $billing_address['first_name'] );
+		$this->order->set_billing_last_name( $billing_address['last_name'] );
+		$this->order->set_billing_address_1( $billing_address['address_1'] );
+		$this->order->set_billing_address_2( $billing_address['address_2'] );
+		$this->order->set_billing_city( $billing_address['city'] );
+		$this->order->set_billing_state( $billing_address['state'] );
+		$this->order->set_billing_postcode( $billing_address['postcode'] );
+		$this->order->set_billing_country( $billing_address['country'] );
+		$this->order->set_billing_email( $billing_address['email'] );
+		$this->order->set_billing_phone( $billing_address['phone'] );
 	}
 
 	/**
 	 * Add products to order
 	 */
-	private function add_products() {
-		foreach ( $this->order_options['products'] as $product_fields ) {
-			$product = TaxJar_Product_Helper::create_product( $product_fields['type'], $product_fields );
-
-			$item = new WC_Order_Item_Product();
-			$item->set_props(
-				array(
-					'product'  => $product,
-					'quantity' => $product_fields['quantity'],
-					'subtotal' => wc_get_price_excluding_tax( $product, array( 'qty' => $product_fields['quantity'] ) ),
-					'total'    => wc_get_price_excluding_tax( $product, array( 'qty' => $product_fields['quantity'] ) ),
-				)
-			);
-			$item->set_taxes(
-				array(
-					'total'    => $product_fields['tax_total'],
-					'subtotal' => $product_fields['tax_subtotal'],
-				)
-			);
-			$item->set_order_id( $this->order->get_id() );
-			$item->save();
-			$this->order->add_item( $item );
+	public function add_products( $products ) {
+		foreach ( $products as $product_fields ) {
+			$this->add_product( $product_fields );
 		}
+	}
+
+	public function add_product( $product_details ) {
+		$product = TaxJar_Product_Helper::create_product( $product_details['type'], $product_details );
+		$item = new WC_Order_Item_Product();
+		$item->set_props(
+			array(
+				'product'  => $product,
+				'quantity' => $product_details['quantity'],
+				'subtotal' => wc_get_price_excluding_tax( $product, array( 'qty' => $product_details['quantity'] ) ),
+				'total'    => wc_get_price_excluding_tax( $product, array( 'qty' => $product_details['quantity'] ) ),
+			)
+		);
+		$item->set_taxes(
+			array(
+				'total'    => $product_details['tax_total'],
+				'subtotal' => $product_details['tax_subtotal'],
+			)
+		);
+		$item->set_order_id( $this->order->get_id() );
+		$item->save();
+		$this->order->add_item( $item );
 	}
 
 	/**
 	 * Add shipping item to order
 	 */
-	private function add_shipping_item() {
+	public function add_shipping_item( $shipping_details ) {
 		$rate = new WC_Shipping_Rate(
-			$this->order_options['shipping_method']['id'],
-			$this->order_options['shipping_method']['label'],
-			$this->order_options['shipping_method']['cost'],
-			$this->order_options['shipping_method']['taxes'],
-			$this->order_options['shipping_method']['method_id']
+			$shipping_details['id'],
+			$shipping_details['label'],
+			$shipping_details['cost'],
+			$shipping_details['taxes'],
+			$shipping_details['method_id']
 		);
 
 		$item = new WC_Order_Item_Shipping();
@@ -283,7 +294,7 @@ class TaxJar_Test_Order_Factory {
 	 *
 	 * @throws WC_Data_Exception Throws exception when invalid data is found.
 	 */
-	private function set_payment_method() {
+	public function set_payment_method() {
 		$payment_gateways = WC()->payment_gateways->payment_gateways();
 		$this->order->set_payment_method( $payment_gateways['bacs'] );
 	}
@@ -293,12 +304,30 @@ class TaxJar_Test_Order_Factory {
 	 *
 	 * @throws WC_Data_Exception Throws exception when invalid data is found.
 	 */
-	private function set_totals() {
-		$this->order->set_shipping_total( $this->order_options['totals']['shipping_total'] );
-		$this->order->set_discount_total( $this->order_options['totals']['discount_total'] );
-		$this->order->set_discount_tax( $this->order_options['totals']['discount_tax'] );
-		$this->order->set_cart_tax( $this->order_options['totals']['cart_tax'] );
-		$this->order->set_shipping_tax( $this->order_options['totals']['shipping_tax'] );
-		$this->order->set_total( $this->order_options['totals']['total'] );
+	public function set_totals( $totals ) {
+		$this->order->set_shipping_total( $totals['shipping_total'] );
+		$this->order->set_discount_total( $totals['discount_total'] );
+		$this->order->set_discount_tax( $totals['discount_tax'] );
+		$this->order->set_cart_tax( $totals['cart_tax'] );
+		$this->order->set_shipping_tax( $totals['shipping_tax'] );
+		$this->order->set_total( $totals['total'] );
+	}
+
+	public function save_order() {
+		$this->order->save();
+	}
+
+	public function get_order() {
+		return $this->order;
+	}
+
+	public function add_fee( $fee_details ) {
+		$fee = new WC_Order_Item_Fee();
+		$fee->set_name( $fee_details['name'] );
+		$fee->set_amount( $fee_details['amount'] );
+		$fee->set_tax_class( $fee_details['tax_class'] );
+		$fee->set_tax_status( $fee_details['tax_status'] );
+		$fee->set_total( $fee_details['amount'] );
+		$this->order->add_item( $fee );
 	}
 }
