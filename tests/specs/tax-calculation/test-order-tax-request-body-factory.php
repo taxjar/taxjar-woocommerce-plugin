@@ -68,16 +68,13 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 	public function test_get_fee_line_items() {
 		$expected_tax_code = '20010';
 		$fee_amount = 10;
-		$order = TaxJar_Test_Order_Factory::create();
 
-		$fee = new WC_Order_Item_Fee();
-		$fee->set_name( "Test Fee" );
-		$fee->set_amount( $fee_amount );
-		$fee->set_tax_class( 'clothing-rate-' . $expected_tax_code );
-		$fee->set_tax_status( 'taxable' );
-		$fee->set_total( $fee_amount );
-
-		$order->add_item( $fee );
+		$test_order_factory = new TaxJar_Test_Order_Factory();
+		$test_order_factory->create_order_from_options( TaxJar_Test_Order_Factory::$default_options );
+		$fee_details = TaxJar_Test_Order_Factory::$default_fee_details;
+		$fee_details['tax_class'] = 'clothing-rate-' . $expected_tax_code;
+		$test_order_factory->add_fee( $fee_details );
+		$order = $test_order_factory->get_order();
 		$order->calculate_totals();
 
 		$request_body = TaxJar_Tax_Request_Body_Factory::create_request_body( $order );
