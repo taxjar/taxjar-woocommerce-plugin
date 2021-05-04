@@ -6,22 +6,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class TaxJar_Tax_Details {
 
-	private $amount_to_collect;
-	private $combined_tax_rate;
 	private $line_items;
 	private $freight_taxable;
 	private $has_nexus;
+	private $shipping_tax_rate;
+	private $rate;
 	private $country;
 	private $state;
 	private $city;
 	private $zip;
 
 	public function __construct( $tax_response ) {
-		$this->amount_to_collect = $tax_response['tax']['amount_to_collect'];
-		$this->combined_tax_rate = $tax_response['tax']['breakdown']['combined_tax_rate'];
-		$this->freight_taxable = $tax_response['tax']['freight_taxable'];
 		$this->has_nexus = $tax_response['tax']['has_nexus'];
+		$this->freight_taxable = $tax_response['tax']['freight_taxable'];
 		$this->add_line_items( $tax_response );
+		$this->set_shipping_rate( $tax_response );
+		$this->set_rate( $tax_response );
 	}
 
 	private function add_line_items( $tax_response ) {
@@ -32,6 +32,34 @@ class TaxJar_Tax_Details {
 				$line_item = new TaxJar_Tax_Detail_Line_Item( $response_line_item );
 				$this->line_items[ $line_item->get_id() ] = $line_item;
 			}
+		}
+	}
+
+	private function set_shipping_rate( $tax_response ) {
+		if ( $this->is_shipping_taxable() ) {
+			$this->set_shipping_rate_from_response( $tax_response );
+		} else {
+			$this->shipping_tax_rate = 0.0;
+		}
+	}
+
+	private function set_shipping_rate_from_response( $tax_response ) {
+		if ( $this->response_contains_shipping_rate( $tax_response ) ) {
+			$this->shipping_tax_rate = $tax_response['tax']['breakdown']['shipping']['combined_tax_rate'];
+		} else {
+			$this->shipping_tax_rate = 0.0;
+		}
+	}
+
+	private function response_contains_shipping_rate( $tax_response ) {
+		return ! empty( $tax_response['tax']['breakdown']['shipping']['combined_tax_rate'] );
+	}
+
+	private function set_rate( $tax_response ) {
+		if ( ! empty( $tax_response['tax']['rate'] ) ) {
+			$this->rate = $tax_response['tax']['rate'];
+		} else {
+			$this->rate = 0.0;
 		}
 	}
 
@@ -81,5 +109,13 @@ class TaxJar_Tax_Details {
 
 	public function get_zip() {
 		return $this->zip;
+	}
+
+	public function get_shipping_tax_rate() {
+		return $this->shipping_tax_rate;
+	}
+
+	public function get_rate() {
+		return $this->rate;
 	}
 }

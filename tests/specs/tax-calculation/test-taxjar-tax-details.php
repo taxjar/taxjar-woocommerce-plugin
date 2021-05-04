@@ -38,6 +38,49 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 		$this->assertFalse( $tax_details->is_shipping_taxable() );
 	}
 
+	public function test_response_with_no_breakdown() {
+		$tax_response = $this->build_tax_response();
+		unset( $tax_response['tax']['breakdown'] );
+		$tax_response['tax']['has_nexus'] = false;
+		$tax_details = new TaxJar_Tax_Details( $tax_response );
+	}
+
+	public function test_response_with_shipping_breakdown() {
+		$expected_shipping_tax_rate = 0.1;
+		$tax_response = $this->build_tax_response();
+		$tax_response['tax']['breakdown']['shipping'] = array(
+			'taxable_amount' => 10.0,
+			'tax_collectable' => 1.0,
+			'combined_tax_rate' => $expected_shipping_tax_rate
+		);
+		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$this->assertEquals( $expected_shipping_tax_rate, $tax_details->get_shipping_tax_rate() );
+	}
+
+	public function test_response_with_no_shipping_breakdown() {
+		$expected_shipping_tax_rate = 0.0;
+		$tax_response = $this->build_tax_response();
+		$tax_details = new TaxJar_Tax_Details( $tax_response );
+
+		$this->assertEquals( $expected_shipping_tax_rate, $tax_details->get_shipping_tax_rate() );
+	}
+
+	public function test_tax_detail_rate() {
+		$tax_response = $this->build_tax_response();
+		$tax_details = new TaxJar_Tax_Details( $tax_response );
+
+		$this->assertEquals( $tax_response['tax']['rate'], $tax_details->get_rate() );
+	}
+
+	public function test_response_with_no_rate() {
+		$expected_rate = 0.0;
+		$tax_response = $this->build_tax_response();
+		unset( $tax_response['tax']['rate'] );
+		$tax_details = new TaxJar_Tax_Details( $tax_response );
+
+		$this->assertEquals( $expected_rate, $tax_details->get_rate() );
+	}
+
 	private function build_tax_response() {
 		return array(
 			'tax' => array(
@@ -47,20 +90,21 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 					'line_items' => array(
 						array(
 							'id' => '1',
-							'combined_tax_rate' => 10,
+							'combined_tax_rate' => 0.1,
 							'tax_collectable' => 10,
 							'taxable_amount' => 100
 						),
 						array(
 							'id' => '2',
-							'combined_tax_rate' => 20,
+							'combined_tax_rate' => 0.2,
 							'tax_collectable' => 40,
 							'taxable_amount' => 200
 						),
 					)
 				),
 				'freight_taxable' => true,
-				'has_nexus' => true
+				'has_nexus' => true,
+				'rate' => 0.1
 			)
 		);
 	}
