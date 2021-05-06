@@ -8,8 +8,9 @@ class TaxJar_Order_Tax_Request_Body_Factory extends TaxJar_Tax_Request_Body_Fact
 
 	private $order;
 
-	protected function set_original_object( $order ) {
+	public function __construct( $order ) {
 		$this->order = $order;
+		parent::__construct();
 	}
 
 	protected function get_ship_to_address() {

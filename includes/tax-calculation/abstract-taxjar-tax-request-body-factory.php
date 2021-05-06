@@ -8,7 +8,6 @@ abstract class TaxJar_Tax_Request_Body_Factory {
 
 	protected $tax_request_body;
 
-	abstract protected function set_original_object( $object );
 	abstract protected function get_ship_to_address();
 	abstract protected function get_shipping_amount();
 	abstract protected function get_customer_id();
@@ -17,24 +16,11 @@ abstract class TaxJar_Tax_Request_Body_Factory {
 	abstract protected function get_product_line_items();
 	abstract protected function get_fee_line_items();
 
-
-	public static function create_request_body( $object ) {
-		$request_body = new TaxJar_Tax_Request_Body();
-
-		if ( $object instanceof WC_Order ) {
-			$factory = new TaxJar_Order_Tax_Request_Body_Factory();
-			$request_body = $factory->create( $object );
-		}
-
-		return $request_body;
-	}
-
 	public function __construct() {
 		$this->tax_request_body = new TaxJar_Tax_Request_Body();
 	}
 
-	public function create( $object ) {
-		$this->set_original_object( $object );
+	public function create() {
 		$this->get_ship_to_address();
 		$this->get_from_address();
 		$this->get_line_items();
