@@ -1,5 +1,7 @@
 <?php
 
+use Automattic\WooCommerce\Utilities\NumberUtil;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -14,11 +16,6 @@ class TaxJar_Order_Tax_Applicator {
 		$this->tax_details = $tax_details;
 	}
 
-	public function apply_tax_and_recalculate() {
-		$this->apply_tax();
-		$this->order->calculate_totals();
-	}
-
 	public function apply_tax() {
 		$this->remove_existing_tax();
 		$this->apply_new_tax();
@@ -31,102 +28,152 @@ class TaxJar_Order_Tax_Applicator {
 	private function apply_new_tax() {
 		$this->apply_tax_to_line_items();
 		$this->apply_tax_to_fees();
-		$this->maybe_apply_tax_to_shipping();
+		$this->apply_tax_to_shipping_items();
+		$this->order->update_taxes();
+		$this->update_totals();
+		$this->order->save();
 	}
 
 	private function apply_tax_to_line_items() {
 		foreach ( $this->order->get_items() as $item_key => $item ) {
-			$this->apply_line_item_tax( $item_key, $item );
+			$this->create_rate_and_apply_to_product_line_item( $item_key, $item );
 		}
 	}
 
-	private function apply_line_item_tax( $item_key, $item ) {
+	private function create_rate_and_apply_to_product_line_item( $item_key, $item ) {
+		$line_item_tax_rate = $this->get_product_line_item_tax_rate( $item_key, $item );
+		$tax_class = $item->get_tax_class();
+		$wc_rate = TaxJar_WC_Rate_Manager::add_rate(
+			$line_item_tax_rate,
+			$tax_class,
+			$this->tax_details->is_shipping_taxable(),
+			$this->tax_details->get_location()
+		);
+
+		$tax_rates = $this->prepare_tax_rates_for_application( $wc_rate );
+		$taxes = array(
+			'total' => WC_Tax::calc_tax( $item->get_total(), $tax_rates, false ),
+			'subtotal' => WC_Tax::calc_tax( $item->get_subtotal(), $tax_rates, false )
+		);
+		$item->set_taxes( $taxes );
+	}
+
+	private function prepare_tax_rates_for_application( $wc_rate ) {
+		return array(
+			$wc_rate['id'] => array(
+				'rate'     => (float) $wc_rate['tax_rate'],
+				'label'    => $wc_rate['tax_rate_name'],
+				'shipping' => $wc_rate['tax_rate_shipping'] ? 'yes' : 'no',
+				'compound' => 'no',
+			)
+		);
+	}
+
+	private function get_product_line_item_tax_rate( $item_key, $item ) {
 		$product_id    = $item->get_product_id();
 		$line_item_key = $product_id . '-' . $item_key;
 		$tax_detail_line_item = $this->tax_details->get_line_item( $line_item_key );
-		$tax_rate = 100 * $tax_detail_line_item->get_tax_rate();
-
-		$tax_class = $item->get_tax_class();
-		$rate_id = $this->create_or_update_tax_rate( $tax_rate, $tax_class, $this->tax_details->is_shipping_taxable() );
-		$item_tax = new WC_Order_Item_Tax();
-		$item_tax->set_rate( $rate_id );
-		$item_tax->set_order_id( $this->order->get_id() );
-		$item_tax->save();
+		return 100 * $tax_detail_line_item->get_tax_rate();
 	}
 
 	private function apply_tax_to_fees() {
 		foreach ( $this->order->get_items( 'fee' ) as $fee_key => $fee ) {
-			$this->apply_fee_tax( $fee_key, $fee );
+			$this->create_rate_and_apply_to_fee_line_item( $fee_key, $fee );
 		}
 	}
 
-	private function apply_fee_tax( $fee_key, $fee ) {
+	private function create_rate_and_apply_to_fee_line_item( $fee_key, $fee ) {
+		$fee_tax_rate = $this->get_tax_rate_for_fee_line_item( $fee_key, $fee );
+		$tax_class = $fee->get_tax_class();
+		$wc_rate = TaxJar_WC_Rate_Manager::add_rate( $fee_tax_rate,
+			$tax_class,
+			$this->tax_details->is_shipping_taxable(),
+			$this->tax_details->get_location()
+		);
+
+		$tax_rates = $this->prepare_tax_rates_for_application( $wc_rate );
+		$taxes = array( 'total' => WC_Tax::calc_tax( $fee->get_total(), $tax_rates, false ) );
+		$fee->set_taxes( $taxes );
+	}
+
+	private function get_tax_rate_for_fee_line_item( $fee_key, $fee ) {
 		$fee_details_id = 'fee-' . $fee_key;
 		$tax_detail_line_item = $this->tax_details->get_line_item( $fee_details_id );
-		$tax_rate = 100 * $tax_detail_line_item->get_tax_rate();
-
-		$tax_class = $fee->get_tax_class();
-		$rate_id = $this->create_or_update_tax_rate( $tax_rate, $tax_class, $this->tax_details->is_shipping_taxable() );
-		$item_tax = new WC_Order_Item_Tax();
-		$item_tax->set_rate( $rate_id );
-		$item_tax->set_order_id( $this->order->get_id() );
-		$item_tax->save();
+		return 100 * $tax_detail_line_item->get_tax_rate();
 	}
 
-	private function maybe_apply_tax_to_shipping() {
+	private function apply_tax_to_shipping_items() {
+		foreach ( $this->order->get_shipping_methods() as $item ) {
+			$this->apply_tax_to_shipping_item( $item );
+		}
+	}
+
+	private function apply_tax_to_shipping_item( $item ) {
 		if ( $this->tax_details->is_shipping_taxable() ) {
 			$tax_rate = 100 * $this->tax_details->get_shipping_tax_rate();
-			$this->create_or_update_tax_rate( $tax_rate, '', $this->tax_details->is_shipping_taxable() );
-		}
-	}
+			$wc_rate = TaxJar_WC_Rate_Manager::add_rate(
+				$tax_rate,
+				'',
+				$this->tax_details->is_shipping_taxable(),
+				$this->tax_details->get_location()
+			);
 
-	private function create_or_update_tax_rate( $rate, $tax_class, $freight_taxable = 1 ) {
-		$tax_rate = $this->build_tax_rate( $rate, $tax_class, $freight_taxable );
-		$wc_rate = $this->get_existing_rate( $tax_class );
-
-		if ( ! empty( $wc_rate ) ) {
-			$rate_id = $this->update_tax_rate( key( $wc_rate ), $tax_rate );
+			$tax_rates = $this->prepare_tax_rates_for_application( $wc_rate );
+			$taxes = array( 'total' => WC_Tax::calc_tax( $item->get_total(), $tax_rates, false ) );
+			$item->set_taxes( $taxes );
 		} else {
-			$rate_id = $this->create_tax_rate( $tax_rate );
+			$this->apply_zero_tax_to_item( $item );
+		}
+	}
+
+	private function apply_zero_tax_to_item( $item ) {
+		$item->set_taxes( false );
+	}
+
+	private function update_totals() {
+		$tax_sums = $this->sum_taxes();
+		$this->order->set_discount_tax( wc_round_tax_total( $tax_sums['cart_subtotal_tax'] - $tax_sums['cart_total_tax'] ) );
+		$this->order->set_total( NumberUtil::round( $this->get_order_total(), wc_get_price_decimals() ) );
+	}
+
+	private function sum_taxes() {
+		$tax_sums = array(
+			'cart_subtotal_tax' => 0,
+			'cart_total_tax' => 0
+		);
+
+		foreach ( $this->order->get_items() as $item ) {
+			$taxes = $item->get_taxes();
+
+			foreach ( $taxes['total'] as $tax_rate_id => $tax ) {
+				$tax_sums['cart_total_tax'] += (float) $tax;
+			}
+
+			foreach ( $taxes['subtotal'] as $tax_rate_id => $tax ) {
+				$tax_sums['cart_subtotal_tax'] += (float) $tax;
+			}
 		}
 
-		return $rate_id;
+		return $tax_sums;
 	}
 
-	private function build_tax_rate( $rate, $tax_class, $freight_taxable ) {
-		return array(
-			'tax_rate_country'  => $this->tax_details->get_country(),
-			'tax_rate_state'    => $this->tax_details->get_state(),
-			'tax_rate_name'     => sprintf( '%s Tax', $this->tax_details->get_state() ),
-			'tax_rate_priority' => 1,
-			'tax_rate_compound' => false,
-			'tax_rate_shipping' => $freight_taxable,
-			'tax_rate'          => $rate,
-			'tax_rate_class'    => $tax_class,
+	private function get_order_total() {
+		$cart_total = $this->get_cart_total_for_order();
+		$tax_total = $this->order->get_cart_tax() + $this->order->get_shipping_tax();
+		$fees_total = $this->order->get_total_fees();
+		$shipping_total = $this->order->get_shipping_total();
+		return $cart_total + $tax_total + $fees_total + $shipping_total;
+	}
+
+	private function get_cart_total_for_order() {
+		$field = 'total';
+		$items = array_map(
+			function ( $item ) use ( $field ) {
+				return wc_add_number_precision( $item[ $field ], false );
+			},
+			array_values( $this->order->get_items() )
 		);
-	}
 
-	private function get_existing_rate( $tax_class ) {
-		$rate_lookup = array(
-			'country'   => $this->tax_details->get_country(),
-			'state'     => sanitize_key( $this->tax_details->get_state() ),
-			'postcode'  => $this->tax_details->get_zip(),
-			'city'      => $this->tax_details->get_city(),
-			'tax_class' => $tax_class,
-		);
-		$wc_rate = WC_Tax::find_rates( $rate_lookup );
-		return $wc_rate;
-	}
-
-	private function update_tax_rate( $rate_id, $tax_rate ) {
-		WC_Tax::_update_tax_rate( $rate_id, $tax_rate );
-		return $rate_id;
-	}
-
-	private function create_tax_rate( $tax_rate ) {
-		$rate_id = WC_Tax::_insert_tax_rate( $tax_rate );
-		WC_Tax::_update_tax_rate_postcodes( $rate_id, wc_clean( $this->tax_details->get_zip() ) );
-		WC_Tax::_update_tax_rate_cities( $rate_id, wc_clean( $this->tax_details->get_city() ) );
-		return $rate_id;
+		return wc_remove_number_precision( WC_Abstract_Order::get_rounded_items_total( $items ) );
 	}
 }
