@@ -2,6 +2,27 @@
 
 class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 
+	public function test_get_location() {
+		$expected_location = array(
+			'country' => 'US',
+			'state' => 'UT',
+			'city' => 'Test',
+			'zip' => '11111'
+		);
+
+		$tax_response = $this->build_tax_response();
+		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details->set_country( $expected_location['country'] );
+		$tax_details->set_state( $expected_location['state'] );
+		$tax_details->set_city( $expected_location['city'] );
+		$tax_details->set_zip( $expected_location['zip'] );
+
+		$location = $tax_details->get_location();
+		foreach( $location as $location_field => $location_value ) {
+			$this->assertEquals( $expected_location[ $location_field ], $location_value );
+		}
+	}
+
 	public function test_add_and_get_line_items() {
 		$tax_response = $this->build_tax_response();
 		$tax_details = new TaxJar_Tax_Details( $tax_response );

@@ -71,6 +71,15 @@ class TaxJar_Tax_Details {
 		return false;
 	}
 
+	public function get_location() {
+		return array(
+			'country' => $this->get_country(),
+			'state' => $this->get_state(),
+			'zip' => $this->get_zip(),
+			'city' => $this->get_city()
+		);
+	}
+
 	public function has_nexus() {
 		return true === $this->has_nexus;
 	}
