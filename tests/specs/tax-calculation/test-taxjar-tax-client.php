@@ -22,10 +22,10 @@ class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
 	public function test_wp_error_response() {
 		$this->response = new WP_Error();
 		$request_body = $this->build_tax_request_body();
-		$tax_client = new TaxJar_Tax_Client( $request_body );
+		$tax_client = new TaxJar_Tax_Client();
 
 		$this->expectException( Exception::class );
-		$tax_details = $tax_client->get_taxes();
+		$tax_details = $tax_client->get_taxes( $request_body );
 	}
 
 	public function test_non_okay_response() {
@@ -35,10 +35,10 @@ class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
 			)
 		);
 		$request_body = $this->build_tax_request_body();
-		$tax_client = new TaxJar_Tax_Client( $request_body );
+		$tax_client = new TaxJar_Tax_Client();
 
 		$this->expectException( Exception::class );
-		$tax_details = $tax_client->get_taxes();
+		$tax_details = $tax_client->get_taxes( $request_body );
 	}
 
 	public function test_ok_response() {
@@ -57,8 +57,8 @@ class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
 		);
 		$this->response = $taxjar_response;
 		$request_body = $this->build_tax_request_body();
-		$tax_client = new TaxJar_Tax_Client( $request_body );
-		$tax_details = $tax_client->get_taxes();
+		$tax_client = new TaxJar_Tax_Client();
+		$tax_details = $tax_client->get_taxes( $request_body );
 
 		$this->assertInstanceOf( 'TaxJar_Tax_Details', $tax_details );
 	}

@@ -4,16 +4,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Tax_Client {
+class TaxJar_Tax_Client implements TaxJar_Tax_Client_Interface {
 
 	private $tax_request_body;
 	private $tax_details;
 
-	public function __construct( $tax_request_body ) {
+	public function get_taxes( $tax_request_body ) {
 		$this->tax_request_body = $tax_request_body;
-	}
-
-	public function get_taxes() {
 		$request = new TaxJar_API_Request( 'taxes', $this->tax_request_body->to_json() );
 		$response = $request->send_request();
 		$this->check_response_for_errors( $response );

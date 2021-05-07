@@ -62,6 +62,7 @@ final class WC_Taxjar {
 		if ( class_exists( 'WC_Integration' ) ) {
 
 		    include_once 'includes/interfaces/class-taxjar-cache-interface.php';
+		    include_once 'includes/interfaces/class-taxjar-tax-client-interface.php';
 
 			// Include our integration class and WP_User for wp_delete_user()
 			include_once ABSPATH . 'wp-admin/includes/user.php';
