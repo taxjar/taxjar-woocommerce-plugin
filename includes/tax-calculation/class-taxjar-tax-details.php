@@ -15,8 +15,10 @@ class TaxJar_Tax_Details {
 	private $state;
 	private $city;
 	private $zip;
+	private $raw_response;
 
 	public function __construct( $tax_response ) {
+		$this->raw_response = $tax_response;
 		$this->has_nexus = $tax_response['tax']['has_nexus'];
 		$this->freight_taxable = $tax_response['tax']['freight_taxable'];
 		$this->add_line_items( $tax_response );
@@ -126,5 +128,9 @@ class TaxJar_Tax_Details {
 
 	public function get_rate() {
 		return $this->rate;
+	}
+
+	public function get_raw_response() {
+		return $this->raw_response;
 	}
 }
