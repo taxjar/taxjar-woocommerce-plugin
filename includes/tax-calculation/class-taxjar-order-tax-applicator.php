@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Order_Tax_Applicator {
+class TaxJar_Order_Tax_Applicator implements TaxJar_Tax_Applicator_Interface {
 
 	private $order;
 	private $tax_details;
