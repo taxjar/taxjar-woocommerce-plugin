@@ -11,12 +11,12 @@ class TaxJar_Order_Tax_Applicator implements TaxJar_Tax_Applicator_Interface {
 	private $order;
 	private $tax_details;
 
-	public function __construct( $order, $tax_details ) {
+	public function __construct( $order ) {
 		$this->order = $order;
-		$this->tax_details = $tax_details;
 	}
 
-	public function apply_tax() {
+	public function apply_tax( $tax_details ) {
+		$this->tax_details = $tax_details;
 		$this->remove_existing_tax();
 		$this->apply_new_tax();
 	}

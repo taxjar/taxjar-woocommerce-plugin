@@ -6,6 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 interface TaxJar_Tax_Applicator_Interface {
 
-	public function apply_tax();
+	public function apply_tax( $tax_details );
 
 }
