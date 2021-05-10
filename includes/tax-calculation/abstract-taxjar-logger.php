@@ -11,7 +11,7 @@ abstract class TaxJar_Logger {
 	abstract function log_success( $details );
 	abstract function log_failure( $details );
 
-	final public function __construct( $logger ) {
+	public function __construct( $logger ) {
 		$this->set_logger( $logger );
 	}
 

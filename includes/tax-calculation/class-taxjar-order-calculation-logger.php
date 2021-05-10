@@ -6,6 +6,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 
+	private $order;
+
+	public function __construct( $logger, $order ) {
+		$this->order = $order;
+		parent::__construct( $logger );
+	}
+
 	public function log_failure( $details ) {
 		$level = $this->get_failed_log_level( $details['exception'] );
 
@@ -31,7 +38,7 @@ class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 	}
 
 	private function format_failed_calculation_message( $details ) {
-		$message = 'TaxJar could not calculate tax on order #' . $details['order_id'] . '. ';
+		$message = 'TaxJar could not calculate tax on order #' . $this->order->get_id() . '. ';
 		$message .= 'Reverting to default WooCommerce tax calculation.';
 		$message .= $this->format_reason( $details['exception'] );
 		$message .= $this->format_context( $details['context'] );
@@ -65,7 +72,7 @@ class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 	}
 
 	private function format_unexpected_exception_message( $details ) {
-		$message = 'TaxJar tax calculation on order #' . $details['order_id'] . ' failed unexpectedly. ';
+		$message = 'TaxJar tax calculation on order #' . $this->order->get_id() . ' failed unexpectedly. ';
 		$message .= 'Reverting to default WooCommerce tax calculation.';
 		$message .= $this->format_reason( $details['exception'] );
 		$message .= $this->format_context( $details['context'] );
@@ -80,7 +87,7 @@ class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 	}
 
 	private function format_success_message( $details ) {
-		$message = 'TaxJar tax calculation on order #' . $details['order_id'] . ' successful.';
+		$message = 'TaxJar tax calculation on order #' . $this->order->get_id() . ' successful.';
 		$message .= $this->format_context( $details['context'] );
 		$message .= $this->format_request_details( $details );
 		$message .= $this->format_response_details( $details );
