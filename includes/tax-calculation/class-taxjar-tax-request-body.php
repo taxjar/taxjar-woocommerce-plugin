@@ -26,26 +26,45 @@ class TaxJar_Tax_Request_Body {
 	}
 
 	public function validate() {
-		$this->validate_contains_required_ship_to_fields();
-		$this->validate_contains_line_items_or_shipping_amount();
-		$this->validate_to_zip();
+		$this->validate_country_is_present();
+		$this->validate_zip_code_is_present();
+		$this->validate_line_items_or_shipping_amount_are_present();
+		$this->validate_zip_code_format();
 	}
 
-	private function validate_contains_required_ship_to_fields() {
-		if ( empty( $this->get_to_country() ) || empty( $this->get_to_zip() ) ) {
-			throw new Exception( __( 'Missing a required field (shipping country or shipping postcode).', 'taxjar' ) );
+	private function validate_country_is_present() {
+		if ( empty( $this->get_to_country() ) ) {
+			throw new TaxJar_Tax_Calculation_Exception(
+				'missing_required_field_country',
+				__( 'Country field is required to perform tax calculation.', 'taxjar' )
+			);
 		}
 	}
 
-	private function validate_contains_line_items_or_shipping_amount() {
+	private function validate_zip_code_is_present() {
+		if ( empty( $this->get_to_zip() ) ) {
+			throw new TaxJar_Tax_Calculation_Exception(
+				'missing_required_field_zip',
+				__( 'Zip code is required to perform tax calculation.', 'taxjar' )
+			);
+		}
+	}
+
+	private function validate_line_items_or_shipping_amount_are_present() {
 		if ( empty( $this->get_line_items() ) && ( 0 === $this->get_shipping_amount() ) ) {
-			throw new Exception( __( 'Missing required fields. Request body must contain line items or a shipping amount', 'taxjar' ) );
+			throw new TaxJar_Tax_Calculation_Exception(
+				'missing_required_field_line_item_or_shipping',
+				__( 'Either a line item or shipping amount is required to calculate shipping.', 'taxjar' )
+			);
 		}
 	}
 
-	private function validate_to_zip() {
+	private function validate_zip_code_format() {
 		if ( ! TaxJar_Tax_Calculation::is_postal_code_valid( $this->get_to_country(), $this->get_to_state(), $this->get_to_zip() ) ) {
-			throw new Exception( __( 'Invalid zip code. The to address zip code does not match the format required for the country.', 'taxjar' ) );
+			throw new TaxJar_Tax_Calculation_Exception(
+				'invalid_field_zip',
+				__( 'Invalid zip code. The to address zip code does not match the format required for the country.', 'taxjar' )
+			);
 		}
 	}
 
