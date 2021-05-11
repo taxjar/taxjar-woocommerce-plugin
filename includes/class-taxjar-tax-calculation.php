@@ -185,6 +185,22 @@ class TaxJar_Tax_Calculation {
 	}
 
 	/**
+	 * Check if is request to the Store API.
+	 *
+	 * @return bool
+	 */
+	protected function is_store_api() {
+		if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+			return false;
+		}
+
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+		$request_uri = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+
+		return false !== strpos( $request_uri, $rest_prefix . 'wc/store' );
+	}
+
+	/**
 	 * Determines whether TaxJar should calculate tax on the cart
 	 *
 	 * @param WC_Cart $wc_cart_object
@@ -194,7 +210,7 @@ class TaxJar_Tax_Calculation {
 		$should_calculate = true;
 
 		// If outside of cart and checkout page or within mini-cart, skip calculations
-		if ( ( ! is_cart() && ! is_checkout() ) || ( is_cart() && is_ajax() ) ) {
+		if ( ( ! is_cart() && ! is_checkout() && ! $this->is_store_api() ) || ( is_cart() && is_ajax() ) ) {
 			$should_calculate = false;
 		}
 
