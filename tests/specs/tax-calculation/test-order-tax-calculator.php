@@ -10,6 +10,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 	private $mock_applicator;
 	private $mock_tax_details;
 	private $mock_order;
+	private $mock_validator;
 
 	public function setUp() {
 		$this->mock_request_body = $this->createMock( TaxJar_Tax_Request_Body::class );
@@ -27,6 +28,8 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$this->mock_cache = $this->createMock( TaxJar_Cache_Interface::class );
 		$this->mock_applicator = $this->createMock( TaxJar_Tax_Applicator_Interface::class );
 		$this->mock_order = $this->createMock( WC_Order::class );
+
+		$this->mock_validator = $this->createMock( TaxJar_Tax_Calculation_Validator_Interface::class );
 	}
 
 	public function test_invalid_logger() {
@@ -55,6 +58,12 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 
 	public function test_invalid_applicator() {
 		$this->mock_applicator = 'invalid applicator';
+		$this->expectException( Exception::class );
+		$calculator = $this->build_calculator();
+	}
+
+	public function test_invalid_validator() {
+		$this->mock_validator = 'invalid validator';
 		$this->expectException( Exception::class );
 		$calculator = $this->build_calculator();
 	}
@@ -89,6 +98,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$calculator->set_request_body_factory( $this->mock_request_body_factory );
 		$calculator->set_tax_client( $this->mock_tax_client );
 		$calculator->set_applicator( $this->mock_applicator );
+		$calculator->set_validator( $this->mock_validator );
 		return $calculator;
 	}
 }

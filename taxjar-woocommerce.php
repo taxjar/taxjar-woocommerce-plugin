@@ -64,6 +64,7 @@ final class WC_Taxjar {
 		    include_once 'includes/interfaces/class-taxjar-cache-interface.php';
 		    include_once 'includes/interfaces/class-taxjar-tax-client-interface.php';
 		    include_once 'includes/interfaces/class-taxjar-tax-applicator-interface.php';
+		    include_once 'includes/interfaces/class-taxjar-tax-calculation-validator-interface.php';
 
 			// Include our integration class and WP_User for wp_delete_user()
 			include_once ABSPATH . 'wp-admin/includes/user.php';
@@ -99,6 +100,7 @@ final class WC_Taxjar {
 			include_once 'includes/tax-calculation/class-taxjar-order-calculation-logger.php';
 			include_once 'includes/tax-calculation/class-taxjar-tax-calculation-exception.php';
 			include_once 'includes/tax-calculation/class-taxjar-order-tax-calculator.php';
+			include_once 'includes/tax-calculation/class-taxjar-order-tax-calculation-validator.php';
 
 			// Register the integration.
 			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );

@@ -11,16 +11,11 @@ class TaxJar_Order_Tax_Calculator {
 	private $request_body_factory;
 	private $tax_client;
 	private $applicator;
-	private $nexus;
+	private $validator;
 
-	private $order;
-	private $calculation_type = 'order';
+	private $context;
 	private $request_body;
 	private $tax_details;
-
-	public function __construct( $order ) {
-		$this->order = $order;
-	}
 
 	public function set_logger( $logger ) {
 		if ( $logger instanceof TaxJar_Logger ) {
@@ -62,14 +57,22 @@ class TaxJar_Order_Tax_Calculator {
 		}
 	}
 
-	public function set_nexus( $nexus ) {
-		$this->nexus = $nexus;
+	public function set_validator( $validator ) {
+		if ( $validator instanceof TaxJar_Tax_Calculation_Validator_Interface ) {
+			$this->validator = $validator;
+		} else {
+			throw new Exception( 'Validator must implement TaxJar_Tax_Calculation_Validator_Interface' );
+		}
+	}
+
+	public function set_context( $context ) {
+		$this->context = $context;
 	}
 
 	public function maybe_calculate_and_apply_tax() {
 		try {
 			$this->create_request_body();
-			$this->should_calculate();
+			$this->validate();
 			$this->calculate_tax();
 			$this->apply_tax();
 			$this->success();
@@ -81,7 +84,7 @@ class TaxJar_Order_Tax_Calculator {
 	private function failure( $exception ) {
 		$details = array(
 			'exception' => $exception,
-			'context' => $this->calculation_type,
+			'context' => $this->context,
 			'request_body' => $this->request_body,
 			'tax_details' => $this->tax_details
 		);
@@ -92,30 +95,8 @@ class TaxJar_Order_Tax_Calculator {
 		$this->request_body = $this->request_body_factory->create();
 	}
 
-	public function should_calculate() {
-		$this->request_body->validate();
-		$this->is_vat_exempt();
-		$this->validate_has_nexus();
-	}
-
-	private function is_vat_exempt() {
-		$is_vat_exempt = apply_filters( 'woocommerce_order_is_vat_exempt', 'yes' === $this->order->get_meta( 'is_vat_exempt' ), $this->order );
-		if ( $is_vat_exempt ) {
-			throw new TaxJar_Tax_Calculation_Exception(
-				'is_vat_exempt',
-				__( 'Tax calculation is not performed customer is vat exempt.', 'taxjar' )
-			);
-		}
-	}
-
-	private function validate_has_nexus() {
-		$taxjar_nexus = new WC_Taxjar_Nexus();
-		if ( ! $taxjar_nexus->has_nexus_check( $this->request_body->get_to_country(), $this->request_body->get_to_state() ) ) {
-			throw new TaxJar_Tax_Calculation_Exception(
-				'no_nexus',
-				__( 'Order does not have nexus.', 'taxjar' )
-			);
-		}
+	public function validate() {
+		$this->validator->validate( $this->request_body );
 	}
 
 	public function calculate_tax() {
@@ -150,7 +131,7 @@ class TaxJar_Order_Tax_Calculator {
 
 	private function success() {
 		$details = array(
-			'context' => $this->calculation_type,
+			'context' => $this->context,
 			'request_body' => $this->request_body,
 			'tax_details' => $this->tax_details
 		);
