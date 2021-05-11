@@ -463,16 +463,23 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 		$data     = $response->get_data();
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( $data['total'], 110.00, '', 0.01 );
+		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 
 		$subscription_id = $data['id'];
-		$renewal_order   = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
+		$subscription = wcs_get_subscription( $subscription_id );
+		$subscription->remove_order_items( 'tax' );
+		$subscription->set_shipping_tax( 0 );
+		$subscription->set_cart_tax( 0 );
+		$subscription->save();
 
+		$this->assertEquals( 0, $subscription->get_cart_tax() );
+
+		$renewal_order   = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
 		$this->assertEquals( $renewal_order->get_shipping_tax(), 0, '', 0.01 );
 		$this->assertEquals( $renewal_order->get_cart_tax(), 7.25, '', 0.01 );
 		$this->assertEquals( $renewal_order->get_total(), 117.25, '', 0.01 );
 
-		$subscription = wcs_get_subscription( $subscription_id );
+		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 
 		// test to ensure subscription tax has been correctly calculated and updated
 		$this->assertEquals( $subscription->get_shipping_tax(), 0, '', 0.01 );

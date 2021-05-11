@@ -7,10 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 
 	public function setUp() {
-		global $wpdb;
-		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rates' );
-		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rate_locations' );
-		wp_cache_init();
+		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 	}
 
 	public function test_applying_zero_rate_tax_to_item() {
