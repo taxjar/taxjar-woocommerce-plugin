@@ -42,7 +42,7 @@ class TaxJar_Order_Tax_Request_Body_Factory extends TaxJar_Tax_Request_Body_Fact
 				'id'               => 'fee-' . $fee_key,
 				'quantity'         => 1,
 				'product_tax_code' => $this->get_line_item_tax_code( $fee ),
-				'unit_price'       => $fee->get_amount(),
+				'unit_price'       => $fee->get_total(),
 				'discount'         => 0
 			);
 
