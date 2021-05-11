@@ -12,10 +12,10 @@ class TaxJar_Tax_Detail_Line_Item {
 	private $taxable_amount;
 
 	public function __construct( $response_line_item ) {
-		$this->id = $response_line_item['id'];
-		$this->combined_tax_rate = $response_line_item['combined_tax_rate'];
-		$this->tax_collectable = $response_line_item['tax_collectable'];
-		$this->taxable_amount = $response_line_item['taxable_amount'];
+		$this->id = $response_line_item->id;
+		$this->combined_tax_rate = $response_line_item->combined_tax_rate;
+		$this->tax_collectable = $response_line_item->tax_collectable;
+		$this->taxable_amount = $response_line_item->taxable_amount;
 	}
 
 	public function get_id() {

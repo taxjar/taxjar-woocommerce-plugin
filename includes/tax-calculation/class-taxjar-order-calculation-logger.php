@@ -65,7 +65,7 @@ class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 
 	private function format_response_details( $details ) {
 		if ( ! empty( $details['tax_details'] ) ) {
-			return PHP_EOL . 'Response: ' . $details['tax_details']->get_json_response();
+			return PHP_EOL . 'Response: ' . wp_json_encode( $details['tax_details']->get_raw_response() );
 		} else {
 			return '';
 		}

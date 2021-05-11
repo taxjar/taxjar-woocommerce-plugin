@@ -46,14 +46,16 @@ class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
 			'response' => array(
 				'code' => 200
 			),
-			'tax' => array(
-				'amount_to_collect' => 0,
-				'breakdown' => array(
-					'combined_tax_rate' => 0
-				),
-				'freight_taxable' => true,
-				'has_nexus' => true
-			)
+			'body' => json_encode( (object) array(
+				'tax' => (object) array(
+					'amount_to_collect' => 0,
+					'breakdown' => (object) array(
+						'combined_tax_rate' => 0
+					),
+					'freight_taxable' => true,
+					'has_nexus' => true
+				)
+			) )
 		);
 		$this->response = $taxjar_response;
 		$request_body = $this->build_tax_request_body();
