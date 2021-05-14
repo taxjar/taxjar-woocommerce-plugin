@@ -46,4 +46,12 @@ class TaxJar_Customer_Helper {
 		wp_delete_user( $customer_id );
 	}
 
+	public static function create_vat_exempt_customer() {
+		$customer = self::create_non_exempt_customer();
+		$customer->set_is_vat_exempt( true );
+		$customer->save();
+		update_user_meta( $customer->get_id(), 'is_vat_exempt', 'yes' );
+		return $customer;
+	}
+
 }
