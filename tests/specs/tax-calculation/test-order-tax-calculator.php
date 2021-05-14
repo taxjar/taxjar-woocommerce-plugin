@@ -92,7 +92,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 	}
 
 	private function build_calculator() {
-		$calculator = new TaxJar_Order_Tax_Calculator( $this->mock_order );
+		$calculator = new TaxJar_Tax_Calculator( $this->mock_order );
 		$calculator->set_logger( $this->mock_logger );
 		$calculator->set_cache( $this->mock_cache );
 		$calculator->set_request_body_factory( $this->mock_request_body_factory );

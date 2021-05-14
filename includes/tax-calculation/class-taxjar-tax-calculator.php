@@ -69,6 +69,10 @@ class TaxJar_Tax_Calculator {
 		$this->context = $context;
 	}
 
+	public function get_context() {
+		return $this->context;
+	}
+
 	public function maybe_calculate_and_apply_tax() {
 		try {
 			$this->create_request_body();
