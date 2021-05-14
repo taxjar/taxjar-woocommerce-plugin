@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class TaxJar_Order_Tax_Request_Body_Factory extends TaxJar_Tax_Request_Body_Factory {
 
-	private $order;
+	protected $order;
 
 	public function __construct( $order ) {
 		$this->order = $order;
@@ -50,7 +50,7 @@ class TaxJar_Order_Tax_Request_Body_Factory extends TaxJar_Tax_Request_Body_Fact
 		}
 	}
 
-	private function get_line_item_tax_code( $item ) {
+	protected function get_line_item_tax_code( $item ) {
 		$tax_code = TaxJar_Tax_Calculation::get_tax_code_from_class( $item->get_tax_class() );
 
 		if ( 'taxable' !== $item->get_tax_status() ) {
@@ -60,11 +60,11 @@ class TaxJar_Order_Tax_Request_Body_Factory extends TaxJar_Tax_Request_Body_Fact
 		return $tax_code;
 	}
 
-	private function get_line_item_unit_price( $item ) {
+	protected function get_line_item_unit_price( $item ) {
 		return wc_format_decimal( $item->get_subtotal() / $item->get_quantity() );
 	}
 
-	private function get_line_item_discount_amount( $item ) {
+	protected function get_line_item_discount_amount( $item ) {
 		return wc_format_decimal( $item->get_subtotal() - $item->get_total() );
 	}
 

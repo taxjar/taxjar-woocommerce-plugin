@@ -91,6 +91,7 @@ final class WC_Taxjar {
 			include_once 'includes/tax-calculation/class-taxjar-tax-request-body.php';
 			include_once 'includes/tax-calculation/abstract-taxjar-tax-request-body-factory.php';
 			include_once 'includes/tax-calculation/class-taxjar-order-tax-request-body-factory.php';
+			include_once 'includes/tax-calculation/class-taxjar-admin-order-tax-request-body-factory.php';
 			include_once 'includes/tax-calculation/class-taxjar-tax-client.php';
 			include_once 'includes/tax-calculation/class-taxjar-tax-details.php';
 			include_once 'includes/tax-calculation/class-taxjar-tax-detail-line-item.php';
