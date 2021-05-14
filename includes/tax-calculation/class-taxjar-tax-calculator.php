@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Order_Tax_Calculator {
+class TaxJar_Tax_Calculator {
 
 	private $logger;
 	private $cache;

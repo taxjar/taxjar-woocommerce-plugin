@@ -99,7 +99,7 @@ final class WC_Taxjar {
 			include_once 'includes/tax-calculation/abstract-taxjar-logger.php';
 			include_once 'includes/tax-calculation/class-taxjar-order-calculation-logger.php';
 			include_once 'includes/tax-calculation/class-taxjar-tax-calculation-exception.php';
-			include_once 'includes/tax-calculation/class-taxjar-order-tax-calculator.php';
+			include_once 'includes/tax-calculation/class-taxjar-tax-calculator.php';
 			include_once 'includes/tax-calculation/class-taxjar-order-tax-calculation-validator.php';
 
 			// Register the integration.
