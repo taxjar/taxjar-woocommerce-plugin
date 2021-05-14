@@ -102,6 +102,7 @@ final class WC_Taxjar {
 			include_once 'includes/tax-calculation/class-taxjar-tax-calculation-exception.php';
 			include_once 'includes/tax-calculation/class-taxjar-tax-calculator.php';
 			include_once 'includes/tax-calculation/class-taxjar-order-tax-calculation-validator.php';
+			include_once 'includes/tax-calculation/class-taxjar-tax-calculator-builder.php';
 
 			// Register the integration.
 			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );
