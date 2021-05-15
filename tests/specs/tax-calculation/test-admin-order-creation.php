@@ -14,6 +14,7 @@ class Test_Admin_Order_Creation extends WP_UnitTestCase {
 		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 
 		$this->post_values =  array(
+			'action' => 'woocommerce_calc_line_taxes',
 			'country' => 'US',
 			'state' => 'UT',
 			'postcode' => '84651',
@@ -42,6 +43,8 @@ class Test_Admin_Order_Creation extends WP_UnitTestCase {
 	public function tearDown() {
 		$this->remove_post_values();
 		unset( $_REQUEST['security'] );
+		remove_filter( 'wp_doing_ajax', array( $this, 'override_doing_ajax' ) );
+		remove_filter( 'wp_die_ajax_handler', array( $this, 'getDieHandler' ), 1, 1 );
 	}
 
 	public function test_order_with_single_line_item() {
@@ -230,10 +233,24 @@ class Test_Admin_Order_Creation extends WP_UnitTestCase {
 	}
 
 	private function call_wc_ajax_calc_line_taxes() {
+		add_filter( 'wp_doing_ajax', array( $this, 'override_doing_ajax' ) );
+		add_filter( 'wp_die_ajax_handler', array( $this, 'getDieHandler' ), 1, 1 );
 		$this->set_up_global_post();
 		ob_start();
 		WC_AJAX::calc_line_taxes();
 		ob_get_clean();
+	}
+
+	public function override_doing_ajax() {
+		return true;
+	}
+
+	public function getDieHandler() {
+		return array( $this, 'dieHandler' );
+	}
+
+	public function dieHandler( $message ) {
+
 	}
 
 	private function set_up_global_post() {
