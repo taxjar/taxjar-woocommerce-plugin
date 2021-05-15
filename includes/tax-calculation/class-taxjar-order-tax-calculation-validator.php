@@ -16,15 +16,22 @@ class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_V
 
 	public function validate( $request_body ) {
 		$request_body->validate();
-		$this->validate_vat_exemption();
+		$this->validate_vat_exemption( $request_body );
 		$this->validate_order_has_nexus( $request_body );
 	}
 
-	private function validate_vat_exemption() {
+	private function validate_vat_exemption( $request_body ) {
 		if ( $this->is_order_vat_exempt() ) {
 			throw new TaxJar_Tax_Calculation_Exception(
 				'is_vat_exempt',
-				__( 'Tax calculation is not performed customer is vat exempt.', 'taxjar' )
+				__( 'Tax calculation is not performed if order is vat exempt.', 'taxjar' )
+			);
+		}
+
+		if ( $this->is_customer_vat_exempt( $request_body ) ) {
+			throw new TaxJar_Tax_Calculation_Exception(
+				'is_vat_exempt',
+				__( 'Tax calculation is not performed if customer is vat exempt.', 'taxjar' )
 			);
 		}
 	}
@@ -32,6 +39,16 @@ class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_V
 	private function is_order_vat_exempt() {
 		$vat_exemption = 'yes' === $this->order->get_meta( 'is_vat_exempt' );
 		return apply_filters( 'woocommerce_order_is_vat_exempt', $vat_exemption, $this->order );
+	}
+
+	private function is_customer_vat_exempt( $request_body ) {
+		$customer_id = intval( $request_body->get_customer_id() );
+		if ( $customer_id > 0 ) {
+			$customer = new WC_Customer( $customer_id );
+			return $customer->is_vat_exempt();
+		}
+		
+		return false;
 	}
 
 	private function validate_order_has_nexus( $request_body ) {
