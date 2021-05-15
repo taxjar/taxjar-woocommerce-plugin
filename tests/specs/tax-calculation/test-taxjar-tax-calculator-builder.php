@@ -27,14 +27,14 @@ class Test_TaxJar_Tax_Calculator_Builder extends WP_UnitTestCase {
 
 	public function test_build_order_calculator() {
 		$should_calculate_tax = true;
-		$calculator = $this->builder->build_order_calculator( $this->order, $should_calculate_tax );
+		$calculator = $this->builder->build_order_calculator( $should_calculate_tax, $this->order );
 		$this->assertNotFalse( $calculator );
 		$this->assertEquals( 'order', $calculator->get_context() );
 	}
 
 	public function test_build_order_calculator_when_no_calculation_required() {
 		$should_calculate_tax = false;
-		$calculator = $this->builder->build_order_calculator( $this->order, $should_calculate_tax );
+		$calculator = $this->builder->build_order_calculator( $should_calculate_tax, $this->order );
 		$this->assertFalse( $calculator );
 	}
 
@@ -42,7 +42,7 @@ class Test_TaxJar_Tax_Calculator_Builder extends WP_UnitTestCase {
 		$should_calculate_tax = false;
 		$this->create_action_nonce( 'calc-totals' );
 		$_POST['action'] = 'woocommerce_calc_line_taxes';
-		$calculator = $this->builder->build_order_calculator( $this->order, $should_calculate_tax );
+		$calculator = $this->builder->build_order_calculator( $should_calculate_tax, $this->order );
 		$this->assertNotFalse( $calculator );
 		$this->assertEquals( 'admin_order', $calculator->get_context() );
 	}
@@ -51,7 +51,7 @@ class Test_TaxJar_Tax_Calculator_Builder extends WP_UnitTestCase {
 		$should_calculate_tax = false;
 		$this->create_action_nonce( 'order-item' );
 		$_POST['action'] = 'woocommerce_add_coupon_discount';
-		$calculator = $this->builder->build_order_calculator( $this->order, $should_calculate_tax );
+		$calculator = $this->builder->build_order_calculator( $should_calculate_tax, $this->order );
 		$this->assertNotFalse( $calculator );
 		$this->assertEquals( 'admin_order', $calculator->get_context() );
 	}
@@ -60,7 +60,7 @@ class Test_TaxJar_Tax_Calculator_Builder extends WP_UnitTestCase {
 		$should_calculate_tax = false;
 		$this->create_action_nonce( 'order-item' );
 		$_POST['action'] = 'woocommerce_remove_order_coupon';
-		$calculator = $this->builder->build_order_calculator( $this->order, $should_calculate_tax );
+		$calculator = $this->builder->build_order_calculator( $should_calculate_tax, $this->order );
 		$this->assertNotFalse( $calculator );
 		$this->assertEquals( 'admin_order', $calculator->get_context() );
 	}
@@ -69,7 +69,7 @@ class Test_TaxJar_Tax_Calculator_Builder extends WP_UnitTestCase {
 		$should_calculate_tax = false;
 		$this->create_action_nonce( 'order-item' );
 		$_POST['action'] = 'woocommerce_remove_order_item';
-		$calculator = $this->builder->build_order_calculator( $this->order, $should_calculate_tax );
+		$calculator = $this->builder->build_order_calculator( $should_calculate_tax, $this->order );
 		$this->assertNotFalse( $calculator );
 		$this->assertEquals( 'admin_order', $calculator->get_context() );
 	}
@@ -78,7 +78,7 @@ class Test_TaxJar_Tax_Calculator_Builder extends WP_UnitTestCase {
 		$should_calculate_tax = false;
 		$this->create_action_nonce( 'order-item' );
 		$_POST['action'] = 'woocommerce_add_order_fee';
-		$calculator = $this->builder->build_order_calculator( $this->order, $should_calculate_tax );
+		$calculator = $this->builder->build_order_calculator( $should_calculate_tax, $this->order );
 		$this->assertNotFalse( $calculator );
 		$this->assertEquals( 'admin_order', $calculator->get_context() );
 	}

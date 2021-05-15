@@ -14,7 +14,7 @@ class TaxJar_Tax_Calculator_Builder {
 		$this->set_tax_client();
 	}
 
-	public function build_order_calculator( $order, $should_calculate ) {
+	public function build_order_calculator( $should_calculate, $order ) {
 		if ( $should_calculate ) {
 			$this->setup_order_calculator( $order );
 		} else {
