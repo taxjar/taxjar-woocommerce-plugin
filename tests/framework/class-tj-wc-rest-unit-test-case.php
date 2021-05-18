@@ -18,6 +18,8 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 
 		parent::setUp();
 
+		Constants_Manager::set_constant( 'REST_REQUEST', true );
+
 		global $wp_rest_server;
 		$wp_rest_server = new WP_REST_Server();
 		$this->server   = $wp_rest_server;
@@ -64,6 +66,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		unset( $this->server );
 		$wp_rest_server = null;
 		TaxJar_Shipping_Helper::delete_simple_flat_rate();
+		Constants_Manager::clear_constants();
 	}
 
 	static function tearDownAfterClass() {

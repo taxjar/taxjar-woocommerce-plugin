@@ -61,6 +61,8 @@ final class WC_Taxjar {
 		// Checks if WooCommerce is installed.
 		if ( class_exists( 'WC_Integration' ) ) {
 
+		    include_once 'includes/utilities/class-constants-manager.php';
+
 		    include_once 'includes/interfaces/class-taxjar-cache-interface.php';
 		    include_once 'includes/interfaces/class-taxjar-tax-client-interface.php';
 		    include_once 'includes/interfaces/class-taxjar-tax-applicator-interface.php';

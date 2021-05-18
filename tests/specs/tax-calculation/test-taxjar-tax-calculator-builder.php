@@ -19,6 +19,7 @@ class Test_TaxJar_Tax_Calculator_Builder extends WP_UnitTestCase {
 		unset( $_POST['action'] );
 		unset( $_REQUEST['security'] );
 		remove_filter( 'wp_doing_ajax', array( $this, 'override_doing_ajax' ) );
+		Constants_Manager::clear_constants();
 	}
 
 	public function override_doing_ajax() {
@@ -81,6 +82,13 @@ class Test_TaxJar_Tax_Calculator_Builder extends WP_UnitTestCase {
 		$calculator = $this->builder->build_order_calculator( $should_calculate_tax, $this->order );
 		$this->assertNotFalse( $calculator );
 		$this->assertEquals( 'admin_order', $calculator->get_context() );
+	}
+
+	public function test_api_request() {
+		$should_calculate_tax = true;
+		Constants_Manager::set_constant( 'REST_REQUEST', true );
+		$calculator = $this->builder->build_order_calculator( $should_calculate_tax, $this->order );
+		$this->assertEquals( 'api_order', $calculator->get_context() );
 	}
 
 	private function create_action_nonce( $key ) {

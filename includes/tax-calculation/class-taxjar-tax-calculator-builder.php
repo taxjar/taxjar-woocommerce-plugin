@@ -16,12 +16,41 @@ class TaxJar_Tax_Calculator_Builder {
 
 	public function build_order_calculator( $should_calculate, $order ) {
 		if ( $should_calculate ) {
-			$this->setup_order_calculator( $order );
+			if ( $this->is_rest_request() ) {
+				$this->maybe_setup_api_tax_calculator( $order );
+			} else {
+				$this->setup_order_calculator( $order );
+			}
 		} else {
 			$this->maybe_setup_admin_order_calculator( $order );
 		}
 
 		return $this->calculator;
+	}
+
+	private function is_rest_request() {
+		return Constants_Manager::is_true( 'REST_REQUEST' );
+	}
+
+	private function maybe_setup_api_tax_calculator( $order ) {
+		if ( ! $this->is_api_tax_calculation_enabled() ) {
+			$this->calculator = false;
+		} else {
+			$this->setup_api_tax_calculator( $order );
+		}
+	}
+
+	private function is_api_tax_calculation_enabled() {
+		$settings = TaxJar_Settings::get_taxjar_settings();
+		return isset( $settings['api_calcs_enabled'] ) && 'yes' === $settings['api_calcs_enabled'];
+	}
+
+	private function setup_api_tax_calculator( $order ) {
+		$this->set_order_logger( $order );
+		$this->set_order_tax_request_body_factory( $order );
+		$this->set_order_applicator( $order );
+		$this->set_order_validator( $order );
+		$this->set_context( 'api_order' );
 	}
 
 	private function setup_order_calculator( $order ) {
