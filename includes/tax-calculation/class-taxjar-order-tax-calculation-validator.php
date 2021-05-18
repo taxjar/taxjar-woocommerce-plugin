@@ -16,8 +16,18 @@ class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_V
 
 	public function validate( $request_body ) {
 		$request_body->validate();
+		$this->validate_order_total_is_not_zero();
 		$this->validate_vat_exemption( $request_body );
 		$this->validate_order_has_nexus( $request_body );
+	}
+
+	private function validate_order_total_is_not_zero() {
+		if ( $this->order->get_subtotal() <= 0 ) {
+			throw new TaxJar_Tax_Calculation_Exception(
+				'order_subtotal_zero',
+				__( 'Tax calculation is not necessary when order subtotal is zero.', 'taxjar' )
+			);
+		}
 	}
 
 	private function validate_vat_exemption( $request_body ) {
