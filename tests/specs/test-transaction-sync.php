@@ -587,7 +587,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		}
 		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 		$order->save();
 
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
@@ -1543,7 +1543,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		}
 		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 		$order->save();
 		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_fee_refund_from_order( $order->get_id() );
