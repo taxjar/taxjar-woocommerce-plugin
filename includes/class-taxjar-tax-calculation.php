@@ -31,16 +31,24 @@ class TaxJar_Tax_Calculation {
 		// Calculate Taxes at Cart / Checkout
 		add_action( 'woocommerce_after_calculate_totals', array( $this, 'calculate_totals' ), 20 );
 
-		// Calculate Taxes for Backend Orders (Woo 2.6+)
-		add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
-
 		// Calculate taxes for WooCommerce Subscriptions renewal orders
 		add_filter( 'wcs_new_order_created', array( $this, 'calculate_renewal_order_totals' ), 10, 3 );
+
+		add_action( 'woocommerce_order_after_calculate_totals', array( $this, 'maybe_calculate_order_taxes' ), 10, 2 );
 
 		// Filters
 		add_filter( 'woocommerce_calc_tax', array( $this, 'override_woocommerce_tax_rates' ), 10, 3 );
 		add_filter( 'woocommerce_customer_taxable_address', array( $this, 'append_base_address_to_customer_taxable_address' ), 10, 1 );
 		add_filter( 'woocommerce_matched_rates', array( $this, 'allow_street_address_for_matched_rates' ), 10, 2 );
+	}
+
+	public function maybe_calculate_order_taxes( $and_taxes, $order ) {
+		$calculator_builder = new TaxJar_Tax_Calculator_Builder();
+		$calculator = $calculator_builder->build_order_calculator( $and_taxes, $order );
+
+		if ( $calculator !== false ) {
+			$calculator->maybe_calculate_and_apply_tax();
+		}
 	}
 
 	public function update_tax_options() {
@@ -533,157 +541,6 @@ class TaxJar_Tax_Calculation {
 	}
 
 	/**
-	 * Calculate tax / totals using TaxJar for backend orders
-	 *
-	 * @return void
-	 */
-	public function calculate_backend_totals( $order_id ) {
-		$order      = wc_get_order( $order_id );
-
-		if ( ! $this->should_calculate_order_tax( $order ) ) {
-			return;
-		}
-
-		$address    = $this->get_backend_address();
-		$line_items = $this->get_backend_line_items( $order );
-
-		if ( method_exists( $order, 'get_shipping_total' ) ) {
-			$shipping = $order->get_shipping_total(); // Woo 3.0+
-		} else {
-			$shipping = $order->get_total_shipping(); // Woo 2.6
-		}
-
-		$customer_id = apply_filters( 'taxjar_get_customer_id', isset( $_POST['customer_user'] ) ? wc_clean( $_POST['customer_user'] ) : 0 );
-
-		$exemption_type = apply_filters( 'taxjar_order_calculation_exemption_type', '', $order );
-
-		$taxes = $this->calculate_tax(
-			array(
-				'to_country'      => $address['to_country'],
-				'to_state'        => $address['to_state'],
-				'to_zip'          => $address['to_zip'],
-				'to_city'         => $address['to_city'],
-				'to_street'       => $address['to_street'],
-				'shipping_amount' => $shipping,
-				'line_items'      => $line_items,
-				'customer_id'     => $customer_id,
-				'exemption_type'  => $exemption_type,
-			)
-		);
-
-		if ( false === $taxes ) {
-			return;
-		}
-
-		if ( class_exists( 'WC_Order_Item_Tax' ) ) { // Add tax rates manually for Woo 3.0+
-			foreach ( $order->get_items() as $item_key => $item ) {
-				$product_id    = $item->get_product_id();
-				$line_item_key = $product_id . '-' . $item_key;
-
-				if ( isset( $taxes['rate_ids'][ $line_item_key ] ) ) {
-					$rate_id  = $taxes['rate_ids'][ $line_item_key ];
-					$item_tax = new WC_Order_Item_Tax();
-					$item_tax->set_rate( $rate_id );
-					$item_tax->set_order_id( $order_id );
-					$item_tax->save();
-				}
-			}
-		} else { // Recalculate tax for Woo 2.6 to apply new tax rates
-			if ( class_exists( 'WC_AJAX' ) ) {
-				remove_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
-				if ( check_ajax_referer( 'calc-totals', 'security', false ) ) {
-					WC_AJAX::calc_line_taxes();
-				}
-				add_action( 'woocommerce_before_save_order_items', array( $this, 'calculate_backend_totals' ), 20 );
-			}
-		}
-	}
-
-	/**
-	 * Determines whether or not TaxJar should calculate tax on an order
-	 * @param $order
-	 * @return bool
-	 */
-	public function should_calculate_order_tax( $order ) {
-		$should_calculate = true;
-		$total = 0;
-
-		foreach( $order->get_items( array( 'line_item', 'fee', 'shipping' ) ) as $item ) {
-			$total += floatval( $item->get_total() );
-		}
-
-		if ( $total <= 0 ) {
-			$should_calculate = false;
-		}
-
-		return apply_filters( 'taxjar_should_calculate_order_tax', $should_calculate, $order );
-	}
-
-	/**
-	 * Get address details of customer for backend orders
-	 *
-	 * @return array
-	 */
-	protected function get_backend_address() {
-		$to_country = isset( $_POST['country'] ) ? strtoupper( wc_clean( $_POST['country'] ) ) : false;
-		$to_state   = isset( $_POST['state'] ) ? strtoupper( wc_clean( $_POST['state'] ) ) : false;
-		$to_zip     = isset( $_POST['postcode'] ) ? strtoupper( wc_clean( $_POST['postcode'] ) ) : false;
-		$to_city    = isset( $_POST['city'] ) ? strtoupper( wc_clean( $_POST['city'] ) ) : false;
-		$to_street  = isset( $_POST['street'] ) ? strtoupper( wc_clean( $_POST['street'] ) ) : false;
-
-		return array(
-			'to_country' => $to_country,
-			'to_state'   => $to_state,
-			'to_zip'     => $to_zip,
-			'to_city'    => $to_city,
-			'to_street'  => $to_street,
-		);
-	}
-
-	/**
-	 * Get line items for backend orders
-	 *
-	 * @return array
-	 */
-	protected function get_backend_line_items( $order ) {
-		$line_items                = array();
-		$this->backend_tax_classes = array();
-
-		foreach ( $order->get_items() as $item_key => $item ) {
-			if ( is_object( $item ) ) { // Woo 3.0+
-				$id             = $item->get_product_id();
-				$quantity       = $item->get_quantity();
-				$unit_price     = wc_format_decimal( $item->get_subtotal() / $quantity );
-				$discount       = wc_format_decimal( $item->get_subtotal() - $item->get_total() );
-				$tax_class_name = $item->get_tax_class();
-				$tax_status     = $item->get_tax_status();
-			}
-
-			$this->backend_tax_classes[ $id ] = $tax_class_name;
-			$tax_code                         = self::get_tax_code_from_class( $tax_class_name );
-
-			if ( 'taxable' !== $tax_status ) {
-				$tax_code = '99999';
-			}
-
-			if ( $unit_price ) {
-				array_push(
-					$line_items,
-					array(
-						'id'               => $id . '-' . $item_key,
-						'quantity'         => $quantity,
-						'product_tax_code' => $tax_code,
-						'unit_price'       => $unit_price,
-						'discount'         => $discount,
-					)
-				);
-			}
-		}
-
-		return apply_filters( 'taxjar_order_calculation_get_line_items', $line_items, $order );
-	}
-
-	/**
 	 * Parse tax code from product
 	 *
 	 * @return string - tax code
@@ -715,67 +572,21 @@ class TaxJar_Tax_Calculation {
 			return $order;
 		}
 
-		if ( ! $this->should_calculate_order_tax( $order ) ) {
-			return $order;
+		$calculator_builder = new TaxJar_Tax_Calculator_Builder();
+		$subscription_calculator = $calculator_builder->build_subscription_order_calculator( $subscription );
+
+		if ( $subscription_calculator !== false ) {
+			$subscription_calculator->maybe_calculate_and_apply_tax();
 		}
 
-		$this->calculate_order_tax( $order );
+		$calculator_builder = new TaxJar_Tax_Calculator_Builder();
+		$renewal_calculator = $calculator_builder->build_renewal_order_calculator( $order );
 
-		// must calculate tax on subscription in order for my account to properly display the correct tax
-		$this->calculate_order_tax( $subscription );
-
-		$order->calculate_totals();
-		$subscription->calculate_totals();
+		if ( $renewal_calculator !== false ) {
+			$renewal_calculator->maybe_calculate_and_apply_tax();
+		}
 
 		return $order;
-	}
-
-	/**
-	 * Calculate tax on an order
-	 *
-	 * @return null
-	 */
-	public function calculate_order_tax( $order ) {
-		$address    = $this->get_address_from_order( $order );
-		$line_items = $this->get_backend_line_items( $order );
-		$shipping   = $order->get_shipping_total(); // Woo 3.0+
-
-		$customer_id = apply_filters( 'taxjar_get_customer_id', $order->get_customer_id() );
-
-		$exemption_type = apply_filters( 'taxjar_order_calculation_exemption_type', '', $order );
-
-		$taxes = $this->calculate_tax(
-			array(
-				'to_country'      => $address['to_country'],
-				'to_state'        => $address['to_state'],
-				'to_zip'          => $address['to_zip'],
-				'to_city'         => $address['to_city'],
-				'to_street'       => $address['to_street'],
-				'shipping_amount' => $shipping,
-				'line_items'      => $line_items,
-				'customer_id'     => $customer_id,
-				'exemption_type'  => $exemption_type,
-			)
-		);
-
-		if ( false === $taxes ) {
-			return;
-		}
-
-		$order->remove_order_items( 'tax' );
-
-		foreach ( $order->get_items() as $item_key => $item ) {
-			$product_id    = $item->get_product_id();
-			$line_item_key = $product_id . '-' . $item_key;
-
-			if ( isset( $taxes['rate_ids'][ $line_item_key ] ) ) {
-				$rate_id  = $taxes['rate_ids'][ $line_item_key ];
-				$item_tax = new WC_Order_Item_Tax();
-				$item_tax->set_rate( $rate_id );
-				$item_tax->set_order_id( $order->get_id() );
-				$item_tax->save();
-			}
-		}
 	}
 
 	/**

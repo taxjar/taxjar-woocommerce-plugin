@@ -84,7 +84,6 @@ final class WC_Taxjar {
 			include_once 'includes/class-taxjar-refund-record.php';
 			include_once 'includes/class-taxjar-customer-record.php';
 			include_once 'includes/class-wc-taxjar-queue-list.php';
-			include_once 'includes/class-wc-taxjar-api-calculation.php';
 			include_once 'includes/class-taxjar-api-request.php';
 			include_once 'includes/class-taxjar-settings.php';
 			include_once 'includes/class-taxjar-tax-calculation.php';
