@@ -146,6 +146,24 @@ class TaxJar_Tax_Calculator_Builder {
 	private function set_admin_order_tax_request_body_factory( $order ) {
 		$this->calculator->set_request_body_factory( new TaxJar_Admin_Order_Tax_Request_Body_Factory( $order ) );
 	}
+
+	public function build_subscription_order_calculator( $subscription ) {
+		$this->set_order_logger( $subscription );
+		$this->set_order_tax_request_body_factory( $subscription );
+		$this->set_order_applicator( $subscription );
+		$this->set_order_validator( $subscription );
+		$this->set_context( 'subscription_order' );
+		return $this->calculator;
+	}
+
+	public function build_renewal_order_calculator( $renewal ) {
+		$this->set_order_logger( $renewal );
+		$this->set_order_tax_request_body_factory( $renewal );
+		$this->set_order_applicator( $renewal );
+		$this->set_order_validator( $renewal );
+		$this->set_context( 'renewal_order' );
+		return $this->calculator;
+	}
 }
 
 

@@ -54,6 +54,12 @@ class TaxJar_Woocommerce_Helper {
 		}
 	}
 
+	public static function update_taxjar_settings( $new_settings ) {
+		$current_settings = get_option( 'woocommerce_taxjar-integration_settings' );
+		$settings = array_replace_recursive( $current_settings, $new_settings );
+		update_option( 'woocommerce_taxjar-integration_settings', $settings );
+	}
+
 	public static function delete_existing_tax_rates() {
 		global $wpdb;
 		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rates' );
