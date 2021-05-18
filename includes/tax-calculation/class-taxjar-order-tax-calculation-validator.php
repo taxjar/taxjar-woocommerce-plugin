@@ -19,6 +19,7 @@ class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_V
 		$this->validate_order_total_is_not_zero();
 		$this->validate_vat_exemption( $request_body );
 		$this->validate_order_has_nexus( $request_body );
+		$this->filter_interrupt();
 	}
 
 	private function validate_order_total_is_not_zero() {
@@ -72,6 +73,16 @@ class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_V
 
 	private function is_out_of_nexus_areas( $request_body ) {
 		return ! $this->nexus->has_nexus_check( $request_body->get_to_country(), $request_body->get_to_state() );
+	}
+
+	private function filter_interrupt() {
+		$should_calculate = apply_filters( 'taxjar_should_calculate_order_tax', true, $this->order );
+		if ( ! $should_calculate ) {
+			throw new TaxJar_Tax_Calculation_Exception(
+				'filter_interrupt',
+				__( 'Tax calculation has been interrupted through a filter.', 'taxjar' )
+			);
+		}
 	}
 
 }

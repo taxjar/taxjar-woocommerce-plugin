@@ -17,6 +17,10 @@ class Test_Order_Tax_Calculation_Validator extends WP_UnitTestCase {
 		$this->mock_nexus = $this->createMock( WC_Taxjar_Nexus::class );
 	}
 
+	public function tearDown() {
+		remove_filter( 'taxjar_should_calculate_order_tax', array( $this, 'filter_interrupt' ) );
+	}
+
 	public function test_vat_exempt() {
 		$this->mock_order->method( 'get_meta' )->willReturn( 'yes' );
 		$order_tax_calculation_validator = $this->build_order_tax_validator();
@@ -49,6 +53,20 @@ class Test_Order_Tax_Calculation_Validator extends WP_UnitTestCase {
 
 		$this->expectException( TaxJar_Tax_Calculation_Exception::class );
 		$order_tax_calculation_validator->validate( $this->mock_tax_request_body );
+	}
+
+	public function test_filter_interrupt() {
+		$this->mock_nexus->method( 'has_nexus_check' )->willReturn( true );
+		$this->mock_order->method( 'get_meta' )->willReturn( 'no' );
+		add_filter( 'taxjar_should_calculate_order_tax', array( $this, 'filter_interrupt' ) );
+
+		$this->expectException( TaxJar_Tax_Calculation_Exception::class );
+		$order_tax_calculation_validator = $this->build_order_tax_validator();
+		$order_tax_calculation_validator->validate( $this->mock_tax_request_body );
+	}
+
+	public function filter_interrupt( $order ) {
+		return false;
 	}
 
 	private function build_order_tax_validator() {
