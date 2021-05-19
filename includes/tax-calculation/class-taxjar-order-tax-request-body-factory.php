@@ -15,11 +15,16 @@ class TaxJar_Order_Tax_Request_Body_Factory extends TaxJar_Tax_Request_Body_Fact
 
 	protected function get_ship_to_address() {
 		$address = $this->order->get_address( 'shipping' );
-		$this->tax_request_body->set_to_country( $address[ 'country' ] );
-		$this->tax_request_body->set_to_state( $address[ 'state' ] );
-		$this->tax_request_body->set_to_zip( $address[ 'postcode' ] );
-		$this->tax_request_body->set_to_city( $address[ 'city' ] );
-		$this->tax_request_body->set_to_street( $address[ 'address_1' ] );
+
+		if ( empty( $address['country']) ) {
+			$address = $this->order->get_address( 'billing' );
+		}
+
+		$this->tax_request_body->set_to_country( $address['country'] );
+		$this->tax_request_body->set_to_state( $address['state'] );
+		$this->tax_request_body->set_to_zip( $address['postcode'] );
+		$this->tax_request_body->set_to_city( $address['city'] );
+		$this->tax_request_body->set_to_street( $address['address_1'] );
 	}
 
 	protected function get_product_line_items() {

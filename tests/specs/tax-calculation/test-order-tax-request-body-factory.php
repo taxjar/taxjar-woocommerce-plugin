@@ -19,6 +19,15 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 		$this->assertEquals( $expected_address['address_1'], $request_body->get_to_street() );
 	}
 
+	public function test_get_address_with_no_shipping_address() {
+		$order = TaxJar_Test_Order_Factory::create();
+		$order->set_shipping_country( '' );
+		$order_tax_request_body_factory = new TaxJar_Order_Tax_Request_Body_Factory( $order );
+		$request_body = $order_tax_request_body_factory->create();
+		$expected_address = TaxJar_Test_Order_Factory::$default_options['billing_address'];
+		$this->assertEquals( $expected_address['address_1'], $request_body->get_to_street() );
+	}
+
 	public function test_get_line_items() {
 		$expected_tax_code = '20010';
 		$order_options_override = array(
@@ -80,7 +89,7 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 		$fee_details['tax_class'] = 'clothing-rate-' . $expected_tax_code;
 		$test_order_factory->add_fee( $fee_details );
 		$order = $test_order_factory->get_order();
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 
 		$order_tax_request_body_factory = new TaxJar_Order_Tax_Request_Body_Factory( $order );
 		$request_body = $order_tax_request_body_factory->create();
