@@ -56,7 +56,7 @@ class Test_Admin_Order_Creation extends WP_UnitTestCase {
 		$this->assert_correct_totals( $order, 107.25, 7.25 );
 	}
 
-	public function test_order_with_taxable_shiping() {
+	public function test_order_with_taxable_shipping() {
 		$this->setup_basic_order();
 		$this->add_shipping_to_order();
 		$this->change_location( 'NY', '10001', 'New York City');
