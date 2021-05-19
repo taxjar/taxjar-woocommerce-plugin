@@ -44,6 +44,7 @@ class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 		$message .= $this->format_context( $details['context'] );
 		$message .= $this->format_request_details( $details );
 		$message .= $this->format_response_details( $details );
+		$message .= PHP_EOL;
 		return $message;
 	}
 
@@ -65,9 +66,25 @@ class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 
 	private function format_response_details( $details ) {
 		if ( ! empty( $details['tax_details'] ) ) {
-			return PHP_EOL . 'Response: ' . wp_json_encode( $details['tax_details']->get_raw_response() );
+			$response = $details['tax_details']->get_raw_response();
+			$message = '';
+			$message .= $this->format_response_message( $response );
+			$message .= $this->format_response_body( $response );
+			return $message;
 		} else {
 			return '';
+		}
+	}
+
+	private function format_response_message( $response ) {
+		if ( ! empty( $response['response'] ) ) {
+			return PHP_EOL . 'Response: ' . json_encode( $response['response'] );
+		}
+	}
+
+	private function format_response_body( $response ) {
+		if ( ! empty( $response['body'] ) ) {
+			return PHP_EOL . 'Response Body: ' . $response['body'];
 		}
 	}
 
@@ -78,6 +95,7 @@ class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 		$message .= $this->format_context( $details['context'] );
 		$message .= $this->format_request_details( $details );
 		$message .= $this->format_response_details( $details );
+		$message .= PHP_EOL;
 		return $message;
 	}
 
@@ -91,6 +109,7 @@ class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 		$message .= $this->format_context( $details['context'] );
 		$message .= $this->format_request_details( $details );
 		$message .= $this->format_response_details( $details );
+		$message .= PHP_EOL;
 		return $message;
 	}
 

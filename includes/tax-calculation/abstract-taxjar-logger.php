@@ -38,7 +38,15 @@ abstract class TaxJar_Logger {
 	 * @param string $message Log message.
 	 */
 	final protected function log( $level, $message ) {
-		$this->logger->log( $level, $message );
+		if ( $this->is_logging_enabled() ) {
+			$context = array( 'source'  => 'taxjar' );
+			$this->logger->log( $level, $message, $context );
+		}
+	}
+
+	protected function is_logging_enabled() {
+		$settings = TaxJar_Settings::get_taxjar_settings();
+		return isset( $settings['debug'] ) && 'yes' === $settings['debug'];
 	}
 
 }
