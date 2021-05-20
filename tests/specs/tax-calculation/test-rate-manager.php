@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Test_TaxJar_WC_Rate_Manager extends WP_UnitTestCase {
+class Test_Rate_Manager extends WP_UnitTestCase {
 
 	public function setUp() {
 		global $wpdb;
@@ -33,7 +33,7 @@ class Test_TaxJar_WC_Rate_Manager extends WP_UnitTestCase {
 	);
 
 	public function test_rate_creation() {
-		$rate = TaxJar_WC_Rate_Manager::add_rate(
+		$rate = Rate_Manager::add_rate(
 			self::$default_rate['rate'],
 			self::$default_rate['tax_class'],
 			self::$default_rate['freight_taxable'],
@@ -56,7 +56,7 @@ class Test_TaxJar_WC_Rate_Manager extends WP_UnitTestCase {
 	}
 
 	public function test_rate_update() {
-		$initial_rate = TaxJar_WC_Rate_Manager::add_rate(
+		$initial_rate = Rate_Manager::add_rate(
 			self::$default_rate['rate'],
 			self::$default_rate['tax_class'],
 			self::$default_rate['freight_taxable'],
@@ -64,7 +64,7 @@ class Test_TaxJar_WC_Rate_Manager extends WP_UnitTestCase {
 		);
 
 		$new_tax_rate = 20;
-		$updated_rate = TaxJar_WC_Rate_Manager::add_rate(
+		$updated_rate = Rate_Manager::add_rate(
 			$new_tax_rate,
 			self::$default_rate['tax_class'],
 			self::$default_rate['freight_taxable'],
@@ -89,7 +89,7 @@ class Test_TaxJar_WC_Rate_Manager extends WP_UnitTestCase {
 
 	public function test_rate_with_nontaxable_shipping() {
 		$freight_taxable = false;
-		$rate = TaxJar_WC_Rate_Manager::add_rate(
+		$rate = Rate_Manager::add_rate(
 			self::$default_rate['rate'],
 			self::$default_rate['tax_class'],
 			$freight_taxable,

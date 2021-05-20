@@ -3,7 +3,7 @@
 namespace TaxJar;
 use WP_UnitTestCase;
 
-class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
+class Test_Tax_Details extends WP_UnitTestCase {
 
 	public function test_get_location() {
 		$expected_location = array(
@@ -14,7 +14,7 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 		);
 
 		$tax_response = $this->build_tax_response();
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 		$tax_details->set_country( $expected_location['country'] );
 		$tax_details->set_state( $expected_location['state'] );
 		$tax_details->set_city( $expected_location['city'] );
@@ -29,7 +29,7 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 	public function test_add_and_get_line_items() {
 		$tax_response = $this->build_tax_response();
 		$tax_body = json_decode( $tax_response['body'] );
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 		$line_item_one = $tax_details->get_line_item( '1' );
 		$line_item_two = $tax_details->get_line_item( '2' );
 
@@ -39,7 +39,7 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 
 	public function test_has_nexus() {
 		$tax_response = $this->build_tax_response();
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 		$this->assertTrue( $tax_details->has_nexus() );
 	}
 
@@ -48,13 +48,13 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 		$tax_body = json_decode( $tax_response['body'] );
 		$tax_body->tax->has_nexus = false;
 		$tax_response['body'] = json_encode($tax_body);
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 		$this->assertFalse( $tax_details->has_nexus() );
 	}
 
 	public function test_is_shipping_taxable() {
 		$tax_response = $this->build_tax_response();
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 		$this->assertTrue( $tax_details->is_shipping_taxable() );
 	}
 
@@ -63,7 +63,7 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 		$tax_body = json_decode( $tax_response['body'] );
 		$tax_body->tax->freight_taxable = false;
 		$tax_response['body'] = json_encode($tax_body);
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 		$this->assertFalse( $tax_details->is_shipping_taxable() );
 	}
 
@@ -73,7 +73,7 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 		unset( $tax_body->tax->breakdown );
 		$tax_body->tax->has_nexus = false;
 		$tax_response['body'] = json_encode($tax_body);
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 	}
 
 	public function test_response_with_shipping_breakdown() {
@@ -86,14 +86,14 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 			'combined_tax_rate' => $expected_shipping_tax_rate
 		);
 		$tax_response['body'] = json_encode($tax_body);
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 		$this->assertEquals( $expected_shipping_tax_rate, $tax_details->get_shipping_tax_rate() );
 	}
 
 	public function test_response_with_no_shipping_breakdown() {
 		$expected_shipping_tax_rate = 0.0;
 		$tax_response = $this->build_tax_response();
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 
 		$this->assertEquals( $expected_shipping_tax_rate, $tax_details->get_shipping_tax_rate() );
 	}
@@ -101,7 +101,7 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 	public function test_tax_detail_rate() {
 		$tax_response = $this->build_tax_response();
 		$tax_body = json_decode( $tax_response['body'] );
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 
 		$this->assertEquals( $tax_body->tax->rate, $tax_details->get_rate() );
 	}
@@ -112,7 +112,7 @@ class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 		$tax_body = json_decode( $tax_response['body'] );
 		unset( $tax_body->tax->rate );
 		$tax_response['body'] = json_encode($tax_body);
-		$tax_details = new TaxJar_Tax_Details( $tax_response );
+		$tax_details = new Tax_Details( $tax_response );
 
 		$this->assertEquals( $expected_rate, $tax_details->get_rate() );
 	}

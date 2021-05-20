@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Tax_Request_Body {
+class Tax_Request_Body {
 
 	private $to_country = null;
 	private $to_state = null;
@@ -38,7 +38,7 @@ class TaxJar_Tax_Request_Body {
 
 	private function validate_country_is_present() {
 		if ( empty( $this->get_to_country() ) ) {
-			throw new TaxJar_Tax_Calculation_Exception(
+			throw new Tax_Calculation_Exception(
 				'missing_required_field_country',
 				__( 'Country field is required to perform tax calculation.', 'taxjar' )
 			);
@@ -47,7 +47,7 @@ class TaxJar_Tax_Request_Body {
 
 	private function validate_zip_code_is_present() {
 		if ( empty( $this->get_to_zip() ) ) {
-			throw new TaxJar_Tax_Calculation_Exception(
+			throw new Tax_Calculation_Exception(
 				'missing_required_field_zip',
 				__( 'Zip code is required to perform tax calculation.', 'taxjar' )
 			);
@@ -56,7 +56,7 @@ class TaxJar_Tax_Request_Body {
 
 	private function validate_line_items_or_shipping_amount_are_present() {
 		if ( empty( $this->get_line_items() ) && ( 0 === $this->get_shipping_amount() ) ) {
-			throw new TaxJar_Tax_Calculation_Exception(
+			throw new Tax_Calculation_Exception(
 				'missing_required_field_line_item_or_shipping',
 				__( 'Either a line item or shipping amount is required to calculate shipping.', 'taxjar' )
 			);
@@ -65,7 +65,7 @@ class TaxJar_Tax_Request_Body {
 
 	private function validate_zip_code_format() {
 		if ( ! TaxJar_Tax_Calculation::is_postal_code_valid( $this->get_to_country(), $this->get_to_state(), $this->get_to_zip() ) ) {
-			throw new TaxJar_Tax_Calculation_Exception(
+			throw new Tax_Calculation_Exception(
 				'invalid_field_zip',
 				__( 'Invalid zip code. The to address zip code does not match the format required for the country.', 'taxjar' )
 			);

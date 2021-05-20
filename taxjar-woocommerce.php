@@ -63,10 +63,10 @@ final class WC_Taxjar {
 
 		    include_once 'includes/utilities/class-constants-manager.php';
 
-		    include_once 'includes/interfaces/class-taxjar-cache-interface.php';
-		    include_once 'includes/interfaces/class-taxjar-tax-client-interface.php';
-		    include_once 'includes/interfaces/class-taxjar-tax-applicator-interface.php';
-		    include_once 'includes/interfaces/class-taxjar-tax-calculation-validator-interface.php';
+		    include_once 'includes/interfaces/class-cache-interface.php';
+		    include_once 'includes/interfaces/class-tax-client-interface.php';
+		    include_once 'includes/interfaces/class-tax-applicator-interface.php';
+		    include_once 'includes/interfaces/class-tax-calculation-validator-interface.php';
 
 			// Include our integration class and WP_User for wp_delete_user()
 			include_once ABSPATH . 'wp-admin/includes/user.php';
@@ -87,23 +87,23 @@ final class WC_Taxjar {
 			include_once 'includes/class-taxjar-api-request.php';
 			include_once 'includes/class-taxjar-settings.php';
 			include_once 'includes/class-taxjar-tax-calculation.php';
-			include_once 'includes/class-taxjar-cache.php';
+			include_once 'includes/class-cache.php';
 
-			include_once 'includes/tax-calculation/class-taxjar-tax-request-body.php';
-			include_once 'includes/tax-calculation/abstract-taxjar-tax-request-body-factory.php';
-			include_once 'includes/tax-calculation/class-taxjar-order-tax-request-body-factory.php';
-			include_once 'includes/tax-calculation/class-taxjar-admin-order-tax-request-body-factory.php';
-			include_once 'includes/tax-calculation/class-taxjar-tax-client.php';
-			include_once 'includes/tax-calculation/class-taxjar-tax-details.php';
-			include_once 'includes/tax-calculation/class-taxjar-tax-detail-line-item.php';
-			include_once 'includes/tax-calculation/class-taxjar-order-tax-applicator.php';
-			include_once 'includes/tax-calculation/class-taxjar-wc-rate-manager.php';
-			include_once 'includes/tax-calculation/abstract-taxjar-logger.php';
-			include_once 'includes/tax-calculation/class-taxjar-order-calculation-logger.php';
-			include_once 'includes/tax-calculation/class-taxjar-tax-calculation-exception.php';
-			include_once 'includes/tax-calculation/class-taxjar-tax-calculator.php';
-			include_once 'includes/tax-calculation/class-taxjar-order-tax-calculation-validator.php';
-			include_once 'includes/tax-calculation/class-taxjar-tax-calculator-builder.php';
+			include_once 'includes/TaxCalculation/class-tax-request-body.php';
+			include_once 'includes/TaxCalculation/abstract-tax-request-body-builder.php';
+			include_once 'includes/TaxCalculation/class-order-tax-request-body-builder.php';
+			include_once 'includes/TaxCalculation/class-admin-order-tax-request-body-builder.php';
+			include_once 'includes/TaxCalculation/class-tax-client.php';
+			include_once 'includes/TaxCalculation/class-tax-details.php';
+			include_once 'includes/TaxCalculation/class-tax-detail-line-item.php';
+			include_once 'includes/TaxCalculation/class-order-tax-applicator.php';
+			include_once 'includes/TaxCalculation/class-rate-manager.php';
+			include_once 'includes/TaxCalculation/abstract-logger.php';
+			include_once 'includes/TaxCalculation/class-order-calculation-logger.php';
+			include_once 'includes/TaxCalculation/class-tax-calculation-exception.php';
+			include_once 'includes/TaxCalculation/class-tax-calculator.php';
+			include_once 'includes/TaxCalculation/class-order-tax-calculation-validator.php';
+			include_once 'includes/TaxCalculation/class-tax-calculator-builder.php';
 
 			// Register the integration.
 			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );

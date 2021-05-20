@@ -18,23 +18,23 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 	private $mock_validator;
 
 	public function setUp() {
-		$this->mock_request_body = $this->createMock( TaxJar_Tax_Request_Body::class );
+		$this->mock_request_body = $this->createMock( Tax_Request_Body::class );
 		$this->mock_request_body->method( 'get_to_country' )->willReturn( 'US' );
 		$this->mock_request_body->method( 'get_to_state' )->willReturn( 'UT' );
 
-		$this->mock_request_body_factory = $this->createMock( TaxJar_Tax_Request_Body_Factory::class );
+		$this->mock_request_body_factory = $this->createMock( Tax_Request_Body_Builder::class );
 		$this->mock_request_body_factory->method( 'create' )->willReturn( $this->mock_request_body );
 
-		$this->mock_tax_details = $this->createMock( TaxJar_Tax_Details::class );
-		$this->mock_tax_client = $this->createMock( TaxJar_Tax_Client_Interface::class );
+		$this->mock_tax_details = $this->createMock( Tax_Details::class );
+		$this->mock_tax_client = $this->createMock( Tax_Client_Interface::class );
 		$this->mock_tax_client->method( 'get_taxes' )->willReturn( $this->mock_tax_details );
 
-		$this->mock_logger = $this->createMock( TaxJar_Logger::class );
-		$this->mock_cache = $this->createMock( TaxJar_Cache_Interface::class );
-		$this->mock_applicator = $this->createMock( TaxJar_Tax_Applicator_Interface::class );
+		$this->mock_logger = $this->createMock( Logger::class );
+		$this->mock_cache = $this->createMock( Cache_Interface::class );
+		$this->mock_applicator = $this->createMock( Tax_Applicator_Interface::class );
 		$this->mock_order = $this->createMock( WC_Order::class );
 
-		$this->mock_validator = $this->createMock( TaxJar_Tax_Calculation_Validator_Interface::class );
+		$this->mock_validator = $this->createMock( Tax_Calculation_Validator_Interface::class );
 	}
 
 	public function test_invalid_logger() {
@@ -97,7 +97,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 	}
 
 	private function build_calculator() {
-		$calculator = new TaxJar_Tax_Calculator( $this->mock_order );
+		$calculator = new Tax_Calculator( $this->mock_order );
 		$calculator->set_logger( $this->mock_logger );
 		$calculator->set_cache( $this->mock_cache );
 		$calculator->set_request_body_factory( $this->mock_request_body_factory );

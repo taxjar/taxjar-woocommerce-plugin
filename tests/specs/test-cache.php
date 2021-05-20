@@ -4,13 +4,13 @@ namespace TaxJar;
 
 use WP_UnitTestCase;
 
-class Test_TaxJar_Cache extends WP_UnitTestCase {
+class Test_Cache extends WP_UnitTestCase {
 
 	public function test_set_and_read_with_hashed_key() {
 		$key_data = array( 'test' => 'test' );
 		$value_to_set = array( 'value' => 'test' );
 
-		$cache = new TaxJar_Cache( 60, 'prefix_' );
+		$cache = new Cache( 60, 'prefix_' );
 		$cache->set_with_hashed_key( $key_data, $value_to_set );
 		$retrieved_value = $cache->read_hashed_value( $key_data );
 
@@ -22,7 +22,7 @@ class Test_TaxJar_Cache extends WP_UnitTestCase {
 		$mismatching_key_data = array( 'test' => '2' );
 		$value_to_set = array( 'value' => 'test' );
 
-		$cache = new TaxJar_Cache( 60, 'prefix_' );
+		$cache = new Cache( 60, 'prefix_' );
 		$cache->set_with_hashed_key( $initial_key_data, $value_to_set );
 		$retrieved_value = $cache->read_hashed_value( $mismatching_key_data );
 
@@ -33,7 +33,7 @@ class Test_TaxJar_Cache extends WP_UnitTestCase {
 		$key_data = array( 'test' => '3' );
 		$value_to_set = array( 'value' => 'test' );
 
-		$cache = new TaxJar_Cache( 60, 'prefix_' );
+		$cache = new Cache( 60, 'prefix_' );
 		$cache->set_with_hashed_key( $key_data, $value_to_set );
 		$retrieved_value = $cache->read_hashed_value( $key_data );
 
@@ -50,7 +50,7 @@ class Test_TaxJar_Cache extends WP_UnitTestCase {
 		$key_data = array( 'test' => '4' );
 		$value_to_set = array( 'value' => 'test' );
 
-		$cache = new TaxJar_Cache( 60, 'prefix_' );
+		$cache = new Cache( 60, 'prefix_' );
 		$cache->set_with_hashed_key( $key_data, $value_to_set );
 		$this->assertTrue( $cache->contains_hashed_value( $key_data ) );
 

@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Order_Tax_Applicator implements TaxJar_Tax_Applicator_Interface {
+class Order_Tax_Applicator implements Tax_Applicator_Interface {
 
 	private $order;
 	private $tax_details;
@@ -46,7 +46,7 @@ class TaxJar_Order_Tax_Applicator implements TaxJar_Tax_Applicator_Interface {
 	private function create_rate_and_apply_to_product_line_item( $item_key, $item ) {
 		$line_item_tax_rate = $this->get_product_line_item_tax_rate( $item_key, $item );
 		$tax_class = $item->get_tax_class();
-		$wc_rate = TaxJar_WC_Rate_Manager::add_rate(
+		$wc_rate = Rate_Manager::add_rate(
 			$line_item_tax_rate,
 			$tax_class,
 			$this->tax_details->is_shipping_taxable(),
@@ -88,7 +88,7 @@ class TaxJar_Order_Tax_Applicator implements TaxJar_Tax_Applicator_Interface {
 	private function create_rate_and_apply_to_fee_line_item( $fee_key, $fee ) {
 		$fee_tax_rate = $this->get_tax_rate_for_fee_line_item( $fee_key, $fee );
 		$tax_class = $fee->get_tax_class();
-		$wc_rate = TaxJar_WC_Rate_Manager::add_rate( $fee_tax_rate,
+		$wc_rate = Rate_Manager::add_rate( $fee_tax_rate,
 			$tax_class,
 			$this->tax_details->is_shipping_taxable(),
 			$this->tax_details->get_location()
@@ -114,7 +114,7 @@ class TaxJar_Order_Tax_Applicator implements TaxJar_Tax_Applicator_Interface {
 	private function apply_tax_to_shipping_item( $item ) {
 		if ( $this->tax_details->is_shipping_taxable() ) {
 			$tax_rate = 100 * $this->tax_details->get_shipping_tax_rate();
-			$wc_rate = TaxJar_WC_Rate_Manager::add_rate(
+			$wc_rate = Rate_Manager::add_rate(
 				$tax_rate,
 				'',
 				$this->tax_details->is_shipping_taxable(),

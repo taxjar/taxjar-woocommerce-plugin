@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_WC_Rate_Manager {
+class Rate_Manager {
 
 	public static function add_rate( $rate, $tax_class, $freight_taxable = 1, $location = array() ) {
 		$new_tax_rate = self::prepare_tax_rate( $rate, $tax_class, $freight_taxable, $location );

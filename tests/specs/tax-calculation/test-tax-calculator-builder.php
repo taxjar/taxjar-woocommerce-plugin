@@ -1,6 +1,7 @@
 <?php
 
 namespace TaxJar;
+
 use WP_UnitTestCase;
 use WC_Order;
 
@@ -8,14 +9,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Test_TaxJar_Tax_Calculator_Builder extends WP_UnitTestCase {
+class Test_Tax_Calculator_Builder extends WP_UnitTestCase {
 
 	private $order;
 	private $builder;
 
 	public function setUp() {
 		$this->order = $this->createMock( WC_Order::class );
-		$this->builder = new TaxJar_Tax_Calculator_Builder();
+		$this->builder = new Tax_Calculator_Builder();
 		add_filter( 'wp_doing_ajax', array( $this, 'override_doing_ajax' ) );
 	}
 

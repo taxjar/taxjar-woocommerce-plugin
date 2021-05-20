@@ -13,7 +13,7 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 
 	public function test_get_ship_to_address() {
 		$order = TaxJar_Test_Order_Factory::create();
-		$order_tax_request_body_factory = new TaxJar_Order_Tax_Request_Body_Factory( $order );
+		$order_tax_request_body_factory = new Order_Tax_Request_Body_Builder( $order );
 		$request_body = $order_tax_request_body_factory->create();
 		$expected_address = TaxJar_Test_Order_Factory::$default_options['shipping_address'];
 
@@ -27,7 +27,7 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 	public function test_get_address_with_no_shipping_address() {
 		$order = TaxJar_Test_Order_Factory::create();
 		$order->set_shipping_country( '' );
-		$order_tax_request_body_factory = new TaxJar_Order_Tax_Request_Body_Factory( $order );
+		$order_tax_request_body_factory = new Order_Tax_Request_Body_Builder( $order );
 		$request_body = $order_tax_request_body_factory->create();
 		$expected_address = TaxJar_Test_Order_Factory::$default_options['billing_address'];
 		$this->assertEquals( $expected_address['address_1'], $request_body->get_to_street() );
@@ -44,7 +44,7 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 			)
 		);
 		$order = TaxJar_Test_Order_Factory::create( $order_options_override );
-		$order_tax_request_body_factory = new TaxJar_Order_Tax_Request_Body_Factory( $order );
+		$order_tax_request_body_factory = new Order_Tax_Request_Body_Builder( $order );
 		$request_body = $order_tax_request_body_factory->create();
 		$line_items = $request_body->get_line_items();
 
@@ -59,7 +59,7 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 
 	public function test_get_shipping_amount() {
 		$order = TaxJar_Test_Order_Factory::create();
-		$order_tax_request_body_factory = new TaxJar_Order_Tax_Request_Body_Factory( $order );
+		$order_tax_request_body_factory = new Order_Tax_Request_Body_Builder( $order );
 		$request_body = $order_tax_request_body_factory->create();
 
 		$expected_shipping_total = TaxJar_Test_Order_Factory::$default_options['totals']['shipping_total'];
@@ -68,7 +68,7 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 
 	public function test_get_customer_id() {
 		$order = TaxJar_Test_Order_Factory::create();
-		$order_tax_request_body_factory = new TaxJar_Order_Tax_Request_Body_Factory( $order );
+		$order_tax_request_body_factory = new Order_Tax_Request_Body_Builder( $order );
 		$request_body = $order_tax_request_body_factory->create();
 
 		$expected_customer_id = TaxJar_Test_Order_Factory::$default_options['customer_id'];
@@ -77,7 +77,7 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 
 	public function test_get_exemption_type() {
 		$order = TaxJar_Test_Order_Factory::create();
-		$order_tax_request_body_factory = new TaxJar_Order_Tax_Request_Body_Factory( $order );
+		$order_tax_request_body_factory = new Order_Tax_Request_Body_Builder( $order );
 		$request_body = $order_tax_request_body_factory->create();
 
 		$expected_customer_id = TaxJar_Test_Order_Factory::$default_options['customer_id'];
@@ -96,7 +96,7 @@ class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 		$order = $test_order_factory->get_order();
 		$order->calculate_totals( false );
 
-		$order_tax_request_body_factory = new TaxJar_Order_Tax_Request_Body_Factory( $order );
+		$order_tax_request_body_factory = new Order_Tax_Request_Body_Builder( $order );
 		$request_body = $order_tax_request_body_factory->create();
 		$line_items = $request_body->get_line_items();
 

@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_Validator_Interface {
+class Tax_Calculation_Validator implements Tax_Calculation_Validator_Interface {
 
 	private $order;
 	private $nexus;
@@ -28,7 +28,7 @@ class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_V
 
 	private function validate_order_total_is_not_zero() {
 		if ( $this->get_order_subtotal() <= 0 ) {
-			throw new TaxJar_Tax_Calculation_Exception(
+			throw new Tax_Calculation_Exception(
 				'order_subtotal_zero',
 				__( 'Tax calculation is not necessary when order subtotal is zero.', 'taxjar' )
 			);
@@ -41,14 +41,14 @@ class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_V
 
 	private function validate_vat_exemption( $request_body ) {
 		if ( $this->is_order_vat_exempt() ) {
-			throw new TaxJar_Tax_Calculation_Exception(
+			throw new Tax_Calculation_Exception(
 				'is_vat_exempt',
 				__( 'Tax calculation is not performed if order is vat exempt.', 'taxjar' )
 			);
 		}
 
 		if ( $this->is_customer_vat_exempt( $request_body ) ) {
-			throw new TaxJar_Tax_Calculation_Exception(
+			throw new Tax_Calculation_Exception(
 				'is_vat_exempt',
 				__( 'Tax calculation is not performed if customer is vat exempt.', 'taxjar' )
 			);
@@ -72,7 +72,7 @@ class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_V
 
 	private function validate_order_has_nexus( $request_body ) {
 		if ( $this->is_out_of_nexus_areas( $request_body ) ) {
-			throw new TaxJar_Tax_Calculation_Exception(
+			throw new Tax_Calculation_Exception(
 				'no_nexus',
 				__( 'Order does not have nexus.', 'taxjar' )
 			);
@@ -86,7 +86,7 @@ class TaxJar_Order_Tax_Calculation_Validator implements TaxJar_Tax_Calculation_V
 	private function filter_interrupt() {
 		$should_calculate = apply_filters( 'taxjar_should_calculate_order_tax', true, $this->order );
 		if ( ! $should_calculate ) {
-			throw new TaxJar_Tax_Calculation_Exception(
+			throw new Tax_Calculation_Exception(
 				'filter_interrupt',
 				__( 'Tax calculation has been interrupted through a filter.', 'taxjar' )
 			);

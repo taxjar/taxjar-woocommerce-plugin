@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Order_Tax_Request_Body_Factory extends TaxJar_Tax_Request_Body_Factory {
+class Order_Tax_Request_Body_Builder extends Tax_Request_Body_Builder {
 
 	protected $order;
 

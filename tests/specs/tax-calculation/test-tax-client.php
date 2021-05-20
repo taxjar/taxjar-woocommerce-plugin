@@ -6,7 +6,7 @@ use WP_UnitTestCase;
 use WP_Error;
 use Exception;
 
-class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
+class Test_Tax_Client extends WP_UnitTestCase {
 
 	private $response;
 
@@ -28,7 +28,7 @@ class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
 	public function test_wp_error_response() {
 		$this->response = new WP_Error();
 		$request_body = $this->build_tax_request_body();
-		$tax_client = new TaxJar_Tax_Client();
+		$tax_client = new Tax_Client();
 
 		$this->expectException( Exception::class );
 		$tax_details = $tax_client->get_taxes( $request_body );
@@ -41,7 +41,7 @@ class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
 			)
 		);
 		$request_body = $this->build_tax_request_body();
-		$tax_client = new TaxJar_Tax_Client();
+		$tax_client = new Tax_Client();
 
 		$this->expectException( Exception::class );
 		$tax_details = $tax_client->get_taxes( $request_body );
@@ -65,14 +65,14 @@ class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
 		);
 		$this->response = $taxjar_response;
 		$request_body = $this->build_tax_request_body();
-		$tax_client = new TaxJar_Tax_Client();
+		$tax_client = new Tax_Client();
 		$tax_details = $tax_client->get_taxes( $request_body );
 
-		$this->assertInstanceOf( TaxJar_Tax_Details::class, $tax_details );
+		$this->assertInstanceOf( Tax_Details::class, $tax_details );
 	}
 
 	private function build_tax_request_body() {
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_customer_id( 1 );
 		$request_body->set_to_country( 'US' );
 		$request_body->set_to_state( 'UT' );

@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Tax_Calculator {
+class Tax_Calculator {
 
 	private $logger;
 	private $cache;
@@ -22,7 +22,7 @@ class TaxJar_Tax_Calculator {
 	private $tax_details;
 
 	public function set_logger( $logger ) {
-		if ( $logger instanceof TaxJar_Logger ) {
+		if ( $logger instanceof Logger ) {
 			$this->logger = $logger;
 		} else {
 			throw new Exception( 'Logger must be instance of TaxJar_Logger' );
@@ -30,7 +30,7 @@ class TaxJar_Tax_Calculator {
 	}
 
 	public function set_cache( $cache ) {
-		if ( $cache instanceof TaxJar_Cache_Interface ) {
+		if ( $cache instanceof Cache_Interface ) {
 			$this->cache = $cache;
 		} else {
 			throw new Exception( 'Cache must implement TaxJar_Cache_Interface' );
@@ -38,7 +38,7 @@ class TaxJar_Tax_Calculator {
 	}
 
 	public function set_request_body_factory( $request_body_factory ) {
-		if ( $request_body_factory instanceof TaxJar_Tax_Request_Body_Factory ) {
+		if ( $request_body_factory instanceof Tax_Request_Body_Builder ) {
 			$this->request_body_factory = $request_body_factory;
 		} else {
 			throw new Exception( 'Request Body Factory must be instance of TaxJar_Tax_Request_Body_Factory' );
@@ -46,7 +46,7 @@ class TaxJar_Tax_Calculator {
 	}
 
 	public function set_tax_client( $tax_client ) {
-		if ( $tax_client instanceof TaxJar_Tax_Client_Interface ) {
+		if ( $tax_client instanceof Tax_Client_Interface ) {
 			$this->tax_client = $tax_client;
 		} else {
 			throw new Exception( 'Tax Client must implement TaxJar_Tax_Client_Interface' );
@@ -54,7 +54,7 @@ class TaxJar_Tax_Calculator {
 	}
 
 	public function set_applicator( $applicator ) {
-		if ( $applicator instanceof TaxJar_Tax_Applicator_Interface ) {
+		if ( $applicator instanceof Tax_Applicator_Interface ) {
 			$this->applicator = $applicator;
 		} else {
 			throw new Exception( 'Tax Client must implement TaxJar_Tax_Applicator_Interface' );
@@ -62,7 +62,7 @@ class TaxJar_Tax_Calculator {
 	}
 
 	public function set_validator( $validator ) {
-		if ( $validator instanceof TaxJar_Tax_Calculation_Validator_Interface ) {
+		if ( $validator instanceof Tax_Calculation_Validator_Interface ) {
 			$this->validator = $validator;
 		} else {
 			throw new Exception( 'Validator must implement TaxJar_Tax_Calculation_Validator_Interface' );
@@ -122,7 +122,7 @@ class TaxJar_Tax_Calculator {
 
 	private function get_tax_from_cache() {
 		$cached_response = $this->cache->read_hashed_value( $this->request_body->to_array() );
-		$this->tax_details = new TaxJar_Tax_Details( $cached_response );
+		$this->tax_details = new Tax_Details( $cached_response );
 	}
 
 	private function get_tax_from_api() {

@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Test_TaxJar_Order_Calculation_Logger extends WP_UnitTestCase {
+class Test_Order_Calculation_Logger extends WP_UnitTestCase {
 
 	private $test_order;
 	private $mock_wc_logger;
@@ -23,12 +23,12 @@ class Test_TaxJar_Order_Calculation_Logger extends WP_UnitTestCase {
 	public function test_invalid_wc_logger() {
 		$invalid_logger = 'not a wc logger object';
 		$this->expectException( Exception::class );
-		$calculation_logger = new TaxJar_Order_Calculation_Logger( $invalid_logger, $this->test_order );
+		$calculation_logger = new Order_Calculation_Logger( $invalid_logger, $this->test_order );
 	}
 
 	public function test_log_failure_with_taxjar_exemption() {
-		$calculation_logger = new TaxJar_Order_Calculation_Logger( $this->mock_wc_logger, $this->test_order );
-		$taxjar_exception_mock = $this->createMock( TaxJar_Tax_Calculation_Exception::class );
+		$calculation_logger = new Order_Calculation_Logger( $this->mock_wc_logger, $this->test_order );
+		$taxjar_exception_mock = $this->createMock( Tax_Calculation_Exception::class );
 		$log_details = array(
 			'exception' => $taxjar_exception_mock,
 			'context' => 'context'
@@ -40,7 +40,7 @@ class Test_TaxJar_Order_Calculation_Logger extends WP_UnitTestCase {
 	}
 
 	public function test_log_failure_with_generic_exception() {
-		$calculation_logger = new TaxJar_Order_Calculation_Logger( $this->mock_wc_logger, $this->test_order );
+		$calculation_logger = new Order_Calculation_Logger( $this->mock_wc_logger, $this->test_order );
 		$exception_mock = $this->createMock( 'Exception' );
 		$log_details = array(
 			'exception' => $exception_mock,
@@ -53,7 +53,7 @@ class Test_TaxJar_Order_Calculation_Logger extends WP_UnitTestCase {
 	}
 
 	public function test_log_success_log_level() {
-		$calculation_logger = new TaxJar_Order_Calculation_Logger( $this->mock_wc_logger, $this->test_order );
+		$calculation_logger = new Order_Calculation_Logger( $this->mock_wc_logger, $this->test_order );
 		$log_details = array(
 			'context' => 'context'
 		);

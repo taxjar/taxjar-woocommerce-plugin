@@ -28,7 +28,7 @@ class Test_Admin_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 		$_POST['postcode'] = '84651';
 		$_POST['street'] = '123 Main St';
 
-		$order_tax_request_body_factory = new TaxJar_Admin_Order_Tax_Request_Body_Factory( $this->order );
+		$order_tax_request_body_factory = new Admin_Order_Tax_Request_Body_Builder( $this->order );
 		$request_body = $order_tax_request_body_factory->create();
 
 		$this->assertEquals( $_POST['country'], $request_body->get_to_country() );
@@ -39,7 +39,7 @@ class Test_Admin_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 	}
 
 	public function test_empty_shipping_post_parameters() {
-		$order_tax_request_body_factory = new TaxJar_Admin_Order_Tax_Request_Body_Factory( $this->order );
+		$order_tax_request_body_factory = new Admin_Order_Tax_Request_Body_Builder( $this->order );
 		$request_body = $order_tax_request_body_factory->create();
 
 		$this->assertFalse( $request_body->get_to_country() );
@@ -51,13 +51,13 @@ class Test_Admin_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 
 	public function test_get_customer_id() {
 		$_POST['customer_user'] = '3';
-		$order_tax_request_body_factory = new TaxJar_Admin_Order_Tax_Request_Body_Factory( $this->order );
+		$order_tax_request_body_factory = new Admin_Order_Tax_Request_Body_Builder( $this->order );
 		$request_body = $order_tax_request_body_factory->create();
 		$this->assertEquals( $_POST['customer_user'], $request_body->get_customer_id() );
 	}
 
 	public function test_no_customer_id_post_parameter() {
-		$order_tax_request_body_factory = new TaxJar_Admin_Order_Tax_Request_Body_Factory( $this->order );
+		$order_tax_request_body_factory = new Admin_Order_Tax_Request_Body_Builder( $this->order );
 		$request_body = $order_tax_request_body_factory->create();
 		$this->assertEquals( 0, $request_body->get_customer_id() );
 	}

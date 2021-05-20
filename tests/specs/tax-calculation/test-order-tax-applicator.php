@@ -22,7 +22,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$order = TaxJar_Test_Order_Factory::create_zero_tax_order();
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		foreach( $order->get_items() as $item ) {
@@ -43,7 +43,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( true );
 		$tax_detail_mock->method( 'get_shipping_tax_rate' )->willReturn( $shipping_tax_rate );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$this->assertEquals( 10.0, $order->get_discount_total() );
@@ -58,7 +58,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( true );
 		$tax_detail_mock->method( 'get_shipping_tax_rate' )->willReturn( $shipping_tax_rate );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$this->assertEquals( 121.00, $order->get_total() );
@@ -71,7 +71,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$order->calculate_totals();
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$expected_tax = $tax_rate * TaxJar_Test_Order_Factory::$default_options['products'][0]['price'];
@@ -110,14 +110,14 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$first_line_item_rate = 0.1;
 		$second_line_item_rate = 0.2;
 
-		$tax_detail_mock = $this->createMock( TaxJar_Tax_Details::class );
+		$tax_detail_mock = $this->createMock( Tax_Details::class );
 		$mock_line_item_map = array();
 
 		$item_index = 0;
 		foreach( $order->get_items() as $item_key => $item ) {
 			$product_id    = $item->get_product_id();
 			$line_item_key = $product_id . '-' . $item_key;
-			$tax_detail_line_item_mock = $this->createMock( TaxJar_Tax_Detail_Line_Item::class );
+			$tax_detail_line_item_mock = $this->createMock( Tax_Detail_Line_Item::class );
 			$tax_detail_line_item_mock->method( 'get_id' )->willReturn( $line_item_key );
 
 			if ( $item_index === 0 ) {
@@ -131,7 +131,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		}
 		$tax_detail_mock->method( 'get_line_item' )->willReturnMap( $mock_line_item_map );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		foreach( $order->get_items() as $item ) {
@@ -150,7 +150,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $line_item_tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( true );
 		$tax_detail_mock->method( 'get_shipping_tax_rate' )->willReturn( $shipping_tax_rate );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$expected_line_tax = $line_item_tax_rate * TaxJar_Test_Order_Factory::$default_options['products'][0]['price'];
@@ -177,7 +177,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( true );
 		$tax_detail_mock->method( 'get_shipping_tax_rate' )->willReturn( $tax_rate );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$expected_shipping_tax = $tax_rate * TaxJar_Test_Order_Factory::$default_options['shipping_method']['cost'];
@@ -190,7 +190,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$order->calculate_totals();
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$expected_tax = $tax_rate * TaxJar_Test_Order_Factory::$default_fee_details['amount'];
@@ -210,7 +210,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$order->calculate_totals();
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$expected_tax = $tax_rate * TaxJar_Test_Order_Factory::$default_fee_details['amount'];
@@ -227,7 +227,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$order = TaxJar_Test_Order_Factory::create_zero_tax_order();
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$expected_tax = $tax_rate * TaxJar_Test_Order_Factory::$default_options['products'][0]['price'];
@@ -250,7 +250,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$order = TaxJar_Test_Order_Factory::create_zero_tax_order( $order_options_override );
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$expected_tax = $tax_rate * TaxJar_Test_Order_Factory::$default_options['products'][0]['price'];
@@ -268,7 +268,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( true );
 		$tax_detail_mock->method( 'get_shipping_tax_rate' )->willReturn( $tax_rate );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$expected_shipping_tax = $tax_rate * TaxJar_Test_Order_Factory::$default_options['shipping_method']['cost'];
@@ -281,14 +281,14 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
 		$tax_detail_mock->method( 'get_shipping_tax_rate' )->willReturn( $tax_rate );
-		$tax_applicator = new TaxJar_Order_Tax_Applicator( $order );
+		$tax_applicator = new Order_Tax_Applicator( $order );
 		$tax_applicator->apply_tax( $tax_detail_mock );
 
 		$this->assertEquals( 0, $order->get_shipping_tax() );
 	}
 
 	private function build_tax_detail_mock( $order, $tax_rate ) {
-		$tax_detail_mock = $this->createMock( TaxJar_Tax_Details::class );
+		$tax_detail_mock = $this->createMock( Tax_Details::class );
 		$mock_line_items = $this->build_mock_line_item_map( $order, $tax_rate );
 		$tax_detail_mock->method( 'get_line_item' )->willReturnMap( $mock_line_items );
 		return $tax_detail_mock;
@@ -300,7 +300,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		foreach( $order->get_items() as $item_key => $item ) {
 			$product_id    = $item->get_product_id();
 			$line_item_key = $product_id . '-' . $item_key;
-			$tax_detail_line_item_mock = $this->createMock( TaxJar_Tax_Detail_Line_Item::class );
+			$tax_detail_line_item_mock = $this->createMock( Tax_Detail_Line_Item::class );
 			$tax_detail_line_item_mock->method( 'get_id' )->willReturn( $line_item_key );
 			$tax_detail_line_item_mock->method( 'get_tax_rate' )->willReturn( $tax_rate );
 			$mock_line_item_map[] = array( $line_item_key, $tax_detail_line_item_mock );
@@ -308,7 +308,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 
 		foreach( $order->get_items( 'fee' ) as $fee_key => $fee ) {
 			$line_item_key = 'fee-' . $fee_key;
-			$tax_detail_line_item_mock = $this->createMock( TaxJar_Tax_Detail_Line_Item::class );
+			$tax_detail_line_item_mock = $this->createMock( Tax_Detail_Line_Item::class );
 			$tax_detail_line_item_mock->method( 'get_id' )->willReturn( $line_item_key );
 			$tax_detail_line_item_mock->method( 'get_tax_rate' )->willReturn( $tax_rate );
 			$mock_line_item_map[] = array( $line_item_key, $tax_detail_line_item_mock );

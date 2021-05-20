@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Tax_Client implements TaxJar_Tax_Client_Interface {
+class Tax_Client implements Tax_Client_Interface {
 
 	private $tax_request_body;
 	private $tax_details;
@@ -41,7 +41,7 @@ class TaxJar_Tax_Client implements TaxJar_Tax_Client_Interface {
 	}
 
 	private function build_tax_details( $response ) {
-		$this->tax_details = new TaxJar_Tax_Details( $response );
+		$this->tax_details = new Tax_Details( $response );
 		$this->tax_details->set_country( $this->tax_request_body->get_to_country() );
 		$this->tax_details->set_state( $this->tax_request_body->get_to_state() );
 		$this->tax_details->set_zip( $this->tax_request_body->get_to_zip() );

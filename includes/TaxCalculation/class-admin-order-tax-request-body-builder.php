@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Admin_Order_Tax_Request_Body_Factory extends TaxJar_Order_Tax_Request_Body_Factory {
+class Admin_Order_Tax_Request_Body_Builder extends Order_Tax_Request_Body_Builder {
 
 	protected function get_ship_to_address() {
 		$to_country = isset( $_POST['country'] ) ? strtoupper( wc_clean( $_POST['country'] ) ) : false;

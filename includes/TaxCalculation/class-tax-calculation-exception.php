@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Tax_Calculation_Exception extends Exception {
+class Tax_Calculation_Exception extends Exception {
 
 	/** @var string sanitized error code */
 	protected $error_code;

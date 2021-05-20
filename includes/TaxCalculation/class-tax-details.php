@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Tax_Details {
+class Tax_Details {
 
 	private $line_items;
 	private $freight_taxable;
@@ -34,7 +34,7 @@ class TaxJar_Tax_Details {
 
 		if ( !empty( $response_body->tax->breakdown->line_items ) ) {
 			foreach( $response_body->tax->breakdown->line_items as $response_line_item ) {
-				$line_item = new TaxJar_Tax_Detail_Line_Item( $response_line_item );
+				$line_item = new Tax_Detail_Line_Item( $response_line_item );
 				$this->line_items[ $line_item->get_id() ] = $line_item;
 			}
 		}

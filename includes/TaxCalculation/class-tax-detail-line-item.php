@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Tax_Detail_Line_Item {
+class Tax_Detail_Line_Item {
 
 	private $id;
 	private $combined_tax_rate;

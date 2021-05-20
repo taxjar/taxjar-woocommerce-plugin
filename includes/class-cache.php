@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class TaxJar_Cache
  */
-class TaxJar_Cache implements TaxJar_Cache_Interface {
+class Cache implements Cache_Interface {
 
 	/**
 	 * Prefix to cache key, used when dynamically creating key.

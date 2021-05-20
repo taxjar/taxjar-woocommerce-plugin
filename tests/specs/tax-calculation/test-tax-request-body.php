@@ -3,13 +3,13 @@
 namespace TaxJar;
 use WP_UnitTestCase;
 
-class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
+class Test_Tax_Request_Body extends WP_UnitTestCase {
 
 	/**
 	 * @doesNotPerformAssertions
 	 */
 	public function test_validate() {
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_to_zip( '11111' );
 		$request_body->set_to_country( 'US' );
 		$request_body->add_line_item( 1 );
@@ -19,23 +19,23 @@ class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 	}
 
 	public function test_validate_with_no_country() {
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_to_zip( '11111' );
 		$request_body->add_line_item( 1 );
 		$request_body->set_shipping_amount( 1 );
 
-		$this->expectException( TaxJar_Tax_Calculation_Exception::class );
+		$this->expectException( Tax_Calculation_Exception::class );
 
 		$request_body->validate();
 	}
 
 	public function test_validate_with_no_zip() {
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_to_country( 'US' );
 		$request_body->add_line_item( 1 );
 		$request_body->set_shipping_amount( 1 );
 
-		$this->expectException( TaxJar_Tax_Calculation_Exception::class );
+		$this->expectException( Tax_Calculation_Exception::class );
 
 		$request_body->validate();
 	}
@@ -44,7 +44,7 @@ class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 	 * @doesNotPerformAssertions
 	 */
 	public function test_validate_with_shipping_amount() {
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_to_zip( '11111' );
 		$request_body->set_to_country( 'US' );
 		$request_body->set_shipping_amount( 1 );
@@ -56,7 +56,7 @@ class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 	 * @doesNotPerformAssertions
 	 */
 	public function test_validate_with_line_items() {
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_to_zip( '11111' );
 		$request_body->set_to_country( 'US' );
 		$request_body->add_line_item( 1 );
@@ -65,24 +65,24 @@ class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 	}
 
 	public function test_validate_with_no_line_items_and_zero_shipping_amount(){
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_to_zip( '11111' );
 		$request_body->set_to_country( 'US' );
 		$request_body->set_shipping_amount( 0 );
 
-		$this->expectException( TaxJar_Tax_Calculation_Exception::class );
+		$this->expectException( Tax_Calculation_Exception::class );
 
 		$request_body->validate();
 	}
 
 	public function test_validate_with_bad_zip(){
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_to_zip( 'AAAAA' );
 		$request_body->set_to_country( 'US' );
 		$request_body->add_line_item( 1 );
 		$request_body->set_shipping_amount( 1 );
 
-		$this->expectException( TaxJar_Tax_Calculation_Exception::class );
+		$this->expectException( Tax_Calculation_Exception::class );
 
 		$request_body->validate();
 	}
@@ -104,7 +104,7 @@ class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 			'amount'       => 0.0
 		);
 
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_from_country( $expected_array[ 'from_country' ] );
 		$request_body->set_from_state( $expected_array[ 'from_state' ] );
 		$request_body->set_from_zip( $expected_array[ 'from_zip' ] );
@@ -122,7 +122,7 @@ class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 
 	public function test_to_array_with_exemption_type() {
 		$exemption = 'wholesale';
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_exemption_type( $exemption );
 		$request_body_array = $request_body->to_array();
 
@@ -131,7 +131,7 @@ class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 
 	public function test_to_array_with_customer_id() {
 		$customer_id = 1;
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_customer_id( $customer_id );
 		$request_body_array = $request_body->to_array();
 
@@ -140,7 +140,7 @@ class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 
 	public function test_to_array_with_customer_id_zero() {
 		$customer_id = 0;
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->set_customer_id( $customer_id );
 		$request_body_array = $request_body->to_array();
 
@@ -149,7 +149,7 @@ class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 
 	public function test_to_array_with_line_item() {
 		$line_item = 1;
-		$request_body = new TaxJar_Tax_Request_Body();
+		$request_body = new Tax_Request_Body();
 		$request_body->add_line_item( $line_item );
 		$request_body_array = $request_body->to_array();
 

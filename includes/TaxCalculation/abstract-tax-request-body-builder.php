@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-abstract class TaxJar_Tax_Request_Body_Factory {
+abstract class Tax_Request_Body_Builder {
 
 	protected $tax_request_body;
 
@@ -21,7 +21,7 @@ abstract class TaxJar_Tax_Request_Body_Factory {
 	abstract protected function get_fee_line_items();
 
 	public function __construct() {
-		$this->tax_request_body = new TaxJar_Tax_Request_Body();
+		$this->tax_request_body = new Tax_Request_Body();
 	}
 
 	public function create() {

@@ -9,12 +9,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Tax_Calculator_Builder {
+class Tax_Calculator_Builder {
 
 	private $calculator;
 
 	public function __construct() {
-		$this->calculator = new TaxJar_Tax_Calculator();
+		$this->calculator = new Tax_Calculator();
 		$this->set_tax_cache();
 		$this->set_tax_client();
 	}
@@ -68,28 +68,28 @@ class TaxJar_Tax_Calculator_Builder {
 
 	private function set_order_logger( $order ) {
 		$wc_logger = wc_get_logger();
-		$this->calculator->set_logger( new TaxJar_Order_Calculation_Logger( $wc_logger, $order ) );
+		$this->calculator->set_logger( new Order_Calculation_Logger( $wc_logger, $order ) );
 	}
 
 	private function set_tax_cache() {
-		$this->calculator->set_cache( new TaxJar_Cache( HOUR_IN_SECONDS, 'tj_tax_' ) );
+		$this->calculator->set_cache( new Cache( HOUR_IN_SECONDS, 'tj_tax_' ) );
 	}
 
 	private function set_order_tax_request_body_factory( $order ) {
-		$this->calculator->set_request_body_factory( new TaxJar_Order_Tax_Request_Body_Factory( $order ) );
+		$this->calculator->set_request_body_factory( new Order_Tax_Request_Body_Builder( $order ) );
 	}
 
 	private function set_tax_client() {
-		$this->calculator->set_tax_client( new TaxJar_Tax_Client() );
+		$this->calculator->set_tax_client( new Tax_Client() );
 	}
 
 	private function set_order_applicator( $order ) {
-		$this->calculator->set_applicator( new TaxJar_Order_Tax_Applicator( $order ) );
+		$this->calculator->set_applicator( new Order_Tax_Applicator( $order ) );
 	}
 
 	private function set_order_validator( $order ) {
 		$nexus = new WC_Taxjar_Nexus();
-		$this->calculator->set_validator( new TaxJar_Order_Tax_Calculation_Validator( $order, $nexus ) );
+		$this->calculator->set_validator( new Tax_Calculation_Validator( $order, $nexus ) );
 	}
 
 	private function set_context( $context ) {
@@ -149,7 +149,7 @@ class TaxJar_Tax_Calculator_Builder {
 	}
 
 	private function set_admin_order_tax_request_body_factory( $order ) {
-		$this->calculator->set_request_body_factory( new TaxJar_Admin_Order_Tax_Request_Body_Factory( $order ) );
+		$this->calculator->set_request_body_factory( new Admin_Order_Tax_Request_Body_Builder( $order ) );
 	}
 
 	public function build_subscription_order_calculator( $subscription ) {

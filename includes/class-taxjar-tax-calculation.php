@@ -7,7 +7,7 @@
  * @package TaxJar/Classes
  */
 
-use TaxJar\TaxJar_Tax_Calculator_Builder;
+use TaxJar\Tax_Calculator_Builder;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -45,7 +45,7 @@ class TaxJar_Tax_Calculation {
 	}
 
 	public function maybe_calculate_order_taxes( $and_taxes, $order ) {
-		$calculator_builder = new TaxJar_Tax_Calculator_Builder();
+		$calculator_builder = new Tax_Calculator_Builder();
 		$calculator = $calculator_builder->build_order_calculator( $and_taxes, $order );
 
 		if ( $calculator !== false ) {
@@ -574,14 +574,14 @@ class TaxJar_Tax_Calculation {
 			return $order;
 		}
 
-		$calculator_builder = new TaxJar_Tax_Calculator_Builder();
+		$calculator_builder = new Tax_Calculator_Builder();
 		$subscription_calculator = $calculator_builder->build_subscription_order_calculator( $subscription );
 
 		if ( $subscription_calculator !== false ) {
 			$subscription_calculator->maybe_calculate_and_apply_tax();
 		}
 
-		$calculator_builder = new TaxJar_Tax_Calculator_Builder();
+		$calculator_builder = new Tax_Calculator_Builder();
 		$renewal_calculator = $calculator_builder->build_renewal_order_calculator( $order );
 
 		if ( $renewal_calculator !== false ) {

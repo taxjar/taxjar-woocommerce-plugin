@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
+class Order_Calculation_Logger extends Logger {
 
 	private $order;
 
@@ -38,7 +38,7 @@ class TaxJar_Order_Calculation_Logger extends TaxJar_Logger {
 	}
 
 	private function is_taxjar_exception( $exception ) {
-		return $exception instanceof TaxJar_Tax_Calculation_Exception;
+		return $exception instanceof Tax_Calculation_Exception;
 	}
 
 	private function format_failed_calculation_message( $details ) {

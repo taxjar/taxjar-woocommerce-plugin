@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-interface TaxJar_Cache_Interface {
+interface Cache_Interface {
 
 	/**
 	 * Enters value into cache using dynamically created key.

@@ -6,7 +6,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-interface TaxJar_Tax_Client_Interface {
+interface Tax_Applicator_Interface {
 
-	public function get_taxes( $tax_request_body );
+	public function apply_tax( $tax_details );
+
 }
