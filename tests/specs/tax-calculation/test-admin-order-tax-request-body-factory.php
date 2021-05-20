@@ -1,5 +1,9 @@
 <?php
 
+namespace TaxJar;
+use WP_UnitTestCase;
+use TaxJar_Test_Order_Factory;
+
 class Test_Admin_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 
 	private $order;

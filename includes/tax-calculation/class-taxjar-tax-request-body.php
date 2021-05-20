@@ -1,5 +1,9 @@
 <?php
 
+namespace TaxJar;
+
+use TaxJar_Tax_Calculation;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

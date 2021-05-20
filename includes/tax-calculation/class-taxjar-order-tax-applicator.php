@@ -1,6 +1,9 @@
 <?php
 
+namespace TaxJar;
+
 use Automattic\WooCommerce\Utilities\NumberUtil;
+use WC_Tax, WC_Abstract_Order;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

@@ -1,5 +1,10 @@
 <?php
 
+namespace TaxJar;
+use WP_UnitTestCase;
+use WC_Order;
+use Exception;
+
 class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 
 	private $mock_logger;

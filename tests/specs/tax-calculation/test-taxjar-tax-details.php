@@ -1,5 +1,8 @@
 <?php
 
+namespace TaxJar;
+use WP_UnitTestCase;
+
 class Test_TaxJar_Tax_Details extends WP_UnitTestCase {
 
 	public function test_get_location() {

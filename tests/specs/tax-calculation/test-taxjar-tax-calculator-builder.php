@@ -1,5 +1,9 @@
 <?php
 
+namespace TaxJar;
+use WP_UnitTestCase;
+use WC_Order;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

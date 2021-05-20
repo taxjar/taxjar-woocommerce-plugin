@@ -1,5 +1,10 @@
 <?php
 
+namespace TaxJar;
+use WP_UnitTestCase;
+use TaxJar_Woocommerce_Helper;
+use TaxJar_Test_Order_Factory;
+
 class Test_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 
 	public function setUp() {

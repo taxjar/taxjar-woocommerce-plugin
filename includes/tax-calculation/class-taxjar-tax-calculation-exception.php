@@ -1,5 +1,9 @@
 <?php
 
+namespace TaxJar;
+
+use Exception;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

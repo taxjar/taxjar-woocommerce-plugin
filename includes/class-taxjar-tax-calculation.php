@@ -7,6 +7,8 @@
  * @package TaxJar/Classes
  */
 
+use TaxJar\TaxJar_Tax_Calculator_Builder;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

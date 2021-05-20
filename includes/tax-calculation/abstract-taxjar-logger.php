@@ -1,5 +1,10 @@
 <?php
 
+namespace TaxJar;
+
+use Exception, WC_Logger_Interface;
+use TaxJar_Settings;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }

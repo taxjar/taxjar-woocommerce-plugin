@@ -1,5 +1,10 @@
 <?php
 
+namespace TaxJar;
+use WP_UnitTestCase;
+use TaxJar_Woocommerce_Helper, TaxJar_Product_Helper, TaxJar_Customer_Helper, TaxJar_Coupon_Helper;
+use WC_AJAX, WC_Order_Item_Shipping, WC_Shipping_Rate, WC_Order_Item_Fee, WC_Tax;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

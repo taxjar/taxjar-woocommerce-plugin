@@ -1,5 +1,9 @@
 <?php
 
+namespace TaxJar;
+
+use WP_UnitTestCase;
+
 class Test_TaxJar_Cache extends WP_UnitTestCase {
 
 	public function test_set_and_read_with_hashed_key() {

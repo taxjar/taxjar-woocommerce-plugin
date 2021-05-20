@@ -1,5 +1,9 @@
 <?php
 
+namespace TaxJar;
+
+use WC_Tax;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

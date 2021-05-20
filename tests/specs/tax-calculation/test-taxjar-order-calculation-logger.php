@@ -1,5 +1,11 @@
 <?php
 
+namespace TaxJar;
+use WP_UnitTestCase;
+use TaxJar_Test_Order_Factory;
+use Exception;
+use WC_Log_Levels;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -22,7 +28,7 @@ class Test_TaxJar_Order_Calculation_Logger extends WP_UnitTestCase {
 
 	public function test_log_failure_with_taxjar_exemption() {
 		$calculation_logger = new TaxJar_Order_Calculation_Logger( $this->mock_wc_logger, $this->test_order );
-		$taxjar_exception_mock = $this->createMock( 'TaxJar_Tax_Calculation_Exception' );
+		$taxjar_exception_mock = $this->createMock( TaxJar_Tax_Calculation_Exception::class );
 		$log_details = array(
 			'exception' => $taxjar_exception_mock,
 			'context' => 'context'

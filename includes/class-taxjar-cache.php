@@ -7,6 +7,8 @@
  * @package TaxJar/Classes
  */
 
+namespace TaxJar;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

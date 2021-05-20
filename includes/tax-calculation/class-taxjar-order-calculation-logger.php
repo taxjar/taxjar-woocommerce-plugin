@@ -1,5 +1,9 @@
 <?php
 
+namespace TaxJar;
+
+use WC_Log_Levels;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

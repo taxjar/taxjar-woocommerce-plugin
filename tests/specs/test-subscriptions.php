@@ -1,4 +1,7 @@
 <?php
+
+use TaxJar\Constants_Manager;
+
 class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 
 	protected $server;

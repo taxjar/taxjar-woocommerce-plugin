@@ -1,5 +1,11 @@
 <?php
 
+namespace TaxJar;
+
+use WP_UnitTestCase;
+use WP_Error;
+use Exception;
+
 class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
 
 	private $response;
@@ -62,7 +68,7 @@ class Test_TaxJar_Tax_Client extends WP_UnitTestCase {
 		$tax_client = new TaxJar_Tax_Client();
 		$tax_details = $tax_client->get_taxes( $request_body );
 
-		$this->assertInstanceOf( 'TaxJar_Tax_Details', $tax_details );
+		$this->assertInstanceOf( TaxJar_Tax_Details::class, $tax_details );
 	}
 
 	private function build_tax_request_body() {

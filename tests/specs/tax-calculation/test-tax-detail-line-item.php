@@ -1,5 +1,8 @@
 <?php
 
+namespace TaxJar;
+use WP_UnitTestCase;
+
 class Test_Tax_Detail_Line_Item extends WP_UnitTestCase {
 
 	public function test_get_tax_rate() {

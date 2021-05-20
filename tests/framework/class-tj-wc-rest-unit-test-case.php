@@ -1,5 +1,7 @@
 <?php
 
+use TaxJar\Constants_Manager;
+
 /**
  * Class TJ_WC_REST_Unit_Test_Case
  */

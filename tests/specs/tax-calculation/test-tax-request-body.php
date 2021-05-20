@@ -1,5 +1,8 @@
 <?php
 
+namespace TaxJar;
+use WP_UnitTestCase;
+
 class Test_TaxJar_Tax_Request_Body extends WP_UnitTestCase {
 
 	/**
