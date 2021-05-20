@@ -38,7 +38,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$order = TaxJar_Test_Order_Factory::create_zero_tax_order();
 		$coupon = TaxJar_Coupon_Helper::create_coupon();
 		$order->apply_coupon( $coupon );
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( true );
@@ -54,7 +54,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$tax_rate = .10;
 		$shipping_tax_rate = .10;
 		$order = TaxJar_Test_Order_Factory::create_zero_tax_order();
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( true );
 		$tax_detail_mock->method( 'get_shipping_tax_rate' )->willReturn( $shipping_tax_rate );
@@ -68,7 +68,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 	public function test_calculate_totals_method() {
 		$tax_rate = .10;
 		$order = TaxJar_Test_Order_Factory::create_zero_tax_order();
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
 		$tax_applicator = new Order_Tax_Applicator( $order );
@@ -172,7 +172,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$factory->add_shipping_item( TaxJar_Test_Order_Factory::$default_options['shipping_method'] );
 		$factory->set_payment_method();
 		$order = $factory->get_order();
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( true );
@@ -187,7 +187,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 	public function test_apply_tax_to_fee_item() {
 		$tax_rate = .10;
 		$order = TaxJar_Test_Order_Factory::create_fee_only_order();
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
 		$tax_applicator = new Order_Tax_Applicator( $order );
@@ -207,7 +207,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$tax_rate = .10;
 		$fee_details_override = array( 'tax_class' => 'clothing-rate-20010' );
 		$order = TaxJar_Test_Order_Factory::create_fee_only_order( $fee_details_override );
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 		$tax_detail_mock = $this->build_tax_detail_mock( $order, $tax_rate );
 		$tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
 		$tax_applicator = new Order_Tax_Applicator( $order );
