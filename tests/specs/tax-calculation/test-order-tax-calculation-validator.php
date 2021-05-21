@@ -75,7 +75,7 @@ class Test_Order_Tax_Calculation_Validator extends WP_UnitTestCase {
 	}
 
 	private function build_order_tax_validator() {
-		return new Tax_Calculation_Validator( $this->mock_order, $this->mock_nexus  );
+		return new Order_Tax_Calculation_Validator( $this->mock_order, $this->mock_nexus  );
 	}
 
 }

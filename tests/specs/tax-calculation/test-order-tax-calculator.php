@@ -100,7 +100,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$calculator = new Tax_Calculator( $this->mock_order );
 		$calculator->set_logger( $this->mock_logger );
 		$calculator->set_cache( $this->mock_cache );
-		$calculator->set_request_body_factory( $this->mock_request_body_factory );
+		$calculator->set_request_body_builder( $this->mock_request_body_factory );
 		$calculator->set_tax_client( $this->mock_tax_client );
 		$calculator->set_applicator( $this->mock_applicator );
 		$calculator->set_validator( $this->mock_validator );

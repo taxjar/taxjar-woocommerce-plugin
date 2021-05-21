@@ -1,4 +1,12 @@
 <?php
+/**
+ * Constants Manager
+ *
+ * Constants accessed through manager allow easier testing.
+ * In tests constants can be set using the set_constant method and cleared using the clear_constants method.
+ *
+ * @package TaxJar
+ */
 
 namespace TaxJar;
 
@@ -6,6 +14,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Class Constants_Manager
+ */
 class Constants_Manager {
 
 	/**

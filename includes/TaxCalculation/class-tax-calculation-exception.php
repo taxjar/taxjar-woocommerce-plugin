@@ -1,4 +1,11 @@
 <?php
+/**
+ * Tax Calculation Exception
+ *
+ * Thrown for all expected exceptions during tax calculation process.
+ *
+ * @package TaxJar\TaxCalculation
+ */
 
 namespace TaxJar;
 
@@ -8,9 +15,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Class Tax_Calculation_Exception
+ */
 class Tax_Calculation_Exception extends Exception {
 
-	/** @var string sanitized error code */
+	/**
+	 * Machine readable error code.
+	 *
+	 * @var string sanitized error code
+	 */
 	protected $error_code;
 
 	/**
@@ -18,7 +32,7 @@ class Tax_Calculation_Exception extends Exception {
 	 *
 	 * @param string $error_code machine readable error code.
 	 * @param string $error_message user friendly error message.
-	 * @param int $http_status_code HTTP status code to respond with
+	 * @param int    $http_status_code HTTP status code to respond with.
 	 */
 	public function __construct( $error_code, $error_message, $http_status_code = 0 ) {
 		$this->error_code = $error_code;
@@ -33,5 +47,4 @@ class Tax_Calculation_Exception extends Exception {
 	public function getErrorCode() {
 		return $this->error_code;
 	}
-
 }

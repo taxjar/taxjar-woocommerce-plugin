@@ -1,4 +1,9 @@
 <?php
+/**
+ * Cache Interface
+ *
+ * @package TaxJar\Interface
+ */
 
 namespace TaxJar;
 

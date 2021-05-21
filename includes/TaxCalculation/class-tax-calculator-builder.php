@@ -76,7 +76,7 @@ class Tax_Calculator_Builder {
 	}
 
 	private function set_order_tax_request_body_factory( $order ) {
-		$this->calculator->set_request_body_factory( new Order_Tax_Request_Body_Builder( $order ) );
+		$this->calculator->set_request_body_builder( new Order_Tax_Request_Body_Builder( $order ) );
 	}
 
 	private function set_tax_client() {
@@ -89,7 +89,7 @@ class Tax_Calculator_Builder {
 
 	private function set_order_validator( $order ) {
 		$nexus = new WC_Taxjar_Nexus();
-		$this->calculator->set_validator( new Tax_Calculation_Validator( $order, $nexus ) );
+		$this->calculator->set_validator( new Order_Tax_Calculation_Validator( $order, $nexus ) );
 	}
 
 	private function set_context( $context ) {
@@ -149,7 +149,7 @@ class Tax_Calculator_Builder {
 	}
 
 	private function set_admin_order_tax_request_body_factory( $order ) {
-		$this->calculator->set_request_body_factory( new Admin_Order_Tax_Request_Body_Builder( $order ) );
+		$this->calculator->set_request_body_builder( new Admin_Order_Tax_Request_Body_Builder( $order ) );
 	}
 
 	public function build_subscription_order_calculator( $subscription ) {

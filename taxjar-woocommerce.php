@@ -90,7 +90,7 @@ final class WC_Taxjar {
 			include_once 'includes/class-cache.php';
 
 			include_once 'includes/TaxCalculation/class-tax-request-body.php';
-			include_once 'includes/TaxCalculation/abstract-tax-request-body-builder.php';
+			include_once 'includes/TaxCalculation/class-tax-request-body-builder.php';
 			include_once 'includes/TaxCalculation/class-order-tax-request-body-builder.php';
 			include_once 'includes/TaxCalculation/class-admin-order-tax-request-body-builder.php';
 			include_once 'includes/TaxCalculation/class-tax-client.php';
@@ -98,7 +98,7 @@ final class WC_Taxjar {
 			include_once 'includes/TaxCalculation/class-tax-detail-line-item.php';
 			include_once 'includes/TaxCalculation/class-order-tax-applicator.php';
 			include_once 'includes/TaxCalculation/class-rate-manager.php';
-			include_once 'includes/TaxCalculation/abstract-logger.php';
+			include_once 'includes/TaxCalculation/class-logger.php';
 			include_once 'includes/TaxCalculation/class-order-calculation-logger.php';
 			include_once 'includes/TaxCalculation/class-tax-calculation-exception.php';
 			include_once 'includes/TaxCalculation/class-tax-calculator.php';

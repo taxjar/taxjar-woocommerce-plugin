@@ -1,4 +1,9 @@
 <?php
+/**
+ * Tax Applicator Interface
+ *
+ * @package TaxJar\Interface
+ */
 
 namespace TaxJar;
 
@@ -8,6 +13,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 interface Tax_Applicator_Interface {
 
+	/**
+	 * Applies tax details.
+	 *
+	 * @param Tax_Details $tax_details Tax details to apply.
+	 */
 	public function apply_tax( $tax_details );
-
 }
