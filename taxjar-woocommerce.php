@@ -61,12 +61,12 @@ final class WC_Taxjar {
 		// Checks if WooCommerce is installed.
 		if ( class_exists( 'WC_Integration' ) ) {
 
-		    include_once 'includes/utilities/class-constants-manager.php';
+			include_once 'includes/utilities/class-constants-manager.php';
 
-		    include_once 'includes/interfaces/class-cache-interface.php';
-		    include_once 'includes/interfaces/class-tax-client-interface.php';
-		    include_once 'includes/interfaces/class-tax-applicator-interface.php';
-		    include_once 'includes/interfaces/class-tax-calculation-validator-interface.php';
+			include_once 'includes/interfaces/class-cache-interface.php';
+			include_once 'includes/interfaces/class-tax-client-interface.php';
+			include_once 'includes/interfaces/class-tax-applicator-interface.php';
+			include_once 'includes/interfaces/class-tax-calculation-validator-interface.php';
 
 			// Include our integration class and WP_User for wp_delete_user()
 			include_once ABSPATH . 'wp-admin/includes/user.php';
