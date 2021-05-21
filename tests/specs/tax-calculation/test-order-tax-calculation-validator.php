@@ -1,6 +1,7 @@
 <?php
 
 namespace TaxJar;
+
 use WP_UnitTestCase;
 use WC_Order;
 use WC_Taxjar_Nexus;
@@ -19,7 +20,7 @@ class Test_Order_Tax_Calculation_Validator extends WP_UnitTestCase {
 		$this->mock_order = $this->createMock( WC_Order::class );
 		$this->mock_order->method( 'get_subtotal' )->willReturn( 1.0 );
 		$this->mock_tax_request_body = $this->createMock( Tax_Request_Body::class );
-		$this->mock_nexus = $this->createMock( WC_Taxjar_Nexus::class );
+		$this->mock_nexus            = $this->createMock( WC_Taxjar_Nexus::class );
 	}
 
 	public function tearDown() {
@@ -75,7 +76,7 @@ class Test_Order_Tax_Calculation_Validator extends WP_UnitTestCase {
 	}
 
 	private function build_order_tax_validator() {
-		return new Order_Tax_Calculation_Validator( $this->mock_order, $this->mock_nexus  );
+		return new Order_Tax_Calculation_Validator( $this->mock_order, $this->mock_nexus );
 	}
 
 }

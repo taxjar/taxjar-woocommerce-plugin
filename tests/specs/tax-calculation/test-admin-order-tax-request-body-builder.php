@@ -1,10 +1,11 @@
 <?php
 
 namespace TaxJar;
+
 use WP_UnitTestCase;
 use TaxJar_Test_Order_Factory;
 
-class Test_Admin_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
+class Test_Admin_Order_Tax_Request_Body_Builder extends WP_UnitTestCase {
 
 	private $order;
 
@@ -22,14 +23,14 @@ class Test_Admin_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 	}
 
 	public function test_get_ship_to_address() {
-		$_POST['country'] = 'US';
-		$_POST['state'] = 'UT';
-		$_POST['city'] = 'Payson';
+		$_POST['country']  = 'US';
+		$_POST['state']    = 'UT';
+		$_POST['city']     = 'Payson';
 		$_POST['postcode'] = '84651';
-		$_POST['street'] = '123 Main St';
+		$_POST['street']   = '123 Main St';
 
 		$order_tax_request_body_factory = new Admin_Order_Tax_Request_Body_Builder( $this->order );
-		$request_body = $order_tax_request_body_factory->create();
+		$request_body                   = $order_tax_request_body_factory->create();
 
 		$this->assertEquals( $_POST['country'], $request_body->get_to_country() );
 		$this->assertEquals( $_POST['state'], $request_body->get_to_state() );
@@ -40,7 +41,7 @@ class Test_Admin_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 
 	public function test_empty_shipping_post_parameters() {
 		$order_tax_request_body_factory = new Admin_Order_Tax_Request_Body_Builder( $this->order );
-		$request_body = $order_tax_request_body_factory->create();
+		$request_body                   = $order_tax_request_body_factory->create();
 
 		$this->assertFalse( $request_body->get_to_country() );
 		$this->assertFalse( $request_body->get_to_state() );
@@ -50,15 +51,17 @@ class Test_Admin_Order_Tax_Request_Body_Factory extends WP_UnitTestCase {
 	}
 
 	public function test_get_customer_id() {
-		$_POST['customer_user'] = '3';
+		$_POST['customer_user']         = '3';
 		$order_tax_request_body_factory = new Admin_Order_Tax_Request_Body_Builder( $this->order );
-		$request_body = $order_tax_request_body_factory->create();
+		$request_body                   = $order_tax_request_body_factory->create();
+
 		$this->assertEquals( $_POST['customer_user'], $request_body->get_customer_id() );
 	}
 
 	public function test_no_customer_id_post_parameter() {
 		$order_tax_request_body_factory = new Admin_Order_Tax_Request_Body_Builder( $this->order );
-		$request_body = $order_tax_request_body_factory->create();
+		$request_body                   = $order_tax_request_body_factory->create();
+
 		$this->assertEquals( 0, $request_body->get_customer_id() );
 	}
 

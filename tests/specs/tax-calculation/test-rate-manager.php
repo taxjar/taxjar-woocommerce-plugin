@@ -4,6 +4,7 @@ namespace TaxJar;
 
 use WP_UnitTestCase;
 use WC_Tax;
+use TaxJar_Woocommerce_Helper;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,103 +12,75 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Test_Rate_Manager extends WP_UnitTestCase {
 
-	public function setUp() {
-		global $wpdb;
-		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rates' );
-		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rate_locations' );
-		wp_cache_init();
+	private $rate;
+	private $tax_class;
+	private $freight_taxable;
+	private $location;
 
+	public function setUp() {
+		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 		WC_Tax::create_tax_class( 'Clothing Rate - 20010' );
+
+		$this->rate            = 10;
+		$this->tax_class       = 'clothing-rate-20010';
+		$this->freight_taxable = true;
+		$this->location        = array(
+			'country' => 'US',
+			'state'   => 'UT',
+			'city'    => 'Test',
+			'zip'     => '11111',
+		);
 	}
 
-	private static $default_rate = array(
-		'rate' => 10,
-		'tax_class' => 'clothing-rate-20010',
-		'freight_taxable' => true,
-		'location' => array(
-			'country' => 'US',
-			'state' => 'UT',
-			'city' => 'Test',
-			'zip' => '11111'
-		)
-	);
-
 	public function test_rate_creation() {
-		$rate = Rate_Manager::add_rate(
-			self::$default_rate['rate'],
-			self::$default_rate['tax_class'],
-			self::$default_rate['freight_taxable'],
-			self::$default_rate['location']
-		);
+		$rate              = $this->build_rate();
+		$rates_in_database = $this->lookup_rates();
 
-		$rate_lookup = array(
-			'country'   => self::$default_rate['location'] ['country'],
-			'state'     => sanitize_key( self::$default_rate['location'] ['state'] ),
-			'postcode'  => self::$default_rate['location'] ['zip'],
-			'city'      => self::$default_rate['location'] ['city'],
-			'tax_class' => self::$default_rate['tax_class']
-		);
-
-		$rates_in_database = WC_Tax::find_rates( $rate_lookup );
-
-		$this->assertEquals( self::$default_rate['rate'], $rates_in_database[ $rate['id'] ]['rate'] );
+		$this->assertEquals( $this->rate, $rates_in_database[ $rate['id'] ]['rate'] );
 		$this->assertEquals( 'yes', $rates_in_database[ $rate['id'] ]['shipping'] );
 		$this->assertEquals( 'no', $rates_in_database[ $rate['id'] ]['compound'] );
 	}
 
 	public function test_rate_update() {
-		$initial_rate = Rate_Manager::add_rate(
-			self::$default_rate['rate'],
-			self::$default_rate['tax_class'],
-			self::$default_rate['freight_taxable'],
-			self::$default_rate['location']
-		);
-
-		$new_tax_rate = 20;
-		$updated_rate = Rate_Manager::add_rate(
-			$new_tax_rate,
-			self::$default_rate['tax_class'],
-			self::$default_rate['freight_taxable'],
-			self::$default_rate['location']
-		);
-
-		$rate_lookup = array(
-			'country'   => self::$default_rate['location'] ['country'],
-			'state'     => sanitize_key( self::$default_rate['location']['state'] ),
-			'postcode'  => self::$default_rate['location'] ['zip'],
-			'city'      => self::$default_rate['location'] ['city'],
-			'tax_class' => self::$default_rate['tax_class']
-		);
-
-		$rates_in_database = WC_Tax::find_rates( $rate_lookup );
+		$initial_rate      = $this->build_rate();
+		$this->rate        = 20;
+		$updated_rate      = $this->build_rate();
+		$rates_in_database = $this->lookup_rates();
 
 		$this->assertEquals( $initial_rate['id'], $updated_rate['id'] );
-		$this->assertEquals( $new_tax_rate, $rates_in_database[ $initial_rate['id'] ]['rate'] );
+		$this->assertEquals( $this->rate, $rates_in_database[ $initial_rate['id'] ]['rate'] );
 		$this->assertEquals( 'yes', $rates_in_database[ $initial_rate['id'] ]['shipping'] );
 		$this->assertEquals( 'no', $rates_in_database[ $initial_rate['id'] ]['compound'] );
 	}
 
 	public function test_rate_with_nontaxable_shipping() {
-		$freight_taxable = false;
-		$rate = Rate_Manager::add_rate(
-			self::$default_rate['rate'],
-			self::$default_rate['tax_class'],
-			$freight_taxable,
-			self::$default_rate['location']
-		);
+		$this->freight_taxable = false;
+		$rate                  = $this->build_rate();
+		$rates_in_database     = $this->lookup_rates();
 
-		$rate_lookup = array(
-			'country'   => self::$default_rate['location'] ['country'],
-			'state'     => sanitize_key( self::$default_rate['location']['state'] ),
-			'postcode'  => self::$default_rate['location'] ['zip'],
-			'city'      => self::$default_rate['location'] ['city'],
-			'tax_class' => self::$default_rate['tax_class']
-		);
-
-		$rates_in_database = WC_Tax::find_rates( $rate_lookup );
-
-		$this->assertEquals( self::$default_rate['rate'], $rates_in_database[ $rate['id'] ]['rate'] );
+		$this->assertEquals( $this->rate, $rates_in_database[ $rate['id'] ]['rate'] );
 		$this->assertEquals( 'no', $rates_in_database[ $rate['id'] ]['shipping'] );
 		$this->assertEquals( 'no', $rates_in_database[ $rate['id'] ]['compound'] );
+	}
+
+	private function build_rate() {
+		return Rate_Manager::add_rate(
+			$this->rate,
+			$this->tax_class,
+			$this->freight_taxable,
+			$this->location
+		);
+	}
+
+	private function lookup_rates() {
+		$rate_lookup = array(
+			'country'   => $this->location['country'],
+			'state'     => sanitize_key( $this->location['state'] ),
+			'postcode'  => $this->location['zip'],
+			'city'      => $this->location['city'],
+			'tax_class' => $this->tax_class,
+		);
+
+		return WC_Tax::find_rates( $rate_lookup );
 	}
 }

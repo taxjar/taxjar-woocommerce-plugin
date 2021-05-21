@@ -1,6 +1,7 @@
 <?php
 
 namespace TaxJar;
+
 use WP_UnitTestCase;
 use WC_Order;
 use Exception;
@@ -26,13 +27,13 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$this->mock_request_body_factory->method( 'create' )->willReturn( $this->mock_request_body );
 
 		$this->mock_tax_details = $this->createMock( Tax_Details::class );
-		$this->mock_tax_client = $this->createMock( Tax_Client_Interface::class );
+		$this->mock_tax_client  = $this->createMock( Tax_Client_Interface::class );
 		$this->mock_tax_client->method( 'get_taxes' )->willReturn( $this->mock_tax_details );
 
-		$this->mock_logger = $this->createMock( Logger::class );
-		$this->mock_cache = $this->createMock( Cache_Interface::class );
+		$this->mock_logger     = $this->createMock( Logger::class );
+		$this->mock_cache      = $this->createMock( Cache_Interface::class );
 		$this->mock_applicator = $this->createMock( Tax_Applicator_Interface::class );
-		$this->mock_order = $this->createMock( WC_Order::class );
+		$this->mock_order      = $this->createMock( WC_Order::class );
 
 		$this->mock_validator = $this->createMock( Tax_Calculation_Validator_Interface::class );
 	}
@@ -82,16 +83,16 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 
 	public function test_get_tax_from_cache() {
 		$this->mock_cache->method( 'contains_hashed_value' )->willReturn( true );
-		$this->mock_cache->expects($this->once())->method( 'read_hashed_value' );
-		$this->mock_tax_client->expects($this->never())->method( 'get_taxes' );
+		$this->mock_cache->expects( $this->once() )->method( 'read_hashed_value' );
+		$this->mock_tax_client->expects( $this->never() )->method( 'get_taxes' );
 		$calculator = $this->build_calculator();
 		$calculator->maybe_calculate_and_apply_tax();
 	}
 
 	public function test_get_tax_from_client() {
 		$this->mock_cache->method( 'contains_hashed_value' )->willReturn( false );
-		$this->mock_cache->expects($this->never())->method( 'read_hashed_value' );
-		$this->mock_tax_client->expects($this->once())->method( 'get_taxes' );
+		$this->mock_cache->expects( $this->never() )->method( 'read_hashed_value' );
+		$this->mock_tax_client->expects( $this->once() )->method( 'get_taxes' );
 		$calculator = $this->build_calculator();
 		$calculator->maybe_calculate_and_apply_tax();
 	}
