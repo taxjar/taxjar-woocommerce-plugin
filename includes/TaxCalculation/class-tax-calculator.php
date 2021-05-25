@@ -247,6 +247,7 @@ class Tax_Calculator {
 	private function get_tax_from_cache() {
 		$cached_response   = $this->cache->read_hashed_value( $this->request_body->to_array() );
 		$this->tax_details = new Tax_Details( $cached_response );
+		$this->set_tax_details_address();
 	}
 
 	/**
@@ -254,6 +255,17 @@ class Tax_Calculator {
 	 */
 	private function get_tax_from_client() {
 		$this->tax_details = $this->tax_client->get_taxes( $this->request_body );
+		$this->set_tax_details_address();
+	}
+
+	/**
+	 * Set tax details to address fields from request body.
+	 */
+	private function set_tax_details_address() {
+		$this->tax_details->set_country( $this->request_body->get_to_country() );
+		$this->tax_details->set_state( $this->request_body->get_to_state() );
+		$this->tax_details->set_zip( $this->request_body->get_to_zip() );
+		$this->tax_details->set_city( $this->request_body->get_to_city() );
 	}
 
 	/**
