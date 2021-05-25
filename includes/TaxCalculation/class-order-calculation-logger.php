@@ -166,6 +166,8 @@ class Order_Calculation_Logger extends Logger {
 	private function format_response_message( $response ) {
 		if ( ! empty( $response['response'] ) ) {
 			return PHP_EOL . 'Response: ' . wp_json_encode( $response['response'] );
+		} else {
+			return '';
 		}
 	}
 
@@ -179,6 +181,8 @@ class Order_Calculation_Logger extends Logger {
 	private function format_response_body( $response ) {
 		if ( ! empty( $response['body'] ) ) {
 			return PHP_EOL . 'Response Body: ' . $response['body'];
+		} else {
+			return '';
 		}
 	}
 
