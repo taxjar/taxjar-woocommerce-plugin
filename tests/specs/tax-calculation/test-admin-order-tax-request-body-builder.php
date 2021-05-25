@@ -65,4 +65,12 @@ class Test_Admin_Order_Tax_Request_Body_Builder extends WP_UnitTestCase {
 		$this->assertEquals( 0, $request_body->get_customer_id() );
 	}
 
+	public function test_prepare_fields() {
+		$_POST['city']                  = 'New+York+City';
+		$order_tax_request_body_factory = new Admin_Order_Tax_Request_Body_Builder( $this->order );
+		$request_body                   = $order_tax_request_body_factory->create();
+
+		$this->assertEquals( 'NEW YORK CITY', $request_body->get_to_city() );
+	}
+
 }
