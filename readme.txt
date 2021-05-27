@@ -2,12 +2,12 @@
 Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxjar, tax, taxes, sales tax, tax calculation, sales tax compliance, sales tax filing
 Requires at least: 5.3
-Tested up to: 5.7.1
-Stable tag: 3.2.7
+Tested up to: 5.7.2
+Stable tag: 3.2.8
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
-WC requires at least: 4.7.0
-WC tested up to: 5.2.2
+WC requires at least: 4.8.0
+WC tested up to: 5.3.0
 
 Trusted by more than 20,000 businesses, TaxJar’s award-winning solution makes it easy to automate sales tax reporting and filing, and determine economic nexus with a single click.
 
@@ -95,6 +95,21 @@ Our plans come with filings included, with additional filings available for purc
 3. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+
+= 3.2.8 (2021-05-27)
+* Fix tax calculation issues on fee only orders when created in admin dashboard or through Woo REST API.
+* Fix tax calculation on orders with only shipping in admin dashboard or when created through Woo REST API.
+* Fix incorrect tax rate application on orders with multiple line items using the same product tax code when different rates should be applied to each item.
+* Fix issue where during order tax calculation, incorrect shipping tax may have been applied.
+* Support tax classes on fees for order tax calculation.
+* Fix issues with tax calculation of subscription orders created through the Woo REST API.
+* Fix VAT exemption not applying on orders created through the admin dashboard or through the Woo REST API.
+* Fix fallback to billing address if shipping address not present on an order in the admin dashboard.
+* Fix issue where customer exemptions weren't being applied to a subscription order in the admin dashboard.
+* Fix issue where changing a customer on an order in the admin dashboard may not have applied the exemption of the newly selected customer.
+* Improve logging for order tax calculation.
+* Add unit and integration tests to cover order tax calculation.
+* WooCommerce 5.3.0 support
 
 = 3.2.7 (2021-04-29)
 * WooCommerce 5.2.2 Support

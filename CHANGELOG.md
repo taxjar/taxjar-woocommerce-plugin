@@ -1,3 +1,18 @@
+# 3.2.8 (2021-05-27)
+* Fix tax calculation issues on fee only orders when created in admin dashboard or through Woo REST API.
+* Fix tax calculation on orders with only shipping in admin dashboard or when created through Woo REST API.
+* Fix incorrect tax rate application on orders with multiple line items using the same product tax code when different rates should be applied to each item.
+* Fix issue where during order tax calculation, incorrect shipping tax may have been applied.
+* Support tax classes on fees for order tax calculation.
+* Fix issues with tax calculation of subscription orders created through the Woo REST API.
+* Fix VAT exemption not applying on orders created through the admin dashboard or through the Woo REST API.
+* Fix fallback to billing address if shipping address not present on an order in the admin dashboard.
+* Fix issue where customer exemptions weren't being applied to a subscription order in the admin dashboard.
+* Fix issue where changing a customer on an order in the admin dashboard may not have applied the exemption of the newly selected customer.
+* Improve logging for order tax calculation.
+* Add unit and integration tests to cover order tax calculation.
+* WooCommerce 5.3.0 support
+
 # 3.2.7 (2021-04-29)
 * WooCommerce 5.2.2 Support
 * Remove Action Scheduler Library
