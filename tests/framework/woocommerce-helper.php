@@ -22,9 +22,7 @@ class TaxJar_Woocommerce_Helper {
 		// Ensure default is tax based on shipping
 		update_option( 'woocommerce_tax_based_on', 'shipping' );
 
-		// Reset tax rates
-		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rates' );
-		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rate_locations' );
+		self::delete_existing_tax_rates();
 
 		// Create a default customer shipping address
 		WC()->customer = TaxJar_Customer_Helper::create_customer();
@@ -54,6 +52,19 @@ class TaxJar_Woocommerce_Helper {
 			update_option( 'woocommerce_default_country', $opts['store_country'] . ':' . $opts['store_state'] );
 			$integration->init_settings();
 		}
+	}
+
+	public static function update_taxjar_settings( $new_settings ) {
+		$current_settings = get_option( 'woocommerce_taxjar-integration_settings' );
+		$settings = array_replace_recursive( $current_settings, $new_settings );
+		update_option( 'woocommerce_taxjar-integration_settings', $settings );
+	}
+
+	public static function delete_existing_tax_rates() {
+		global $wpdb;
+		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rates' );
+		$wpdb->query( 'TRUNCATE ' . $wpdb->prefix . 'woocommerce_tax_rate_locations' );
+		wp_cache_init();
 	}
 
 }

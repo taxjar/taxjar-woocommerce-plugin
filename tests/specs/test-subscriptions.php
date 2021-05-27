@@ -1,4 +1,7 @@
 <?php
+
+use TaxJar\Constants_Manager;
+
 class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 
 	protected $server;
@@ -48,12 +51,16 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 		}
 
 		update_option( 'woocommerce_currency', 'USD' );
+
+		TaxJar_Woocommerce_Helper::update_taxjar_settings( array( 'api_calcs_enabled' => 'no' ) );
+		Constants_Manager::set_constant( 'REST_REQUEST', true );
 	}
 
 	function tearDown() {
 		// Empty the cart
 		WC()->cart->empty_cart();
-
+		TaxJar_Woocommerce_Helper::update_taxjar_settings( array( 'api_calcs_enabled' => 'yes' ) );
+		Constants_Manager::clear_constants();
 		parent::tearDown();
 	}
 
@@ -461,17 +468,21 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 		$request  = TaxJar_Subscription_Helper::prepare_subscription_request();
 		$response = $this->server->dispatch( $request );
 		$data     = $response->get_data();
-
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( $data['total'], 110.00, '', 0.01 );
 
+		Constants_Manager::clear_constants();
+		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 		$subscription_id = $data['id'];
-		$renewal_order   = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
+		$subscription = wcs_get_subscription( $subscription_id );
 
+		$this->assertEquals( 0, $subscription->get_cart_tax() );
+
+		$renewal_order   = wcs_create_order_from_subscription( $subscription_id, 'renewal_order' );
 		$this->assertEquals( $renewal_order->get_shipping_tax(), 0, '', 0.01 );
 		$this->assertEquals( $renewal_order->get_cart_tax(), 7.25, '', 0.01 );
 		$this->assertEquals( $renewal_order->get_total(), 117.25, '', 0.01 );
 
+		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 		$subscription = wcs_get_subscription( $subscription_id );
 
 		// test to ensure subscription tax has been correctly calculated and updated
@@ -511,6 +522,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 		$request  = TaxJar_Subscription_Helper::prepare_subscription_request( $parameters );
 		$response = $this->server->dispatch( $request );
 		$data     = $response->get_data();
+		Constants_Manager::clear_constants();
 
 		$this->assertEquals( 201, $response->get_status() );
 		$this->assertEquals( $data['total'], 110.00, '', 0.01 );
@@ -554,6 +566,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 		$request  = TaxJar_Subscription_Helper::prepare_subscription_request( $parameters );
 		$response = $this->server->dispatch( $request );
 		$data     = $response->get_data();
+		Constants_Manager::clear_constants();
 
 		$this->assertEquals( 201, $response->get_status() );
 		$this->assertEquals( $data['total'], 110.00, '', 0.01 );
@@ -609,6 +622,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 		$request  = TaxJar_Subscription_Helper::prepare_subscription_request( $parameters );
 		$response = $this->server->dispatch( $request );
 		$data     = $response->get_data();
+		Constants_Manager::clear_constants();
 
 		$this->assertEquals( 201, $response->get_status() );
 		$this->assertEquals( $data['total'], 160.00, '', 0.01 );

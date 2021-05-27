@@ -40,7 +40,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 			$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
 			$this->customer_sync      = new WC_Taxjar_Customer_Sync( $this );
-			$this->api_calculation    = new WC_Taxjar_API_Calculation( $this );
 
 			// Load the settings.
 			TaxJar_Settings::init();
@@ -167,13 +166,55 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		}
 
 		/**
-		 * Checks if currently on the WooCommerce new order page
+		 * Checks if currently on the WooCommerce order or subscription page.
 		 *
 		 * @return boolean
 		 */
 		public function on_order_page() {
+			return $this->on_new_order_page() || $this->on_edit_order_page();
+		}
+
+		/**
+		 * Checks if current page is new order or subscription page.
+		 *
+		 * @return bool
+		 */
+		private function on_new_order_page() {
 			global $pagenow;
-			return ( in_array( $pagenow, array( 'post-new.php' ), true ) && isset( $_GET['post_type'] ) && 'shop_order' === $_GET['post_type'] );
+			if ( 'post-new.php' === $pagenow ) {
+				if ( isset( $_GET['post_type'] ) && $this->is_order_post_type( $_GET['post_type'] ) ) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * Checks if current page is edit order or subscription page.
+		 *
+		 * @return bool
+		 */
+		private function on_edit_order_page() {
+			global $pagenow;
+			if ( 'post.php' === $pagenow ) {
+				$post = get_post( $_GET['post'] );
+				if ( $this->is_order_post_type( $post->post_type ) ) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/**
+		 * Checks if post type is one where our order javascript needs loaded.
+		 *
+		 * @param string $post_type Post type of current page
+		 *
+		 * @return bool
+		 */
+		private function is_order_post_type( $post_type ) {
+			$allowed_post_types = array( 'shop_order', 'shop_subscription' );
+			return in_array( $post_type, $allowed_post_types, true );
 		}
 
 		/**

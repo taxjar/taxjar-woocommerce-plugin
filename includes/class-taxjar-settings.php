@@ -64,14 +64,23 @@ class TaxJar_Settings {
 	 * @return bool
 	 */
 	public static function is_tax_calculation_enabled() {
-	    $enabled = false;
+	    return apply_filters( 'taxjar_enabled', self::is_setting_enabled( 'enabled' ) );
+    }
+
+	/**
+     * Checks if a certain TaxJar setting is enabled.
+     *
+	 * @param string $setting_name Name of setting.
+	 *
+	 * @return bool
+	 */
+    public static function is_setting_enabled( $setting_name ) {
 	    $settings = self::get_taxjar_settings();
 
-	    if ( isset( $settings[ 'enabled' ] ) && 'yes' === $settings[ 'enabled' ] ) {
-	        $enabled = true;
-        }
-
-	    return apply_filters( 'taxjar_enabled', $enabled );
+	    if ( isset( $settings[ $setting_name ] ) && 'yes' === $settings[ $setting_name ] ) {
+		    return true;
+	    }
+	    return false;
     }
 
 	/**

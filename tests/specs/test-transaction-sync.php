@@ -83,8 +83,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	 *
 	 * @return WC_Order|WP_Error
 	 */
-	function create_test_order_with_no_tax( $customer_id = 1, $order_options = array() ) {
-		$order = TaxJar_Order_Helper::create_order_with_no_tax( $customer_id = 1, $order_options = array() );
+	function create_test_order_with_no_tax() {
+		$order = TaxJar_Order_Helper::create_order_with_no_tax();
 		array_push( $this->synced_order_ids, $order->get_id() );
 		return $order;
 	}
@@ -381,7 +381,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( "Billing Address", $ship_to_address[ 'to_street' ] );
 
 		// Local Pickup order
-		$order = TaxJar_Order_Helper::create_local_pickup_order( 1 );
+		$order = TaxJar_Order_Helper::create_local_pickup_order();
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
 		$ship_to_address = $record->get_ship_to_address();
@@ -446,7 +446,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( "Billing Address", $ship_to_address[ 'to_street' ] );
 
 		// Local Pickup order
-		$order = TaxJar_Order_Helper::create_local_pickup_order( 1 );
+		$order = TaxJar_Order_Helper::create_local_pickup_order();
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order->get_id() );
 		$record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$record->load_object();
@@ -587,7 +587,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		}
 		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 		$order->save();
 
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
@@ -822,7 +822,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 
-		$empty_order = TaxJar_Order_Helper::create_order_with_no_customer_information( 1 );
+		$empty_order = TaxJar_Order_Helper::create_order_with_no_customer_information();
 		$empty_order->update_status( 'completed' );
 		$order_record = new TaxJar_Order_Record( $empty_order->get_id(), true );
 		$order_record->load_object();
@@ -877,7 +877,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		TaxJar_Order_Helper::delete_order( $order->get_id() );
 
-		$empty_order = TaxJar_Order_Helper::create_order_with_no_customer_information( 1 );
+		$empty_order = TaxJar_Order_Helper::create_order_with_no_customer_information();
 		$refund = $this->create_test_refund( $empty_order->get_id() );
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$refund_record->load_object();
@@ -1488,7 +1488,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_partial_refund() {
-		$order = TaxJar_Order_Helper::create_order_quantity_two( 1 );
+		$order = TaxJar_Order_Helper::create_order_quantity_two();
 		array_push( $this->synced_order_ids, $order->get_id() );
 		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_partial_refund_from_order( $order->get_id() );
@@ -1543,7 +1543,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		}
 		$fee->set_total( '10.00' );
 		$order->add_item( $fee );
-		$order->calculate_totals();
+		$order->calculate_totals( false );
 		$order->save();
 		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_fee_refund_from_order( $order->get_id() );
@@ -1583,7 +1583,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_partial_refund_sync_on_order_completion() {
-		$order = TaxJar_Order_Helper::create_order_quantity_two( 1 );
+		$order = TaxJar_Order_Helper::create_order_quantity_two();
 		$refund = TaxJar_Order_Helper::create_partial_refund_from_order( $order->get_id() );
 		$order->update_status( 'completed' );
 
@@ -1595,7 +1595,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_order_level_exemptions_on_sync() {
-		$order = $this->create_test_order_with_no_tax( 1 );
+		$order = $this->create_test_order_with_no_tax();
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
 
