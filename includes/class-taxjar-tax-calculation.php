@@ -8,6 +8,7 @@
  */
 
 use TaxJar\Tax_Calculator_Builder;
+use TaxJar\WooCommerce\TaxCalculation\Block_Flag;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -22,9 +23,9 @@ class TaxJar_Tax_Calculation {
 		// Cache rates for 1 hour.
 		$this->cache_time = HOUR_IN_SECONDS;
 
-
 		if ( TaxJar_Settings::is_tax_calculation_enabled() ) {
 			$this->init_hooks();
+			Block_Flag::init_hooks();
 			$this->update_tax_options();
 		}
 	}
@@ -204,7 +205,7 @@ class TaxJar_Tax_Calculation {
 		$should_calculate = true;
 
 		// If outside of cart and checkout page or within mini-cart, skip calculations
-		if ( ( ! is_cart() && ! is_checkout() ) || ( is_cart() && is_ajax() ) ) {
+		if ( ! $this->should_calculate_on_page() ) {
 			$should_calculate = false;
 		}
 
@@ -218,6 +219,42 @@ class TaxJar_Tax_Calculation {
 		}
 
 		return apply_filters( 'taxjar_should_calculate_cart_tax', $should_calculate, $wc_cart_object );
+	}
+
+	/**
+	 * Check if on a page that requires tax calculation.
+	 *
+	 * @return bool
+	 */
+	private function should_calculate_on_page() {
+		return ( $this->is_cart_or_checkout_page() && ! $this->is_mini_cart() ) || $this->is_cart_or_checkout_block();
+	}
+
+	/**
+	 * Check if on cart or checkout page.
+	 *
+	 * @return bool
+	 */
+	private function is_cart_or_checkout_page() {
+		return is_cart() || is_checkout();
+	}
+
+	/**
+	 * Check if in the mini cart.
+	 *
+	 * @return bool
+	 */
+	private function is_mini_cart() {
+		return is_cart() && is_ajax();
+	}
+
+	/**
+	 * Check if in the cart or checkout block.
+	 *
+	 * @return bool
+	 */
+	private function is_cart_or_checkout_block() {
+		return Block_Flag::was_block_initialized();
 	}
 
 	/**
