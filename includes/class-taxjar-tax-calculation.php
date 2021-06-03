@@ -203,8 +203,7 @@ class TaxJar_Tax_Calculation {
 	 */
 	public function should_calculate_cart_tax( $wc_cart_object ) {
 		$should_calculate = true;
-
-		// If outside of cart and checkout page or within mini-cart, skip calculations
+		
 		if ( ! $this->should_calculate_on_page() ) {
 			$should_calculate = false;
 		}
