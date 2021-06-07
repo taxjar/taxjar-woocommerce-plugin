@@ -1,3 +1,6 @@
+# 3.2.9 (2021-06-07)
+* Add support for tax calculation in WooCommerce cart and checkout blocks.
+
 # 3.2.8 (2021-05-27)
 * Fix tax calculation issues on fee only orders when created in admin dashboard or through Woo REST API.
 * Fix tax calculation on orders with only shipping in admin dashboard or when created through Woo REST API.
