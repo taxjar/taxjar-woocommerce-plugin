@@ -33,7 +33,7 @@ class WC_Taxjar_Transaction_Sync {
 		$transaction_sync_enabled = isset( $this->taxjar_integration->settings['taxjar_download'] ) && 'yes' == $this->taxjar_integration->settings['taxjar_download'];
 
 		if ( $sales_tax_enabled || $transaction_sync_enabled ) {
-			add_action( 'init', array( __CLASS__, 'schedule_process_queue' ) );
+			add_action( 'admin_init', array( __CLASS__, 'schedule_process_queue' ) );
 			add_action( self::PROCESS_QUEUE_HOOK, array( $this, 'process_queue' ) );
 		}
 
