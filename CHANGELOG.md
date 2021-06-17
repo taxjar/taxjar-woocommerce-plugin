@@ -1,3 +1,6 @@
+# 3.2.10 (2021-06-17)
+* Minor transaction sync performance improvement.
+
 # 3.2.9 (2021-06-07)
 * Add support for tax calculation in WooCommerce cart and checkout blocks.
 
