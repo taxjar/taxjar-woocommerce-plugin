@@ -11,6 +11,7 @@ namespace TaxJar;
 
 use Automattic\WooCommerce\Utilities\NumberUtil;
 use WC_Tax, WC_Abstract_Order;
+use \Exception;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -48,11 +49,29 @@ class Order_Tax_Applicator implements Tax_Applicator_Interface {
 	 * Apply tax to order.
 	 *
 	 * @param Tax_Details $tax_details Tax details to apply to order.
+	 *
+	 * @throws Tax_Calculation_Exception If tax detail does not indicate nexus for the transaction.
+	 * @throws Exception If line item tax data not present in details.
 	 */
 	public function apply_tax( $tax_details ) {
 		$this->tax_details = $tax_details;
+		$this->check_tax_details_for_nexus();
 		$this->remove_existing_tax();
 		$this->apply_new_tax();
+	}
+
+	/**
+	 * Check that response from TaxJar API indicates transaction has nexus.
+	 *
+	 * @throws Tax_Calculation_Exception If tax detail does not indicate nexus for the transaction.
+	 */
+	private function check_tax_details_for_nexus() {
+		if ( ! $this->tax_details->has_nexus() ) {
+			throw new Tax_Calculation_Exception(
+				'no_nexus',
+				__( 'Tax response for order does not have nexus.', 'taxjar' )
+			);
+		}
 	}
 
 	/**
@@ -64,6 +83,8 @@ class Order_Tax_Applicator implements Tax_Applicator_Interface {
 
 	/**
 	 * Apply new tax to order.
+	 *
+	 * @throws Exception If line item tax data not present in details.
 	 */
 	private function apply_new_tax() {
 		$this->apply_tax_to_line_items();
@@ -76,6 +97,8 @@ class Order_Tax_Applicator implements Tax_Applicator_Interface {
 
 	/**
 	 * Apply tax to order line items.
+	 *
+	 * @throws Exception If line item tax data not present in details.
 	 */
 	private function apply_tax_to_line_items() {
 		foreach ( $this->order->get_items() as $item_key => $item ) {
@@ -88,6 +111,8 @@ class Order_Tax_Applicator implements Tax_Applicator_Interface {
 	 *
 	 * @param integer               $item_key Index of line item.
 	 * @param WC_Order_Item_Product $item Item to create rate for.
+	 *
+	 * @throws Exception If line item tax data not present in details.
 	 */
 	private function create_rate_and_apply_to_product_line_item( $item_key, $item ) {
 		$wc_rate   = $this->create_product_tax_rate( $item_key, $item );
@@ -104,6 +129,8 @@ class Order_Tax_Applicator implements Tax_Applicator_Interface {
 	 *
 	 * @param integer               $item_key Array key of line item.
 	 * @param WC_Order_Item_Product $item Item to create rate for.
+	 *
+	 * @throws Exception If line item tax data not present in details.
 	 *
 	 * @return array
 	 */
@@ -142,12 +169,19 @@ class Order_Tax_Applicator implements Tax_Applicator_Interface {
 	 * @param integer               $item_key Index of line item.
 	 * @param WC_Order_Item_Product $item Item to get tax rate for.
 	 *
+	 * @throws Exception If line item tax data not present in details.
+	 *
 	 * @return float|int
 	 */
 	private function get_product_line_item_tax_rate( $item_key, $item ) {
 		$product_id           = $item->get_product_id();
 		$line_item_key        = $product_id . '-' . $item_key;
 		$tax_detail_line_item = $this->tax_details->get_line_item( $line_item_key );
+
+		if ( false === $tax_detail_line_item ) {
+			throw new Exception( 'Line item not present in tax details.' );
+		}
+
 		return 100 * $tax_detail_line_item->get_tax_rate();
 	}
 

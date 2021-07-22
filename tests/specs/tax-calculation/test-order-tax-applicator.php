@@ -7,6 +7,7 @@ use TaxJar_Woocommerce_Helper;
 use TaxJar_Test_Order_Factory;
 use WC_Tax;
 use TaxJar_Coupon_Helper;
+use \Exception;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -123,6 +124,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		}
 		$this->tax_detail_mock->method( 'get_line_item' )->willReturnMap( $mock_line_item_map );
 		$this->tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( false );
+		$this->tax_detail_mock->method( 'has_nexus' )->willReturn( true );
 		$this->apply_tax();
 
 		foreach ( $this->order->get_items() as $item ) {
@@ -249,12 +251,31 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 		$this->assertEquals( 0, $this->order->get_shipping_tax() );
 	}
 
+	public function test_apply_tax_with_no_nexus() {
+		$this->tax_detail_mock = $this->createMock( Tax_Details::class );
+		$this->tax_detail_mock->method( 'has_nexus' )->willReturn( false );
+
+		$this->expectException( Tax_Calculation_Exception::class );
+		$this->apply_tax();
+	}
+
+	public function test_apply_tax_with_no_line_items() {
+		$this->tax_detail_mock = $this->createMock( Tax_Details::class );
+		$this->tax_detail_mock->method( 'get_line_item' )->willReturn( false );
+		$this->tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( $this->is_shipping_taxable );
+		$this->tax_detail_mock->method( 'get_shipping_tax_rate' )->willReturn( $this->shipping_tax_rate );
+
+		$this->expectException( Exception::class );
+		$this->apply_tax();
+	}
+
 	private function build_tax_detail_mock() {
 		$this->tax_detail_mock = $this->createMock( Tax_Details::class );
 		$mock_line_items       = $this->build_mock_line_item_map( $this->order, $this->tax_rate );
 		$this->tax_detail_mock->method( 'get_line_item' )->willReturnMap( $mock_line_items );
 		$this->tax_detail_mock->method( 'is_shipping_taxable' )->willReturn( $this->is_shipping_taxable );
 		$this->tax_detail_mock->method( 'get_shipping_tax_rate' )->willReturn( $this->shipping_tax_rate );
+		$this->tax_detail_mock->method( 'has_nexus' )->willReturn( true );
 	}
 
 	private function build_mock_line_item_map( $order, $tax_rate ) {
