@@ -1,3 +1,6 @@
+# 3.2.11 (2021-07-23)
+* Fix fatal error when no line items present on tax response.
+
 # 3.2.10 (2021-06-17)
 * Minor transaction sync performance improvement.
 
