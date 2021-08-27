@@ -581,42 +581,27 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			'discount_type' => 'fixed_cart',
 		) );
 
-		if ( version_compare( WC()->version, '3.0', '>=' ) ) {
-			$coupon = $coupon->get_code();
-		} else {
-			$coupon = $coupon->code;
-		}
-
+		$coupon = $coupon->get_code();
 		WC()->cart->add_to_cart( $taxable_product );
 		WC()->cart->add_to_cart( $exempt_product );
 		WC()->cart->add_discount( $coupon );
+
 		WC()->cart->calculate_totals();
 
-		// Woo 3.2+ allocates fixed discounts evenly across line items
-		// Woo 2.6+ allocates fixed discounts proportionately across line items
-		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->tax_total, 1.88, '', 0.01 );
-			$this->assertEquals( WC()->cart->get_taxes_total(), 1.88, '', 0.01 );
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 283 - 10 + 1.88, '', 0.01 );
-		} else {
-			$this->assertEquals( WC()->cart->tax_total, 1.42, '', 0.01 );
-			$this->assertEquals( WC()->cart->get_taxes_total(), 1.42, '', 0.01 );
-		}
+		$this->assertEquals( 1.56, WC()->cart->get_total_tax() );
+		$this->assertEquals( 1.56, WC()->cart->get_taxes_total() );
+		$this->assertEquals( 274.56, WC()->cart->get_total( 'amount' ) );
 
-		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
+		foreach ( WC()->cart->get_cart() as $item ) {
 			$product = $item['data'];
 			$sku = $product->get_sku();
 
 			if ( 'EXEMPT1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 0, '', 0.01 );
+				$this->assertEquals( 0, $item['line_tax'] );
 			}
 
 			if ( 'EXEMPTOVER1' == $sku ) {
-				if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-					$this->assertEquals( $item['line_tax'], 1.56, '', 0.01 );
-				} else {
-					$this->assertEquals( $item['line_tax'], 1.42, '', 0.01 );
-				}
+				$this->assertEquals( 1.56, $item['line_tax'] );
 			}
 		}
 	}
@@ -1137,7 +1122,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		$this->assertEquals( 0, WC()->cart->get_taxes_total() );
   }
-  
+
 	function test_tax_lookup_state_with_space() {
 		$location = array(
 			'to_country' => 'GB',
