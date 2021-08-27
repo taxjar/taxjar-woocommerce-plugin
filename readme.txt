@@ -1,13 +1,13 @@
 ==== TaxJar - Sales Tax Automation for WooCommerce ====
 Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxjar, tax, taxes, sales tax, tax calculation, sales tax compliance, sales tax filing
-Requires at least: 5.3
+Requires at least: 5.4
 Tested up to: 5.8
 Stable tag: 3.2.11
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
-WC requires at least: 5.0.0
-WC tested up to: 5.5.2
+WC requires at least: 5.1.0
+WC tested up to: 5.6.0
 
 Trusted by more than 20,000 businesses, TaxJar’s award-winning solution makes it easy to automate sales tax reporting and filing, and determine economic nexus with a single click.
 
@@ -35,7 +35,6 @@ Get accurate sales tax calculations and return-ready reports. [TaxJar for WooCom
 
 * Simple onboarding accelerates the time it takes to get up and running (typically within 7 days)
 * Award-Winning support. Our TaxJar experts are here to help troubleshoot and answer questions with industry-leading support.
-* Compatible with WooCommerce 3.0+ and WordPress 4.2+.
 * Exempt non-taxable products and take advantage of TaxJar's built-in [sales tax categories](https://developers.taxjar.com/api/reference/#categories) for product exemptions such as clothing, food, software, and more.
 * If you sell on other marketplaces or platforms beyond WooCommerce, get your sales tax data all in one spot.
 

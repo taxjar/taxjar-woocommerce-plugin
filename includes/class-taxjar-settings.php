@@ -512,7 +512,7 @@ class TaxJar_Settings {
 
 	/**
 	 * Gets the woocommerce store setting if present, otherwise gets the TaxJar store setting.
-	 * 
+	 *
 	 * @param string $woocommerce_option_name WooCommerce option name
 	 * @param string $taxjar_setting_key TaxJar setting key
 	 *
