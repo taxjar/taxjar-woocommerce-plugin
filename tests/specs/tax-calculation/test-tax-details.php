@@ -68,12 +68,13 @@ class Test_Tax_Details extends WP_UnitTestCase {
 		$this->assertFalse( $tax_details->is_shipping_taxable() );
 	}
 
-	public function test_response_with_no_breakdown() {
+	public function test_no_exception_thrown_using_response_with_no_breakdown() {
 		$tax_body = json_decode( $this->tax_response['body'] );
 		unset( $tax_body->tax->breakdown );
 		$tax_body->tax->has_nexus   = false;
 		$this->tax_response['body'] = wp_json_encode( $tax_body );
 		$tax_details                = new Tax_Details( $this->tax_response );
+		$this->assertFalse( $tax_details->has_nexus() );
 	}
 
 	public function test_response_with_shipping_breakdown() {

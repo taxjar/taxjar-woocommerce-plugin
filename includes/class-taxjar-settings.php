@@ -489,11 +489,11 @@ class TaxJar_Settings {
 	 * @return array
 	 */
 	public static function get_store_settings() {
-		$taxjar_settings = self::get_taxjar_settings();
-		$store_address   = get_option( 'woocommerce_store_address' ) ? get_option( 'woocommerce_store_address' ) : $taxjar_settings['store_street'];
-		$store_city      = get_option( 'woocommerce_store_city' ) ? get_option( 'woocommerce_store_city' ) : $taxjar_settings['store_city'];
+		$store_address   = self::get_store_setting('woocommerce_store_address', 'store_street' );
+		$store_city      = self::get_store_setting('woocommerce_store_city', 'store_city' );
+		$store_postcode  = self::get_store_setting('woocommerce_store_postcode', 'store_postcode' );
 		$store_country   = explode( ':', get_option( 'woocommerce_default_country' ) );
-		$store_postcode  = get_option( 'woocommerce_store_postcode' ) ? get_option( 'woocommerce_store_postcode' ) : $taxjar_settings['store_postcode'];
+
 
 		$store_settings = array(
 			'street'   => $store_address,
@@ -507,7 +507,28 @@ class TaxJar_Settings {
 			$store_settings['state'] = $store_country[1];
 		}
 
-		return apply_filters( 'taxjar_store_settings', $store_settings, $taxjar_settings );
+		return apply_filters( 'taxjar_store_settings', $store_settings, self::get_taxjar_settings() );
+	}
+
+	/**
+	 * Gets the woocommerce store setting if present, otherwise gets the TaxJar store setting.
+	 *
+	 * @param string $woocommerce_option_name WooCommerce option name
+	 * @param string $taxjar_setting_key TaxJar setting key
+	 *
+	 * @return mixed
+	 */
+	public static function get_store_setting( string $woocommerce_option_name, string $taxjar_setting_key ) {
+		if ( $woo_setting = get_option( $woocommerce_option_name ) ) {
+			return $woo_setting;
+		}
+
+		$taxjar_settings = self::get_taxjar_settings();
+		if ( isset( $taxjar_settings[ $taxjar_setting_key ] ) ) {
+			return $taxjar_settings[ $taxjar_setting_key ];
+		}
+
+		return null;
 	}
 
 	/**

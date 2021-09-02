@@ -6,8 +6,9 @@
  * Version: 3.2.11
  * Author: TaxJar
  * Author URI: https://www.taxjar.com
- * WC requires at least: 5.0.0
- * WC tested up to: 5.5.2
+ * WC requires at least: 5.1.0
+ * WC tested up to: 5.6.0
+ * Requires PHP: 7.0
  *
  * Copyright: © 2014-2019 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc.
  * License: GNU General Public License v2.0 or later
@@ -43,7 +44,7 @@ if ( ! $woocommerce_active || version_compare( get_option( 'woocommerce_db_versi
 final class WC_Taxjar {
 
 	static $version = '3.2.11';
-	public static $minimum_woocommerce_version = '5.0.0';
+	public static $minimum_woocommerce_version = '5.1.0';
 
 	/**
 	 * Construct the plugin.
