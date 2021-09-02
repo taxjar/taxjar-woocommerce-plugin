@@ -516,7 +516,7 @@ class TaxJar_Settings {
 	 * @param string $woocommerce_option_name WooCommerce option name
 	 * @param string $taxjar_setting_key TaxJar setting key
 	 *
-	 * @return false|mixed|void|null
+	 * @return mixed
 	 */
 	public static function get_store_setting( string $woocommerce_option_name, string $taxjar_setting_key ) {
 		if ( $woo_setting = get_option( $woocommerce_option_name ) ) {
