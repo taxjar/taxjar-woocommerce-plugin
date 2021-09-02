@@ -3,7 +3,7 @@ Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxjar, tax, taxes, sales tax, tax calculation, sales tax compliance, sales tax filing
 Requires at least: 5.4
 Tested up to: 5.8
-Stable tag: 3.2.11
+Stable tag: 3.3.0
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 5.1.0
@@ -94,6 +94,13 @@ Our plans come with filings included, with additional filings available for purc
 3. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+
+= 3.3.0 (2021-09-02)
+* Fix php warning when store settings are not set
+* Update minimum WordPress version to 5.4
+* Update minimum WooCommerce version to 5.1
+* WooCommerce tested up to version 5.6
+* Update minimum PHP version to 7.0
 
 = 3.2.11 (2021-07-23)
 * Fix fatal error when no line items present on tax response.

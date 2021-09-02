@@ -1,3 +1,10 @@
+# 3.3.0 (2021-09-02)
+* Fix php warning when store settings are not set
+* Update minimum WordPress version to 5.4
+* Update minimum WooCommerce version to 5.1
+* WooCommerce tested up to version 5.6
+* Update minimum PHP version to 7.0
+
 # 3.2.11 (2021-07-23)
 * Fix fatal error when no line items present on tax response.
 
