@@ -103,7 +103,9 @@ final class WC_Taxjar {
 			include_once 'includes/TaxCalculation/class-order-calculation-logger.php';
 			include_once 'includes/TaxCalculation/class-tax-calculation-exception.php';
 			include_once 'includes/TaxCalculation/class-tax-calculator.php';
+			include_once 'includes/TaxCalculation/class-tax-calculation-validator.php';
 			include_once 'includes/TaxCalculation/class-order-tax-calculation-validator.php';
+			include_once 'includes/TaxCalculation/class-cart-tax-calculation-validator.php';
 			include_once 'includes/TaxCalculation/class-tax-calculator-builder.php';
 			include_once 'includes/TaxCalculation/class-block-flag.php';
 			include_once 'includes/TaxCalculation/class-cart-tax-request-body-builder.php';
