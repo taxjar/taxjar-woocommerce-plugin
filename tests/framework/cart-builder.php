@@ -35,6 +35,8 @@ class Cart_Builder {
 
 	private $fees = [];
 
+	private $vat_exemption = false;
+
 	public static function a_cart(): Cart_Builder {
 		return new static();
 	}
@@ -83,6 +85,11 @@ class Cart_Builder {
 		return $this;
 	}
 
+	public function with_vat_exemption(): Cart_Builder {
+		$this->vat_exemption = true;
+		return $this;
+	}
+
 	public function build(): WC_Cart {
 		$this->set_shipping_address();
 		$this->set_billing_address();
@@ -91,6 +98,7 @@ class Cart_Builder {
 		$this->add_products();
 		$this->add_coupons();
 		$this->add_fees();
+		$this->set_vat_exemption();
 		return $this->cart;
 	}
 
@@ -136,5 +144,9 @@ class Cart_Builder {
 		foreach( $this->fees as $fee ) {
 			$this->cart->add_fee( $fee['name'], $fee['amount'], $fee['taxable'], $fee['tax_class'] );
 		}
+	}
+
+	private function set_vat_exemption() {
+		WC()->customer->set_is_vat_exempt( $this->vat_exemption );
 	}
 }

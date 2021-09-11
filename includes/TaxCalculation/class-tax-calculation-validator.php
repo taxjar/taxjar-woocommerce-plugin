@@ -1,4 +1,9 @@
 <?php
+/**
+ * Abstract Tax Calculation Validator
+ *
+ * @package TaxJar\WooCommerce\TaxCalculation
+ */
 
 namespace TaxJar\WooCommerce\TaxCalculation;
 
@@ -11,16 +16,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Class Tax_Calculation_Validator
+ */
 abstract class Tax_Calculation_Validator implements Tax_Calculation_Validator_Interface {
 
+	/**
+	 * TaxJar Nexus
+	 *
+	 * @var WC_Taxjar_Nexus
+	 */
 	protected $nexus;
 
+	/**
+	 * Tax_Calculation_Validator constructor
+	 *
+	 * @param WC_Taxjar_Nexus $nexus TaxJar Nexus.
+	 */
 	public function __construct( WC_Taxjar_Nexus $nexus ) {
 		$this->nexus = $nexus;
 	}
 
 	/**
-	 * @throws Tax_Calculation_Exception
+	 * Validates that an API request should be performed to calculate tax
+	 *
+	 * @param Tax_Request_Body $request_body tax request body.
+	 * @throws Tax_Calculation_Exception When API request should not be performed.
 	 */
 	public function validate( Tax_Request_Body $request_body ) {
 		$request_body->validate();
@@ -30,7 +51,20 @@ abstract class Tax_Calculation_Validator implements Tax_Calculation_Validator_In
 		$this->filter_interrupt();
 	}
 
+	/**
+	 * Validates that the cart total is not zero
+	 *
+	 * @return void
+	 */
 	abstract protected function validate_total_is_not_zero();
+
+	/**
+	 * Validates that the cart is not vat exempt
+	 *
+	 * @param Tax_Request_Body $request_body tax request body.
+	 *
+	 * @return void
+	 */
 	abstract protected function validate_vat_exemption( Tax_Request_Body $request_body );
 
 	/**
@@ -60,6 +94,11 @@ abstract class Tax_Calculation_Validator implements Tax_Calculation_Validator_In
 		return ! $this->nexus->has_nexus_check( $request_body->get_to_country(), $request_body->get_to_state() );
 	}
 
+	/**
+	 * Allows other plugins to interrupt tax calculation process and prevent tax calculation API request.
+	 *
+	 * @return void
+	 */
 	abstract protected function filter_interrupt();
 
 }

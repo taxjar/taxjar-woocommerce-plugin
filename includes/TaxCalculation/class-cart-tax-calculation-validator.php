@@ -1,10 +1,10 @@
 <?php
 /**
- * Tax Calculation Validator
+ * Cart Tax Calculation Validator
  *
  * Validates that tax calculation can and should be performed on a cart.
  *
- * @package TaxJar\TaxCalculation
+ * @package TaxJar
  */
 
 namespace TaxJar;
@@ -23,6 +23,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Cart_Tax_Calculation_Validator extends Tax_Calculation_Validator {
 
 	/**
+	 * WooCommerce cart
+	 *
 	 * @var WC_Cart
 	 */
 	private $cart;
@@ -30,7 +32,7 @@ class Cart_Tax_Calculation_Validator extends Tax_Calculation_Validator {
 	/**
 	 * Cart_Tax_Calculation_Validator constructor.
 	 *
-	 * @param WC_Cart $cart cart.
+	 * @param WC_Cart         $cart cart.
 	 * @param WC_Taxjar_Nexus $nexus Nexus determiner.
 	 */
 	public function __construct( WC_Cart $cart, WC_Taxjar_Nexus $nexus ) {
