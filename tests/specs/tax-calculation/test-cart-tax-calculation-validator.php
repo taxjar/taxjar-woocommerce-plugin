@@ -51,7 +51,7 @@ class Test_Cart_Tax_Calculation_Validator extends WP_UnitTestCase {
 		$cart_tax_calculation_validator->validate( $this->tax_request_body_stub );
 	}
 
-	public function test_no_nexus_throws_exemption() {
+	public function test_no_nexus_throws_exception() {
 		$cart = Cart_Builder::a_cart()->build();
 		$this->nexus_stub->method( 'has_nexus_check' )->willReturn( false );
 		$cart_tax_calculation_validator = new Cart_Tax_Calculation_Validator( $cart, $this->nexus_stub );
@@ -69,7 +69,7 @@ class Test_Cart_Tax_Calculation_Validator extends WP_UnitTestCase {
 		$cart_tax_calculation_validator->validate( $this->tax_request_body_stub );
 	}
 
-	public function test_zero_cart_total_throws_exemption() {
+	public function test_zero_cart_total_throws_exception() {
 		$cart = Cart_Builder::a_cart()->with_shipping_total( 0 )->build();
 		$this->nexus_stub->method( 'has_nexus_check' )->willReturn( true );
 		$cart_tax_calculation_validator = new Cart_Tax_Calculation_Validator( $cart, $this->nexus_stub );
