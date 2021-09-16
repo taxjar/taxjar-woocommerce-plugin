@@ -2,6 +2,7 @@
 
 namespace TaxJar;
 
+use WC_Taxjar_Nexus;
 use WP_UnitTestCase;
 use WC_Order;
 
