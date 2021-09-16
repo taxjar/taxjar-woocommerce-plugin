@@ -19,6 +19,6 @@ interface Tax_Calculation_Validator_Interface {
 	 *
 	 * @param Tax_Request_Body $request_body Tax request body.
 	 */
-	public function validate( $request_body );
+	public function validate( Tax_Request_Body $request_body );
 
 }

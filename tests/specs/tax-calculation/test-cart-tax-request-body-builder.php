@@ -140,20 +140,26 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 	 * @param array $coupons
 	 */
 	public function test_line_item( array $products, array $coupons = []) {
-		$cart = Cart_Builder::a_cart();
-		foreach( $products as $product ) {
-			$cart = $cart->with_product( $product['product']->get_id(), $product['quantity'] );
+		WC_Tax::create_tax_class( 'clothing-rate-20010' );
+		$cart_builder = Cart_Builder::a_cart();
+		foreach( $products as $key => $product ) {
+			$product_id = TaxJar_Product_Helper::create_product( $product['product']['type'],  $product['product']['options'] )->get_id();
+			$products[ $key ]['product_id'] = $product_id;
+			$cart_builder = $cart_builder->with_product(
+				$product_id,
+				$product['quantity']
+			);
 		}
 		foreach( $coupons as $coupon ) {
-			$cart->with_coupon( $coupon->get_code() );
+			$cart_builder->with_coupon( TaxJar_Coupon_Helper::create_coupon( $coupon )->get_code() );
 		}
-		$cart = $cart->build();
+		$cart = $cart_builder->build();
 		$cart_tax_request_body_builder = new Cart_Tax_Request_Body_Builder( $cart );
 
 		$tax_request_body = $cart_tax_request_body_builder->create();
 
 		foreach( $products as $product ) {
-			$item = $this->get_item_from_tax_request_body( $tax_request_body, $product['product']->get_id() );
+			$item = $this->get_item_from_tax_request_body( $tax_request_body, $product['product_id'] );
 			$this->assertEquals( $product['quantity'], $item['quantity'] );
 			$this->assertEquals( $product['expected_values']['product_tax_code'], $item['product_tax_code'] );
 			$this->assertEquals( $product['expected_values']['unit_price'], $item['unit_price'] );
@@ -170,12 +176,14 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 	}
 
 	public function provide_cart_data(): array {
-		WC_Tax::create_tax_class( 'clothing-rate-20010' );
 		return [
 			'a single simple product' => [
 				[
 					[
-						'product' => TaxJar_Product_Helper::create_product(),
+						'product' => [
+							'type' => 'simple',
+							'options' => []
+						],
 						'quantity' => 1,
 						'expected_values' => [
 							'product_tax_code' => '',
@@ -188,7 +196,10 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 			'a simple product with quantity of 2' => [
 				[
 					[
-						'product' => TaxJar_Product_Helper::create_product(),
+						'product' => [
+							'type' => 'simple',
+							'options' => []
+						],
 						'quantity' => 2,
 						'expected_values' => [
 							'product_tax_code' => '',
@@ -201,7 +212,10 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 			'a simple product with discount' => [
 				[
 					[
-						'product' => TaxJar_Product_Helper::create_product(),
+						'product' => [
+							'type' => 'simple',
+							'options' => []
+						],
 						'quantity' => 2,
 						'expected_values' => [
 							'product_tax_code' => '',
@@ -211,16 +225,18 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 					]
 				],
 				[
-					TaxJar_Coupon_Helper::create_coupon()
+					[]
 				]
 			],
 			'a simple product with non taxable status' => [
 				[
 					[
-						'product' => TaxJar_Product_Helper::create_product(
-							'simple',
-							[ 'tax_status' => 'none']
-						),
+						'product' => [
+							'type' => 'simple',
+							'options' => [
+								'tax_status' => 'none'
+							]
+						],
 						'quantity' => 1,
 						'expected_values' => [
 							'product_tax_code' => '99999',
@@ -233,10 +249,12 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 			'a simple product with tax class' => [
 				[
 					[
-						'product' => TaxJar_Product_Helper::create_product(
-							'simple',
-							[ 'tax_class' => 'clothing-rate-20010']
-						),
+						'product' => [
+							'type' => 'simple',
+							'options' => [
+								'tax_class' => 'clothing-rate-20010'
+							]
+						],
 						'quantity' => 1,
 						'expected_values' => [
 							'product_tax_code' => '20010',
@@ -249,10 +267,12 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 			'a subscription product' => [
 				[
 					[
-						'product' => TaxJar_Product_Helper::create_product(
-							'subscription',
-							[ 'trial_length' => 0 ]
-						),
+						'product' => [
+							'type' => 'subscription',
+							'options' => [
+								'trial_length' => 0
+							]
+						],
 						'quantity' => 1,
 						'expected_values' => [
 							'product_tax_code' => '',
@@ -265,7 +285,10 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 			'a subscription product with free trial' => [
 				[
 					[
-						'product' => TaxJar_Product_Helper::create_product( 'subscription' ),
+						'product' => [
+							'type' => 'subscription',
+							'options' => []
+						],
 						'quantity' => 1,
 						'expected_values' => [
 							'product_tax_code' => '',
@@ -287,13 +310,14 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 	 * @throws Exception
 	 */
 	public function test_fee_item( array $fees, array $coupons = []) {
+		WC_Tax::create_tax_class( 'clothing-rate-20010' );
 		$cart_builder = Cart_Builder::a_cart();
 		$cart_builder->with_product( TaxJar_Product_Helper::create_product()->get_id(), 1 );
 		foreach( $fees as $fee ) {
 			$cart_builder->with_fee( $fee );
 		}
 		foreach( $coupons as $coupon ) {
-			$cart_builder->with_coupon( $coupon->get_code() );
+			$cart_builder->with_coupon( TaxJar_Coupon_Helper::create_coupon( $coupon )->get_code() );
 		}
 		$cart = $cart_builder->build();
 		$totals = new WC_Cart_Totals( $cart );
@@ -312,7 +336,6 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 	}
 
 	public function provide_cart_data_with_fees(): array {
-		WC_Tax::create_tax_class( 'clothing-rate-20010' );
 		return [
 			'a taxable fee' => [
 				[
@@ -378,7 +401,7 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 					]
 				],
 				[
-					TaxJar_Coupon_Helper::create_coupon()
+					[]
 				]
 			]
 		];
