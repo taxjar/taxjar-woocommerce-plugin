@@ -22,7 +22,7 @@ class Tax_Calculator {
 	/**
 	 * Logs events.
 	 *
-	 * @var Logger
+	 * @var Tax_Calculation_Logger
 	 */
 	private $logger;
 
@@ -85,12 +85,12 @@ class Tax_Calculator {
 	/**
 	 * Sets the logger.
 	 *
-	 * @param Logger $logger Logger instance.
+	 * @param Tax_Calculation_Logger $logger Logger instance.
 	 *
 	 * @throws Exception When logger is not instance of Logger.
 	 */
 	public function set_logger( $logger ) {
-		if ( $logger instanceof Logger ) {
+		if ( $logger instanceof Tax_Calculation_Logger ) {
 			$this->logger = $logger;
 		} else {
 			throw new Exception( 'Logger must be instance of Logger' );
@@ -286,12 +286,12 @@ class Tax_Calculator {
 	 * Logs success details.
 	 */
 	private function success() {
-		$details = array(
-			'context'      => $this->context,
-			'request_body' => $this->request_body,
-			'tax_details'  => $this->tax_details,
-		);
-		$this->logger->log_success( $details );
+		$result = new Tax_Calculation_Result();
+		$result->set_success( true );
+		$result->set_context( $this->get_context() );
+		$result->set_raw_request( $this->request_body->to_json() );
+		$result->set_raw_response( wp_json_encode( $this->tax_details->get_raw_response() ) );
+		$this->logger->log_success( $result );
 	}
 
 	/**
@@ -299,13 +299,17 @@ class Tax_Calculator {
 	 *
 	 * @param Exception $exception Exception that occurred during tax calculation.
 	 */
-	private function failure( $exception ) {
-		$details = array(
-			'exception'    => $exception,
-			'context'      => $this->context,
-			'request_body' => $this->request_body,
-			'tax_details'  => $this->tax_details,
-		);
-		$this->logger->log_failure( $details );
+	private function failure( Exception $exception ) {
+		$result = new Tax_Calculation_Result();
+		$result->set_success( false );
+		$result->set_context( $this->get_context() );
+		$result->set_raw_request( $this->request_body->to_json() );
+
+		if ( $this->tax_details ) {
+			$result->set_raw_response( wp_json_encode( $this->tax_details->get_raw_response() ) );
+		}
+
+		$result->set_error_message( $exception->getMessage() );
+		$this->logger->log_failure( $result, $exception );
 	}
 }

@@ -99,7 +99,7 @@ final class WC_Taxjar {
 			include_once 'includes/TaxCalculation/class-tax-detail-line-item.php';
 			include_once 'includes/TaxCalculation/class-order-tax-applicator.php';
 			include_once 'includes/TaxCalculation/class-rate-manager.php';
-			include_once 'includes/TaxCalculation/class-logger.php';
+			include_once 'includes/TaxCalculation/class-tax-calculation-logger.php';
 			include_once 'includes/TaxCalculation/class-order-calculation-logger.php';
 			include_once 'includes/TaxCalculation/class-tax-calculation-exception.php';
 			include_once 'includes/TaxCalculation/class-tax-calculator.php';
@@ -109,6 +109,7 @@ final class WC_Taxjar {
 			include_once 'includes/TaxCalculation/class-tax-calculator-builder.php';
 			include_once 'includes/TaxCalculation/class-block-flag.php';
 			include_once 'includes/TaxCalculation/class-cart-tax-request-body-builder.php';
+			include_once 'includes/TaxCalculation/class-tax-calculation-result.php';
 
 			// Register the integration.
 			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );
