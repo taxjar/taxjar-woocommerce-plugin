@@ -97,6 +97,8 @@ final class WC_Taxjar {
 			include_once 'includes/TaxCalculation/class-tax-client.php';
 			include_once 'includes/TaxCalculation/class-tax-details.php';
 			include_once 'includes/TaxCalculation/class-tax-detail-line-item.php';
+			include_once 'includes/TaxCalculation/class-tax-applicator.php';
+			include_once 'includes/TaxCalculation/class-cart-tax-applicator.php';
 			include_once 'includes/TaxCalculation/class-order-tax-applicator.php';
 			include_once 'includes/TaxCalculation/class-rate-manager.php';
 			include_once 'includes/TaxCalculation/class-logger.php';
