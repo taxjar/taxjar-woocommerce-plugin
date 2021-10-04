@@ -10,8 +10,9 @@
 namespace TaxJar;
 
 use Automattic\WooCommerce\Utilities\NumberUtil;
+use WC_Order;
 use WC_Tax, WC_Abstract_Order;
-use \Exception;
+use Exception;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -20,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class Order_Tax_Applicator
  */
-class Order_Tax_Applicator implements Tax_Applicator_Interface {
+class Order_Tax_Applicator extends Tax_Applicator {
 
 	/**
 	 * Order to apply tax to.
@@ -28,13 +29,6 @@ class Order_Tax_Applicator implements Tax_Applicator_Interface {
 	 * @var WC_Order
 	 */
 	private $order;
-
-	/**
-	 * Tax details to apply to order.
-	 *
-	 * @var Tax_Details
-	 */
-	private $tax_details;
 
 	/**
 	 * Order_Tax_Applicator constructor.
@@ -46,38 +40,9 @@ class Order_Tax_Applicator implements Tax_Applicator_Interface {
 	}
 
 	/**
-	 * Apply tax to order.
-	 *
-	 * @param Tax_Details $tax_details Tax details to apply to order.
-	 *
-	 * @throws Tax_Calculation_Exception If tax detail does not indicate nexus for the transaction.
-	 * @throws Exception If line item tax data not present in details.
-	 */
-	public function apply_tax( $tax_details ) {
-		$this->tax_details = $tax_details;
-		$this->check_tax_details_for_nexus();
-		$this->remove_existing_tax();
-		$this->apply_new_tax();
-	}
-
-	/**
-	 * Check that response from TaxJar API indicates transaction has nexus.
-	 *
-	 * @throws Tax_Calculation_Exception If tax detail does not indicate nexus for the transaction.
-	 */
-	private function check_tax_details_for_nexus() {
-		if ( ! $this->tax_details->has_nexus() ) {
-			throw new Tax_Calculation_Exception(
-				'no_nexus',
-				__( 'Tax response for order does not have nexus.', 'taxjar' )
-			);
-		}
-	}
-
-	/**
 	 * Remove existing tax on order.
 	 */
-	private function remove_existing_tax() {
+	protected function remove_existing_tax() {
 		$this->order->remove_order_items( 'tax' );
 	}
 
@@ -86,7 +51,8 @@ class Order_Tax_Applicator implements Tax_Applicator_Interface {
 	 *
 	 * @throws Exception If line item tax data not present in details.
 	 */
-	private function apply_new_tax() {
+	protected function apply_new_tax() {
+		$this->remove_existing_tax();
 		$this->apply_tax_to_line_items();
 		$this->apply_tax_to_fees();
 		$this->apply_tax_to_shipping_items();
