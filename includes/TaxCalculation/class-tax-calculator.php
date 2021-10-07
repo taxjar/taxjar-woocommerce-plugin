@@ -86,90 +86,54 @@ class Tax_Calculator {
 	 * Sets the logger.
 	 *
 	 * @param Tax_Calculation_Logger $logger Logger instance.
-	 *
-	 * @throws Exception When logger is not instance of Logger.
 	 */
-	public function set_logger( $logger ) {
-		if ( $logger instanceof Tax_Calculation_Logger ) {
-			$this->logger = $logger;
-		} else {
-			throw new Exception( 'Logger must be instance of Logger' );
-		}
+	public function set_logger( Tax_Calculation_Logger $logger ) {
+		$this->logger = $logger;
 	}
 
 	/**
 	 * Sets the cache.
 	 *
-	 * @param Cache $cache Cache instance.
-	 *
-	 * @throws Exception When cache does not implement Cache_Interface.
+	 * @param Cache_Interface $cache Cache instance.
 	 */
-	public function set_cache( $cache ) {
-		if ( $cache instanceof Cache_Interface ) {
-			$this->cache = $cache;
-		} else {
-			throw new Exception( 'Cache must implement Cache_Interface' );
-		}
+	public function set_cache( Cache_Interface $cache ) {
+		$this->cache = $cache;
 	}
 
 	/**
 	 * Sets the request body builder.
 	 *
 	 * @param Tax_Request_Body_Builder $request_body_builder Request body builder instance.
-	 *
-	 * @throws Exception When request_body_builder is not an instance of Tax_Request_Body_Builder.
 	 */
-	public function set_request_body_builder( $request_body_builder ) {
-		if ( $request_body_builder instanceof Tax_Request_Body_Builder ) {
-			$this->request_body_builder = $request_body_builder;
-		} else {
-			throw new Exception( 'Request Body Factory must be instance of Tax_Request_Body_Factory' );
-		}
+	public function set_request_body_builder( Tax_Request_Body_Builder $request_body_builder ) {
+		$this->request_body_builder = $request_body_builder;
 	}
 
 	/**
 	 * Sets the tax client.
 	 *
-	 * @param Tax_Client $tax_client Tax client instance.
-	 *
-	 * @throws Exception When tax client does not implement Tax_Client_Interface.
+	 * @param Tax_Client_Interface $tax_client Tax client instance.
 	 */
-	public function set_tax_client( $tax_client ) {
-		if ( $tax_client instanceof Tax_Client_Interface ) {
-			$this->tax_client = $tax_client;
-		} else {
-			throw new Exception( 'Tax Client must implement Tax_Client_Interface' );
-		}
+	public function set_tax_client( Tax_Client_Interface $tax_client ) {
+		$this->tax_client = $tax_client;
 	}
 
 	/**
 	 * Sets the tax applicator.
 	 *
 	 * @param Tax_Applicator_Interface $applicator Applicator instance.
-	 *
-	 * @throws Exception When applicator does not implement Tax_Applicator_Interface.
 	 */
-	public function set_applicator( $applicator ) {
-		if ( $applicator instanceof Tax_Applicator_Interface ) {
-			$this->applicator = $applicator;
-		} else {
-			throw new Exception( 'Tax applicator must implement Tax_Applicator_Interface' );
-		}
+	public function set_applicator( Tax_Applicator_Interface $applicator ) {
+		$this->applicator = $applicator;
 	}
 
 	/**
 	 * Sets the validator.
 	 *
 	 * @param Tax_Calculation_Validator_Interface $validator Validator instance.
-	 *
-	 * @throws Exception When validator does not implement Tax_Calculation_Validator_Interface.
 	 */
-	public function set_validator( $validator ) {
-		if ( $validator instanceof Tax_Calculation_Validator_Interface ) {
-			$this->validator = $validator;
-		} else {
-			throw new Exception( 'Validator must implement Tax_Calculation_Validator_Interface' );
-		}
+	public function set_validator( Tax_Calculation_Validator_Interface $validator ) {
+		$this->validator = $validator;
 	}
 
 	/**
