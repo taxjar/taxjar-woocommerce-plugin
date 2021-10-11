@@ -38,49 +38,6 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$this->mock_validator = $this->createMock( Tax_Calculation_Validator_Interface::class );
 	}
 
-	public function test_invalid_logger() {
-		$this->mock_logger = 'invalid logger';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_cache() {
-		$this->mock_cache = 'invalid cache';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_request_body_factory() {
-		$this->mock_request_body_factory = 'invalid request body factory';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_tax_client() {
-		$this->mock_tax_client = 'invalid tax client';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_applicator() {
-		$this->mock_applicator = 'invalid applicator';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_validator() {
-		$this->mock_validator = 'invalid validator';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	/**
-	 * @doesNotPerformAssertions
-	 */
-	public function test_setters_using_valid_objects() {
-		$calculator = $this->build_calculator();
-	}
-
 	public function test_get_tax_from_cache() {
 		$this->mock_cache->method( 'contains_hashed_value' )->willReturn( true );
 		$this->mock_cache->expects( $this->once() )->method( 'read_hashed_value' );

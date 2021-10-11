@@ -7,6 +7,7 @@
 
 namespace TaxJar;
 
+use WC_Cart;
 use WC_Taxjar_Nexus;
 use TaxJar_Settings;
 
@@ -42,7 +43,6 @@ class Tax_Calculator_Builder {
 	 * @param WC_Order $order Order that needs tax calculation.
 	 *
 	 * @return Tax_Calculator
-	 * @throws \Exception When calculator is built using invalid objects.
 	 */
 	public function build_order_calculator( $should_calculate, $order ) {
 		if ( $should_calculate ) {
@@ -71,7 +71,6 @@ class Tax_Calculator_Builder {
 	 * Builds tax calculator for an API order if the TaxJar API Tax Calculation setting is enabled.
 	 *
 	 * @param WC_Order $order Order create or update through WooCommerce REST API to calculate tax on.
-	 * @throws \Exception When calculator is built using invalid objects.
 	 */
 	private function maybe_setup_api_tax_calculator( $order ) {
 		if ( ! $this->is_api_tax_calculation_enabled() ) {
@@ -95,7 +94,6 @@ class Tax_Calculator_Builder {
 	 * Builds tax calculator for API order.
 	 *
 	 * @param WC_Order $order Order created or update through WooCommerce REST API.
-	 * @throws \Exception When calculator is built using invalid objects.
 	 */
 	private function setup_api_tax_calculator( $order ) {
 		$this->set_order_logger( $order );
@@ -109,7 +107,6 @@ class Tax_Calculator_Builder {
 	 * Builds order tax calculator.
 	 *
 	 * @param WC_Order $order Order that needs tax calculation.
-	 * @throws \Exception When calculator is built using invalid objects.
 	 */
 	private function setup_order_calculator( $order ) {
 		$this->set_order_logger( $order );
@@ -123,8 +120,6 @@ class Tax_Calculator_Builder {
 	 * Sets the logger for order calculator.
 	 *
 	 * @param WC_Order $order Order that needs tax calculation.
-	 *
-	 * @throws \Exception When logger is not instance of Logger class.
 	 */
 	private function set_order_logger( $order ) {
 		$wc_logger = wc_get_logger();
@@ -133,8 +128,6 @@ class Tax_Calculator_Builder {
 
 	/**
 	 * Sets the cache for a calculator.
-	 *
-	 * @throws \Exception When cache does not implement Cache_Interface.
 	 */
 	private function set_tax_cache() {
 		$this->calculator->set_cache( new Cache( HOUR_IN_SECONDS, 'tj_tax_' ) );
@@ -144,8 +137,6 @@ class Tax_Calculator_Builder {
 	 * Sets tax request body builder for order calculator.
 	 *
 	 * @param WC_Order $order Order that needs tax calculation.
-	 *
-	 * @throws \Exception When request body builder is not instance of Tax_Request_Body_Builder.
 	 */
 	private function set_order_tax_request_body_builder( $order ) {
 		$this->calculator->set_request_body_builder( new Order_Tax_Request_Body_Builder( $order ) );
@@ -153,8 +144,6 @@ class Tax_Calculator_Builder {
 
 	/**
 	 * Set tax client for calculator.
-	 *
-	 * @throws \Exception When tax client does not implement Tax_Client_Interface.
 	 */
 	private function set_tax_client() {
 		$this->calculator->set_tax_client( new Tax_Client() );
@@ -164,8 +153,6 @@ class Tax_Calculator_Builder {
 	 * Set tax applicator for order calculator.
 	 *
 	 * @param WC_Order $order Order that needs tax calculation.
-	 *
-	 * @throws \Exception When tax applicator is not instance of Tax_Applicator_Interface.
 	 */
 	private function set_order_applicator( $order ) {
 		$this->calculator->set_applicator( new Order_Tax_Applicator( $order ) );
@@ -175,8 +162,6 @@ class Tax_Calculator_Builder {
 	 * Sets validator for order calculator.
 	 *
 	 * @param WC_Order $order Order that needs tax calculation.
-	 *
-	 * @throws \Exception When validator does not implement Tax_Calculation_Validator_Interface.
 	 */
 	private function set_order_validator( $order ) {
 		$nexus = new WC_Taxjar_Nexus();
@@ -196,7 +181,6 @@ class Tax_Calculator_Builder {
 	 * Builds an admin order calculator if creating or editing order through admin dashboard.
 	 *
 	 * @param WC_Order $order Order that needs tax calculation.
-	 * @throws \Exception When calculator is built using invalid objects.
 	 */
 	private function maybe_setup_admin_order_calculator( $order ) {
 		if ( $this->is_doing_ajax_method_that_needs_tax_calculation() ) {
@@ -279,8 +263,6 @@ class Tax_Calculator_Builder {
 	 * Build admin order calculator.
 	 *
 	 * @param WC_Order $order Order that needs tax calculation.
-	 *
-	 * @throws \Exception When calculator is built using invalid objects.
 	 */
 	private function setup_admin_order_calculator( $order ) {
 		$this->set_order_logger( $order );
@@ -294,8 +276,6 @@ class Tax_Calculator_Builder {
 	 * Sets request body builder for admin order calculator.
 	 *
 	 * @param WC_Order $order Order that needs tax calculation.
-	 *
-	 * @throws \Exception When request body builder is not instance of Tax_Request_Body_Builder.
 	 */
 	private function set_admin_order_tax_request_body_builder( $order ) {
 		$this->calculator->set_request_body_builder( new Admin_Order_Tax_Request_Body_Builder( $order ) );
@@ -307,7 +287,6 @@ class Tax_Calculator_Builder {
 	 * @param WC_Subscription $subscription Subscription that needs tax calculation.
 	 *
 	 * @return Tax_Calculator
-	 * @throws \Exception When calculator is built using invalid objects.
 	 */
 	public function build_subscription_order_calculator( $subscription ) {
 		$this->set_order_logger( $subscription );
@@ -324,15 +303,66 @@ class Tax_Calculator_Builder {
 	 * @param WC_Order $renewal Renewal order that needs tax calculation.
 	 *
 	 * @return Tax_Calculator
-	 * @throws \Exception When calculator is built using invalid objects.
 	 */
-	public function build_renewal_order_calculator( $renewal ) {
+	public function build_renewal_order_calculator( $renewal ): Tax_Calculator {
 		$this->set_order_logger( $renewal );
 		$this->set_order_tax_request_body_builder( $renewal );
 		$this->set_order_applicator( $renewal );
 		$this->set_order_validator( $renewal );
 		$this->set_context( 'renewal_order' );
 		return $this->calculator;
+	}
+
+	/**
+	 * Build cart tax calculator.
+	 *
+	 * @param WC_Cart $cart Cart that needs tax calculation.
+	 *
+	 * @return Tax_Calculator
+	 */
+	public function build_cart_calculator( WC_Cart $cart ): Tax_Calculator {
+		$this->set_cart_logger();
+		$this->set_cart_tax_request_body_builder( $cart );
+		$this->set_cart_tax_applicator( $cart );
+		$this->set_cart_validator( $cart );
+		$this->set_context( 'cart' );
+		return $this->calculator;
+	}
+
+	/**
+	 * Sets the logger for cart tax calculation.
+	 */
+	private function set_cart_logger() {
+		$wc_logger = wc_get_logger();
+		$this->calculator->set_logger( new Cart_Calculation_Logger( $wc_logger ) );
+	}
+
+	/**
+	 * Sets the request body builder for cart tax calculation.
+	 *
+	 * @param WC_Cart $cart Cart that needs tax calculation.
+	 */
+	private function set_cart_tax_request_body_builder( WC_Cart $cart ) {
+		$this->calculator->set_request_body_builder( new Cart_Tax_Request_Body_Builder( $cart ) );
+	}
+
+	/**
+	 * Sets the applicator for cart tax calculation.
+	 *
+	 * @param WC_Cart $cart Cart that needs tax calculation.
+	 */
+	private function set_cart_tax_applicator( WC_Cart $cart ) {
+		$this->calculator->set_applicator( new Cart_Tax_Applicator( $cart ) );
+	}
+
+	/**
+	 * Sets the validator for cart tax calculation.
+	 *
+	 * @param WC_Cart $cart Cart that needs tax calculation.
+	 */
+	private function set_cart_validator( WC_Cart $cart ) {
+		$nexus = new WC_Taxjar_Nexus();
+		$this->calculator->set_validator( new Cart_Tax_Calculation_Validator( $cart, $nexus ) );
 	}
 }
 
