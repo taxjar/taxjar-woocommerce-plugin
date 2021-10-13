@@ -418,7 +418,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 
 	/**
 	 * Tests that the correct PTC and tax are applied to subscription products
-	 * Tests problem in ISSUE-1782q
+	 * Tests problem in ISSUE-1782
 	 *
 	 * @throws Exception
 	 */
@@ -445,14 +445,6 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 		}
 
 		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
-
-		$line_items = $this->tj->tax_calculations->get_line_items( WC()->cart );
-
-		$this->assertNotEmpty( $line_items );
-
-		foreach ( $line_items as $line_item ) {
-			$this->assertEquals( '14111803A0001', $line_item['product_tax_code'] );
-		}
 
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
 			$this->assertEquals( $recurring_cart->tax_total, 0, '', 0.01 );
