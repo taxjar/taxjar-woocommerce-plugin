@@ -358,6 +358,13 @@ class TaxJar_Settings {
 				'desc'    => __( 'If enabled, TaxJar will calculate sales tax for orders created through the WooCommerce REST API.', 'wc-taxjar' ),
 				'id'      => 'woocommerce_taxjar-integration_settings[api_calcs_enabled]',
 			),
+			array(
+				'title'   => __( 'Save Tax Rates', 'wc-taxjar' ),
+				'type'    => 'checkbox',
+				'default' => 'no',
+				'desc'    => __( 'TaxJar calculates tax in realtime through the TaxJar API. While not necessary for tax calculation, enabling this setting will store the tax rate in the WooCommerce tax table during the calculation process.', 'wc-taxjar' ),
+				'id'      => 'woocommerce_taxjar-integration_settings[save_rates]',
+			),
 			self::get_section_end_setting(),
 		);
 	}
@@ -672,6 +679,16 @@ class TaxJar_Settings {
 	 */
 	public static function output_sections_before() {
 		echo '<div class="updated taxjar-notice"><p><b>Powered by <a href="https://www.taxjar.com" target="_blank">TaxJar</a></b> ― Your tax rates and settings are automatically configured below.</p><p><a href="admin.php?page=wc-settings&tab=taxjar-integration" class="button-primary">Configure TaxJar</a> &nbsp; <a href="https://www.taxjar.com/contact/" class="button" target="_blank">Help &amp; Support</a></p></div>';
+	}
+
+	/**
+	 * Checks if TaxJar API Tax Calculation setting is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_save_rates_enabled(): bool {
+		$settings = self::get_taxjar_settings();
+		return isset( $settings['save_rates'] ) && 'yes' === $settings['save_rates'];
 	}
 
 }

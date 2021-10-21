@@ -65,15 +65,15 @@ class Test_Cart_Tax_Applicator extends WP_UnitTestCase {
 		$index = 0;
 		foreach( $cart->get_cart() as $cart_item ) {
 			$this->assertEquals( $items[ $index ]['expected_tax_subtotal'], $cart_item['line_subtotal_tax'] );
-			$this->assertEquals( $items[ $index ]['expected_tax_subtotal'], $cart_item['line_tax_data']['subtotal'][0] );
+			$this->assertEquals( $items[ $index ]['expected_tax_subtotal'], reset( $cart_item['line_tax_data']['subtotal'] ) );
 			$this->assertEquals( $items[ $index ]['expected_tax_total'], $cart_item['line_tax'] );
-			$this->assertEquals( $items[ $index ]['expected_tax_total'], $cart_item['line_tax_data']['total'][0] );
+			$this->assertEquals( $items[ $index ]['expected_tax_total'], reset( $cart_item['line_tax_data']['total'] ) );
 			$index++;
 		}
 
 		foreach( $cart->get_fees() as $fee_key => $fee ) {
 			$this->assertEquals( $fees[ $fee_key ]['expected_tax'], $fee->tax );
-			$this->assertEquals( $fees[ $fee_key ]['expected_tax'], $fee->tax_data[0] );
+			$this->assertEquals( $fees[ $fee_key ]['expected_tax'], reset($fee->tax_data ) );
 		}
 
 		$this->assertEquals( $cart_data['tax_subtotal'], $cart->get_subtotal_tax() );
@@ -84,11 +84,13 @@ class Test_Cart_Tax_Applicator extends WP_UnitTestCase {
 		}
 
 		$this->assertEquals( $cart_data['shipping_tax'], $cart->get_shipping_tax() );
-		$this->assertEquals( $cart_data['shipping_tax'], $cart->get_shipping_taxes()[0] );
+		$shipping_taxes = $cart->get_shipping_taxes();
+		$this->assertEquals( $cart_data['shipping_tax'], reset( $shipping_taxes ) );
 		$this->assertEquals( $cart_data['fee_tax'], $cart->get_fee_tax() );
 
 		if ( isset( $cart->get_fee_taxes()[0] ) ) {
-			$this->assertEquals( $cart_data['fee_tax'], $cart->get_fee_taxes()[0] );
+			$fee_taxes = $cart->get_fee_taxes();
+			$this->assertEquals( $cart_data['fee_tax'], reset( $fee_taxes ) );
 		}
 
 		$this->assertEquals( $cart_data['total_tax'], $cart->get_total_tax() );

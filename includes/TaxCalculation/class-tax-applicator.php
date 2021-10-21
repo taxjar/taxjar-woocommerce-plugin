@@ -26,6 +26,13 @@ abstract class Tax_Applicator implements Tax_Applicator_Interface {
 	protected $tax_details;
 
 	/**
+	 * Tax builder to format tax for items.
+	 *
+	 * @var Tax_Builder
+	 */
+	protected $tax_builder;
+
+	/**
 	 * Apply tax to object.
 	 *
 	 * @param Tax_Details $tax_details Tax details to apply.
@@ -34,6 +41,7 @@ abstract class Tax_Applicator implements Tax_Applicator_Interface {
 	 */
 	public function apply_tax( Tax_Details $tax_details ) {
 		$this->tax_details = $tax_details;
+		$this->tax_builder = new Tax_Builder( $tax_details );
 		$this->check_tax_details_for_nexus();
 		$this->apply_new_tax();
 	}

@@ -101,7 +101,8 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 	 */
 	private function apply_line_subtotal_tax( $item_key, $item, $applied_rate ): array {
 		$item_subtotal  = wc_add_number_precision( $item['data']->get_price() * $item['quantity'], false );
-		$subtotal_taxes = Tax_Builder::build_line_tax_from_rate( $applied_rate, $item_subtotal );
+		$tax_class      = $item['data']->get_tax_class();
+		$subtotal_taxes = $this->tax_builder->build_line_tax_from_rate( $applied_rate, $item_subtotal, $tax_class );
 		$subtotal_tax   = array_sum( array_map( array( $this, 'round_line_tax' ), $subtotal_taxes ) );
 		$this->cart->cart_contents[ $item_key ]['line_tax_data']['subtotal'] = wc_remove_number_precision_deep( $subtotal_taxes );
 		$this->cart->cart_contents[ $item_key ]['line_subtotal_tax']         = wc_remove_number_precision( $subtotal_tax );
@@ -118,7 +119,8 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 	 */
 	private function apply_line_total_tax( $item_key, $item ): array {
 		$tax_detail_line_key = $item['data']->get_id() . '-' . $item_key;
-		$total_taxes         = Tax_Builder::build_line_tax( $tax_detail_line_key, $this->tax_details );
+		$tax_class           = $item['data']->get_tax_class();
+		$total_taxes         = $this->tax_builder->get_line_tax( $tax_detail_line_key, $tax_class );
 		$total_tax           = array_sum( array_map( array( $this, 'round_line_tax' ), $total_taxes ) );
 		$this->cart->cart_contents[ $item_key ]['line_tax_data']['total'] = wc_remove_number_precision_deep( $total_taxes );
 		$this->cart->cart_contents[ $item_key ]['line_tax']               = wc_remove_number_precision( $total_tax );
@@ -168,7 +170,7 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 			foreach ( $chosen_methods as $chosen_method ) {
 				if ( isset( $package['rates'][ $chosen_method ] ) ) {
 					$rate  = $package['rates'][ $chosen_method ];
-					$taxes = Tax_Builder::build_line_tax_from_rate( $this->tax_details->get_shipping_tax_rate(), $rate->get_cost() );
+					$taxes = $this->tax_builder->build_shipping_tax( $this->tax_details->get_shipping_tax_rate(), $rate->get_cost() );
 					$rate->set_taxes( $taxes );
 					$merged_shipping_taxes = $this->merge_tax_arrays( $merged_shipping_taxes, wc_add_number_precision_deep( $taxes, false ) );
 				}
@@ -216,7 +218,8 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 	 * @throws Exception When no line item is found on the tax details for the given key.
 	 */
 	private function apply_tax_to_fee( $fee ): array {
-		$fee_taxes     = Tax_Builder::build_line_tax( $fee->id, $this->tax_details );
+		$tax_class     = $fee->tax_class;
+		$fee_taxes     = $this->tax_builder->get_line_tax( $fee->id, $tax_class );
 		$total_tax     = array_sum( array_map( array( $this, 'round_line_tax' ), $fee_taxes ) );
 		$fee->tax_data = wc_remove_number_precision_deep( $fee_taxes );
 		$fee->tax      = wc_remove_number_precision( $total_tax );
@@ -243,11 +246,18 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 		}
 
 		$total_taxes = $this->merge_tax_arrays( $this->items_taxes, $this->shipping_taxes, $merged_fee_taxes );
-		$fee_taxes   = Tax_Builder::build_line_tax_from_rate( $rate, wc_add_number_precision_deep( $fee->total, false ) );
+		$tax_class   = $fee->tax_class;
+		$fee_taxes   = $this->tax_builder->build_line_tax_from_rate(
+			$rate,
+			wc_add_number_precision_deep( $fee->total, false ),
+			$tax_class
+		);
 
 		// Negative tax distribution must be prevented from being greater than the total amount of applied tax.
 		if ( array_sum( $fee_taxes ) * -1 > array_sum( $total_taxes ) ) {
-			$fee_taxes[0] = array_sum( $total_taxes ) * -1;
+			foreach ( $fee_taxes as $fee_key => $fee_tax ) {
+				$fee_taxes[ $fee_key ] = array_sum( $total_taxes ) * -1;
+			}
 		}
 
 		$total_tax     = array_sum( array_map( array( $this, 'round_line_tax' ), $fee_taxes ) );

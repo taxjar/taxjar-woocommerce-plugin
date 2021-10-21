@@ -115,8 +115,10 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 
 			if ( 0 === $item_index ) {
 				$tax_detail_line_item_mock->method( 'get_tax_rate' )->willReturn( $first_line_item_rate );
+				$tax_detail_line_item_mock->method( 'get_tax_collectable' )->willReturn( $first_line_item_rate * $item->get_total( 'number') );
 			} else {
 				$tax_detail_line_item_mock->method( 'get_tax_rate' )->willReturn( $second_line_item_rate );
+				$tax_detail_line_item_mock->method( 'get_tax_collectable' )->willReturn( $second_line_item_rate * $item->get_total( 'number') );
 			}
 
 			$mock_line_item_map[] = array( $line_item_key, $tax_detail_line_item_mock );
@@ -304,6 +306,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 			$tax_detail_line_item_mock = $this->createMock( Tax_Detail_Line_Item::class );
 			$tax_detail_line_item_mock->method( 'get_id' )->willReturn( $line_item_key );
 			$tax_detail_line_item_mock->method( 'get_tax_rate' )->willReturn( $tax_rate );
+			$tax_detail_line_item_mock->method( 'get_tax_collectable' )->willReturn( $tax_rate * $item->get_total( 'number' ) );
 			$mock_line_item_map[] = array( $line_item_key, $tax_detail_line_item_mock );
 		}
 
@@ -312,6 +315,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 			$tax_detail_line_item_mock = $this->createMock( Tax_Detail_Line_Item::class );
 			$tax_detail_line_item_mock->method( 'get_id' )->willReturn( $line_item_key );
 			$tax_detail_line_item_mock->method( 'get_tax_rate' )->willReturn( $tax_rate );
+			$tax_detail_line_item_mock->method( 'get_tax_collectable' )->willReturn( $tax_rate * $fee->get_total( 'number' ) );
 			$mock_line_item_map[] = array( $line_item_key, $tax_detail_line_item_mock );
 		}
 
