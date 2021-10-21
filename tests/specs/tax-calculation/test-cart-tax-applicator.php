@@ -36,7 +36,7 @@ class Test_Cart_Tax_Applicator extends WP_UnitTestCase {
 		foreach( $items as $item ) {
 			$product = TaxJar_Product_Helper::create_product( $item['type'], $item['options'] );
 			$cart_builder = $cart_builder->with_product( $product->get_id(), $item['quantity'] );
-			$item_stubs[ $product->get_id() ] = $this->create_tax_detail_item_stub( $item['tax_rate'] );
+			$item_stubs[ $product->get_id() ] = $this->create_tax_detail_item_stub( $item['tax_rate'], $item['expected_tax_total'] );
 		}
 
 		foreach( $coupons as $coupon ) {
@@ -45,7 +45,7 @@ class Test_Cart_Tax_Applicator extends WP_UnitTestCase {
 
 		foreach( $fees as $fee_id => $fee ) {
 			$cart_builder = $cart_builder->with_fee( $fee['data'] );
-			$item_stubs[ $fee_id ] = $this->create_tax_detail_item_stub( $fee['tax_rate'] );
+			$item_stubs[ $fee_id ] = $this->create_tax_detail_item_stub( $fee['tax_rate'], $fee['expected_tax'] );
 		}
 
 		$cart = $cart_builder->build();
@@ -481,9 +481,10 @@ class Test_Cart_Tax_Applicator extends WP_UnitTestCase {
 		];
 	}
 
-	private function create_tax_detail_item_stub( $rate ) {
+	private function create_tax_detail_item_stub( $rate, $tax_collectable ) {
 		$tax_detail_item_stub = $this->createMock( Tax_Detail_Line_Item::class );
 		$tax_detail_item_stub->method( 'get_tax_rate' )->willReturn( $rate );
+		$tax_detail_item_stub->method( 'get_tax_collectable' )->willReturn( floatval( $tax_collectable ) );
 		return $tax_detail_item_stub;
 	}
 
