@@ -43,7 +43,7 @@ if ( ! $woocommerce_active || version_compare( get_option( 'woocommerce_db_versi
  */
 final class WC_Taxjar {
 
-	static $version = '3.3.0';
+	static $version = '3.4.0';
 	public static $minimum_woocommerce_version = '5.1.0';
 
 	/**
