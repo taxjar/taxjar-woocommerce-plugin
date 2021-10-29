@@ -24,27 +24,42 @@ class WC_Taxjar_Install {
 	 * This check is done on all requests and runs if the versions do not match.
 	 */
 	public static function check_version() {
+		if ( defined( 'IFRAME_REQUEST' ) ) {
+			return;
+		}
+
 		$current_version = get_option( 'taxjar_version' );
-		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, WC_Taxjar::$version, '<' ) ) {
+
+		if ( version_compare( $current_version, WC_Taxjar::$version, '<' ) ) {
 			self::install();
 			do_action( 'taxjar_updated' );
 		}
 
-		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.0', '<' ) ) {
+		if ( version_compare( $current_version, '3.0.0', '<' ) ) {
 			self::taxjar_300_update();
 		}
 
-		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.8', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
+		if ( version_compare( $current_version, '3.0.8', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
 			self::taxjar_308_update();
 		}
 
-		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.10', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
+		if ( version_compare( $current_version, '3.0.10', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
 			self::taxjar_3010_update();
 		}
 
-		if ( ! defined( 'IFRAME_REQUEST' ) && version_compare( $current_version, '3.0.13', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
+		if ( version_compare( $current_version, '3.0.13', '<' ) && version_compare( $current_version, '2.3.1', '>' ) ) {
 			self::taxjar_3013_update();
 		}
+
+		if ( $current_version && version_compare( $current_version, '3.4.0', '<' ) ) {
+			self::taxjar_340_update();
+		}
+	}
+
+	public static function taxjar_340_update() {
+		$taxjar_settings = get_option( 'woocommerce_taxjar-integration_settings' );
+		$taxjar_settings['save_rates'] = 'yes';
+		update_option( 'woocommerce_taxjar-integration_settings', $taxjar_settings );
 	}
 
 	public static function taxjar_3013_update() {
@@ -122,7 +137,6 @@ class WC_Taxjar_Install {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
 		$results = dbDelta( self::get_schema() );
-		$test = 'test';
 	}
 
 	/**
