@@ -100,7 +100,7 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 	 * @return array
 	 */
 	private function apply_line_subtotal_tax( $item_key, $item, $applied_rate ): array {
-		$item_subtotal  = wc_add_number_precision( $item['data']->get_price() * $item['quantity'], false );
+		$item_subtotal  = wc_add_number_precision( $item['line_subtotal'], false );
 		$tax_class      = $item['data']->get_tax_class();
 		$subtotal_taxes = $this->tax_builder->build_line_tax_from_rate( $applied_rate, $item_subtotal, $tax_class );
 		$subtotal_tax   = array_sum( array_map( array( $this, 'round_line_tax' ), $subtotal_taxes ) );
