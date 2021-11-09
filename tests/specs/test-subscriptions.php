@@ -444,8 +444,6 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 			WC()->cart->cart_contents[ $cart_item_key ]['line_subtotal'] = 19.99;
 		}
 
-		WC_Subscriptions_Cart::set_calculation_type( 'recurring_total' );
-
 		foreach ( WC()->cart->recurring_carts as $recurring_cart ) {
 			$this->assertEquals( $recurring_cart->tax_total, 0, '', 0.01 );
 			$this->assertEquals( $recurring_cart->get_taxes_total(), 0, '', 0.01 );

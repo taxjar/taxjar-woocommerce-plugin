@@ -11,7 +11,6 @@ namespace TaxJar;
 
 use Exception;
 use TaxJar_Settings;
-
 use WC_Tax;
 
 if ( ! defined( 'ABSPATH' ) ) {

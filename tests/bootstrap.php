@@ -92,6 +92,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->tests_dir . '/framework/class-tj-wc-rest-unit-test-case.php';
 		require_once $this->tests_dir . '/framework/class-taxjar-test-order-factory.php';
 		require_once $this->tests_dir . '/framework/cart-builder.php';
+		require_once $this->tests_dir . '/framework/abstract-cart-integration-test.php';
 	}
 
 	public function setup() {
