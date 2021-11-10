@@ -18,5 +18,5 @@ interface Tax_Applicator_Interface {
 	 *
 	 * @param Tax_Details $tax_details Tax details to apply.
 	 */
-	public function apply_tax( $tax_details );
+	public function apply_tax( Tax_Details $tax_details );
 }

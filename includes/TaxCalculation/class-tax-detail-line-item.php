@@ -86,5 +86,14 @@ class Tax_Detail_Line_Item {
 	public function get_taxable_amount() {
 		return $this->taxable_amount;
 	}
+
+	/**
+	 * Get line item tax collectable.
+	 *
+	 * @return float
+	 */
+	public function get_tax_collectable() {
+		return $this->tax_collectable;
+	}
 }
 

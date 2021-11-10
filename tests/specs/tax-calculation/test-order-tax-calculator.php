@@ -22,7 +22,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$this->mock_request_body = $this->createMock( Tax_Request_Body::class );
 		$this->mock_request_body->method( 'get_to_country' )->willReturn( 'US' );
 		$this->mock_request_body->method( 'get_to_state' )->willReturn( 'UT' );
-
+		$this->mock_request_body->method( 'to_json' )->willReturn( 'test' );
 		$this->mock_request_body_factory = $this->createMock( Tax_Request_Body_Builder::class );
 		$this->mock_request_body_factory->method( 'create' )->willReturn( $this->mock_request_body );
 
@@ -30,55 +30,12 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$this->mock_tax_client  = $this->createMock( Tax_Client_Interface::class );
 		$this->mock_tax_client->method( 'get_taxes' )->willReturn( $this->mock_tax_details );
 
-		$this->mock_logger     = $this->createMock( Logger::class );
+		$this->mock_logger     = $this->createMock( Tax_Calculation_Logger::class );
 		$this->mock_cache      = $this->createMock( Cache_Interface::class );
 		$this->mock_applicator = $this->createMock( Tax_Applicator_Interface::class );
 		$this->mock_order      = $this->createMock( WC_Order::class );
 
 		$this->mock_validator = $this->createMock( Tax_Calculation_Validator_Interface::class );
-	}
-
-	public function test_invalid_logger() {
-		$this->mock_logger = 'invalid logger';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_cache() {
-		$this->mock_cache = 'invalid cache';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_request_body_factory() {
-		$this->mock_request_body_factory = 'invalid request body factory';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_tax_client() {
-		$this->mock_tax_client = 'invalid tax client';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_applicator() {
-		$this->mock_applicator = 'invalid applicator';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	public function test_invalid_validator() {
-		$this->mock_validator = 'invalid validator';
-		$this->expectException( Exception::class );
-		$calculator = $this->build_calculator();
-	}
-
-	/**
-	 * @doesNotPerformAssertions
-	 */
-	public function test_setters_using_valid_objects() {
-		$calculator = $this->build_calculator();
 	}
 
 	public function test_get_tax_from_cache() {
@@ -98,13 +55,14 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 	}
 
 	private function build_calculator() {
-		$calculator = new Tax_Calculator( $this->mock_order );
+		$calculator = new Tax_Calculator();
 		$calculator->set_logger( $this->mock_logger );
 		$calculator->set_cache( $this->mock_cache );
 		$calculator->set_request_body_builder( $this->mock_request_body_factory );
 		$calculator->set_tax_client( $this->mock_tax_client );
 		$calculator->set_applicator( $this->mock_applicator );
 		$calculator->set_validator( $this->mock_validator );
+		$calculator->set_context( 'test' );
 		return $calculator;
 	}
 }

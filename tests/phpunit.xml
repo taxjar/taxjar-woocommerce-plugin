@@ -10,6 +10,7 @@
   <testsuites>
     <testsuite name="taxjar">
       <directory prefix="test-" suffix=".php">./specs/</directory>
+      <directory prefix="test-" suffix=".php">./integration/</directory>
     </testsuite>
   </testsuites>
 </phpunit>

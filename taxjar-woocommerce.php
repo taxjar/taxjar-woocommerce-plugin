@@ -43,7 +43,7 @@ if ( ! $woocommerce_active || version_compare( get_option( 'woocommerce_db_versi
  */
 final class WC_Taxjar {
 
-	static $version = '3.3.0';
+	static $version = '3.4.0';
 	public static $minimum_woocommerce_version = '5.1.0';
 
 	/**
@@ -97,15 +97,23 @@ final class WC_Taxjar {
 			include_once 'includes/TaxCalculation/class-tax-client.php';
 			include_once 'includes/TaxCalculation/class-tax-details.php';
 			include_once 'includes/TaxCalculation/class-tax-detail-line-item.php';
+			include_once 'includes/TaxCalculation/class-tax-applicator.php';
+			include_once 'includes/TaxCalculation/class-cart-tax-applicator.php';
 			include_once 'includes/TaxCalculation/class-order-tax-applicator.php';
 			include_once 'includes/TaxCalculation/class-rate-manager.php';
-			include_once 'includes/TaxCalculation/class-logger.php';
+			include_once 'includes/TaxCalculation/class-tax-calculation-logger.php';
 			include_once 'includes/TaxCalculation/class-order-calculation-logger.php';
 			include_once 'includes/TaxCalculation/class-tax-calculation-exception.php';
 			include_once 'includes/TaxCalculation/class-tax-calculator.php';
+			include_once 'includes/TaxCalculation/class-tax-calculation-validator.php';
 			include_once 'includes/TaxCalculation/class-order-tax-calculation-validator.php';
+			include_once 'includes/TaxCalculation/class-cart-tax-calculation-validator.php';
 			include_once 'includes/TaxCalculation/class-tax-calculator-builder.php';
 			include_once 'includes/TaxCalculation/class-block-flag.php';
+			include_once 'includes/TaxCalculation/class-cart-tax-request-body-builder.php';
+			include_once 'includes/TaxCalculation/class-tax-calculation-result.php';
+			include_once 'includes/TaxCalculation/class-cart-calculation-logger.php';
+			include_once 'includes/TaxCalculation/class-tax-builder.php';
 
 			// Register the integration.
 			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );
