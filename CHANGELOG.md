@@ -1,3 +1,12 @@
+# 4.0.0 (2021-11-11)
+* Refactor cart tax calculation to stop calculation events from triggering twice
+* Fix issue with tax calculation on dynamically created products and variations
+* Fix issue where in some cases fees did not use correct product tax codes during calculation
+* Fix issue where multiple products with the same product tax and exemption thresholds may cause incorrect tax
+* Update minimum WooCommerce version to 5.4
+* WooCommerce tested up to version 5.9
+* WordPress tested up to version 5.8.2
+
 # 3.3.0 (2021-09-02)
 * Fix php warning when store settings are not set
 * Update minimum WordPress version to 5.4
