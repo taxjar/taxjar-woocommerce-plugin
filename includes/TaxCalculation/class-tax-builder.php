@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Tax_Builder {
 
-	const TAX_RATE_ID = 999999999999999;
+	const TAX_RATE_ID = 999999999;
 
 	/**
 	 * Determines whether to create a WooCommerce tax rate during tax calculation.
@@ -185,7 +185,7 @@ class Tax_Builder {
 				$woo_rate = $this->create_woocommerce_rate( $applied_rate * 100 );
 				$wc_rate  = $this->build_woocommerce_rate( $applied_rate * 100, $woo_rate['id'] );
 			} else {
-				$wc_rate = $this->build_woocommerce_rate( $applied_rate * 100 );
+				$wc_rate = [];
 			}
 		} else {
 			$wc_rate = $this->build_woocommerce_rate( $applied_rate * 100 );

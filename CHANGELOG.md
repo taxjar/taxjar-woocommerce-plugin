@@ -1,3 +1,7 @@
+# 4.0.1 (2021-11-19)
+* Change dynamic tax rate ID to 999999999 to help prevent issues with 3rd parties ingesting exported WooCommerce order data
+* Fix issue where shipping was still utilizing dynamic tax rate when the save rates setting was enabled.
+
 # 4.0.0 (2021-11-11)
 * Refactor cart tax calculation to stop calculation events from triggering twice
 * Fix issue with tax calculation on dynamically created products and variations
