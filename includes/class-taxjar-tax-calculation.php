@@ -38,6 +38,18 @@ class TaxJar_Tax_Calculation {
 		add_filter( 'wcs_new_order_created', array( $this, 'calculate_renewal_order_totals' ), 10, 3 );
 
 		add_action( 'woocommerce_order_after_calculate_totals', array( $this, 'maybe_calculate_order_taxes' ), 10, 2 );
+		add_action( 'woocommerce_checkout_create_order', array( $this, 'persist_cart_calculation_results_to_order'), 10, 1 );
+		add_action( 'woocommerce_checkout_create_subscription', array( $this, 'persist_recurring_cart_calculation_results_to_subscription'), 10, 4 );
+	}
+
+	public function persist_cart_calculation_results_to_order( $order ) {
+		$calculation_results = WC()->cart->tax_calculation_results;
+		$order->update_meta_data( '_taxjar_tax_result', $calculation_results );
+	}
+
+	public function persist_recurring_cart_calculation_results_to_subscription(  $subscription, $posted_data, $order, $recurring_cart ) {
+		$calculation_results = $recurring_cart->tax_calculation_results;
+		$subscription->update_meta_data( '_taxjar_tax_result', $calculation_results );
 	}
 
 	public function maybe_calculate_order_taxes( $and_taxes, $order ) {
