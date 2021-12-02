@@ -34,4 +34,36 @@ jQuery( document ).ready( function() {
 			}
 		} );
 	}( jQuery, TaxJarOrder || {} ) );
+
+	var taxjar_order_calculation_meta = {
+		init: function() {
+			jQuery( '#advanced_order_data .request-json .copy-button' )
+				.on( 'click', this.copy_request_json )
+				.on( 'aftercopy', this.copy_success );
+
+			jQuery( '#advanced_order_data .response-json .copy-button' )
+				.on( 'click', this.copy_response_json )
+				.on( 'aftercopy', this.copy_success );
+		},
+
+		copy_request_json: function( e ) {
+			wcClearClipboard();
+			wcSetClipboard( jQuery('#advanced_order_data .request-json .accordion-section-content pre').text(), jQuery( this ) );
+			e.preventDefault();
+			e.stopPropagation();
+		},
+
+		copy_response_json: function( e ) {
+			wcClearClipboard();
+			wcSetClipboard( jQuery('#advanced_order_data .response-json .accordion-section-content pre').text(), jQuery( this ) );
+			e.preventDefault();
+			e.stopPropagation();
+		},
+
+		copy_success: function() {
+			alert('Copied to clipboard.');
+		}
+	};
+
+	taxjar_order_calculation_meta.init();
 });

@@ -118,6 +118,9 @@ final class WC_Taxjar {
 			include_once 'includes/TaxCalculation/class-cart-tax-calculation-result-data-store.php';
 			include_once 'includes/TaxCalculation/class-order-tax-calculation-result-data-store.php';
 
+			include_once 'includes/admin/class-admin-meta-boxes.php';
+			include_once 'includes/admin/class-order-meta-box.php';
+
 			// Register the integration.
 			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );
 
