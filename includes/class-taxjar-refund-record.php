@@ -97,7 +97,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		$from_zip         = $store_settings['postcode'];
 		$from_city        = $store_settings['city'];
 		$from_street      = $store_settings['street'];
-		
+
 		$amount = $this->object->get_amount() - abs( $this->object->get_total_tax() );
 
 		$ship_to_address = $this->get_ship_to_address( $order );
@@ -111,9 +111,9 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 			'from_state' => $from_state,
 			'from_city' => $from_city,
 			'from_street' => $from_street,
-			'amount' => $amount,
-			'shipping' => $this->object->get_shipping_total(),
-			'sales_tax' => $this->object->get_total_tax(),
+			'amount' => (string) $amount,
+			'shipping' => (string) $this->object->get_shipping_total(),
+			'sales_tax' => (string) $this->object->get_total_tax(),
 			'line_items' => $this->get_line_items(),
 		);
 
@@ -221,9 +221,9 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 					'product_identifier' => $product_identifier,
 					'description' => $product_name,
 					'product_tax_code' => $tax_code,
-					'unit_price' => $unit_price,
-					'discount' => $discount,
-					'sales_tax' => $item->get_total_tax(),
+					'unit_price' => (string) $unit_price,
+					'discount' => (string) $discount,
+					'sales_tax' => (string) $item->get_total_tax(),
 				);
 			}
 		}
@@ -250,8 +250,8 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 					'quantity' => $fee->get_quantity(),
 					'description' => $fee->get_name(),
 					'product_tax_code' => $tax_code,
-					'unit_price' => $fee_amount,
-					'sales_tax' => $fee->get_total_tax(),
+					'unit_price' => (string) $fee_amount,
+					'sales_tax' => (string) $fee->get_total_tax(),
 				);
 			}
 		}
