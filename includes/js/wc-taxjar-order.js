@@ -61,7 +61,13 @@ jQuery( document ).ready( function() {
 		},
 
 		copy_success: function() {
-			alert('Copied to clipboard.');
+			jQuery( this ).tipTip({
+				'attribute':  'data-tip',
+				'activation': 'focus',
+				'fadeIn':     50,
+				'fadeOut':    50,
+				'delay':      0
+			}).focus().focus();
 		}
 	};
 

@@ -65,13 +65,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div id="advanced_order_data" class="panel woocommerce_options_panel">
 		<div class="accordion-container">
 			<div class="accordion-section request-json">
-				<h3 class="accordion-section-title">Calculation Request JSON <span class="copy-button dashicons dashicons-clipboard"></span></h3>
+				<h3 class="accordion-section-title">Calculation Request JSON <span class="copy-button dashicons dashicons-clipboard" data-tip="<?php esc_attr_e( 'Copied!', 'taxjar' ); ?>"></span></h3>
 				<div class="accordion-section-content">
 					<pre><?php echo esc_html( $metadata['request_json'] ); ?></pre>
 				</div>
 			</div>
 			<div class="accordion-section response-json">
-				<h3 class="accordion-section-title">Calculation Response JSON <span class="copy-button dashicons dashicons-clipboard"></span></h3>
+				<h3 class="accordion-section-title">Calculation Response JSON <span class="copy-button dashicons dashicons-clipboard" data-tip="<?php esc_attr_e( 'Copied!', 'taxjar' ); ?>"></span></h3>
 				<div class="accordion-section-content">
 					<pre><?php echo esc_html( $metadata['response_json'] ); ?></pre>
 				</div>
