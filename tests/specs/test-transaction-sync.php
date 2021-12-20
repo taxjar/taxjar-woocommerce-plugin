@@ -553,7 +553,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object( $order );
 		$fee_line_items = $record->get_fee_line_items();
-		$this->assertEquals( 'RATE', $fee_line_items[ 0 ][ 'product_tax_code' ] );
+		$this->assertEquals( '', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 
 		$order = $this->create_test_order( 1 );
 		$fee = new WC_Order_Item_Fee();
@@ -1408,7 +1408,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$noncomplete_order = $this->create_test_order( 1 );
 		$noncomplete_order_refund = $this->create_test_refund( $noncomplete_order->get_id() );
-		
+
 		$synced_order = $this->create_test_order( 1 );
 		$synced_order->update_status( 'completed' );
 		$synced_order_refund = $this->create_test_refund( $synced_order->get_id() );
