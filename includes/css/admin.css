@@ -217,3 +217,42 @@ div.taxjar-connected p {
 	vertical-align: middle;
 	margin-top: 2px;
 }
+
+
+
+#sync_status_order_data span.sync-status::before {
+	font-family: Dashicons;
+	speak: never;
+	font-weight: 400;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+	content: "";
+	text-decoration: none;
+	margin-left: 15px;
+	vertical-align: middle;
+}
+
+#sync_status_order_data span.sync-status.synced::before {
+	content: "\f159";
+	color: #5b841b;
+	background-color: #5b841b;
+	border-radius: 50%;
+}
+
+#sync_status_order_data span.sync-status.not-synced::before {
+	content: "\f159";
+	color: #dcdcde;
+	background-color: #dcdcde;
+	border-radius: 50%;
+}
+
+#sync_status_order_data span.sync-status.failed::before {
+	content: "\f159";
+	color: #d63638;
+	background-color: #d63638;
+	border-radius: 50%;
+}
+
+

@@ -280,6 +280,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->sync_failure( "Last Error" );
 
 		$updated_record = new TaxJar_Order_Record( $order->get_id() );
+		$updated_record->load_object();
 		$updated_record->set_queue_id( $record->get_queue_id() );
 		$updated_record->read();
 
@@ -1408,7 +1409,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$noncomplete_order = $this->create_test_order( 1 );
 		$noncomplete_order_refund = $this->create_test_refund( $noncomplete_order->get_id() );
-		
+
 		$synced_order = $this->create_test_order( 1 );
 		$synced_order->update_status( 'completed' );
 		$synced_order_refund = $this->create_test_refund( $synced_order->get_id() );
