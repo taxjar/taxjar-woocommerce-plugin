@@ -218,8 +218,6 @@ div.taxjar-connected p {
 	margin-top: 2px;
 }
 
-
-
 #sync_status_order_data span.sync-status::before {
 	font-family: Dashicons;
 	speak: never;
@@ -254,5 +252,3 @@ div.taxjar-connected p {
 	background-color: #d63638;
 	border-radius: 50%;
 }
-
-

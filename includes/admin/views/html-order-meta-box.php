@@ -58,7 +58,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		</p>
 		<?php do_action( 'taxjar_calculation_status_order_data_panel', $order->get_id(), $order ); ?>
 	</div>
-
 	<div id="sync_status_order_data" class="panel woocommerce_options_panel">
 		<?php if ( is_a( $order, 'WC_Subscription' ) ) { ?>
 		<p><?php echo esc_html( __( 'Subscriptions are not synced to TaxJar. Each order created from the subscription will be individually synced.', 'taxjar' ) ); ?></p>
@@ -72,7 +71,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<div class="accordion-section order-section">
 				<h3 class="accordion-section-title">
 					Order #<?php echo esc_html( $order->get_id() ); ?>
-					<span class="sync-status tips <?php echo esc_attr( $order_sync_status ); ?>" data-tip="<?php esc_attr( Order_Meta_Box::get_sync_status_tip( $order_sync_status, 'order' ) ); ?>"></span>
+					<span class="sync-status tips <?php echo esc_attr( $order_sync_status ); ?>" data-tip="<?php echo esc_attr( Order_Meta_Box::get_sync_status_tip( $order_sync_status, 'order' ) ); ?>"></span>
 				</h3>
 				<div class="accordion-section-content">
 					<p>
@@ -95,7 +94,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<div class="accordion-section refund-section">
 					<h3 class="accordion-section-title">
 						Refund #<?php echo esc_html( $refund->get_id() ); ?>
-						<span class="sync-status tips <?php echo esc_attr( $refund_sync_status ); ?>" data-tip="<?php esc_attr( Order_Meta_Box::get_sync_status_tip( $refund_sync_status, 'refund' ) ); ?>"></span>
+						<span class="sync-status tips <?php echo esc_attr( $refund_sync_status ); ?>" data-tip="<?php echo esc_attr( Order_Meta_Box::get_sync_status_tip( $refund_sync_status, 'refund' ) ); ?>"></span>
 					</h3>
 					<div class="accordion-section-content">
 						<p>
@@ -118,17 +117,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<?php do_action( 'taxjar_sync_status_order_data_panel', $order->get_id(), $order ); ?>
 	</div>
-
 	<div id="advanced_order_data" class="panel woocommerce_options_panel">
 		<div class="accordion-container">
 			<div class="accordion-section request-json">
-				<h3 class="accordion-section-title">Calculation Request JSON <span class="copy-button dashicons dashicons-clipboard" data-tip="<?php esc_attr_e( 'Copied!', 'taxjar' ); ?>"></span></h3>
+				<h3 class="accordion-section-title">Calculation Request JSON <span class="copy-button dashicons dashicons-clipboard" data-tip="<?php echo esc_attr_e( 'Copied!', 'taxjar' ); ?>"></span></h3>
 				<div class="accordion-section-content">
 					<pre><?php echo esc_html( $metadata['request_json'] ); ?></pre>
 				</div>
 			</div>
 			<div class="accordion-section response-json">
-				<h3 class="accordion-section-title">Calculation Response JSON <span class="copy-button dashicons dashicons-clipboard" data-tip="<?php esc_attr_e( 'Copied!', 'taxjar' ); ?>"></span></h3>
+				<h3 class="accordion-section-title">Calculation Response JSON <span class="copy-button dashicons dashicons-clipboard" data-tip="<?php echo esc_attr_e( 'Copied!', 'taxjar' ); ?>"></span></h3>
 				<div class="accordion-section-content">
 					<pre><?php echo esc_html( $metadata['response_json'] ); ?></pre>
 				</div>

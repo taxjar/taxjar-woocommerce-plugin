@@ -31,6 +31,7 @@ class Order_Meta_Box {
 		$order    = wc_get_order( $order_id );
 		$metadata = self::get_order_tax_calculation_metadata( $order );
 		wp_enqueue_script( 'accordion' );
+
 		include_once dirname( __FILE__ ) . '/views/html-order-meta-box.php';
 	}
 
