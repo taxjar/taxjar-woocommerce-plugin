@@ -216,7 +216,18 @@ class Order_Meta_Box {
 	 * @return string
 	 */
 	private static function get_sync_queue_link( \WC_Abstract_Order $order ): string {
-		return '<a href="' . admin_url( 'admin.php?s=' . $order->get_id() . '&page=wc-settings&tab=taxjar-integration&section=sync_queue&taxjar_record_type&taxjar_record_status&paged=1' ) . '" >View Progress</a>';
+		$link = add_query_arg(
+			array(
+				'page'    => 'wc-settings',
+				'tab'     => 'taxjar-integration',
+				'section' => 'sync_queue',
+				's'       => $order->get_id(),
+				'paged'   => 1,
+			),
+			admin_url( 'admin.php' )
+		);
+
+		return '<a href="' . esc_url( $link ) . '" >View Progress</a>';
 	}
 
 	/**
