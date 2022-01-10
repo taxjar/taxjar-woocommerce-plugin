@@ -144,7 +144,7 @@ class TaxJar_Tax_Calculation {
 	 * @return bool
 	 */
 	private function is_mini_cart() {
-		return is_cart() && is_ajax();
+		return is_cart() && wp_doing_ajax();
 	}
 
 	/**
