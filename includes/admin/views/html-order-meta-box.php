@@ -34,11 +34,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 					'target' => 'sync_status_order_data',
 					'class'  => '',
 				),
-				'advanced'           => array(
-					'label'  => __( 'Advanced', 'taxjar' ),
-					'target' => 'advanced_order_data',
-					'class'  => '',
-				),
 			)
 		);
 
@@ -116,24 +111,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<?php } ?>
 
 		<?php do_action( 'taxjar_sync_status_order_data_panel', $order->get_id(), $order ); ?>
-	</div>
-	<div id="advanced_order_data" class="panel woocommerce_options_panel">
-		<div class="accordion-container">
-			<div class="accordion-section request-json">
-				<h3 class="accordion-section-title">Calculation Request JSON <span class="copy-button dashicons dashicons-clipboard" data-tip="<?php echo esc_attr_e( 'Copied!', 'taxjar' ); ?>"></span></h3>
-				<div class="accordion-section-content">
-					<pre><?php echo esc_html( $metadata['request_json'] ); ?></pre>
-				</div>
-			</div>
-			<div class="accordion-section response-json">
-				<h3 class="accordion-section-title">Calculation Response JSON <span class="copy-button dashicons dashicons-clipboard" data-tip="<?php echo esc_attr_e( 'Copied!', 'taxjar' ); ?>"></span></h3>
-				<div class="accordion-section-content">
-					<pre><?php echo esc_html( $metadata['response_json'] ); ?></pre>
-				</div>
-			</div>
-			<?php do_action( 'taxjar_advanced_order_data_panel_accordion', $order->get_id(), $order ); ?>
-		</div>
-		<?php do_action( 'taxjar_advanced_order_data_panel', $order->get_id(), $order ); ?>
 	</div>
 	<?php do_action( 'taxjar_order_data_panels', $order->get_id(), $order ); ?>
 	<div class="clear"></div>

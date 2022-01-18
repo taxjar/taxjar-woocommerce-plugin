@@ -40,6 +40,8 @@ class Cart_Tax_Calculation_Result_Data_Store implements Tax_Calculation_Result_D
 	 * @param Tax_Calculation_Result $calculation_result Result of tax calculation.
 	 */
 	public function update( Tax_Calculation_Result $calculation_result ) {
+		$calculation_result->set_raw_request('');
+		$calculation_result->set_raw_response('');
 		$this->cart->tax_calculation_results = $calculation_result->to_json();
 	}
 
