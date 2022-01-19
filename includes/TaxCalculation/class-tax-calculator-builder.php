@@ -8,6 +8,7 @@
 namespace TaxJar;
 
 use WC_Cart;
+use WC_Order;
 use WC_Taxjar_Nexus;
 use TaxJar_Settings;
 
@@ -101,6 +102,7 @@ class Tax_Calculator_Builder {
 		$this->set_order_applicator( $order );
 		$this->set_order_validator( $order );
 		$this->set_context( 'api_order' );
+		$this->set_order_tax_result_data_store( $order );
 	}
 
 	/**
@@ -114,6 +116,7 @@ class Tax_Calculator_Builder {
 		$this->set_order_applicator( $order );
 		$this->set_order_validator( $order );
 		$this->set_context( 'order' );
+		$this->set_order_tax_result_data_store( $order );
 	}
 
 	/**
@@ -270,6 +273,7 @@ class Tax_Calculator_Builder {
 		$this->set_order_applicator( $order );
 		$this->set_order_validator( $order );
 		$this->set_context( 'admin_order' );
+		$this->set_order_tax_result_data_store( $order );
 	}
 
 	/**
@@ -294,6 +298,7 @@ class Tax_Calculator_Builder {
 		$this->set_order_applicator( $subscription );
 		$this->set_order_validator( $subscription );
 		$this->set_context( 'subscription_order' );
+		$this->set_order_tax_result_data_store( $subscription );
 		return $this->calculator;
 	}
 
@@ -310,7 +315,18 @@ class Tax_Calculator_Builder {
 		$this->set_order_applicator( $renewal );
 		$this->set_order_validator( $renewal );
 		$this->set_context( 'renewal_order' );
+		$this->set_order_tax_result_data_store( $renewal );
 		return $this->calculator;
+	}
+
+	/**
+	 * Set the tax result data store when building an order calculator.
+	 *
+	 * @param WC_Order $order Order whose tax is being calculated.
+	 */
+	private function set_order_tax_result_data_store( WC_Order $order ) {
+		$result_data_store = new Order_Tax_Calculation_Result_Data_Store( $order );
+		$this->calculator->set_result_data_store( $result_data_store );
 	}
 
 	/**
@@ -326,7 +342,18 @@ class Tax_Calculator_Builder {
 		$this->set_cart_tax_applicator( $cart );
 		$this->set_cart_validator( $cart );
 		$this->set_context( 'cart' );
+		$this->set_cart_tax_result_data_store( $cart );
 		return $this->calculator;
+	}
+
+	/**
+	 * Set the tax result data store when building a cart calculator.
+	 *
+	 * @param WC_Cart $cart Cart whose tax is being calculated.
+	 */
+	private function set_cart_tax_result_data_store( WC_Cart $cart ) {
+		$result_data_store = new Cart_Tax_Calculation_Result_Data_Store( $cart );
+		$this->calculator->set_result_data_store( $result_data_store );
 	}
 
 	/**

@@ -289,12 +289,13 @@ abstract class TaxJar_Record {
 		$this->save();
 	}
 
-	public function add_object_sync_metadata() {
+	public function update_object_sync_success_meta_data() {
 		$data = $this->get_data();
 		$data_hash = hash( 'md5', serialize( $data ) );
 		$sync_datetime =  $this->get_processed_datetime();
 		$this->object->update_meta_data( '_taxjar_last_sync', $sync_datetime );
 		$this->object->update_meta_data( '_taxjar_hash', $data_hash );
+		$this->object->delete_meta_data( '_taxjar_sync_last_error' );
 		$this->object->save();
 	}
 
@@ -329,6 +330,13 @@ abstract class TaxJar_Record {
 		}
 
 		$this->save();
+	}
+
+	public function update_object_sync_failure_meta_data( $error_message ) {
+		if ( $this->object ) {
+			$this->object->update_meta_data( '_taxjar_sync_last_error', $error_message );
+			$this->object->save();
+		}
 	}
 
 	abstract function create_in_taxjar();

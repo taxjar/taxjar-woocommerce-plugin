@@ -45,7 +45,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			TaxJar_Settings::init();
 			$this->tax_calculations = new TaxJar_Tax_Calculation();
 
-			if ( $this->on_settings_page() ) {
+			if ( is_admin() ) {
 				add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_assets' ) );
 			}
 
@@ -53,6 +53,8 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 				// Scripts / Stylesheets
 				add_action( 'admin_enqueue_scripts', array( $this, 'load_taxjar_admin_new_order_assets' ) );
 			}
+
+			new \TaxJar\Admin_Meta_Boxes();
 		}
 
 		/**
@@ -215,15 +217,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		private function is_order_post_type( $post_type ) {
 			$allowed_post_types = array( 'shop_order', 'shop_subscription' );
 			return in_array( $post_type, $allowed_post_types, true );
-		}
-
-		/**
-		 * Checks if currently on the TaxJar settings page
-		 *
-		 * @return boolean
-		 */
-		public function on_settings_page() {
-			return ( isset( $_GET['page'] ) && 'wc-settings' === $_GET['page'] && isset( $_GET['tab'] ) && 'taxjar-integration' === $_GET['tab'] );
 		}
 
 		/**

@@ -3,11 +3,11 @@
  * Plugin Name: TaxJar - Sales Tax Automation for WooCommerce
  * Plugin URI: https://www.taxjar.com/woocommerce-sales-tax-plugin/
  * Description: Save hours every month by putting your sales tax on autopilot. Automated, multi-state sales tax calculation, collection, and filing.
- * Version: 4.0.2
+ * Version: 4.1.0
  * Author: TaxJar
  * Author URI: https://www.taxjar.com
- * WC requires at least: 5.5.0
- * WC tested up to: 6.0.0
+ * WC requires at least: 5.6.0
+ * WC tested up to: 6.1.0
  * Requires PHP: 7.0
  *
  * Copyright: © 2014-2019 TaxJar. TaxJar is a trademark of TPS Unlimited, Inc.
@@ -43,8 +43,8 @@ if ( ! $woocommerce_active || version_compare( get_option( 'woocommerce_db_versi
  */
 final class WC_Taxjar {
 
-	static $version = '4.0.2';
-	public static $minimum_woocommerce_version = '5.5.0';
+	static $version = '4.1.0';
+	public static $minimum_woocommerce_version = '5.6.0';
 
 	/**
 	 * Construct the plugin.
@@ -68,6 +68,7 @@ final class WC_Taxjar {
 			include_once 'includes/interfaces/class-tax-client-interface.php';
 			include_once 'includes/interfaces/class-tax-applicator-interface.php';
 			include_once 'includes/interfaces/class-tax-calculation-validator-interface.php';
+			include_once 'includes/interfaces/class-tax-calculation-result-data-store.php';
 
 			// Include our integration class and WP_User for wp_delete_user()
 			include_once ABSPATH . 'wp-admin/includes/user.php';
@@ -114,6 +115,11 @@ final class WC_Taxjar {
 			include_once 'includes/TaxCalculation/class-tax-calculation-result.php';
 			include_once 'includes/TaxCalculation/class-cart-calculation-logger.php';
 			include_once 'includes/TaxCalculation/class-tax-builder.php';
+			include_once 'includes/TaxCalculation/class-cart-tax-calculation-result-data-store.php';
+			include_once 'includes/TaxCalculation/class-order-tax-calculation-result-data-store.php';
+
+			include_once 'includes/admin/class-admin-meta-boxes.php';
+			include_once 'includes/admin/class-order-meta-box.php';
 
 			// Register the integration.
 			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );

@@ -17,6 +17,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 	private $mock_tax_details;
 	private $mock_order;
 	private $mock_validator;
+	private $mock_tax_result_data_store;
 
 	public function setUp() {
 		$this->mock_request_body = $this->createMock( Tax_Request_Body::class );
@@ -33,6 +34,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$this->mock_logger     = $this->createMock( Tax_Calculation_Logger::class );
 		$this->mock_cache      = $this->createMock( Cache_Interface::class );
 		$this->mock_applicator = $this->createMock( Tax_Applicator_Interface::class );
+		$this->mock_tax_result_data_store = $this->createMock( Order_Tax_Calculation_Result_Data_Store::class );
 		$this->mock_order      = $this->createMock( WC_Order::class );
 
 		$this->mock_validator = $this->createMock( Tax_Calculation_Validator_Interface::class );
@@ -63,6 +65,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$calculator->set_applicator( $this->mock_applicator );
 		$calculator->set_validator( $this->mock_validator );
 		$calculator->set_context( 'test' );
+		$calculator->set_result_data_store( $this->mock_tax_result_data_store );
 		return $calculator;
 	}
 }

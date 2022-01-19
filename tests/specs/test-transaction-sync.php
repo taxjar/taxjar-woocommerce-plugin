@@ -280,6 +280,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->sync_failure( "Last Error" );
 
 		$updated_record = new TaxJar_Order_Record( $order->get_id() );
+		$updated_record->load_object();
 		$updated_record->set_queue_id( $record->get_queue_id() );
 		$updated_record->read();
 

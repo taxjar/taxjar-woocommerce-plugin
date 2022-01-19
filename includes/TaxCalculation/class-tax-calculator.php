@@ -83,6 +83,20 @@ class Tax_Calculator {
 	private $tax_details;
 
 	/**
+	 * Persists the tax calculation results on the object having tax calculated.
+	 *
+	 * @var Tax_Calculation_Result_Data_Store
+	 */
+	private $result_data_store;
+
+	/**
+	 * Result of tax calculation.
+	 *
+	 * @var Tax_Calculation_Result
+	 */
+	private $result;
+
+	/**
 	 * Sets the logger.
 	 *
 	 * @param Tax_Calculation_Logger $logger Logger instance.
@@ -155,6 +169,15 @@ class Tax_Calculator {
 	}
 
 	/**
+	 * Set the result data store.
+	 *
+	 * @param Tax_Calculation_Result_Data_Store $data_store Result data store.
+	 */
+	public function set_result_data_store( Tax_Calculation_Result_Data_Store $data_store ) {
+		$this->result_data_store = $data_store;
+	}
+
+	/**
 	 * Calculates and applies tax if possible and necessary.
 	 */
 	public function maybe_calculate_and_apply_tax() {
@@ -166,6 +189,8 @@ class Tax_Calculator {
 			$this->success();
 		} catch ( Exception $exception ) {
 			$this->failure( $exception );
+		} finally {
+			$this->result_data_store->update( $this->result );
 		}
 	}
 
@@ -250,12 +275,12 @@ class Tax_Calculator {
 	 * Logs success details.
 	 */
 	private function success() {
-		$result = new Tax_Calculation_Result();
-		$result->set_success( true );
-		$result->set_context( $this->get_context() );
-		$result->set_raw_request( $this->request_body->to_json() );
-		$result->set_raw_response( wp_json_encode( $this->tax_details->get_raw_response() ) );
-		$this->logger->log_success( $result );
+		$this->result = new Tax_Calculation_Result();
+		$this->result->set_success( true );
+		$this->result->set_context( $this->get_context() );
+		$this->result->set_raw_request( $this->request_body->to_json() );
+		$this->result->set_raw_response( wp_json_encode( $this->tax_details->get_raw_response() ) );
+		$this->logger->log_success( $this->result );
 	}
 
 	/**
@@ -264,16 +289,16 @@ class Tax_Calculator {
 	 * @param Exception $exception Exception that occurred during tax calculation.
 	 */
 	private function failure( Exception $exception ) {
-		$result = new Tax_Calculation_Result();
-		$result->set_success( false );
-		$result->set_context( $this->get_context() );
-		$result->set_raw_request( $this->request_body->to_json() );
+		$this->result = new Tax_Calculation_Result();
+		$this->result->set_success( false );
+		$this->result->set_context( $this->get_context() );
+		$this->result->set_raw_request( $this->request_body->to_json() );
 
 		if ( $this->tax_details ) {
-			$result->set_raw_response( wp_json_encode( $this->tax_details->get_raw_response() ) );
+			$this->result->set_raw_response( wp_json_encode( $this->tax_details->get_raw_response() ) );
 		}
 
-		$result->set_error_message( $exception->getMessage() );
-		$this->logger->log_failure( $result, $exception );
+		$this->result->set_error_message( $exception->getMessage() );
+		$this->logger->log_failure( $this->result, $exception );
 	}
 }

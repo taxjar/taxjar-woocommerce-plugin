@@ -1,3 +1,9 @@
+# 4.1.0 (2022-01-19)
+* Add order meta box to give details of calculation and sync statuses
+* Remove usage of deprecated function is_ajax
+* WooCommerce tested up to 6.1
+* Update minimum WordPress version to 5.6
+
 # 4.0.2 (2021-12-20)
 * Filter invalid PTCs before creating transactions in TaxJar.
 * Fix floating point precision issue causing transactions to be rejected by the TaxJar API.

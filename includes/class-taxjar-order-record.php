@@ -30,7 +30,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 	public function should_sync( $ignore_status = false ) {
 		if ( ! isset( $this->object ) ) {
-			$this->add_error( __( 'Order failed validation - order object not loaded to record before syncing.', 'wc-taxjar' ) );
+			$this->add_error( __( 'Order object not loaded to record before syncing.', 'wc-taxjar' ) );
 			return false;
 		}
 
@@ -38,13 +38,13 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			$status = $this->object->get_status();
 			$valid_statuses = apply_filters( 'taxjar_valid_order_statuses_for_sync', array( 'completed', 'refunded' ) );
 			if ( ! in_array( $status, $valid_statuses ) ) {
-				$this->add_error( __( 'Order failed validation - invalid order status.', 'wc-taxjar' ) );
+				$this->add_error( __( 'Order has an invalid status. Only orders with the following statuses can sync to TaxJar: ', 'wc-taxjar' ) . implode( ", ", $valid_statuses) );
 				return false;
 			}
 
 			if ( WC_Taxjar_Transaction_Sync::should_validate_order_completed_date() ) {
 				if ( empty( $this->object->get_date_completed() ) ) {
-					$this->add_error( __( 'Order failed validation - order has no completed date', 'wc-taxjar' ) );
+					$this->add_error( __( 'Order does not have a completed date. Only orders that have been completed can sync to TaxJar.', 'wc-taxjar' ) );
 					return false;
 				}
 			}
@@ -52,7 +52,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 		if ( ! $this->get_force_push() ) {
 			if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
-				$this->add_error( __( 'Order failed validation, order data not different than previous sync.', 'wc-taxjar' ) );
+				$this->add_error( __( 'Order data is not different from previous sync, re-syncing the transaction is not necessary.', 'wc-taxjar' ) );
 				return false;
 			}
 		}
@@ -60,22 +60,22 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		$order_data = $this->get_data();
 
 		if ( ! in_array( $order_data[ 'to_country' ], TaxJar_Record::allowed_countries() ) ) {
-			$this->add_error( __( 'Order failed validation, ship to country did not pass validation', 'wc-taxjar' ) );
+			$this->add_error( __( 'Order ship to country is not supported for reporting and filing. Only orders shipped to the following countries will sync to TaxJar: ', 'wc-taxjar' ) . implode( ", ", TaxJar_Record::allowed_countries() ) );
 			return false;
 		}
 
 		if ( ! in_array( $this->object->get_currency(), TaxJar_Record::allowed_currencies() ) ) {
-			$this->add_error( __( 'Order failed validation, currency did not pass validation.', 'wc-taxjar' ) );
+			$this->add_error( __( 'Order currency is not supported. Only orders with the following currencies will sync to TaxJar: ', 'wc-taxjar' ) . implode( ", ", TaxJar_Record::allowed_currencies() ) );
 			return false;
 		}
 
 		if ( ! $this->has_valid_ship_from_address() ) {
-			$this->add_error( __( 'Order failed validation, missing required ship from field', 'wc-taxjar' ) );
+			$this->add_error( __( 'Order is missing required ship from field.', 'wc-taxjar' ) );
 			return false;
 		}
 
 		if ( empty( $order_data[ 'to_country' ] ) || empty( $order_data[ 'to_state' ] ) || empty( $order_data[ 'to_zip' ] ) || empty( $order_data[ 'to_city' ] ) ) {
-			$this->add_error( __( 'Order failed validation, missing required ship to field.', 'wc-taxjar' ) );
+			$this->add_error( __( 'Order is missing required ship to field.', 'wc-taxjar' ) );
 			return false;
 		}
 
@@ -87,7 +87,15 @@ class TaxJar_Order_Record extends TaxJar_Record {
 
 		// prevent creating new record in queue when updating a successfully synced order
 		remove_action( 'woocommerce_update_order', array( 'WC_Taxjar_Transaction_Sync', 'order_updated' ) );
-		$this->add_object_sync_metadata();
+		$this->update_object_sync_success_meta_data();
+		add_action( 'woocommerce_update_order', array( 'WC_Taxjar_Transaction_Sync', 'order_updated' ) );
+	}
+
+	public function sync_failure( $error_message ) {
+		parent::sync_failure( $error_message );
+
+		remove_action( 'woocommerce_update_order', array( 'WC_Taxjar_Transaction_Sync', 'order_updated' ) );
+		$this->update_object_sync_failure_meta_data( $error_message );
 		add_action( 'woocommerce_update_order', array( 'WC_Taxjar_Transaction_Sync', 'order_updated' ) );
 	}
 

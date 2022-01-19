@@ -23,47 +23,47 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 	public function should_sync() {
 		$data = $this->get_data();
 		if ( empty( $data ) ) {
-			$this->add_error( __( 'Refund failed validation - refund object not loaded to record before syncing.', 'wc-taxjar' ) );
+			$this->add_error( __( 'Refund object not loaded to record before syncing.', 'wc-taxjar' ) );
 			return false;
 		}
 
 		if ( WC_Taxjar_Transaction_Sync::should_validate_order_completed_date() ) {
 			if ( empty( $this->order_completed_date ) ) {
-				$this->add_error( __( 'Refund failed validation - parent order has no completed date.', 'wc-taxjar' ) );
+				$this->add_error( __( 'Parent order does not have a completed date. Only refunds of orders that have been completed can sync to TaxJar.', 'wc-taxjar' ) );
 				return false;
 			}
 		}
 
 		$valid_order_statuses = apply_filters( 'taxjar_valid_order_statuses_for_sync', array( 'completed', 'refunded' ) );
 		if ( empty( $this->order_status ) || ! in_array( $this->order_status, $valid_order_statuses ) ) {
-			$this->add_error( __( 'Refund failed validation - parent order does not have valid status.', 'wc-taxjar' ) );
+			$this->add_error( __( 'Parent order has an invalid status. Only refunds of orders with the following statuses can sync to TaxJar: ', 'wc-taxjar' ) . implode( ", ", $valid_order_statuses ) );
 			return false;
 		}
 
 		if ( ! $this->get_force_push() ) {
 			if ( hash( 'md5', serialize( $this->get_data() ) ) === $this->get_object_hash() ) {
-				$this->add_error( __( 'Refund failed validation - not updated since last sync.', 'wc-taxjar' ) );
+				$this->add_error( __( 'Refund data is not different from previous sync, re-syncing the transaction is not necessary.', 'wc-taxjar' ) );
 				return false;
 			}
 		}
 
 		if ( ! in_array( $data[ 'to_country' ], TaxJar_Record::allowed_countries() ) ) {
-			$this->add_error( __( 'Refund failed validation, ship to country did not pass validation', 'wc-taxjar' ) );
+			$this->add_error( __( 'Parent order ship to country is not supported for reporting and filing. Only orders shipped to the following countries will sync to TaxJar: ', 'wc-taxjar' ) . implode( ", ", TaxJar_Record::allowed_countries()) );
 			return false;
 		}
 
 		if ( ! in_array( $this->object->get_currency(), TaxJar_Record::allowed_currencies() ) ) {
-			$this->add_error( __( 'Refund failed validation, currency did not pass validation.', 'wc-taxjar' ) );
+			$this->add_error( __( 'Refund currency is not supported. Only refunds with the following currencies will sync to TaxJar: ', 'wc-taxjar' ) . implode( ", ", TaxJar_Record::allowed_currencies() ) );
 			return false;
 		}
 
 		if ( ! $this->has_valid_ship_from_address() ) {
-			$this->add_error( __( 'Refund failed validation - missing required ship from field on parent order', 'wc-taxjar' ) );
+			$this->add_error( __( 'Parent order is missing required ship from field.', 'wc-taxjar' ) );
 			return false;
 		}
 
 		if ( empty( $data[ 'to_country' ] ) || empty( $data[ 'to_state' ] ) || empty( $data[ 'to_zip' ] ) || empty( $data[ 'to_city' ] ) ) {
-			$this->add_error( __( 'Refund failed validation - missing required ship to field on parent order.', 'wc-taxjar' ) );
+			$this->add_error( __( 'Parent order is missing required ship to field', 'wc-taxjar' ) );
 			return false;
 		}
 
@@ -72,7 +72,12 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 
 	public function sync_success() {
 		parent::sync_success();
-		$this->add_object_sync_metadata();
+		$this->update_object_sync_success_meta_data();
+	}
+
+	public function sync_failure( $error_message ) {
+		parent::sync_failure( $error_message );
+		$this->update_object_sync_failure_meta_data( $error_message );
 	}
 
 	public function get_data_from_object() {
