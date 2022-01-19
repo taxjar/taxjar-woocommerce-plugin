@@ -40,6 +40,8 @@ class Order_Tax_Calculation_Result_Data_Store implements Tax_Calculation_Result_
 	 * @param Tax_Calculation_Result $calculation_result Result of tax calculation.
 	 */
 	public function update( Tax_Calculation_Result $calculation_result ) {
+		$calculation_result->set_raw_request('');
+		$calculation_result->set_raw_response('');
 		$this->order->update_meta_data( '_taxjar_tax_result', $calculation_result->to_json() );
 	}
 
