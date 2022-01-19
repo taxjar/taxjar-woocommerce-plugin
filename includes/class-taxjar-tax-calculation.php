@@ -210,7 +210,12 @@ class TaxJar_Tax_Calculation {
 			$tax_code = end( $tax_class );
 		}
 
-		return strtoupper( $tax_code );
+		if ( ! preg_match( '/^\d{5}$|^\d+[a-zA-Z]\d+$/', $tax_code ) ) {
+			$tax_code = '';
+		}
+
+		$tax_code = strtoupper( $tax_code );
+		return apply_filters( 'taxjar_get_product_tax_code', $tax_code, $tax_class );
 	}
 
 	/**

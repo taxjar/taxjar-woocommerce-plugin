@@ -101,6 +101,10 @@ Our plans come with filings included, with additional filings available for purc
 * WooCommerce tested up to 6.1
 * Update minimum WordPress version to 5.6
 
+= 4.0.2 (2021-12-20)
+* Filter invalid PTCs before creating transactions in TaxJar.
+* Fix floating point precision issue causing transactions to be rejected by the TaxJar API.
+
 = 4.0.1 (2021-11-19)
 * Change dynamic tax rate ID to 999999999 to help prevent issues with 3rd parties ingesting exported WooCommerce order data
 * Fix issue where shipping was still utilizing dynamic tax rate when the save rates setting was enabled.
