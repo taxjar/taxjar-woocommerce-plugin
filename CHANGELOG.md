@@ -1,3 +1,9 @@
+# 4.1.0 (2022-01-19)
+* Add order meta box to give details of calculation and sync statuses
+* Remove usage of deprecated function is_ajax
+* WooCommerce tested up to 6.1
+* Update minimum WordPress version to 5.6
+
 # 4.0.1 (2021-11-19)
 * Change dynamic tax rate ID to 999999999 to help prevent issues with 3rd parties ingesting exported WooCommerce order data
 * Fix issue where shipping was still utilizing dynamic tax rate when the save rates setting was enabled.
