@@ -82,7 +82,7 @@ abstract class TaxJar_Record {
 		global $wpdb;
 		$insert = array(
 			'record_id'          => $this->get_record_id(),
-			'record_type'        => $this->get_record_type(),
+			'record_type'        => static::get_record_type(),
 			'status'             => $this->get_status(),
 			'batch_id'           => $this->get_batch_id(),
 			'created_datetime'   => $this->get_created_datetime(),
@@ -123,7 +123,7 @@ abstract class TaxJar_Record {
 		$data = array(
 			'record_id' => $this->get_record_id(),
 			'status' => $this->get_status(),
-			'record_type' => $this->get_record_type(),
+			'record_type' => static::get_record_type(),
 			'force_push' => $this->get_force_push()
 		);
 
@@ -171,8 +171,8 @@ abstract class TaxJar_Record {
 	public function sync() {
 		try {
 			$this->clear_error();
-			$this->log( 'Attempting to sync ' . $this->get_record_type() . ' # ' . $this->get_record_id() . ' (Queue # ' . $this->get_queue_id() . ')' );
-			if ( ! apply_filters( 'taxjar_should_sync_' . $this->get_record_type(), $this->should_sync() ) ) {
+			$this->log( 'Attempting to sync ' . static::get_record_type() . ' # ' . $this->get_record_id() . ' (Queue # ' . $this->get_queue_id() . ')' );
+			if ( ! apply_filters( 'taxjar_should_sync_' . static::get_record_type(), $this->should_sync() ) ) {
 				if ( $this->get_error() ) {
 					$this->sync_failure( $this->get_error()[ 'message' ] );
 				} else {
@@ -272,7 +272,7 @@ abstract class TaxJar_Record {
 	}
 
 	public function log( $message ) {
-		if ( $this->get_record_type() == 'customer' ) {
+		if ( static::get_record_type() == 'customer' ) {
 			$this->taxjar_integration->customer_sync->_log( $message );
 		} else {
 			$this->taxjar_integration->transaction_sync->_log( $message );
@@ -345,7 +345,7 @@ abstract class TaxJar_Record {
 	abstract function get_from_taxjar();
 
 	public function get_provider() {
-		return apply_filters( 'taxjar_get_' . $this->get_record_type() . '_provider', 'woo', $this->object, $this );
+		return apply_filters( 'taxjar_get_' . static::get_record_type() . '_provider', 'woo', $this->object, $this );
 	}
 
 	/**
@@ -358,7 +358,8 @@ abstract class TaxJar_Record {
 		global $wpdb;
 
 		$table_name = self::get_queue_table_name();
-		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id} AND status IN ( 'new', 'awaiting' )";
+		$record_type = static::get_record_type();
+		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id} AND record_type = '{$record_type}' AND status IN ( 'new', 'awaiting' )";
 		$results = $wpdb->get_results( $query,  ARRAY_A );
 
 		if ( empty( $results ) || ! is_array( $results ) ) {
@@ -471,7 +472,7 @@ abstract class TaxJar_Record {
 		return $this->record_id;
 	}
 
-	abstract function get_record_type();
+	abstract static function get_record_type();
 
 	public function set_status( $status ) {
 		$this->status = $status;

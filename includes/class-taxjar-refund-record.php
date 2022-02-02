@@ -317,7 +317,7 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 		return $response;
 	}
 
-	public function get_record_type() {
+	public static function get_record_type() {
 		return 'refund';
 	}
 
