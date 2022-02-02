@@ -280,6 +280,13 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 		$this->cart->set_total_tax( $tax_total );
 		$this->cart->set_total( max( 0, $total ) );
 
+		/**
+		 * Fires once the cart totals calculation are done.
+		 *
+		 * @since 4.1.1
+		 *
+		 * @param WC_Cart $this->cart Cart.
+		 */
 		do_action( 'taxjar_after_calculate_totals', $this->cart );
 	}
 
