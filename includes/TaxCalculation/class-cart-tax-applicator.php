@@ -287,7 +287,7 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 		 *
 		 * @param WC_Cart $this->cart Cart.
 		 */
-		do_action( 'taxjar_after_calculate_totals', $this->cart );
+		do_action( 'taxjar_after_calculate_cart_totals', $this->cart );
 	}
 
 }
