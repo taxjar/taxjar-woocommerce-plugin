@@ -166,14 +166,13 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 		$chosen_methods        = WC()->session->get( 'chosen_shipping_methods', array() );
 		$merged_shipping_taxes = array();
 
-		foreach ( $packages as $package ) {
-			foreach ( $chosen_methods as $chosen_method ) {
-				if ( isset( $package['rates'][ $chosen_method ] ) ) {
-					$rate  = $package['rates'][ $chosen_method ];
-					$taxes = $this->tax_builder->build_shipping_tax( $this->tax_details->get_shipping_tax_rate(), $rate->get_cost() );
-					$rate->set_taxes( $taxes );
-					$merged_shipping_taxes = $this->merge_tax_arrays( $merged_shipping_taxes, wc_add_number_precision_deep( $taxes, false ) );
-				}
+		foreach ( $packages as $package_key => $package ) {
+			$chosen_method = $chosen_methods[$package_key] ?? null;
+			if ( $chosen_method && isset($package['rates'][ $chosen_method ]) ) {
+				$rate  = $package['rates'][ $chosen_method ];
+				$taxes = $this->tax_builder->build_shipping_tax( $this->tax_details->get_shipping_tax_rate(), $rate->get_cost() );
+				$rate->set_taxes( $taxes );
+				$merged_shipping_taxes = $this->merge_tax_arrays( $merged_shipping_taxes, wc_add_number_precision_deep( $taxes, false ) );
 			}
 		}
 
