@@ -40,6 +40,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			$this->download_orders    = new WC_Taxjar_Download_Orders( $this );
 			$this->transaction_sync   = new WC_Taxjar_Transaction_Sync( $this );
 			$this->customer_sync      = new WC_Taxjar_Customer_Sync( $this );
+			$this->module_loader      = new \TaxJar\Module_Loader();
 
 			// Load the settings.
 			TaxJar_Settings::init();
