@@ -192,7 +192,7 @@ class WC_Taxjar_Transaction_Sync {
 			$previous_sync_datetime = $record->object->get_meta( '_taxjar_last_sync', true );
 			$result = $record->sync();
 
-			if ( $result && $record->get_record_type() == 'order' ) {
+			if ( $result && $record::get_record_type() == 'order' ) {
 				if ( empty( $previous_sync_datetime ) ) {
 					$record->object->add_order_note( __( 'Order synced to TaxJar', 'taxjar' ) );
 				}
@@ -651,11 +651,11 @@ class WC_Taxjar_Transaction_Sync {
 
 		$posts = $wpdb->get_results(
 			"
-			SELECT p.id 
-			FROM {$wpdb->posts} AS p 
-			WHERE p.post_type = 'shop_order_refund' 
-			AND p.post_status = 'wc-completed' 
-			AND p.post_parent IN ( {$order_ids_string} ) 
+			SELECT p.id
+			FROM {$wpdb->posts} AS p
+			WHERE p.post_type = 'shop_order_refund'
+			AND p.post_status = 'wc-completed'
+			AND p.post_parent IN ( {$order_ids_string} )
 			ORDER BY p.post_date ASC
 			", ARRAY_N
 		);

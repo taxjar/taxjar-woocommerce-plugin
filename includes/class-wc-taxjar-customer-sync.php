@@ -34,6 +34,11 @@ class WC_Taxjar_Customer_Sync {
 
 			add_action( 'taxjar_customer_exemption_settings_updated', array( $this, 'maybe_sync_customer_on_update' ) );
 
+			add_action( 'woocommerce_rest_insert_customer', array( $this, 'api_customer_updated' ) );
+
+			add_action( 'wc_csv_import_suite_create_customer', array( $this, 'csv_customer_import_customer_updated') );
+			add_action( 'wc_csv_import_suite_update_customer', array( $this, 'csv_customer_import_customer_updated') );
+
 			add_action( 'delete_user', array( $this, 'maybe_delete_customer' ) );
 		}
 	}
@@ -170,46 +175,12 @@ class WC_Taxjar_Customer_Sync {
 	}
 
 	/**
-	 * Checks if exemption type has changed when saving a user
-	 *
-	 * @param $user_id - Id of customer
-	 *
-	 * @return bool - Whether or not the exemption type has been changed
-	 */
-	public function has_exemption_type_changed( $user_id ) {
-		$saved_exemption_type = self::get_saved_exemption_type( $user_id );
-		$new_exemption_type   = $this->get_posted_exemption_type();
-		if ( $new_exemption_type !== $saved_exemption_type ) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * Gets the submitted tax exemption type during user save
 	 *
 	 * @return array|string - value to save
 	 */
 	public function get_posted_exemption_type() {
 		return wc_clean( $_POST['tax_exemption_type'] );
-	}
-
-	/**
-	 * Checks if exempt regions have changed for a user
-	 *
-	 * @param $user_id - Id of user to check
-	 *
-	 * @return bool - Whether or not the exempt regions have changed
-	 */
-	public function have_exempt_regions_changed( $user_id ) {
-		$saved_exempt_regions = self::get_saved_exempt_regions( $user_id );
-		$new_exempt_regions   = $this->get_posted_exempt_regions();
-		if ( $new_exempt_regions !== $saved_exempt_regions ) {
-			return true;
-		}
-
-		return false;
 	}
 
 	/**
@@ -223,28 +194,6 @@ class WC_Taxjar_Customer_Sync {
 		} else {
 			return implode( ',', wc_clean( $_POST['tax_exempt_regions'] ) );
 		}
-	}
-
-	/**
-	 * Gets the exemption type user meta
-	 *
-	 * @param $user_id - ID of user
-	 *
-	 * @return mixed
-	 */
-	public static function get_saved_exemption_type( $user_id ) {
-		return get_user_meta( $user_id, 'tax_exemption_type', true );
-	}
-
-	/**
-	 * Gets the exempt regions user metadata
-	 *
-	 * @param $user_id - ID of user
-	 *
-	 * @return mixed
-	 */
-	public static function get_saved_exempt_regions( $user_id ) {
-		return get_user_meta( $user_id, 'tax_exempt_regions', true );
 	}
 
 	/**
@@ -266,6 +215,44 @@ class WC_Taxjar_Customer_Sync {
 		}
 
 		$result = $record->sync();
+	}
+
+	/**
+	 * Attempts to sync customer to TaxJar when updated through the WooCommerce REST API
+	 *
+	 * @param object $user_data customer data
+	 */
+	function api_customer_updated( $user_data ) {
+		$this->maybe_sync_customer_on_update( $user_data->ID );
+	}
+
+	/**
+	 * Enqueues customer in sync queue when imported or updated through the WooCommerce CSV import suite
+	 *
+	 * @param mixed $id Customer ID
+	 */
+	function csv_customer_import_customer_updated( $id ) {
+		$queue_id = TaxJar_Customer_Record::find_active_in_queue( $id );
+		if ( $queue_id ) {
+			return;
+		}
+
+		$record = new TaxJar_Customer_Record( $id, true );
+		$record->load_object();
+		if ( ! $record->object ) {
+			return;
+		}
+
+		if ( ! apply_filters( 'taxjar_should_sync_customer', $record->should_sync() ) ) {
+			return;
+		}
+
+		$taxjar_last_sync = $record->get_last_sync_time();
+		if ( ! empty( $taxjar_last_sync ) ) {
+			$record->set_status( 'awaiting' );
+		}
+
+		$record->save();
 	}
 
 	/**

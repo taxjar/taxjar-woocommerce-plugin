@@ -31,7 +31,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	/**
 	 * @return string - customer record type
 	 */
-	public function get_record_type() {
+	public static function get_record_type() {
 		return 'customer';
 	}
 
@@ -153,7 +153,7 @@ class TaxJar_Customer_Record extends TaxJar_Record {
 	public function get_data_from_object() {
 		$customer_data = array();
 
-		$customer_data['customer_id']    = $this->get_customer_id();
+		$customer_data['customer_id']    = strval( $this->get_customer_id() );
 		$customer_data['name']           = $this->get_customer_name();
 		$customer_data['exemption_type'] = $this->get_exemption_type();
 		$customer_data['exempt_regions'] = $this->get_exempt_regions();

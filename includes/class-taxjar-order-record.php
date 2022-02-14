@@ -24,7 +24,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 		parent::load_object();
 	}
 
-	public function get_record_type() {
+	public static function get_record_type() {
 		return 'order';
 	}
 
