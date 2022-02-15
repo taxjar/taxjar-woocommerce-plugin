@@ -1,8 +1,17 @@
+# 4.1.1 (2022-02-15)
+* Fix for issue where incorrect tax was applied on shipping when multiple shipping packages were selected
+* Fix to add compatibility for WooCommerce Gift Card plugin
+* Added feature to sync customer to TaxJar when created/updated through WooCommerce REST API
+* Add feature to add customers to sync queue when created/updated through the Customer/Order/Coupon CSV Import Suite
+* Add action after calculating cart totals
+* WooCommerce tested up to 6.2
+* Update minimum WooCommerce version to 5.7
+
 # 4.1.0 (2022-01-19)
 * Add order meta box to give details of calculation and sync statuses
 * Remove usage of deprecated function is_ajax
 * WooCommerce tested up to 6.1
-* Update minimum WordPress version to 5.6
+* Update minimum WooCommerce version to 5.6
 
 # 4.0.2 (2021-12-20)
 * Filter invalid PTCs before creating transactions in TaxJar.
