@@ -78,7 +78,17 @@ class Cart_Tax_Applicator extends Tax_Applicator {
 
 		foreach ( $this->cart->get_cart() as $item_key => $item ) {
 			$total_taxes           = $this->apply_line_total_tax( $item_key, $item );
-			$applied_rate          = empty( $item['line_total'] ) ? 0.0 : reset( $total_taxes ) / wc_add_number_precision( $item['line_total'] );
+			$tax_detail_key		   = $item['product_id'] . '-' . $item_key;
+			$tax_detail_line_item  = $this->tax_details->get_line_item($tax_detail_key);
+
+			if ( empty( $item['line_total'] ) ) {
+				$applied_rate = 0.0;
+			} elseif ( $tax_detail_line_item ) {
+				$applied_rate = $tax_detail_line_item->get_tax_rate();
+			} else {
+				$applied_rate = reset( $total_taxes ) / wc_add_number_precision( $item['line_total'] );
+			}
+
 			$subtotal_taxes        = $this->apply_line_subtotal_tax( $item_key, $item, $applied_rate );
 			$merged_subtotal_taxes = $this->merge_tax_arrays( $merged_subtotal_taxes, $subtotal_taxes );
 			$merged_total_taxes    = $this->merge_tax_arrays( $merged_total_taxes, $total_taxes );

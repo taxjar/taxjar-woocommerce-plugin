@@ -87,7 +87,17 @@ class Order_Tax_Applicator extends Tax_Applicator {
 		$tax_class      = $item->get_tax_class();
 		$total_taxes    = wc_remove_number_precision_deep( $this->tax_builder->get_line_tax( $line_item_key, $tax_class ) );
 		$total_tax      = array_sum( $total_taxes );
-		$applied_rate   = empty( $item->get_total() ) ? 0.0 : $total_tax / $item->get_total();
+
+		$tax_detail_line_item = $this->tax_details->get_line_item($line_item_key);
+
+		if ( empty( $item['line_total'] ) ) {
+			$applied_rate = 0.0;
+		} elseif ( $tax_detail_line_item ) {
+			$applied_rate = $tax_detail_line_item->get_tax_rate();
+		} else {
+			$applied_rate = $total_tax / wc_add_number_precision( $item['line_total'] );
+		}
+
 		$subtotal_taxes = $this->tax_builder->build_line_tax_from_rate( $applied_rate, $item->get_subtotal(), $tax_class );
 		$taxes          = array(
 			'total'    => $total_taxes,
