@@ -137,11 +137,12 @@ class Tax_Builder {
 	 * @param float  $applied_rate Tax rate to apply.
 	 * @param float  $taxable_amount Taxable amount.
 	 * @param string $tax_class Tax class.
+	 * @param bool   $prevent_save Prevent saving rate to WooCommerce
 	 *
 	 * @return array
 	 */
-	public function build_line_tax_from_rate( $applied_rate, $taxable_amount, $tax_class = '' ): array {
-		if ( $this->save_rates_enabled ) {
+	public function build_line_tax_from_rate( $applied_rate, $taxable_amount, $tax_class = '', $prevent_save = false ): array {
+		if ( $this->save_rates_enabled && $prevent_save !== true ) {
 			$woo_rate = $this->create_woocommerce_rate( $applied_rate * 100, $tax_class );
 			$wc_rate  = $this->build_woocommerce_rate( $applied_rate * 100, $woo_rate['id'] );
 		} else {
