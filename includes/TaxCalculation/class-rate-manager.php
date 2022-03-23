@@ -9,6 +9,7 @@
 
 namespace TaxJar;
 
+use TaxJar_Settings;
 use WC_Tax;
 
 if ( ! defined( 'ABSPATH' ) ) {

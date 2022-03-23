@@ -9,6 +9,8 @@
 
 namespace TaxJar;
 
+use Exception;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -175,13 +177,14 @@ class Tax_Details {
 	 * @param string $id Id of line item.
 	 *
 	 * @return bool|mixed
+	 * @throws Exception
 	 */
 	public function get_line_item( $id ) {
 		if ( ! empty( $this->line_items[ $id ] ) ) {
 			return $this->line_items[ $id ];
+		} else {
+			throw new Exception( 'Line item not present in tax details.' );
 		}
-
-		return false;
 	}
 
 	/**

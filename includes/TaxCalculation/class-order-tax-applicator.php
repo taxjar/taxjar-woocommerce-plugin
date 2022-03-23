@@ -82,13 +82,18 @@ class Order_Tax_Applicator extends Tax_Applicator {
 	 * @throws Exception If line item tax data not present in details.
 	 */
 	private function create_rate_and_apply_to_product_line_item( $item_key, $item ) {
-		$product_id     = $item->get_product_id();
-		$line_item_key  = $product_id . '-' . $item_key;
-		$tax_class      = $item->get_tax_class();
-		$total_taxes    = wc_remove_number_precision_deep( $this->tax_builder->get_line_tax( $line_item_key, $tax_class ) );
+		$line_item_key  = $item->get_product_id() . '-' . $item_key;
+		$tax_details_line_item = $this->tax_details->get_line_item( $line_item_key );
+
+		$rate_id = $this->tax_builder->build_woocommerce_tax_rate(
+			$tax_details_line_item->get_tax_rate() * 100,
+			$item->get_tax_class()
+		);
+
+		$total_taxes    = wc_remove_number_precision_deep( $this->tax_builder->get_line_tax( $line_item_key, $rate_id ) );
 		$total_tax      = array_sum( $total_taxes );
 		$applied_rate   = empty( $item->get_total() ) ? 0.0 : $total_tax / $item->get_total();
-		$subtotal_taxes = $this->tax_builder->build_line_tax_from_rate( $applied_rate, $item->get_subtotal(), $tax_class );
+		$subtotal_taxes = $this->tax_builder->build_line_tax_from_rate( $applied_rate, $item->get_subtotal(), $rate_id );
 		$taxes          = array(
 			'total'    => $total_taxes,
 			'subtotal' => $subtotal_taxes,
@@ -113,8 +118,14 @@ class Order_Tax_Applicator extends Tax_Applicator {
 	 */
 	private function apply_fee_tax( $fee_key, $fee ) {
 		$fee_details_id = 'fee-' . $fee_key;
-		$tax_class      = $fee->get_tax_class();
-		$fee_taxes      = wc_remove_number_precision_deep( $this->tax_builder->get_line_tax( $fee_details_id, $tax_class ) );
+
+		$tax_details_line_item = $this->tax_details->get_line_item( $fee_details_id );
+		$rate_id = $this->tax_builder->build_woocommerce_tax_rate(
+			$tax_details_line_item->get_tax_rate() * 100,
+			$fee->get_tax_class()
+		);
+
+		$fee_taxes = wc_remove_number_precision_deep( $this->tax_builder->get_line_tax( $fee_details_id, $rate_id ) );
 		$fee->set_taxes(
 			array(
 				'total' => $fee_taxes,
