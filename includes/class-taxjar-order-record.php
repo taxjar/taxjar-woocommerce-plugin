@@ -1,5 +1,7 @@
 <?php
 
+use Automattic\WooCommerce\Utilities\NumberUtil;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -267,7 +269,7 @@ class TaxJar_Order_Record extends TaxJar_Record {
 				}
 
 				$quantity = $item->get_quantity();
-				$unit_price = $item->get_subtotal() / $quantity;
+				$unit_price = NumberUtil::round( $item->get_subtotal(), wc_get_price_decimals() ) / $quantity;
 				$discount = $item->get_subtotal() - $item->get_total();
 
 				$tax_code = TaxJar_Tax_Calculation::get_tax_code_from_class( $item->get_tax_class() );
