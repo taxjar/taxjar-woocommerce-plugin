@@ -34,7 +34,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		public function __construct() {
 			$this->id                 = 'taxjar-integration';
 			$this->method_title       = __( 'TaxJar', 'wc-taxjar' );
-			$this->method_description = apply_filters( 'taxjar_method_description', __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Connect your TaxJar account and enter the city and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable sales tax reporting to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>. We\'ll get back to you within hours.</b>', 'wc-taxjar' ) );
+			$this->method_description = apply_filters( 'taxjar_method_description', __( 'TaxJar is the easiest to use sales tax calculation and reporting engine for WooCommerce. Connect your TaxJar account and enter the city and zip code from which your store ships. Enable TaxJar calculations to automatically collect sales tax at checkout. You may also enable sales tax reporting to begin importing transactions from this store into your TaxJar account, all in one click!<br><br><b>For the fastest help, please email <a href="mailto:support@taxjar.com">support@taxjar.com</a>.</b>', 'wc-taxjar' ) );
 			$this->integration_uri    = self::$app_uri . 'account/apps/add/woo';
 			$this->debug              = filter_var( $this->get_option( 'debug' ), FILTER_VALIDATE_BOOLEAN );
 			$this->download_orders    = new WC_Taxjar_Download_Orders( $this );

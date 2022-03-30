@@ -468,7 +468,7 @@ class TaxJar_Settings {
 			self::get_section_end_setting(),
 			array(
 				'type' => 'title',
-				'desc' => '<strong>' . __( 'For the fastest help, please email', 'wc-taxjar' ) . ' <a href="mailto:support@taxjar.com">support@taxjar.com</a>. ' . __( "We'll get back to you within hours.", 'wc-taxjar' ),
+				'desc' => '<strong>' . __( 'For the fastest help, please email', 'wc-taxjar' ) . ' <a href="mailto:support@taxjar.com">support@taxjar.com</a>.',
 			),
 			self::get_section_end_setting(),
 			array(
