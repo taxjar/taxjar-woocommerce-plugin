@@ -1,3 +1,9 @@
+# 4.1.2 (2022-03-30)
+* Fix for precision issue when syncing some orders to TaxJar
+* Fix for persisting inaccurate rates in rates table
+* WooCommerce tested up to 6.3
+* Update minimum WooCommerce version to 5.8
+
 # 4.1.1 (2022-02-15)
 * Fix for issue where incorrect tax was applied on shipping when multiple shipping packages were selected
 * Fix to add compatibility for WooCommerce Gift Card plugin
