@@ -20,6 +20,7 @@ class Module_Loader {
 	private $extensions = array(
 		'\TaxJar\WooCommerce_Gift_Cards',
 		'\TaxJar\WooCommerce_Smart_Coupons',
+		'\TaxJar\WooCommerce_PDF_Product_Vouchers',
 	);
 
 	/**
