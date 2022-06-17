@@ -7,6 +7,7 @@
 
 namespace TaxJar;
 
+use TaxJar_Settings;
 use WC_Cart;
 
 /**
@@ -29,6 +30,10 @@ class WooCommerce_PDF_Product_Vouchers extends Module {
 	 * @return void
 	 */
 	public function load() {
+		if ( ! TaxJar_Settings::is_tax_calculation_enabled() ) {
+			return;
+		}
+
 		$redemption_handler = wc_pdf_product_vouchers()->get_redemption_handler_instance();
 
 		remove_filter( 'woocommerce_calculated_total', array( $redemption_handler, 'apply_multi_purpose_vouchers_to_cart' ), 1100 );
