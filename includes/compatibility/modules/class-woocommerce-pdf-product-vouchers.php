@@ -32,7 +32,7 @@ class WooCommerce_PDF_Product_Vouchers extends Module {
 		$redemption_handler = wc_pdf_product_vouchers()->get_redemption_handler_instance();
 
 		remove_filter( 'woocommerce_calculated_total', array( $redemption_handler, 'apply_multi_purpose_vouchers_to_cart' ), 1100 );
-		add_action( 'taxjar_after_calculate_cart_totals', array( $this, 'apply_vouchers' ) );
+		add_action( 'woocommerce_after_calculate_totals', array( $this, 'apply_vouchers' ), 21 );
 	}
 
 	/**
