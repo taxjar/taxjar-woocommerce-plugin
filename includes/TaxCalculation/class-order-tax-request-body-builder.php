@@ -9,6 +9,7 @@
 
 namespace TaxJar;
 
+use TaxJar_Settings;
 use TaxJar_Tax_Calculation;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -41,6 +42,11 @@ class Order_Tax_Request_Body_Builder extends Tax_Request_Body_Builder {
 	 * Get ship to address from order and set on tax request body.
 	 */
 	protected function get_ship_to_address() {
+		if ( $this->has_local_shipping() ) {
+			$this->set_to_address_from_store_address();
+			return;
+		}
+
 		$address = $this->order->get_address( 'shipping' );
 
 		if ( empty( $address['country'] ) ) {
@@ -52,6 +58,38 @@ class Order_Tax_Request_Body_Builder extends Tax_Request_Body_Builder {
 		$this->tax_request_body->set_to_zip( $address['postcode'] );
 		$this->tax_request_body->set_to_city( $address['city'] );
 		$this->tax_request_body->set_to_street( $address['address_1'] );
+	}
+
+	/**
+	 * Determines if order used local shipping shipment method.
+	 *
+	 * @return bool
+	 */
+	protected function has_local_shipping() {
+		if ( true !== apply_filters( 'woocommerce_apply_base_tax_for_local_pickup', true ) ) {
+			return false;
+		}
+
+		$local_shipping_methods = apply_filters( 'woocommerce_local_pickup_methods', array( 'legacy_local_pickup', 'local_pickup' ) );
+		foreach( $local_shipping_methods as $method ) {
+			if ( $this->order->has_shipping_method( $method ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Set to address from store address.
+	 */
+	protected function set_to_address_from_store_address() {
+		$store_settings = TaxJar_Settings::get_store_settings();
+		$this->tax_request_body->set_to_country( $store_settings['country'] );
+		$this->tax_request_body->set_to_state( $store_settings['state'] );
+		$this->tax_request_body->set_to_zip( $store_settings['postcode'] );
+		$this->tax_request_body->set_to_city( $store_settings['city'] );
+		$this->tax_request_body->set_to_street( $store_settings['street'] );
 	}
 
 	/**

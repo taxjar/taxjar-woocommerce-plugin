@@ -22,6 +22,11 @@ class Admin_Order_Tax_Request_Body_Builder extends Order_Tax_Request_Body_Builde
 	 * Get ship to address from $_POST and set on tax request body.
 	 */
 	protected function get_ship_to_address() {
+		if ( $this->has_local_shipping() ) {
+			$this->set_to_address_from_store_address();
+			return;
+		}
+
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
 		$to_country = isset( $_POST['country'] ) ? $this->prepare_field( $_POST['country'] ) : false;
 		$to_state   = isset( $_POST['state'] ) ? $this->prepare_field( $_POST['state'] ) : false;
