@@ -1,3 +1,11 @@
+# 4.1.3 (2022-06-28)
+* Fix conflict with WooCommerce PDF Product Voucher plugin
+* Support local pickup shipping method during calculation on admin and API orders
+* Add Washington D.C. as exemption region
+* Correctly calculate tax on subscription products with updated PTCs
+* WooCommerce tested up to 6.6
+* Update minimum WooCommerce version to 6.0
+
 # 4.1.2 (2022-03-30)
 * Fix for precision issue when syncing some orders to TaxJar
 * Fix for persisting inaccurate rates in rates table
