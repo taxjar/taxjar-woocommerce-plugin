@@ -62,7 +62,7 @@ class Order_Tax_Request_Body_Builder extends Tax_Request_Body_Builder {
 			$request_line_item = array(
 				'id'               => $item->get_product_id() . '-' . $item_key,
 				'quantity'         => $item->get_quantity(),
-				'product_tax_code' => $this->get_line_item_tax_code( $item ),
+				'product_tax_code' => $this->get_product_tax_code( $item ),
 				'unit_price'       => $this->get_line_item_unit_price( $item ),
 				'discount'         => $this->get_line_item_discount_amount( $item ),
 			);
@@ -86,6 +86,27 @@ class Order_Tax_Request_Body_Builder extends Tax_Request_Body_Builder {
 
 			$this->tax_request_body->add_line_item( $request_line_item );
 		}
+	}
+
+	/**
+	 * @param WC_Order_Item_Product $item product line item.
+	 *
+	 * @return string
+	 */
+	protected function get_product_tax_code( $item ) {
+		$product = $item->get_product();
+
+		if ( ! $product ) {
+			return $this->get_line_item_tax_code( $item );
+		}
+
+		$tax_code = TaxJar_Tax_Calculation::get_tax_code_from_class( $product->get_tax_class() );
+
+		if ( 'taxable' !== $product->get_tax_status() ) {
+			$tax_code = '99999';
+		}
+
+		return $tax_code;
 	}
 
 	/**
