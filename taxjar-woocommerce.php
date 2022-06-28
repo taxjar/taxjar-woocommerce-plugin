@@ -125,6 +125,7 @@ final class WC_Taxjar {
 			include_once 'includes/compatibility/class-module-loader.php';
 			include_once 'includes/compatibility/modules/class-woocommerce-gift-cards.php';
 			include_once 'includes/compatibility/modules/class-woocommerce-smart-coupons.php';
+			include_once 'includes/compatibility/modules/class-woocommerce-pdf-product-vouchers.php';
 
 			// Register the integration.
 			add_action( 'woocommerce_integrations_init', array( $this, 'add_integration' ), 20 );
