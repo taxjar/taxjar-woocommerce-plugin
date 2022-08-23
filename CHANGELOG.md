@@ -1,3 +1,7 @@
+# 4.1.4 (2022-08-19)
+* WooCommerce tested up to 6.8.1
+* Update minimum WooCommerce version to 6.2
+
 # 4.1.3 (2022-06-28)
 * Fix conflict with WooCommerce PDF Product Voucher plugin
 * Support local pickup shipping method during calculation on admin and API orders
