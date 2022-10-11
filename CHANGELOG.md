@@ -1,3 +1,7 @@
+# 4.1.5 (2022-10-11)
+* WooCommerce tested up to 7.0.0
+* Update minimum WooCommerce version to 6.4
+
 # 4.1.4 (2022-08-19)
 * WooCommerce tested up to 6.8.1
 * Update minimum WooCommerce version to 6.2
