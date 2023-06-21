@@ -7,11 +7,11 @@ use TaxJar\WooCommerce\TaxCalculation\Block_Flag;
 
 class Test_Block_Flag extends TestCase {
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		Block_Flag::clear_flag();
 		parent::tearDown();
 	}

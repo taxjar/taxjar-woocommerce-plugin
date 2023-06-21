@@ -10,7 +10,7 @@ class Test_Order_Tax_Request_Body_Builder extends WP_UnitTestCase {
 
 	private $order;
 
-	public function setUp() {
+	public function setUp(): void {
 		WC_Tax::create_tax_class( 'Clothing Rate - 20010' );
 		$this->order = TaxJar_Test_Order_Factory::create();
 	}

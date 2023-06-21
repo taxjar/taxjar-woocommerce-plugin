@@ -16,7 +16,7 @@ class Test_Admin_Order_Creation extends WP_UnitTestCase {
 	private $post_values;
 	private $item_parameter;
 
-	public function setUp() {
+	public function setUp(): void {
 		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 
 		$this->post_values = array(
@@ -46,7 +46,7 @@ class Test_Admin_Order_Creation extends WP_UnitTestCase {
 		$this->post_values['order_id'] = $this->test_order->get_id();
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		$this->remove_post_values();
 		unset( $_REQUEST['security'] );
 		remove_filter( 'wp_doing_ajax', array( $this, 'override_doing_ajax' ) );

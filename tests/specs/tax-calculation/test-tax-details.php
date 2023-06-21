@@ -8,7 +8,7 @@ class Test_Tax_Details extends WP_UnitTestCase {
 
 	private $tax_response;
 
-	public function setUp() {
+	public function setUp(): void {
 		$this->tax_response = $this->build_tax_response();
 	}
 

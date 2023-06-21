@@ -10,7 +10,8 @@
   "require-dev": {
     "squizlabs/php_codesniffer": "3.6.0",
     "wp-coding-standards/wpcs": "2.3.0",
-    "phpunit/phpunit": "7.5.20"
+    "phpunit/phpunit": "^9",
+		"yoast/phpunit-polyfills": "^2.0"
   },
   "scripts": {
     "post-install-cmd": [
@@ -19,5 +20,10 @@
     "post-update-cmd": [
       "\"vendor/bin/phpcs\" --config-set installed_paths vendor/wp-coding-standards/wpcs"
     ]
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true
+    }
   }
 }

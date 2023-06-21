@@ -132,7 +132,7 @@ abstract class WP_HTTP_TestCase extends WP_UnitTestCase {
 	/**
 	 * @since 1.3.0
 	 */
-	public static function setUpBeforeClass() {
+	public static function setUpBeforeClass(): void {
 
 		if ( ! self::$did_init ) {
 			self::init();
@@ -144,7 +144,7 @@ abstract class WP_HTTP_TestCase extends WP_UnitTestCase {
 	/**
 	 * @since 1.3.1
 	 */
-	public static function tearDownAfterClass() {
+	public static function tearDownAfterClass(): void {
 
 		self::save_cache();
 
@@ -156,7 +156,7 @@ abstract class WP_HTTP_TestCase extends WP_UnitTestCase {
 	 *
 	 * @since 1.0.0
 	 */
-	public function setUp() {
+	public function setUp(): void {
 
 		parent::setUp();
 
@@ -174,7 +174,7 @@ abstract class WP_HTTP_TestCase extends WP_UnitTestCase {
 	 *
 	 * @since 1.0.0
 	 */
-	public function tearDown() {
+	public function tearDown(): void {
 
 		parent::tearDown();
 

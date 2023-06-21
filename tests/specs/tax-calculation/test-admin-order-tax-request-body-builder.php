@@ -9,11 +9,11 @@ class Test_Admin_Order_Tax_Request_Body_Builder extends WP_UnitTestCase {
 
 	private $order;
 
-	public function setUp() {
+	public function setUp(): void {
 		$this->order = TaxJar_Test_Order_Factory::create();
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		unset( $_POST['country'] );
 		unset( $_POST['state'] );
 		unset( $_POST['city'] );

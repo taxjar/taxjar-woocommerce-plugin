@@ -8,7 +8,7 @@ class Test_Tax_Request_Body extends WP_UnitTestCase {
 
 	private $request_body;
 
-	public function setUp() {
+	public function setUp(): void {
 		$this->request_body = new Tax_Request_Body();
 		$this->request_body->set_to_zip( '11111' );
 		$this->request_body->set_to_country( 'US' );

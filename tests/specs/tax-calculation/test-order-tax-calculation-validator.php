@@ -16,14 +16,14 @@ class Test_Order_Tax_Calculation_Validator extends WP_UnitTestCase {
 	private $mock_tax_request_body;
 	private $mock_nexus;
 
-	public function setUp() {
+	public function setUp(): void {
 		$this->mock_order = $this->createMock( WC_Order::class );
 		$this->mock_order->method( 'get_subtotal' )->willReturn( 1.0 );
 		$this->mock_tax_request_body = $this->createMock( Tax_Request_Body::class );
 		$this->mock_nexus            = $this->createMock( \WC_Taxjar_Nexus::class );
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		remove_filter( 'taxjar_should_calculate_order_tax', array( $this, 'filter_interrupt' ) );
 	}
 

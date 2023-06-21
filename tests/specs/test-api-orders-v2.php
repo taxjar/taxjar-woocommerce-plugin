@@ -10,7 +10,7 @@ class TJ_WC_Tests_API_Orders_V2 extends TJ_WC_REST_Unit_Test_Case {
 	/**
 	 * Set up fixture before each test
 	 */
-	function setUp() {
+	function setUp(): void {
 		parent::setUp();
 
 		// WooCommerce REST API V2
@@ -24,7 +24,7 @@ class TJ_WC_Tests_API_Orders_V2 extends TJ_WC_REST_Unit_Test_Case {
 	/**
 	 * Clean up after each test
 	 */
-	function tearDown() {
+	function tearDown(): void {
 		parent::tearDown();
 	}
 

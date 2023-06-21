@@ -19,7 +19,7 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 	private $mock_validator;
 	private $mock_tax_result_data_store;
 
-	public function setUp() {
+	public function setUp(): void {
 		$this->mock_request_body = $this->createMock( Tax_Request_Body::class );
 		$this->mock_request_body->method( 'get_to_country' )->willReturn( 'US' );
 		$this->mock_request_body->method( 'get_to_state' )->willReturn( 'UT' );

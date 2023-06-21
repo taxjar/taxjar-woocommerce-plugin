@@ -1,7 +1,7 @@
 <?php
 class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 
-	function setUp() {
+	function setUp(): void {
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 
 		$this->tj = TaxJar();

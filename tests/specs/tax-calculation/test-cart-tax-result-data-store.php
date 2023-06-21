@@ -6,7 +6,7 @@ use WP_UnitTestCase;
 
 class Test_Cart_Tax_Result_Data_Store extends WP_UnitTestCase {
 
-	public function tearDown() {
+	public function tearDown(): void {
 		WC()->cart->empty_cart();
 		unset( WC()->cart->tax_calculation_results );
 		parent::tearDown();

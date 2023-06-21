@@ -1,7 +1,7 @@
 <?php
 class TJ_WC_Actions extends WP_UnitTestCase {
 
-	function setUp() {
+	function setUp(): void {
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 		$this->tj = TaxJar();
 
@@ -20,7 +20,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 	}
 
-	function tearDown() {
+	function tearDown(): void {
 		global $wpdb;
 
 		// Empty the cart
