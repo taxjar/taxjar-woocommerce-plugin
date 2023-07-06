@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
+
 class WC_Taxjar_Transaction_Sync {
 
 	const PROCESS_QUEUE_HOOK = 'taxjar_process_queue';
@@ -308,8 +310,8 @@ class WC_Taxjar_Transaction_Sync {
 			return;
 		}
 
-		$post_type = get_post_type( $id );
-		if ( 'shop_order' != $post_type ) {
+		$order_type = OrderUtil::get_order_type( $id );;
+		if ( 'shop_order' != $order_type ) {
 			return;
 		}
 
@@ -344,7 +346,7 @@ class WC_Taxjar_Transaction_Sync {
 	 * @param int $post_id - post id of order
 	 */
 	public function maybe_delete_transaction_from_taxjar( $post_id ) {
-		if ( 'shop_order' != get_post_type( $post_id ) ) {
+		if ( 'shop_order' != OrderUtil::get_order_type( $post_id ) ) {
 			return;
 		}
 
@@ -389,7 +391,7 @@ class WC_Taxjar_Transaction_Sync {
 	 * @param int $post_id - post id of refund
 	 */
 	public function maybe_delete_refund_from_taxjar( $post_id ) {
-		if ( 'shop_order_refund' != get_post_type( $post_id ) ) {
+		if ( 'shop_order_refund' != OrderUtil::get_order_type( $post_id ) ) {
 			return;
 		}
 
@@ -596,35 +598,70 @@ class WC_Taxjar_Transaction_Sync {
 
 		$should_validate_completed_date = WC_Taxjar_Transaction_Sync::should_validate_order_completed_date();
 
-		if ( $force ) {
-			$query = "SELECT p.id FROM {$wpdb->posts} AS p ";
+		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			// HPOS usage is enabled.
+			if ( $force ) {
+				$query = "SELECT o.id FROM {$wpdb->wc_orders} AS o ";
 
-			if ( $should_validate_completed_date ) {
-				$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+				if ( $should_validate_completed_date ) {
+					$query .= "INNER JOIN {$wpdb->wc_orders_meta} AS order_meta_completed_date ON ( o.id = order_meta_completed_date.order_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+				}
+
+				$query .= "WHERE o.type = 'shop_order' AND o.status IN {$post_status_string} AND o.date_created_gmt >= '{$start_date}' AND o.date_created_gmt < '{$end_date}' ";
+
+				if ( $should_validate_completed_date ) {
+					$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
+				}
+
+				$query .= "ORDER BY o.date_created_gmt ASC";
+			} else {
+				$query = "SELECT o.id FROM {$wpdb->wc_orders} AS o ";
+
+				if ( $should_validate_completed_date ) {
+					$query .= "INNER JOIN {$wpdb->wc_orders_meta} AS order_meta_completed_date ON ( o.id = order_meta_completed_date.order_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+				}
+
+				$query .= "LEFT JOIN {$wpdb->wc_order_meta} AS order_meta_last_sync ON ( o.id = order_meta_last_sync.order_id ) AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' ) ";
+				$query .= "WHERE o.type = 'shop_order' AND o.status IN {$post_status_string} AND o.date_created_gmt >= '{$start_date}' AND o.date_created_gmt < '{$end_date}' ";
+
+				if ( $should_validate_completed_date ) {
+					$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
+				}
+
+				$query .= "AND ((order_meta_last_sync.meta_value IS NULL) OR (o.date_updated_gmt > order_meta_last_sync.meta_value)) ORDER BY o.date_created_gmt ASC";
 			}
-
-			$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
-
-			if ( $should_validate_completed_date ) {
-				$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
-			}
-
-			$query .= "ORDER BY p.post_date ASC";
 		} else {
-			$query = "SELECT p.id FROM {$wpdb->posts} AS p ";
+			// Traditional CPT-based orders are in use.
+			if ( $force ) {
+				$query = "SELECT p.id FROM {$wpdb->posts} AS p ";
 
-			if ( $should_validate_completed_date ) {
-				$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+				if ( $should_validate_completed_date ) {
+					$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+				}
+
+				$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
+
+				if ( $should_validate_completed_date ) {
+					$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
+				}
+
+				$query .= "ORDER BY p.post_date ASC";
+			} else {
+				$query = "SELECT p.id FROM {$wpdb->posts} AS p ";
+
+				if ( $should_validate_completed_date ) {
+					$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
+				}
+
+				$query .= "LEFT JOIN {$wpdb->postmeta} AS order_meta_last_sync ON ( p.id = order_meta_last_sync.post_id ) AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' ) ";
+				$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
+
+				if ( $should_validate_completed_date ) {
+					$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
+				}
+
+				$query .= "AND ((order_meta_last_sync.meta_value IS NULL) OR (p.post_modified_gmt > order_meta_last_sync.meta_value)) ORDER BY p.post_date ASC";
 			}
-
-			$query .= "LEFT JOIN {$wpdb->postmeta} AS order_meta_last_sync ON ( p.id = order_meta_last_sync.post_id ) AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' ) ";
-			$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
-
-			if ( $should_validate_completed_date ) {
-				$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
-			}
-
-			$query .= "AND ((order_meta_last_sync.meta_value IS NULL) OR (p.post_modified_gmt > order_meta_last_sync.meta_value)) ORDER BY p.post_date ASC";
 		}
 
 		$posts = $wpdb->get_results( $query, ARRAY_N );
@@ -649,8 +686,22 @@ class WC_Taxjar_Transaction_Sync {
 		global $wpdb;
 		$order_ids_string = implode( ',', $order_ids );
 
-		$posts = $wpdb->get_results(
-			"
+		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			// HPOS usage is enabled.
+			$posts = $wpdb->get_results(
+				"
+			SELECT o.id
+			FROM {$wpdb->wc_orders} AS o
+			WHERE o.type = 'shop_order_refund'
+			AND o.status = 'wc-completed'
+			AND o.parent IN ( {$order_ids_string} )
+			ORDER BY o.date_created_gmt ASC
+			", ARRAY_N
+			);
+		} else {
+			// Traditional CPT-based orders are in use.
+			$posts = $wpdb->get_results(
+				"
 			SELECT p.id
 			FROM {$wpdb->posts} AS p
 			WHERE p.post_type = 'shop_order_refund'
@@ -658,7 +709,8 @@ class WC_Taxjar_Transaction_Sync {
 			AND p.post_parent IN ( {$order_ids_string} )
 			ORDER BY p.post_date ASC
 			", ARRAY_N
-		);
+			);
+		}
 
 		if ( empty( $posts ) ) {
 			return array();

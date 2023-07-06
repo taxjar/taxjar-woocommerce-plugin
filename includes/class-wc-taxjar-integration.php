@@ -7,6 +7,8 @@
  * @author   TaxJar
  */
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
+
 if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 
 	class WC_Taxjar_Integration extends WC_Settings_API {
@@ -200,8 +202,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		private function on_edit_order_page() {
 			global $pagenow;
 			if ( 'post.php' === $pagenow ) {
-				$post = get_post( $_GET['post'] );
-				if ( $this->is_order_post_type( $post->post_type ) ) {
+				if ( $this->is_order_post_type( OrderUtil::get_order_type($_GET['post']) ) ) {
 					return true;
 				}
 			}
