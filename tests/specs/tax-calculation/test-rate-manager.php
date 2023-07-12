@@ -17,7 +17,7 @@ class Test_Rate_Manager extends WP_UnitTestCase {
 	private $freight_taxable;
 	private $location;
 
-	public function setUp() {
+	public function setUp(): void {
 		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 		WC_Tax::create_tax_class( 'Clothing Rate - 20010' );
 

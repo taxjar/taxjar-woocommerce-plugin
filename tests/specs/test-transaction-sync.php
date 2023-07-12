@@ -5,7 +5,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	public $synced_order_ids = [];
 	public $synced_refund_ids = [];
 
-	function setUp() {
+	function setUp(): void {
 		parent::setUp();
 
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
@@ -26,7 +26,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$wpdb->query( "DELETE FROM {$wpdb->prefix}taxjar_record_queue;" );
 	}
 
-	function tearDown() {
+	function tearDown(): void {
 		parent::tearDown();
 
 		WC_Taxjar_Record_Queue::clear_queue();
@@ -1207,8 +1207,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$updated_order->save();
 
 		$orders_to_backfill = $this->tj->transaction_sync->get_orders_to_backfill();
-		$this->assertContains( $order->get_id(), $orders_to_backfill );
-		$this->assertContains( $updated_order->get_id(), $orders_to_backfill );
+		$this->assertContainsEquals( $order->get_id(), $orders_to_backfill );
+		$this->assertContainsEquals( $updated_order->get_id(), $orders_to_backfill );
 	}
 
 	function test_get_all_active_record_ids_in_queue() {
@@ -1235,8 +1235,8 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$active_records = array_map( function( $record ) {
 			return $record['record_id'];
 		}, $active_records );
-		$this->assertContains( $order->get_id(), $active_records );
-		$this->assertContains( $updated_order->get_id(), $active_records );
+		$this->assertContainsEquals( $order->get_id(), $active_records );
+		$this->assertContainsEquals( $updated_order->get_id(), $active_records );
 	}
 
 	function test_transaction_backfill() {
@@ -1426,16 +1426,16 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 
 		$orders_to_backfill = $this->tj->transaction_sync->get_orders_to_backfill();
 		$refunds_to_backfill = $this->tj->transaction_sync->get_refunds_to_backfill( $orders_to_backfill );
-		$this->assertContains( $refund->get_id(), $refunds_to_backfill );
+		$this->assertContainsEquals( $refund->get_id(), $refunds_to_backfill );
 		$this->assertNotContains( $synced_order_refund->get_id(), $refunds_to_backfill );
-		$this->assertContains( $updated_order_refund->get_id(), $refunds_to_backfill );
+		$this->assertContainsEquals( $updated_order_refund->get_id(), $refunds_to_backfill );
 		$this->assertNotContains( $noncomplete_order_refund->get_id(), $refunds_to_backfill );
 
 		$orders_to_backfill = $this->tj->transaction_sync->get_orders_to_backfill( null, null, true );
 		$refunds_to_backfill = $this->tj->transaction_sync->get_refunds_to_backfill( $orders_to_backfill );
-		$this->assertContains( $refund->get_id(), $refunds_to_backfill );
-		$this->assertContains( $synced_order_refund->get_id(), $refunds_to_backfill );
-		$this->assertContains( $updated_order_refund->get_id(), $refunds_to_backfill );
+		$this->assertContainsEquals( $refund->get_id(), $refunds_to_backfill );
+		$this->assertContainsEquals( $synced_order_refund->get_id(), $refunds_to_backfill );
+		$this->assertContainsEquals( $updated_order_refund->get_id(), $refunds_to_backfill );
 		$this->assertNotContains( $noncomplete_order_refund->get_id(), $refunds_to_backfill );
 	}
 

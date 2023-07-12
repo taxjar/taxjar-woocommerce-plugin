@@ -12,15 +12,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Test_Tax_Builder extends WP_UnitTestCase {
 
-	public static function setUpBeforeClass() {
+	public static function setUpBeforeClass(): void {
 		WC_Tax::create_tax_class( 'test_class' );
 	}
 
-	public function setUp() {
+	public function setUp(): void {
 		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		TaxJar_Woocommerce_Helper::update_taxjar_settings( array( 'save_rates' => 'no' ) );
 	}
 

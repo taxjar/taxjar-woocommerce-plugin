@@ -16,7 +16,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	/**
 	 * Sets up the fixture before each test
 	 */
-	function setUp() {
+	function setUp(): void {
 
 		parent::setUp();
 
@@ -62,7 +62,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	/**
 	 * Cleans up after each test
 	 */
-	function tearDown() {
+	function tearDown(): void {
 		parent::tearDown();
 		global $wp_rest_server;
 		unset( $this->server );
@@ -71,7 +71,7 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		Constants_Manager::clear_constants();
 	}
 
-	static function tearDownAfterClass() {
+	static function tearDownAfterClass(): void {
 		global $wpdb;
 
 		$wpdb->query( "DELETE FROM {$wpdb->prefix}woocommerce_order_itemmeta;" );

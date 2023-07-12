@@ -3,14 +3,14 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 
 	public $tj;
 
-	function setUp() {
+	function setUp(): void {
 		parent::setUp();
 
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 		$this->tj = TaxJar();
 	}
 
-	function tearDown() {
+	function tearDown(): void {
 		parent::tearDown();
 		WC_Taxjar_Record_Queue::clear_queue();
 	}

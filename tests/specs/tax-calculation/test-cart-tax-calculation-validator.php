@@ -15,12 +15,12 @@ class Test_Cart_Tax_Calculation_Validator extends WP_UnitTestCase {
 	private $nexus_stub;
 	private $tax_request_body_stub;
 
-	public function setUp() {
+	public function setUp(): void {
 		$this->nexus_stub = $this->createMock( WC_Taxjar_Nexus::class );
 		$this->tax_request_body_stub = $this->createMock( Tax_Request_Body::class );
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		remove_all_filters( 'taxjar_should_calculate_cart_tax' );
 	}
 

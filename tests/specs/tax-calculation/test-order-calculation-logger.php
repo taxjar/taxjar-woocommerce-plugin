@@ -16,7 +16,7 @@ class Test_Order_Calculation_Logger extends WP_UnitTestCase {
 	private $test_order;
 	private $mock_wc_logger;
 
-	public function setUp() {
+	public function setUp(): void {
 		$this->test_order     = TaxJar_Test_Order_Factory::create();
 		$this->mock_wc_logger = $this->createMock( 'WC_Logger' );
 	}

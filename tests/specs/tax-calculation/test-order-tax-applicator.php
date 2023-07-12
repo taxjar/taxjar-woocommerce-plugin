@@ -21,7 +21,7 @@ class Test_Order_Tax_Applicator extends WP_UnitTestCase {
 	private $shipping_tax_rate;
 	private $is_shipping_taxable;
 
-	public function setUp() {
+	public function setUp(): void {
 		TaxJar_Woocommerce_Helper::delete_existing_tax_rates();
 
 		$this->order               = TaxJar_Test_Order_Factory::create_zero_tax_order();

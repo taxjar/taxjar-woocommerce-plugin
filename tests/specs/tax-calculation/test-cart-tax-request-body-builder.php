@@ -15,7 +15,7 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 
 	private $test_exemption_type;
 
-	public function tearDown() {
+	public function tearDown(): void {
 		update_option( 'woocommerce_tax_based_on', 'shipping' );
 		remove_filter( 'taxjar_cart_exemption_type', array( $this, 'add_test_exemption_type' ) );
 	}

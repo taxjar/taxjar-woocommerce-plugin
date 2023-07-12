@@ -13,12 +13,12 @@ abstract class Cart_Integration_Test extends WP_UnitTestCase {
 
 	protected $cart_builder;
 
-	public function setUp() {
+	public function setUp(): void {
 		Constants::set_constant( 'WOOCOMMERCE_CART', true );
 		parent::setUp();
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		Constants::clear_single_constant( 'WOOCOMMERCE_CART' );
 		parent::tearDown();
 	}

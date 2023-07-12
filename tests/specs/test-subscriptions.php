@@ -8,7 +8,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 
 	protected $factory;
 
-	function setUp() {
+	function setUp(): void {
 
 		parent::setUp();
 
@@ -56,7 +56,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 		Constants_Manager::set_constant( 'REST_REQUEST', true );
 	}
 
-	function tearDown() {
+	function tearDown(): void {
 		// Empty the cart
 		WC()->cart->empty_cart();
 		TaxJar_Woocommerce_Helper::update_taxjar_settings( array( 'api_calcs_enabled' => 'yes' ) );

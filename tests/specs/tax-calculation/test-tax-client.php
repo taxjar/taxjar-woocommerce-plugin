@@ -10,13 +10,13 @@ class Test_Tax_Client extends WP_UnitTestCase {
 
 	private $response;
 
-	public function setUp() {
+	public function setUp(): void {
 		parent::setUp();
 		$this->response = false;
 		add_filter( 'pre_http_request', array( $this, 'override_http_response' ), 10, 3 );
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		parent::tearDown();
 		remove_filter( 'pre_http_request', array( $this, 'override_http_response' ), 10 );
 	}

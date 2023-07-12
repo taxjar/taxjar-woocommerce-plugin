@@ -15,14 +15,14 @@ class Test_Tax_Calculator_Builder extends WP_UnitTestCase {
 	private $builder;
 	private $should_calculate_tax;
 
-	public function setUp() {
+	public function setUp(): void {
 		$this->order                = $this->createMock( WC_Order::class );
 		$this->builder              = new Tax_Calculator_Builder();
 		$this->should_calculate_tax = false;
 		add_filter( 'wp_doing_ajax', array( $this, 'override_doing_ajax' ) );
 	}
 
-	public function tearDown() {
+	public function tearDown(): void {
 		unset( $_POST['action'] );
 		unset( $_REQUEST['security'] );
 		remove_filter( 'wp_doing_ajax', array( $this, 'override_doing_ajax' ) );
