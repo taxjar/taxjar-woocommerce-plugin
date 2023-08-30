@@ -21,7 +21,7 @@ class WC_Taxjar_Nexus {
 		$desc_text = '';
 		//$desc_text .= '<h3>Nexus Information</h3>';
 
-		if ( count( $this->nexus ) > 0 ) {
+		if ( !is_null( $this->nexus ) && count( $this->nexus ) > 0 ) {
 			$desc_text .= '<p>Sales tax will be calculated on orders delivered into the following regions: </p>';
 
 			foreach ( $this->nexus as $key => $nexus ) {
