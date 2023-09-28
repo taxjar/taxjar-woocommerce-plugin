@@ -1,3 +1,8 @@
+# 4.2.0 (2023-09-27)
+* WooCommerce tested up to 7.8.0
+* Updates needed for HPOS compliance
+* Flag as HPOS-enabled
+
 # 4.1.5 (2022-10-11)
 * WooCommerce tested up to 7.0.0
 * Update minimum WooCommerce version to 6.4
