@@ -1,3 +1,7 @@
+# 4.2.1 (2023-10-04)
+* WooCommerce tested up to 8.1.0
+* WordPress 6.3.1 tested
+
 # 4.2.0 (2023-09-27)
 * WooCommerce tested up to 7.8.0
 * Updates needed for HPOS compliance
