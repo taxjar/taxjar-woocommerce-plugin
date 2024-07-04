@@ -9,6 +9,8 @@
 
 namespace TaxJar;
 
+use Automattic\WooCommerce\Utilities\OrderUtil;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -34,10 +36,24 @@ class Admin_Meta_Boxes {
 				'taxjar',
 				__( 'TaxJar', 'taxjar' ),
 				'\TaxJar\Order_Meta_Box::output',
-				$type,
+				$this->get_page_screen_id( $type ),
 				'normal',
 				'low'
 			);
 		}
+	}
+
+	/**
+	 * Get the id of the page where the meta box will be displayed.
+	 *
+	 * @param string $order_type The order type.
+	 * @return string
+	 */
+	private function get_page_screen_id( $order_type ) {
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
+			return wc_get_page_screen_id( $order_type );
+		}
+
+		return $order_type;
 	}
 }

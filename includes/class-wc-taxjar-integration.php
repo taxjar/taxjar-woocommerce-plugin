@@ -61,13 +61,13 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		}
 
 		/**
-         * Get the regions API endpoint URI
-         *
+		 * Get the regions API endpoint URI.
+		 *
 		 * @return string
 		 */
 		public static function get_regions_uri() {
-		    return self::$app_uri . 'account#states';
-        }
+			return self::$app_uri . 'account#states';
+		}
 
 		/**
 		 * Prints debug info to wp-content/uploads/wc-logs/taxjar-*.log
@@ -124,19 +124,19 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			$data     = wp_parse_args( $data, $defaults );
 			ob_start();
 			?>
-		<tr valign="top">
-			<th scope="row" class="titledesc">
-			<label for="<?php echo esc_attr( $field ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></label>
-			<?php echo $this->get_tooltip_html( $data ); ?>
-			</th>
-			<td class="forminp">
-			<fieldset>
-				<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
-				<button class="<?php echo esc_attr( $data['class'] ); ?>" type="button" name="<?php echo esc_attr( $field ); ?>" id="<?php echo esc_attr( $field ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); ?>><?php echo wp_kses_post( $data['title'] ); ?></button>
-				<?php echo $this->get_description_html( $data ); ?>
-			</fieldset>
-			</td>
-		</tr>
+			<tr valign="top">
+				<th scope="row" class="titledesc">
+					<label for="<?php echo esc_attr( $field ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></label>
+					<?php echo $this->get_tooltip_html( $data ); ?>
+				</th>
+				<td class="forminp">
+					<fieldset>
+						<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
+						<button class="<?php echo esc_attr( $data['class'] ); ?>" type="button" name="<?php echo esc_attr( $field ); ?>" id="<?php echo esc_attr( $field ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); ?>><?php echo wp_kses_post( $data['title'] ); ?></button>
+						<?php echo $this->get_description_html( $data ); ?>
+					</fieldset>
+				</td>
+			</tr>
 			<?php
 			return ob_get_clean();
 		}
@@ -176,7 +176,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		 * @return boolean
 		 */
 		public function on_order_page() {
-			return $this->on_new_order_page() || $this->on_edit_order_page();
+			return $this->on_new_order_page() || $this->on_edit_order_page() || $this->on_hpos_order_page();
 		}
 
 		/**
@@ -219,6 +219,19 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		private function is_order_post_type( $post_type ) {
 			$allowed_post_types = array( 'shop_order', 'shop_subscription' );
 			return in_array( $post_type, $allowed_post_types, true );
+		}
+
+		/**
+		 * Checks if the current page is the HPOS admin order page.
+		 *
+		 * @return bool
+		 */
+		private function on_hpos_order_page() {
+			$allowed_order_pages = array( 'new', 'edit' );
+			if ( ! isset( $_GET['page'] ) || sanitize_text_field( wp_unslash( $_GET['page'] ) ) !== 'wc-orders' || ! isset( $_GET['action'] ) ) {
+				return false;
+			}
+			return in_array( sanitize_text_field( wp_unslash( $_GET['action'] ) ), $allowed_order_pages, true );
 		}
 
 		/**
