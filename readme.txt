@@ -95,24 +95,24 @@ Our plans come with filings included, with additional filings available for purc
 
 == Changelog ==
 
-= 4.2.1 (2023-10-04)
+= 4.2.1 (2023-10-04) =
 * WooCommerce tested up to 8.1.0
 * WordPress 6.3.1 tested
 
-= 4.2.0 (2023-09-27)
+= 4.2.0 (2023-09-27) =
 * WooCommerce tested up to 7.8.0
 * Updates needed for HPOS compliance
 * Flag as HPOS-enabled
 
-= 4.1.5 (2022-10-11)
+= 4.1.5 (2022-10-11) =
 * WooCommerce tested up to 7.0.0
 * Update minimum WooCommerce version to 6.4
 
-= 4.1.4 (2022-08-19)
+= 4.1.4 (2022-08-19) =
 * WooCommerce tested up to 6.8.1
 * Update minimum WooCommerce version to 6.2
 
-= 4.1.3 (2022-06-28)
+= 4.1.3 (2022-06-28) =
 * Fix conflict with WooCommerce PDF Product Voucher plugin
 * Support local pickup shipping method during calculation on admin and API orders
 * Add Washington D.C. as exemption region
@@ -120,13 +120,13 @@ Our plans come with filings included, with additional filings available for purc
 * WooCommerce tested up to 6.6
 * Update minimum WooCommerce version to 6.0
 
-= 4.1.2 (2022-03-30)
+= 4.1.2 (2022-03-30) =
 * Fix for precision issue when syncing some orders to TaxJar
 * Fix for persisting inaccurate rates in rates table
 * WooCommerce tested up to 6.3
 * Update minimum WooCommerce version to 5.8
 
-= 4.1.1 (2022-02-15)
+= 4.1.1 (2022-02-15) =
 * Fix for issue where incorrect tax was applied on shipping when multiple shipping packages were selected
 * Fix to add compatibility for WooCommerce Gift Card plugin
 * Added feature to sync customer to TaxJar when created/updated through WooCommerce REST API
@@ -135,21 +135,21 @@ Our plans come with filings included, with additional filings available for purc
 * WooCommerce tested up to 6.2
 * Update minimum WooCommerce version to 5.7
 
-= 4.1.0 (2022-01-19)
+= 4.1.0 (2022-01-19) =
 * Add order meta box to give details of calculation and sync statuses
 * Remove usage of deprecated function is_ajax
 * WooCommerce tested up to 6.1
 * Update minimum WordPress version to 5.6
 
-= 4.0.2 (2021-12-20)
+= 4.0.2 (2021-12-20) =
 * Filter invalid PTCs before creating transactions in TaxJar.
 * Fix floating point precision issue causing transactions to be rejected by the TaxJar API.
 
-= 4.0.1 (2021-11-19)
+= 4.0.1 (2021-11-19) =
 * Change dynamic tax rate ID to 999999999 to help prevent issues with 3rd parties ingesting exported WooCommerce order data
 * Fix issue where shipping was still utilizing dynamic tax rate when the save rates setting was enabled.
 
-= 4.0.0 (2021-11-11)
+= 4.0.0 (2021-11-11) =
 * Refactor cart tax calculation to stop calculation events from triggering twice
 * Fix issue with tax calculation on dynamically created products and variations
 * Fix issue where in some cases fees did not use correct product tax codes during calculation
@@ -157,23 +157,23 @@ Our plans come with filings included, with additional filings available for purc
 * Update minimum WooCommerce version to 5.4
 * WooCommerce tested up to version 5.9
 
-= 3.3.0 (2021-09-02)
+= 3.3.0 (2021-09-02) =
 * Fix php warning when store settings are not set
 * Update minimum WordPress version to 5.4
 * Update minimum WooCommerce version to 5.1
 * WooCommerce tested up to version 5.6
 * Update minimum PHP version to 7.0
 
-= 3.2.11 (2021-07-23)
+= 3.2.11 (2021-07-23) =
 * Fix fatal error when no line items present on tax response.
 
-= 3.2.10 (2021-06-17)
+= 3.2.10 (2021-06-17) =
 * Minor transaction sync performance improvement.
 
-= 3.2.9 (2021-06-07)
+= 3.2.9 (2021-06-07) =
 * Add support for tax calculation in WooCommerce cart and checkout blocks.
 
-= 3.2.8 (2021-05-27)
+= 3.2.8 (2021-05-27) =
 * Fix tax calculation issues on fee only orders when created in admin dashboard or through Woo REST API.
 * Fix tax calculation on orders with only shipping in admin dashboard or when created through Woo REST API.
 * Fix incorrect tax rate application on orders with multiple line items using the same product tax code when different rates should be applied to each item.
@@ -188,76 +188,76 @@ Our plans come with filings included, with additional filings available for purc
 * Add unit and integration tests to cover order tax calculation.
 * WooCommerce 5.3.0 support
 
-= 3.2.7 (2021-04-29)
+= 3.2.7 (2021-04-29) =
 * WooCommerce 5.2.2 Support
 * Remove Action Scheduler Library
 
-= 3.2.6 (2021-03-23)
+= 3.2.6 (2021-03-23) =
 * WooCommerce 5.1.0 Support
 * Fix double subscription tax display issue
 * Move calculation functions and settings functions into separate classes
 
-= 3.2.5 (2021-01-28)
+= 3.2.5 (2021-01-28) =
 * Prevent tax calculation for orders with $0 total
 * Add x-api-version header to TaxJar API requests
 * WooCommerce 4.9.2 support
 
-= 3.2.4 (2020-12-15)
+= 3.2.4 (2020-12-15) =
 * Fix occasional missing PTC from subscription orders
 * Fix issues that prevented exempt customers from syncing to TaxJar
 * WooCommerce 4.8.0 and WordPress 5.6 support
 
-= 3.2.3 (2020-09-28)
+= 3.2.3 (2020-09-28) =
 * Add filter to nexus check
 * Decouple tax calculation and transaction sync settings
 
-= 3.2.2 (2020-09-02)
+= 3.2.2 (2020-09-02) =
 * Fix international store address validation
 * Fix synchronized renewal non applicable message
 
-= 3.2.1 (2020-07-09)
+= 3.2.1 (2020-07-09) =
 * Fix for undefined settings issue
 * Fix for wrong shipping rates
 * Increment supported WooCommerce version to 4.3.0
 * Increase minimum WooCommerce version to 3.2.0
 
-= 3.2.0 (2020-05-28)
+= 3.2.0 (2020-05-28) =
 * Add support for tax calculation on orders created through WooCommerce REST API V2 & V3
 * Include plugin parameter for requests to TaxJar API
 * Increment supported WooCommerce version to 4.1.1
 
-= 3.1.1 (2020-05-15)
+= 3.1.1 (2020-05-15) =
 * Update WordPress listing content
 * Fix bad link in connect TaxJar notification
 * Fix TaxJar product exemption codes being altered before sending to TaxJar
 
-= 3.1.0 (2020-04-10)
+= 3.1.0 (2020-04-10) =
 * Update to settings page using SmartCalcs Connect
 * Update User Agent header for requests to TaxJar
 * Prevent unnecessary logging when tax calculation not required
 * Fix orders created through the WooCommerce API with a fee not syncing
 * Confirm compatibility with WooCommerce 4.0.1 and WordPress 5.4.0
 
-= 3.0.15 (2020-03-11)
+= 3.0.15 (2020-03-11) =
 * Ensure referer and user permissions are validated for ajax methods
 * Confirm compatibility with WooCommerce 4.0
 
-= 3.0.14 (2020-01-29)
+= 3.0.14 (2020-01-29) =
 * Ensure no extra actions are scheduled and clean up unnecessary actions
 
-= 3.0.13 (2020-01-28)
+= 3.0.13 (2020-01-28) =
 * Update queue processing to fully support Action Scheduler 3.0
 * Alter queue processing to handle scheduled actions that fail or timeout
 
-= 3.0.12 (2020-01-06)
+= 3.0.12 (2020-01-06) =
 * Update supported WooCommerce version to 3.9.0
 * Add filter to disable date validation on transaction sync
 
-= 3.0.11 (2019-11-25)
+= 3.0.11 (2019-11-25) =
 * Fix Action Scheduler load order
 * Update WooCommerce supported version to 3.8.0
 
-= 3.0.10 (2019-10-04)
+= 3.0.10 (2019-10-04) =
 * Fix record stuck in awaiting status in sync queue
 * Display last sync error in sync queue
 * Clear regions not in nexus from rate table when nexus is updated
@@ -266,28 +266,28 @@ Our plans come with filings included, with additional filings available for purc
 * Display batch ID in sync queue table
 * Handle unexpected exemptions during sync
 
-= 3.0.9 (2019-09-18)
+= 3.0.9 (2019-09-18) =
 * Update validation to support new TaxJar product categories
 * Fix missing filter on refund reference IDs
 
-= 3.0.8 (2019-09-06)
+= 3.0.8 (2019-09-06) =
 * Fix deregister functionality to sent correct store URL
 * Remove deregister upon API key update
 
-= 3.0.7 (2019-08-29)
+= 3.0.7 (2019-08-29) =
 * Fix record sync when product does not exist
 
-= 3.0.6 (2019-08-28)
+= 3.0.6 (2019-08-28) =
 * Add filter to enabled altering of customer data before sync
 * Fix naming of filter to determine if customer should sync
 
-= 3.0.5 (2019-08-21)
+= 3.0.5 (2019-08-21) =
 * Fix installation issue on multi sites
 
-= 3.0.4 (2019-08-20)
+= 3.0.4 (2019-08-20) =
 * Fix issue where order can sync without having previously been completed in certain circumstances
 
-= 3.0.3 (2019-08-20)
+= 3.0.3 (2019-08-20) =
 * Added transaction sync order push to TaxJar
 * Added customer sync to TaxJar
 * Full support for product exemptions
@@ -303,22 +303,22 @@ Our plans come with filings included, with additional filings available for purc
 * Add filters to allow altering of request data before syncing orders and refunds
 * Add hooks to allow setting of order level exemptions during tax calculation and order syncing
 
-= 2.3.1 (2019-08-12)
+= 2.3.1 (2019-08-12) =
 * Tested up to WooCommerce 3.7
 * Tested up to WordPress 5.2.2
 * Fix rate lookup when state field contains a space
 * Added filters for line items during rate calculations
 
-= 2.3.0 (2019-05-16)
+= 2.3.0 (2019-05-16) =
 * Added full support for WooCommerce Subscriptions
 * Fix performance issue with recalculating shipping
 
-= 2.2.0 (2019-04-25)
+= 2.2.0 (2019-04-25) =
 * Tested up to WooCommerce 3.6.2
 * Fix exemption not applying to large quantity exempt line items
 * Add zip code validation before sending SmartCalcs API request
 
-= 2.1.0 (2019-04-04)
+= 2.1.0 (2019-04-04) =
 * Tested up to WooCommerce 3.5
 * Compatibility support for WooCommerce Smart Coupons
 * Add filters / actions for custom overrides of plugin functionality
