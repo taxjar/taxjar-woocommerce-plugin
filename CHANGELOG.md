@@ -1,3 +1,9 @@
+# 4.2.2 (2024-08-01)
+* WooCommerce tested up to 8.1.0
+* WordPress 6.6.1 tested
+* Fix for two HPOS related issues
+* Small improvement for the readme
+
 # 4.2.1 (2023-10-04)
 * WooCommerce tested up to 8.1.0
 * WordPress 6.3.1 tested
