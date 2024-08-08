@@ -29,6 +29,11 @@ class Order_Meta_Box {
 	public static function output( $post ) {
 		$order_id = $post->ID;
 		$order    = wc_get_order( $order_id );
+
+		if ( empty( $order ) ) {
+			return;
+		}
+
 		$metadata = self::get_order_tax_calculation_metadata( $order );
 		wp_enqueue_script( 'accordion' );
 
