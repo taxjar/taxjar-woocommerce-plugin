@@ -25,14 +25,10 @@ class Order_Meta_Box {
 	 * Output meta box contents.
 	 *
 	 * @param mixed $post WP Post.
+	 * @param array $additional_data Additional data.
 	 */
-	public static function output( $post ) {
-		$order_id = $post->ID;
-		$order    = wc_get_order( $order_id );
-
-		if ( empty( $order ) ) {
-			return;
-		}
+	public static function output( $post, $additional_data ) {
+		$order = $additional_data['args']['order'];
 
 		$metadata = self::get_order_tax_calculation_metadata( $order );
 		wp_enqueue_script( 'accordion' );
