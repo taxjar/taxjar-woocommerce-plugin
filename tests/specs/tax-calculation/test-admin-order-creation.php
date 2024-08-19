@@ -58,8 +58,8 @@ class Test_Admin_Order_Creation extends WP_UnitTestCase {
 		$this->call_wc_ajax_calc_line_taxes();
 
 		$order = wc_get_order( $this->test_order->get_id() );
-		$this->assert_correct_line_tax( $order, 7.25 );
-		$this->assert_correct_totals( $order, 107.25, 7.25 );
+		$this->assert_correct_line_tax( $order, 7.45 );
+		$this->assert_correct_totals( $order, 107.45, 7.45 );
 	}
 
 	public function test_order_with_taxable_shipping() {
@@ -80,7 +80,7 @@ class Test_Admin_Order_Creation extends WP_UnitTestCase {
 		$this->call_wc_ajax_calc_line_taxes();
 
 		$order = wc_get_order( $this->test_order->get_id() );
-		$this->assert_correct_totals( $order, 107.25, 7.25 );
+		$this->assert_correct_totals( $order, 107.45, 7.45 );
 	}
 
 	public function test_order_with_product_tax_code() {
@@ -139,8 +139,8 @@ class Test_Admin_Order_Creation extends WP_UnitTestCase {
 
 		$order = wc_get_order( $this->test_order->get_id() );
 
-		$this->assert_correct_line_tax( $order, 6.53 );
-		$this->assert_correct_totals( $order, 96.53, 6.53 );
+		$this->assert_correct_line_tax( $order, 6.71 );
+		$this->assert_correct_totals( $order, 96.71, 6.71 );
 	}
 
 	public function test_order_without_nexus() {

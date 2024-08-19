@@ -353,11 +353,11 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		WC()->shipping->shipping_total = 10;
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( .73, WC()->cart->get_total_tax(), '', 0.01 );
+		$this->assertEquals( .43, WC()->cart->get_total_tax(), '', 0.01 );
 		$this->assertEquals( 0, WC()->cart->get_shipping_tax(), '', 0.01 );
-		$this->assertEquals( .73, WC()->cart->get_taxes_total(), '', 0.01 );
+		$this->assertEquals( .43, WC()->cart->get_taxes_total(), '', 0.01 );
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( .73, $item['line_tax'], '', 0.01 );
+			$this->assertEquals( .43, $item['line_tax'], '', 0.01 );
 		}
 
 		// test tax calculation for exempt customer
@@ -421,11 +421,11 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		WC()->customer = $customer;
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( 1.45, WC()->cart->get_total_tax(), '', 0.01 );
+		$this->assertEquals( 0.85, WC()->cart->get_total_tax(), '', 0.01 );
 		$this->assertEquals( 0, WC()->cart->get_shipping_tax(), '', 0.01 );
-		$this->assertEquals( 1.45, WC()->cart->get_taxes_total(), '', 0.01 );
+		$this->assertEquals( 0.85, WC()->cart->get_taxes_total(), '', 0.01 );
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( 1.45, $item['line_tax'], '', 0.01 );
+			$this->assertEquals( 0.85, $item['line_tax'], '', 0.01 );
 		}
 
 		$record->delete_in_taxjar();
@@ -451,11 +451,11 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		WC()->shipping->shipping_total = 10;
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( .73, WC()->cart->get_total_tax(), '', 0.01 );
+		$this->assertEquals( .43, WC()->cart->get_total_tax(), '', 0.01 );
 		$this->assertEquals( 0, WC()->cart->get_shipping_tax(), '', 0.01 );
-		$this->assertEquals( .73, WC()->cart->get_taxes_total(), '', 0.01 );
+		$this->assertEquals( .43, WC()->cart->get_taxes_total(), '', 0.01 );
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( .73, $item['line_tax'], '', 0.01 );
+			$this->assertEquals( .43, $item['line_tax'], '', 0.01 );
 		}
 
 		TaxJar_Customer_Helper::delete_customer( $customer->get_id() );

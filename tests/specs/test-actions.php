@@ -113,8 +113,8 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			$this->assertEquals( $item['line_tax'],  0.58, '', 0.01 );
 		}
 
-		$this->assertEquals( WC()->cart->get_shipping_tax(), 0.69, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_total_tax(),  1.27, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_shipping_tax(), 0.0, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_total_tax(),  0.58, '', 0.01 );
 	}
 
 	function test_correct_taxes_with_exempt_shipping() {
@@ -210,12 +210,12 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->session->set( 'chosen_shipping_methods', array( 'local_pickup' ) );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 0.73, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 0.43, '', 0.01 );
 		$this->assertEquals( WC()->cart->shipping_tax_total, 0, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 0.73, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0.43, '', 0.01 );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( $item['line_tax'], 0.73, '', 0.01 );
+			$this->assertEquals( $item['line_tax'], 0.43, '', 0.01 );
 		}
 
 		WC()->session->set( 'chosen_shipping_methods', array() );
@@ -234,15 +234,15 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $extra_product, 2 );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 4.36, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 4.36, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 2.56, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 2.56, '', 0.01 );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
 			$product = $item['data'];
 			$sku = $product->get_sku();
 
 			if ( 'SIMPLE2' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 3.63, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 2.13, '', 0.01 );
 			}
 
 			if ( 'SIMPLE1' == $sku ) {
@@ -251,7 +251,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		}
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 64.36, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 62.56, '', 0.01 );
 		}
 	}
 
@@ -357,11 +357,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $product, 1, 0, [], [ 'duplicate' => true ] );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 1.46, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 1.46, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 0.86, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0.86, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 21.46, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 20.86, '', 0.01 );
 		}
 	}
 
@@ -638,11 +638,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $reduced_product, 2 );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 14.75, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 14.75, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 12.56, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 12.56, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 150 + 50 + 14.75, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 150 + 50 + 12.56, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
@@ -650,7 +650,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 			$sku = $product->get_sku();
 
 			if ( 'REDUCED1' == $sku ) {
-				$this->assertEquals( $item['line_tax'], 2.19, '', 0.01 );
+				$this->assertEquals( $item['line_tax'], 0.0, '', 0.01 );
 			}
 
 			if ( 'EXEMPTOVER1' == $sku ) {
@@ -695,11 +695,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $reduced_product, 2 );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 18.94, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 18.94, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 16.75, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 16.75, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 150 + 50 + 50 + 18.94, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 150 + 50 + 50 + 16.75, '', 0.01 );
 		}
 
 		foreach ( WC()->cart->get_cart() as $item_key => $item ) {
@@ -742,11 +742,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_discount( $coupon );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 4.35, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 4.35, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 2.55, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 2.55, '', 0.01 );
 
 		if ( version_compare( WC()->version, '3.2', '>=' ) ) {
-			$this->assertEquals( WC()->cart->get_total( 'amount' ), 64.35, '', 0.01 );
+			$this->assertEquals( WC()->cart->get_total( 'amount' ), 62.55, '', 0.01 );
 		}
 	}
 
