@@ -107,10 +107,10 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$order    = wc_get_order( $data['id'] );
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( 0.73, $order->get_total_tax(), '', 0.01 );
+		$this->assertEquals( 0.75, $order->get_total_tax(), '', 0.01 );
 
 		foreach ( $order->get_items() as $item ) {
-			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
+			$this->assertEquals( 0.75, $item->get_total_tax(), '', 0.01 );
 		}
 	}
 
@@ -225,14 +225,14 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$order    = wc_get_order( $data['id'] );
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( 7.98, $order->get_total_tax(), '', 0.01 );
+		$this->assertEquals( 8.2, $order->get_total_tax(), '', 0.01 );
 
 		foreach ( $order->get_items() as $item ) {
-			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
+			$this->assertEquals( 0.75, $item->get_total_tax(), '', 0.01 );
 		}
 
 		foreach ( $order->get_fees() as $fee ) {
-			$this->assertEquals( 7.25, $fee->get_total_tax() );
+			$this->assertEquals( 7.45, $fee->get_total_tax() );
 		}
 	}
 
@@ -267,10 +267,10 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		$order    = wc_get_order( $data['id'] );
 
 		$this->assertEquals( 201, $response->get_status() );
-		$this->assertEquals( 0.73, $order->get_total_tax(), '', 0.01 );
+		$this->assertEquals( 0.75, $order->get_total_tax(), '', 0.01 );
 
 		foreach ( $order->get_items() as $item ) {
-			$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
+			$this->assertEquals( 0.75, $item->get_total_tax(), '', 0.01 );
 		}
 
 		foreach ( $order->get_fees() as $fee ) {
@@ -312,10 +312,10 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 		foreach ( $data['create'] as $order_response ) {
 			$order = wc_get_order( $order_response['id'] );
 
-			$this->assertEquals( 0.73, $order->get_total_tax(), '', 0.01 );
+			$this->assertEquals( 0.75, $order->get_total_tax(), '', 0.01 );
 
 			foreach ( $order->get_items() as $item ) {
-				$this->assertEquals( 0.73, $item->get_total_tax(), '', 0.01 );
+				$this->assertEquals( 0.75, $item->get_total_tax(), '', 0.01 );
 			}
 		}
 	}
