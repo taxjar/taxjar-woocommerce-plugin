@@ -1,3 +1,7 @@
+# 4.2.3 (2024-08-19)
+* RUN_TJPLAT-1732 - Fix test failures
+* #258 Stop displaying the metabox when the order can't be found
+
 # 4.2.2 (2024-08-01)
 * WooCommerce tested up to 8.1.0
 * WordPress 6.6.1 tested
