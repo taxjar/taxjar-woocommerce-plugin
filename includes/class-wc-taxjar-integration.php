@@ -15,6 +15,16 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 
 		protected static $_instance = null;
 
+		/* Define props to avoid php 8.x dynamic prop deprecation warnings. */
+		public $tax_calculations;
+		public $method_title;
+		public $method_description;
+		public $integration_uri;
+		public $debug;
+		public $module_loader;
+		public $customer_sync;
+		public $transaction_sync;
+		public $download_orders;
 		public static $app_uri = 'https://app.taxjar.com/';
 
 		/**
