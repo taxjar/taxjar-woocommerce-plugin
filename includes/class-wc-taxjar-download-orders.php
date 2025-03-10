@@ -11,6 +11,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_Taxjar_Download_Orders {
 
+	/* Define props to avoid php 8.x dynamic prop deprecation warnings. */
+	public $integration;
+	public $taxjar_download;
+
 	public function __construct( $integration ) {
 		$this->integration      = $integration;
 		$this->taxjar_download  = filter_var( $this->integration->get_option( 'taxjar_download' ), FILTER_VALIDATE_BOOLEAN );
