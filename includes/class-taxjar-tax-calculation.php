@@ -19,6 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class TaxJar_Tax_Calculation {
 
+	/* Define props to avoid php 8.x dynamic prop deprecation warnings. */
+	public $cache_time;
+
 	public function __construct() {
 		// Cache rates for 1 hour.
 		$this->cache_time = HOUR_IN_SECONDS;
