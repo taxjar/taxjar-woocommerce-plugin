@@ -1,6 +1,21 @@
 <?php
 class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 
+	/**
+	 * @var WC_Taxjar_Integration
+	 */
+	public $tj;
+
+	/**
+	 * @var WC_Taxjar_Nexus
+	 */
+	public $tj_nexus;
+
+	/**
+	 * @var string
+	 */
+	public $cache_key;
+
 	function setUp(): void {
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 
@@ -23,7 +38,8 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		delete_transient( $this->cache_key );
 		$this->assertEquals( get_transient( $this->cache_key ), false );
 		$this->tj_nexus->get_or_update_cached_nexus();
-		$this->assertTrue( count( get_transient( $this->cache_key ) ) > 0 );
+		$transient_data = get_transient( $this->cache_key );
+		$this->assertTrue( is_array( $transient_data ) && count( $transient_data ) > 0 );
 	}
 
 	function test_or_get_update_cached_nexus_expiration() {
@@ -31,13 +47,14 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		$this->assertEquals( get_transient( $this->cache_key ), false );
 		set_transient( $this->cache_key, array(), -0.5 * DAY_IN_SECONDS );
 		$this->tj_nexus->get_or_update_cached_nexus();
-		$this->assertTrue( count( get_transient( $this->cache_key ) ) > 0 );
+		$transient_data = get_transient( $this->cache_key );
+		$this->assertTrue( is_array( $transient_data ) && count( $transient_data ) > 0 );
 	}
 
 	function test_or_get_update_cached_nexus_valid() {
 		delete_transient( $this->cache_key );
 		$nexus_list = $this->tj_nexus->get_or_update_cached_nexus();
-		$this->assertTrue( count( $nexus_list ) > 0 );
+		$this->assertTrue( is_array( $nexus_list ) && count( $nexus_list ) > 0 );
 		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 	}
 
@@ -71,11 +88,11 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		$original_api_token = $this->tj->settings['api_token'];
 		$this->tj->settings['api_token'] = 'INVALID_OR_EXPIRED_API_TOKEN';
 		$nexus_list = $this->tj_nexus->get_or_update_cached_nexus();
-		$this->assertTrue( count( $nexus_list ) == 0 );
+		$this->assertTrue( is_array( $nexus_list ) && count( $nexus_list ) == 0 );
 		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 		$this->tj->settings['api_token'] = $original_api_token;
 		$nexus_list = $this->tj_nexus->get_or_update_cached_nexus( true );
-		$this->assertTrue( count( $nexus_list ) > 0 );
+		$this->assertTrue( is_array( $nexus_list ) && count( $nexus_list ) > 0 );
 		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 	}
 
