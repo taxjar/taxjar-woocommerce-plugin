@@ -81,10 +81,12 @@ class TJ_WC_Class_Nexus extends WP_UnitTestCase {
 		$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 
 		// Ensure nexus response is cached on 401 / 403 errors
-		// Requires manually syncing nexus addresses from admin to resolve
+		// After our fix, error strings are converted to empty arrays before caching
 		for ( $x = 0; $x < 5; $x++ ) {
 			$nexus_list = $this->tj_nexus->get_or_update_cached_nexus();
-			$this->assertEquals( get_transient( $this->cache_key ), 'Unauthorized' );
+			$cached_data = get_transient( $this->cache_key );
+			$this->assertTrue( is_array( $cached_data ) );
+			$this->assertTrue( count( $cached_data ) == 0 );
 			$this->assertTrue( $this->tj_nexus->has_nexus_check( 'US', 'CO' ) );
 		}
 	}
