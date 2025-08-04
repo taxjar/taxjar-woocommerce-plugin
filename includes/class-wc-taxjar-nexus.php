@@ -137,6 +137,10 @@ class WC_Taxjar_Nexus {
 
 		if ( false === $response ) {
 			$response = $this->get_nexus_from_api();
+			// Don't cache error strings - cache empty array instead
+			if ( self::INVALID_OR_EXPIRED_API_TOKEN === $response ) {
+				$response = array();
+			}
 			set_transient( $cache_key, $response, 0.5 * DAY_IN_SECONDS );
 		}
 
