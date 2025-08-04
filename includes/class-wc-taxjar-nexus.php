@@ -13,6 +13,11 @@ class WC_Taxjar_Nexus {
 
 	const INVALID_OR_EXPIRED_API_TOKEN = 'Unauthorized';
 
+	/**
+	 * @var array
+	 */
+	public $nexus;
+
 	public function __construct( ) {
 		$this->nexus = $this->get_or_update_cached_nexus();
 	}
@@ -21,7 +26,8 @@ class WC_Taxjar_Nexus {
 		$desc_text = '';
 		//$desc_text .= '<h3>Nexus Information</h3>';
 
-		if ( count( $this->nexus ) > 0 ) {
+		// Ensure nexus is an array before counting
+		if ( is_array( $this->nexus ) && count( $this->nexus ) > 0 ) {
 			$desc_text .= '<p>Sales tax will be calculated on orders delivered into the following regions: </p>';
 
 			foreach ( $this->nexus as $key => $nexus ) {
@@ -55,6 +61,11 @@ class WC_Taxjar_Nexus {
 		$from_state       = $store_settings['state'];
 
 		$nexus_areas = $this->get_or_update_cached_nexus();
+
+		// Ensure nexus_areas is an array
+		if ( ! is_array( $nexus_areas ) ) {
+			$nexus_areas = array();
+		}
 
 		array_push(
 			$nexus_areas,

@@ -18,6 +18,51 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		public static $app_uri = 'https://app.taxjar.com/';
 
 		/**
+		 * @var string
+		 */
+		public $method_title;
+
+		/**
+		 * @var string
+		 */
+		public $method_description;
+
+		/**
+		 * @var string
+		 */
+		public $integration_uri;
+
+		/**
+		 * @var bool
+		 */
+		public $debug;
+
+		/**
+		 * @var WC_Taxjar_Download_Orders
+		 */
+		public $download_orders;
+
+		/**
+		 * @var WC_Taxjar_Transaction_Sync
+		 */
+		public $transaction_sync;
+
+		/**
+		 * @var WC_Taxjar_Customer_Sync
+		 */
+		public $customer_sync;
+
+		/**
+		 * @var \TaxJar\Module_Loader
+		 */
+		public $module_loader;
+
+		/**
+		 * @var TaxJar_Tax_Calculation
+		 */
+		public $tax_calculations;
+
+		/**
 		 * Main TaxJar Integration Instance.
 		 * Ensures only one instance of TaxJar Integration is loaded or can be loaded.
 		 *
