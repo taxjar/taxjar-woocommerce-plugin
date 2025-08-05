@@ -16,7 +16,6 @@ class TaxJar_Woocommerce_Helper {
 		WC()->session->set( 'customer', null );
 		WC()->session->set( 'chosen_shipping_methods', array() );
 		WC()->cart->remove_coupons();
-		WC()->shipping->shipping_total = 0;
 		WC()->shipping->reset_shipping();
 
 		// Ensure default is tax based on shipping

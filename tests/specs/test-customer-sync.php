@@ -350,7 +350,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		WC()->cart->add_to_cart( $product );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 10;
+		WC()->cart->set_shipping_total( 10 );
 		WC()->cart->calculate_totals();
 
 		$this->assertEquals( .43, WC()->cart->get_total_tax(), '', 0.01 );
@@ -388,7 +388,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		WC()->cart->add_to_cart( $product );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 10;
+		WC()->cart->set_shipping_total( 10 );
 
 		// test tax calculation for exempt customer
 		$customer = TaxJar_Customer_Helper::create_exempt_customer();
@@ -417,7 +417,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		WC()->cart->empty_cart();
 		WC()->cart->add_to_cart( $product, 2 );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 10;
+		WC()->cart->set_shipping_total( 10 );
 		WC()->customer = $customer;
 		WC()->cart->calculate_totals();
 
@@ -448,7 +448,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		WC()->cart->add_to_cart( $product );
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 10;
+		WC()->cart->set_shipping_total( 10 );
 		WC()->cart->calculate_totals();
 
 		$this->assertEquals( .43, WC()->cart->get_total_tax(), '', 0.01 );

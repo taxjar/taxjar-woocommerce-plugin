@@ -38,6 +38,11 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		public $debug;
 
 		/**
+		 * @var WC_Logger
+		 */
+		public $log;
+
+		/**
 		 * @var WC_Taxjar_Download_Orders
 		 */
 		public $download_orders;

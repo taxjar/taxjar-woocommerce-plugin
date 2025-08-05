@@ -318,7 +318,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 		WC()->cart->add_to_cart( $exempt_product );
 
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 10;
+		WC()->cart->set_shipping_total( 10 );
 
 		WC()->cart->calculate_totals();
 

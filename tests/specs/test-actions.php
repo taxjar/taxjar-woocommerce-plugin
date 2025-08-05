@@ -1,6 +1,11 @@
 <?php
 class TJ_WC_Actions extends WP_UnitTestCase {
 
+	/**
+	 * @var WC_Taxjar_Integration
+	 */
+	public $tj;
+
 	function setUp(): void {
 		TaxJar_Woocommerce_Helper::prepare_woocommerce();
 		$this->tj = TaxJar();
@@ -132,7 +137,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $product );
 
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 5;
+		WC()->cart->set_shipping_total( 5 );
 
 		WC()->cart->calculate_totals();
 
@@ -173,7 +178,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$taxable_product_item_key = WC()->cart->add_to_cart( $taxable_product );
 
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 10;
+		WC()->cart->set_shipping_total( 10 );
 
 		WC()->cart->calculate_totals();
 
@@ -321,7 +326,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 10;
+		WC()->cart->set_shipping_total( 10 );
 
 		WC()->cart->calculate_totals();
 
@@ -1099,7 +1104,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->add_to_cart( $product );
 
 		WC()->session->set( 'chosen_shipping_methods', array( 'flat_rate' ) );
-		WC()->shipping->shipping_total = 5;
+		WC()->cart->set_shipping_total( 5 );
 
 		WC()->cart->calculate_totals();
 
