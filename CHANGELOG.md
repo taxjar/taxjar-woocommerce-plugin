@@ -1,3 +1,9 @@
+# 4.2.4 (2025-08-05)
+* PHP 8.x deprecation fixes
+* Nexus check bugfix when not an array
+* WooCommerce tested up to 10.0.4
+* WordPress 6.8.2 tested
+
 # 4.2.3 (2024-08-19)
 * RUN_TJPLAT-1732 - Fix test failures
 * #258 Stop displaying the metabox when the order can't be found
