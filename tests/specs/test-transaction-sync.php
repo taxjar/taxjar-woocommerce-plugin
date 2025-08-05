@@ -5,6 +5,11 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	public $synced_order_ids = [];
 	public $synced_refund_ids = [];
 
+	/**
+	 * @var WC_Taxjar_Integration
+	 */
+	public $tj;
+
 	function setUp(): void {
 		parent::setUp();
 

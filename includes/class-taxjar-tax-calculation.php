@@ -19,6 +19,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class TaxJar_Tax_Calculation {
 
+	/**
+	 * @var int
+	 */
+	public $cache_time;
+
 	public function __construct() {
 		// Cache rates for 1 hour.
 		$this->cache_time = HOUR_IN_SECONDS;

@@ -14,6 +14,11 @@ class TJ_WC_REST_Unit_Test_Case extends WP_HTTP_TestCase {
 	protected $order_endpoint;
 
 	/**
+	 * @var WC_Taxjar_Integration
+	 */
+	public $tj;
+
+	/**
 	 * Sets up the fixture before each test
 	 */
 	function setUp(): void {

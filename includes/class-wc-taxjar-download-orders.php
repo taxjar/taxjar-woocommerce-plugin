@@ -11,6 +11,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class WC_Taxjar_Download_Orders {
 
+	/**
+	 * @var WC_Taxjar_Integration
+	 */
+	public $integration;
+
+	/**
+	 * @var bool
+	 */
+	public $taxjar_download;
+
 	public function __construct( $integration ) {
 		$this->integration      = $integration;
 		$this->taxjar_download  = filter_var( $this->integration->get_option( 'taxjar_download' ), FILTER_VALIDATE_BOOLEAN );

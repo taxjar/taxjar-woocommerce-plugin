@@ -20,6 +20,11 @@ class WC_Taxjar_Transaction_Sync {
 	public $taxjar_integration;
 
 	/**
+	 * @var WC_Logger
+	 */
+	public $log;
+
+	/**
 	 * Constructor for class
 	 */
 	public function __construct( $integration ) {
