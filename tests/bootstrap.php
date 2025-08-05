@@ -7,6 +7,7 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	public $tests_dir;
 	public $plugins_dir;
 	public $test_wp_dir;
+	public $plugin_dir;
 	public $api_token;
 
 	public function __construct() {
@@ -51,7 +52,12 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
-		include_once $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+
+		// Load WooCommerce Subscriptions if available
+		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+		if ( file_exists( $subscriptions_file ) ) {
+			include_once $subscriptions_file;
+		}
 	}
 
 	public function install_wc() {
