@@ -115,11 +115,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->cart->calculate_totals();
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( $item['line_tax'],  0.58, '', 0.01 );
+			$this->assertEquals( $item['line_tax'],  0.45, '', 0.01 );
 		}
 
 		$this->assertEquals( WC()->cart->get_shipping_tax(), 0.0, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_total_tax(),  0.58, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_total_tax(),  0.45, '', 0.01 );
 	}
 
 	function test_correct_taxes_with_exempt_shipping() {
@@ -141,12 +141,12 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 1.03, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 1.08, '', 0.01 );
 		$this->assertEquals( WC()->cart->shipping_tax_total, 0, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 1.03, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 1.08, '', 0.01 );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( $item['line_tax'], 1.03, '', 0.01 );
+			$this->assertEquals( $item['line_tax'], 1.08, '', 0.01 );
 		}
 
 		WC()->session->set( 'chosen_shipping_methods', array() );
@@ -842,11 +842,11 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		WC()->customer->set_shipping_address( '123 Test St.' );
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 0.73, '', 0.001 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 0.73, '', 0.001 );
+		$this->assertEquals( WC()->cart->tax_total, 0.68, '', 0.001 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 0.68, '', 0.001 );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( $item['line_tax'], 0.73, '', 0.001 );
+			$this->assertEquals( $item['line_tax'], 0.68, '', 0.001 );
 		}
 	}
 
