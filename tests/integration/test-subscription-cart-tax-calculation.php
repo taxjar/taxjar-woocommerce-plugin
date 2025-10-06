@@ -8,6 +8,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Test_Subscription_Cart_Tax_Calculation extends Cart_Integration_Test {
 
+	public function setUp(): void {
+		parent::setUp();
+
+		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
+			$this->markTestSkipped( 'WooCommerce Subscriptions plugin is required' );
+		}
+	}
+
 	/**
 	 * @dataProvider get_subscription_cart_test_data
 	 */

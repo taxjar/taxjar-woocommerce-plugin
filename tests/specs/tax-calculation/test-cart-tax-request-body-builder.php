@@ -140,6 +140,13 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 	 * @param array $coupons
 	 */
 	public function test_line_item( array $products, array $coupons = []) {
+		// Skip if any product requires subscriptions
+		foreach( $products as $product ) {
+			if ( $product['product']['type'] === 'subscription' && ! class_exists( 'WC_Product_Subscription' ) ) {
+				$this->markTestSkipped( 'WooCommerce Subscriptions plugin is required' );
+			}
+		}
+
 		WC_Tax::create_tax_class( 'clothing-rate-20010' );
 		$cart_builder = Cart_Builder::a_cart();
 		foreach( $products as $key => $product ) {
