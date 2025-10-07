@@ -2,6 +2,7 @@
 * WooCommerce tested up to 10.2.2
 * WordPress 6.8.3 tested
 * #272 Fix test failures due to live tax rate changes and skip subscription tests when plugin not available
+* #274 Fix connect flow UI bug
 
 # 4.2.4 (2025-08-05)
 * PHP 8.x deprecation fixes
