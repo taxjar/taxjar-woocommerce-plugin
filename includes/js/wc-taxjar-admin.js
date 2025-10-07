@@ -50,7 +50,15 @@ jQuery( document ).ready( function() {
 					window.popup.postMessage( 'Data received', woocommerce_taxjar_admin.app_url );
 					$( '#woocommerce_taxjar-integration_settings\\[api_token\\]' ).val( data.api_token );
 					$( '#woocommerce_taxjar-integration_settings\\[connected_email\\]' ).val( data.email );
-					$( '#mainform .woocommerce-save-button' ).click();
+					var $saveBtn = $('#mainform .woocommerce-save-button');
+					if ($saveBtn.length) {
+					  $saveBtn
+					    .prop('disabled', false)
+					    .removeAttr('disabled')
+					    .removeClass('disabled')
+					    .attr('aria-disabled', 'false');
+					}
+					$saveBtn.click();
 				} else {
 					throw 'Invalid data';
 				}
