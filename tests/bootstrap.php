@@ -25,13 +25,9 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 
 		require dirname( dirname( __FILE__ ) ) . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
-		// Manually load pluggable.php before WooCommerce to ensure wp_create_nonce()
-		// and wp_register_script_module() are available for WC 8.x and 10.x
-		// This allows us to use muplugins_loaded for all WC versions
-		require_once $this->wp_tests_dir . '/../src/wp-includes/pluggable.php';
-
-		// load WC on muplugins_loaded now that pluggable functions are available
-		tests_add_filter( 'muplugins_loaded', array( $this, 'load_wc' ) );
+		// load WC on plugins_loaded to ensure WordPress is fully bootstrapped
+		// This ensures pluggable functions and ActionScheduler are available
+		tests_add_filter( 'plugins_loaded', array( $this, 'load_wc' ) );
 
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
