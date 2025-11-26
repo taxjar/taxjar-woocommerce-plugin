@@ -83,53 +83,23 @@ steps:
   - label: ":test_tube: PHPUnit - WooCommerce {{matrix}}"
     key: "phpunit-wc-matrix"
     depends_on: "phpcs"
+    env:
+      # Load version configuration from matrix-config.json
+      WC_VERSION_KEY: "{{matrix}}"
     command: |
-      set -euo pipefail
-
       # Load version configuration for this matrix value
-      WC_VERSION=$(jq -r ".versions.\"{{matrix}}\".woocommerce" .buildkite/matrix-config.json)
-      PHP_VERSION=$(jq -r ".versions.\"{{matrix}}\".php" .buildkite/matrix-config.json)
-      WP_VERSION=$(jq -r ".versions.\"{{matrix}}\".wordpress" .buildkite/matrix-config.json)
+      export WC_VERSION=$(jq -r ".versions.\"$WC_VERSION_KEY\".woocommerce" .buildkite/matrix-config.json)
+      export PHP_VERSION=$(jq -r ".versions.\"$WC_VERSION_KEY\".php" .buildkite/matrix-config.json)
+      export WP_VERSION=$(jq -r ".versions.\"$WC_VERSION_KEY\".wordpress" .buildkite/matrix-config.json)
 
       echo "--- :gear: Test Configuration"
-      echo "Matrix: {{matrix}}"
-      echo "WooCommerce: \$WC_VERSION"
-      echo "PHP: \$PHP_VERSION"
-      echo "WordPress: \$WP_VERSION"
+      echo "Matrix: $WC_VERSION_KEY"
+      echo "WooCommerce: $WC_VERSION"
+      echo "PHP: $PHP_VERSION"
+      echo "WordPress: $WP_VERSION"
 
-      # Export for docker-compose
-      export WC_VERSION
-      export PHP_VERSION
-      export WP_VERSION
-      export COMPOSE_PROJECT_NAME="taxjar-wc-{{matrix}}-\${BUILDKITE_BUILD_NUMBER}"
-
-      # Ensure test results directory exists
-      mkdir -p .buildkite/test-results
-
-      echo "--- :docker: Starting test environment"
-      cd .buildkite
-      docker-compose -f docker-compose.test.yml up -d
-
-      # Wait for WordPress to be ready
-      echo "--- :hourglass: Waiting for WordPress..."
-      timeout 180 bash -c 'until docker-compose -f docker-compose.test.yml exec -T wordpress curl -sf http://localhost/wp-admin/install.php > /dev/null; do sleep 2; done' || {
-        echo "❌ WordPress failed to start after 180 seconds"
-        echo "--- WordPress container logs:"
-        docker-compose -f docker-compose.test.yml logs wordpress
-        echo "--- MySQL container logs:"
-        docker-compose -f docker-compose.test.yml logs mysql
-        docker-compose -f docker-compose.test.yml down -v
-        exit 1
-      }
-
-      echo "--- :running: Executing tests"
-      docker-compose -f docker-compose.test.yml exec -T wordpress bash /test-scripts/run-tests.sh || TEST_EXIT_CODE=\$?
-
-      echo "--- :broom: Cleaning up"
-      docker-compose -f docker-compose.test.yml down -v
-
-      # Exit with test result code
-      exit \${TEST_EXIT_CODE:-0}
+      # Run tests in WordPress container via docker-compose plugin
+      # Plugin handles: container startup, health checks, cleanup
     matrix:
       - "7-x"
       - "8-x"
@@ -140,6 +110,17 @@ steps:
     timeout_in_minutes: 15
     artifact_paths:
       - ".buildkite/test-results/*.xml"
+    plugins:
+      - docker-compose#v5.2.0:
+          run: wordpress
+          config: .buildkite/docker-compose.test.yml
+          command: ["bash", "/test-scripts/run-tests.sh"]
+          environment:
+            - WC_VERSION
+            - PHP_VERSION
+            - WP_VERSION
+            - TAXJAR_API_TOKEN
+          propagate-environment: true
     retry:
       automatic:
         - exit_status: "*"
