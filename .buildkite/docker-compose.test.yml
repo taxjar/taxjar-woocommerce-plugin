@@ -71,10 +71,10 @@ services:
     networks:
       - test-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/"]
-      interval: 5s
+      test: ["CMD", "curl", "-f", "http://localhost/wp-admin/install.php"]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 30
       start_period: 30s
 
 networks:
