@@ -1,0 +1,23 @@
+#!/bin/bash
+set -euo pipefail
+
+# Post-command hook for TaxJar WooCommerce Plugin CI
+# Cleanup and post-processing after command execution
+
+# Clean up any sensitive data from logs
+if [ -n "${TAXJAR_API_TOKEN:-}" ]; then
+    # Unset the token to prevent it from appearing in any debug output
+    unset TAXJAR_API_TOKEN
+fi
+
+# If tests failed, provide helpful output
+if [ "${BUILDKITE_COMMAND_EXIT_STATUS:-0}" -ne 0 ] && [[ "$BUILDKITE_LABEL" == *"PHPUnit"* ]]; then
+    echo ""
+    echo "--- :information_source: Test Failure Information"
+    echo "To reproduce this test failure locally:"
+    echo "1. Ensure Docker is running"
+    echo "2. Set TAXJAR_API_TOKEN environment variable"
+    echo "3. Run: docker-compose -f .buildkite/docker-compose.test.yml run wordpress"
+    echo ""
+    echo "For more details, check the test-results artifacts."
+fi

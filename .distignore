@@ -1,0 +1,40 @@
+# Version control
+.git
+.github/
+.gitignore
+.gitattributes
+
+# CI/CD
+.buildkite/
+
+# Development tools
+.editorconfig
+composer.json
+composer.lock
+composer.phar
+phpcs.ruleset.xml
+phpunit.xml
+.phpcs.xml.dist
+
+# Testing
+tests/
+.phpunit.result.cache
+
+# Documentation
+README.md
+CHANGELOG.md
+
+# Build artifacts
+vendor/
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
