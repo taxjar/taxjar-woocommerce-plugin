@@ -140,7 +140,6 @@ steps:
     plugins:
       - junit-annotate#v2.4.1:
           artifacts: ".buildkite/test-results/*.xml"
-          job-uuid-file-pattern: ".buildkite/test-results/junit-wc-*.xml"
     retry:
       automatic:
         - exit_status: "*"

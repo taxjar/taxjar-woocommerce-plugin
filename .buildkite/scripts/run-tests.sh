@@ -164,10 +164,13 @@ else
 fi
 
 # Run PHPUnit with JUnit XML output
+# Sanitize WC_VERSION for filename (replace periods with hyphens)
+WC_VERSION_SAFE="${WC_VERSION//\./-}"
+
 cd tests
 ../vendor/bin/phpunit \
   --configuration phpunit.xml \
-  --log-junit /test-results/junit-wc-${WC_VERSION}.xml \
+  --log-junit /test-results/junit-wc-${WC_VERSION_SAFE}.xml \
   --colors=always \
   || TEST_EXIT_CODE=$?
 
