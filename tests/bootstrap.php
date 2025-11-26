@@ -45,6 +45,12 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function load_wc() {
+		// Load pluggable.php early to provide wp_create_nonce() and other functions
+		// needed by WooCommerce 8.x+ during initialization (before plugins_loaded)
+		if ( ! function_exists( 'wp_create_nonce' ) ) {
+			require_once ABSPATH . 'wp-includes/pluggable.php';
+		}
+
 		// load woocommerce
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
