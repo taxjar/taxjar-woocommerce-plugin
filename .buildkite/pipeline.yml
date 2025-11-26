@@ -81,7 +81,7 @@ steps:
   # Stage 3: PHPUnit Matrix (WooCommerce Version Testing)
   # =============================================================================
   - label: ":test_tube: PHPUnit - WooCommerce {{matrix}}"
-    key: "phpunit-wc-{{matrix}}"
+    key: "phpunit-wc-matrix"
     depends_on: "phpcs"
     command: |
       set -euo pipefail
