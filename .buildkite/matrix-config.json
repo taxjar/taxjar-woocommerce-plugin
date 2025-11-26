@@ -1,25 +1,25 @@
 {
   "comment": "WooCommerce version matrix configuration for CI testing",
   "versions": {
-    "7.x": {
+    "7-x": {
       "woocommerce": "7.9.0",
       "php": "8.0",
       "wordpress": "6.0",
       "description": "WooCommerce 7.x series (oldest supported)"
     },
-    "8.x": {
+    "8-x": {
       "woocommerce": "8.9.1",
       "php": "8.1",
       "wordpress": "6.2",
       "description": "WooCommerce 8.x series"
     },
-    "9.x": {
+    "9-x": {
       "woocommerce": "9.3.3",
       "php": "8.2",
       "wordpress": "6.4",
       "description": "WooCommerce 9.x series"
     },
-    "10.x": {
+    "10-x": {
       "woocommerce": "10.2.2",
       "php": "8.3",
       "wordpress": "6.7",
