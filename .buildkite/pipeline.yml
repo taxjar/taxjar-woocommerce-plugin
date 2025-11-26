@@ -137,9 +137,6 @@ steps:
     timeout_in_minutes: 15
     artifact_paths:
       - ".buildkite/test-results/*.xml"
-    plugins:
-      - junit-annotate#v2.4.1:
-          artifacts: ".buildkite/test-results/*.xml"
     retry:
       automatic:
         - exit_status: "*"
