@@ -25,16 +25,9 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 
 		require dirname( dirname( __FILE__ ) ) . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
-		// Determine which hook to use based on WooCommerce version
-		// WC 8.x and 10.x require plugins_loaded (need wp_create_nonce, wp_register_script_module, etc.)
-		// WC 7.x and 9.x work with muplugins_loaded
-		$wc_version = getenv( 'WC_VERSION' ) ?: '7.9.0';
-		$major_version = (int) explode( '.', $wc_version )[0];
-		$use_plugins_loaded = in_array( $major_version, array( 8, 10 ), true );
-		$hook = $use_plugins_loaded ? 'plugins_loaded' : 'muplugins_loaded';
-
-		// load WC
-		tests_add_filter( $hook, array( $this, 'load_wc' ) );
+		// load WC on plugins_loaded to ensure WordPress is fully bootstrapped
+		// This ensures pluggable functions and ActionScheduler are available
+		tests_add_filter( 'plugins_loaded', array( $this, 'load_wc' ) );
 
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
