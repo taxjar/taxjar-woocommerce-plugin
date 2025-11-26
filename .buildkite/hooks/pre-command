@@ -1,0 +1,36 @@
+#!/bin/bash
+# TaxJar WooCommerce Plugin - Buildkite Pre-Command Hook
+# Loads secrets from Chamber/SSM Parameter Store
+
+set -euo pipefail
+
+# Only load secrets for test steps (not lint/PHPCS)
+if [[ "${BUILDKITE_STEP_KEY:-}" =~ ^phpunit ]]; then
+  echo "--- :key: Loading secrets from Chamber"
+
+  # Check if chamber is available
+  if ! command -v chamber &> /dev/null; then
+    echo "⚠️  Chamber CLI not found - secrets will not be loaded"
+    echo "Tests will run without API token (may cause some failures)"
+    exit 0
+  fi
+
+  # SSM parameter path following TaxJar convention
+  # Parameter name must be LOWERCASE in SSM
+  # Export as UPPERCASE environment variable
+  SERVICE_PATH="buildkite/taxjar-woocommerce-plugin"
+
+  echo "Loading secrets from /${SERVICE_PATH}/"
+
+  # Load TAXJAR_API_TOKEN if it exists
+  if chamber read "${SERVICE_PATH}" taxjar_api_token &> /dev/null; then
+    export TAXJAR_API_TOKEN=$(chamber read -q "${SERVICE_PATH}" taxjar_api_token)
+    echo "✅ TAXJAR_API_TOKEN loaded successfully"
+  else
+    echo "⚠️  TAXJAR_API_TOKEN not found in Chamber"
+    echo "   To add: chamber write ${SERVICE_PATH} taxjar_api_token <token>"
+    echo "   Tests will run without API token (may cause some failures)"
+  fi
+else
+  echo "--- Skipping secret loading for ${BUILDKITE_STEP_KEY:-unknown}"
+fi

@@ -1,0 +1,64 @@
+# .distignore - Files to exclude from WordPress.org distribution
+# Used during WordPress.org SVN deployment (Phase 2)
+
+# Version Control
+.git
+.gitignore
+.gitattributes
+.github
+
+# CI/CD Configuration
+.buildkite
+.buildkite/*
+
+# Development Tools
+composer.json
+composer.lock
+phpcs.ruleset.xml
+phpunit.xml
+.phpcs.xml.dist
+
+# Test Suite
+tests
+tests/*
+phpunit.xml
+
+# Documentation (development)
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+
+# IDE Configurations
+.vscode
+.idea
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+
+# OS Files
+Thumbs.db
+.DS_Store
+
+# Build/Dependency Directories
+vendor
+node_modules
+
+# Logs
+*.log
+
+# Temporary Files
+*.tmp
+*.swp
+*~
+
+# Editor Backup Files
+*.bak
+*.orig
+
+# Package Management
+package.json
+package-lock.json
+yarn.lock
+
+# Testing and Coverage
+.phpunit.result.cache
+coverage

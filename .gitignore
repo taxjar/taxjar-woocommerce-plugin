@@ -1,2 +1,9 @@
 /tmp
 /vendor
+
+# CI/CD - Test Results and Generated Files
+.buildkite/test-results/
+.buildkite/test-results/*.xml
+
+# Docker volumes
+.buildkite/docker/volumes/

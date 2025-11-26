@@ -1,0 +1,82 @@
+# TaxJar WooCommerce Plugin - Test Environment
+# Docker Compose configuration for PHPUnit testing
+
+services:
+  # =============================================================================
+  # MySQL Database
+  # =============================================================================
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress_test
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    ports:
+      - "3306"
+    volumes:
+      # Use tmpfs for speed (ephemeral storage)
+      - type: tmpfs
+        target: /var/lib/mysql
+        tmpfs:
+          size: 1073741824  # 1GB
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - test-network
+
+  # =============================================================================
+  # WordPress with PHP
+  # =============================================================================
+  wordpress:
+    image: wordpress:${WP_VERSION:-6.4}-php${PHP_VERSION:-8.2}-apache
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # WordPress Database Configuration
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_NAME: wordpress_test
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+
+      # WordPress Test Configuration
+      WP_TESTS_DIR: /tmp/wordpress-tests-lib
+      WP_CORE_DIR: /var/www/html
+
+      # Test Environment
+      WORDPRESS_DEBUG: 1
+      WP_ENV: test
+
+      # TaxJar API Token (loaded from Chamber via pre-command hook)
+      TAXJAR_API_TOKEN: ${TAXJAR_API_TOKEN:-}
+
+      # WooCommerce Version
+      WC_VERSION: ${WC_VERSION:-9.3.3}
+    volumes:
+      # Mount plugin code (writable for composer install)
+      - ../:/var/www/html/wp-content/plugins/taxjar-woocommerce-plugin:rw
+
+      # Mount test scripts
+      - ./scripts:/test-scripts:ro
+
+      # Mount test results directory
+      - ./test-results:/test-results:rw
+    ports:
+      - "80"
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+networks:
+  test-network:
+    driver: bridge

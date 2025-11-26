@@ -1,0 +1,147 @@
+# TaxJar WooCommerce Plugin - CI Pipeline
+# Phase 1: Quality Gates (Lint, PHPCS, PHPUnit Matrix)
+
+env:
+  PLUGIN_NAME: "taxjar-woocommerce-plugin"
+
+steps:
+  # =============================================================================
+  # Stage 1: PHP Lint (Fast Fail)
+  # =============================================================================
+  - label: ":php: PHP Lint"
+    key: "lint"
+    command: |
+      set -euo pipefail
+      echo "--- :mag: Checking PHP syntax"
+
+      # Use Docker to run PHP lint if PHP not available locally
+      if ! command -v php &> /dev/null; then
+        echo "PHP not found locally, using Docker..."
+        docker run --rm -v "\$PWD:/app" -w /app php:8.2-cli \
+          find . -name "*.php" \
+            -not -path "./vendor/*" \
+            -not -path "./tests/*" \
+            -exec php -l {} \; | grep -v "No syntax errors"
+      else
+        find . -name "*.php" \
+          -not -path "./vendor/*" \
+          -not -path "./tests/*" \
+          -exec php -l {} \; | grep -v "No syntax errors"
+      fi
+
+      echo "✅ PHP syntax check passed"
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 2
+
+  # =============================================================================
+  # Stage 2: PHPCS (WordPress Coding Standards)
+  # =============================================================================
+  - label: ":white_check_mark: PHPCS"
+    key: "phpcs"
+    depends_on: "lint"
+    command: |
+      set -euo pipefail
+      echo "--- :package: Installing dependencies"
+
+      # Run in Docker container with required system dependencies
+      docker run --rm -v "\$PWD:/plugin" -w /plugin php:8.2-cli bash -c '
+        set -euo pipefail
+
+        # Install system dependencies for Composer
+        apt-get update -qq
+        apt-get install -y -qq git unzip zip > /dev/null
+
+        # Configure git safe directory
+        git config --global --add safe.directory /plugin
+
+        # Install Composer
+        curl -sS https://getcomposer.org/installer | php -- --quiet
+        mv composer.phar /usr/local/bin/composer
+
+        # Install dependencies
+        echo "Installing Composer dependencies..."
+        composer install --no-interaction --prefer-dist --quiet
+
+        echo "--- :mag: Running PHPCS"
+        ./vendor/bin/phpcs --standard=phpcs.ruleset.xml \
+          --colors \
+          --report=full \
+          --report=summary \
+          || true  # Soft fail during initial rollout
+      '
+
+      echo "✅ PHPCS check completed"
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 5
+    soft_fail: true  # Don't block merges initially
+
+  # =============================================================================
+  # Stage 3: PHPUnit Matrix (WooCommerce Version Testing)
+  # =============================================================================
+  - label: ":test_tube: PHPUnit - WooCommerce {{matrix}}"
+    key: "phpunit-{{matrix}}"
+    depends_on: "phpcs"
+    command: |
+      set -euo pipefail
+
+      # Load version configuration for this matrix value
+      WC_VERSION=$(jq -r ".versions.\"{{matrix}}\".woocommerce" .buildkite/matrix-config.json)
+      PHP_VERSION=$(jq -r ".versions.\"{{matrix}}\".php" .buildkite/matrix-config.json)
+      WP_VERSION=$(jq -r ".versions.\"{{matrix}}\".wordpress" .buildkite/matrix-config.json)
+
+      echo "--- :gear: Test Configuration"
+      echo "Matrix: {{matrix}}"
+      echo "WooCommerce: \$WC_VERSION"
+      echo "PHP: \$PHP_VERSION"
+      echo "WordPress: \$WP_VERSION"
+
+      # Export for docker-compose
+      export WC_VERSION
+      export PHP_VERSION
+      export WP_VERSION
+      export COMPOSE_PROJECT_NAME="taxjar-wc-{{matrix}}-\${BUILDKITE_BUILD_NUMBER}"
+
+      # Ensure test results directory exists
+      mkdir -p .buildkite/test-results
+
+      echo "--- :docker: Starting test environment"
+      cd .buildkite
+      docker-compose -f docker-compose.test.yml up -d
+
+      # Wait for WordPress to be ready
+      echo "--- :hourglass: Waiting for WordPress..."
+      timeout 120 bash -c 'until docker-compose -f docker-compose.test.yml exec -T wordpress curl -sf http://localhost/ > /dev/null; do sleep 2; done' || {
+        echo "❌ WordPress failed to start"
+        docker-compose -f docker-compose.test.yml logs wordpress
+        docker-compose -f docker-compose.test.yml down -v
+        exit 1
+      }
+
+      echo "--- :running: Executing tests"
+      docker-compose -f docker-compose.test.yml exec -T wordpress bash /test-scripts/run-tests.sh || TEST_EXIT_CODE=\$?
+
+      echo "--- :broom: Cleaning up"
+      docker-compose -f docker-compose.test.yml down -v
+
+      # Exit with test result code
+      exit \${TEST_EXIT_CODE:-0}
+    matrix:
+      - "7.x"
+      - "8.x"
+      - "9.x"
+      - "10.x"
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 15
+    artifact_paths:
+      - ".buildkite/test-results/*.xml"
+    plugins:
+      - junit-annotate#v2.4.1:
+          artifacts: ".buildkite/test-results/*.xml"
+          job-uuid-file-pattern: ".buildkite/test-results/junit-wc-*.xml"
+    retry:
+      automatic:
+        - exit_status: "*"
+          limit: 1
