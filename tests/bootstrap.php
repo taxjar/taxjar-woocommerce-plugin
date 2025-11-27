@@ -25,8 +25,8 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 
 		require dirname( dirname( __FILE__ ) ) . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
-		// load WC on muplugins_loaded for all versions
-		tests_add_filter( 'muplugins_loaded', array( $this, 'load_wc' ) );
+		// load WC on plugins_loaded for all versions
+		tests_add_filter( 'plugins_loaded', array( $this, 'load_wc' ) );
 
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
