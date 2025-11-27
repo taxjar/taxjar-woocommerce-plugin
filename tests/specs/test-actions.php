@@ -40,7 +40,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_taxjar_calculate_totals() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
 		WC()->cart->add_to_cart( $product );

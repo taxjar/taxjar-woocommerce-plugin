@@ -220,7 +220,7 @@ class TJ_WC_Test_Customer_Sync extends WP_UnitTestCase {
 	}
 
 	function test_customer_api_requests() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$customer = TaxJar_Customer_Helper::create_exempt_customer();
 
 		$record = new TaxJar_Customer_Record( $customer->get_id(), true );

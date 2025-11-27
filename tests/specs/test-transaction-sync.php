@@ -225,7 +225,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_create_order_in_taxjar() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
