@@ -35,6 +35,8 @@ services:
       WC_VERSION: ${WC_VERSION:-9.3.3}
       # TaxJar API token from Chamber/SSM
       TAXJAR_API_TOKEN: ${TAXJAR_API_TOKEN}
+      # Buildkite Analytics token for test-collector plugin
+      BUILDKITE_ANALYTICS_TOKEN: ${BUILDKITE_ANALYTICS_TOKEN}
     volumes:
       # Mount the plugin code
       - ../:/var/www/html/wp-content/plugins/taxjar-simplified-taxes-for-woocommerce

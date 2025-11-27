@@ -87,6 +87,7 @@ steps:
           environment:
             - BUILDKITE_MATRIX={{matrix}}
             - TAXJAR_API_TOKEN
+            - BUILDKITE_ANALYTICS_TOKEN
       - artifacts#v1.9.0:
           upload:
             - "test-results/*.xml"
