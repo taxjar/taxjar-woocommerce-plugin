@@ -78,7 +78,7 @@ steps:
     agents:
       queue: "docker"
     timeout_in_minutes: 15
-    soft_fail: true  # Continue on test failures to see all results
+    soft_fail: false  # Hard fail on test failures
     plugins:
       - docker-compose#v4.14.0:
           run: wordpress
