@@ -59,10 +59,6 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		$wc_version    = getenv( 'WC_VERSION' ) ?: '7.9.0';
 		$major_version = (int) explode( '.', $wc_version )[0];
 
-		echo "WC Version: $wc_version, Major: $major_version\n";
-		echo "ActionScheduler_Store exists: " . ( class_exists( 'ActionScheduler_Store' ) ? 'yes' : 'no' ) . "\n";
-		echo "as_next_scheduled_action exists: " . ( function_exists( 'as_next_scheduled_action' ) ? 'yes' : 'no' ) . "\n";
-
 		if ( $major_version >= 8 && ( ! class_exists( 'ActionScheduler_Store' ) || ! function_exists( 'as_next_scheduled_action' ) ) ) {
 			// Try multiple possible ActionScheduler locations
 			$as_paths = array(
@@ -71,13 +67,17 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 				$this->plugin_dir . 'woocommerce/lib/packages/League/Container/ActionScheduler/action-scheduler.php',
 			);
 
-			echo "Searching for ActionScheduler bootstrap...\n";
 			foreach ( $as_paths as $as_bootstrap ) {
-				echo "Checking: $as_bootstrap - " . ( file_exists( $as_bootstrap ) ? 'EXISTS' : 'NOT FOUND' ) . "\n";
 				if ( file_exists( $as_bootstrap ) ) {
-					echo "Loading ActionScheduler from: $as_bootstrap\n";
 					require_once $as_bootstrap;
-					echo "ActionScheduler loaded. Store class now exists: " . ( class_exists( 'ActionScheduler_Store' ) ? 'yes' : 'no' ) . "\n";
+					// ActionScheduler needs initialization to load all classes
+					if ( function_exists( 'action_scheduler_register_3_dot_0_dot_0' ) ) {
+						action_scheduler_register_3_dot_0_dot_0();
+					}
+					// Trigger ActionScheduler initialization
+					if ( class_exists( 'ActionScheduler' ) && method_exists( 'ActionScheduler', 'init' ) ) {
+						ActionScheduler::init( $as_bootstrap );
+					}
 					break;
 				}
 			}
