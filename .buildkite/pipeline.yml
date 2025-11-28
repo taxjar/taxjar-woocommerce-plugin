@@ -78,7 +78,7 @@ steps:
     agents:
       queue: "docker"
     timeout_in_minutes: 15
-    soft_fail: true  # Continue on test failures to see all results
+    soft_fail: false  # Fail build on test failures
     plugins:
       - docker-compose#v4.14.0:
           run: wordpress
@@ -87,9 +87,11 @@ steps:
           environment:
             - BUILDKITE_MATRIX={{matrix}}
             - TAXJAR_API_TOKEN
+            - BUILDKITE_ANALYTICS_TOKEN
       - artifacts#v1.9.0:
           upload:
             - "test-results/*.xml"
+            - "test-results/*.log"
       - test-collector#v1.10.0:
           files: "test-results/*.xml"
           format: "junit"
