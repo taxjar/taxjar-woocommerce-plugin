@@ -51,29 +51,21 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function load_wc() {
-		// For WC 8.x+, ActionScheduler must be loaded BEFORE WooCommerce
-		// because WC 8.x uses ActionScheduler internally during product operations
-		$wc_version    = getenv( 'WC_VERSION' ) ?: '7.9.0';
-		$major_version = (int) explode( '.', $wc_version )[0];
-		if ( $major_version >= 8 && ! class_exists( 'ActionScheduler' ) ) {
-			// Try multiple possible ActionScheduler locations
-			$as_paths = array(
-				$this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php', // WC 8.x-9.x (symlink)
-				'/var/www/html/wp-content/plugins/woocommerce/packages/action-scheduler/action-scheduler.php', // WC 8.x-9.x (direct)
-				$this->plugin_dir . 'woocommerce/vendor/woocommerce/action-scheduler/action-scheduler.php', // WC 10.x+ (symlink)
-				'/var/www/html/wp-content/plugins/woocommerce/vendor/woocommerce/action-scheduler/action-scheduler.php', // WC 10.x+ (direct)
-			);
-
-			foreach ( $as_paths as $as_bootstrap ) {
-				if ( file_exists( $as_bootstrap ) ) {
-					require_once $as_bootstrap;
-					break;
-				}
-			}
-		}
-
 		// load woocommerce
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
+
+		// For WC 8.x+, manually initialize ActionScheduler if WooCommerce didn't do it
+		// WC 8.x uses ActionScheduler internally but may not initialize it during tests
+		$wc_version    = getenv( 'WC_VERSION' ) ?: '7.9.0';
+		$major_version = (int) explode( '.', $wc_version )[0];
+		if ( $major_version >= 8 && ! class_exists( 'ActionScheduler_Store' ) ) {
+			// Force ActionScheduler initialization
+			if ( function_exists( 'ActionScheduler' ) && method_exists( 'ActionScheduler', 'init' ) ) {
+				ActionScheduler::init( __FILE__ );
+			} elseif ( class_exists( 'ActionScheduler' ) && method_exists( 'ActionScheduler', 'init' ) ) {
+				ActionScheduler::init( __FILE__ );
+			}
+		}
 
 		// load taxjar core
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
