@@ -60,7 +60,8 @@ class Block_Flag {
 	 */
 	private static function is_doing_request_that_requires_calculation( $route ) {
 		foreach ( self::get_routes_that_require_calculation() as $calculation_route ) {
-			if ( strpos( $route, $calculation_route ) !== false ) {
+			$pattern = '#/wc/store(?:/v\d+)?/' . $calculation_route . '(?:/|$)#';
+			if ( preg_match( $pattern, $route ) ) {
 				return true;
 			}
 		}
@@ -75,8 +76,8 @@ class Block_Flag {
 	 */
 	private static function get_routes_that_require_calculation() {
 		return array(
-			'/wc/store/cart',
-			'/wc/store/checkout',
+			'cart',
+			'checkout',
 		);
 	}
 
