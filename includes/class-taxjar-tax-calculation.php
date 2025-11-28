@@ -84,8 +84,8 @@ class TaxJar_Tax_Calculation {
 		// Rate calculations assume tax not included
 		update_option( 'woocommerce_prices_include_tax', 'no' );
 
-		// Use no special handling on shipping taxes, our API handles that
-		update_option( 'woocommerce_shipping_tax_class', '' );
+		// Set shipping tax class to inherit so it follows item taxability (e.g. exempt items = exempt shipping)
+		update_option( 'woocommerce_shipping_tax_class', 'inherit' );
 
 		// API handles rounding precision
 		update_option( 'woocommerce_tax_round_at_subtotal', 'no' );
