@@ -126,7 +126,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_with_exempt_shipping() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
 
 		// CA shipping address
@@ -417,7 +417,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_product_exemptions() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'NY',
@@ -465,7 +465,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_product_exemption_thresholds() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'NY',
@@ -772,7 +772,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_intrastate_origin_state() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'US',
 			'store_state' => 'TX',
@@ -895,7 +895,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_au() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'AU',
 			'store_state' => 'NSW',
@@ -920,7 +920,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_eu() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'FR',
 			'store_state' => '',
@@ -945,7 +945,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_uk_or_gb() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'UK',
 			'store_state' => '',
@@ -970,7 +970,7 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 	}
 
 	function test_correct_taxes_for_el_or_gr() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
 			'store_country' => 'EL',
 			'store_state' => '',
