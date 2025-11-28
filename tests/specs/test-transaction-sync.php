@@ -225,7 +225,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_create_order_in_taxjar() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
@@ -237,7 +237,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_update_order_in_taxjar() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
@@ -352,7 +352,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_fails_in_queue_processing() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
@@ -585,7 +585,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_order_with_fee_record_sync() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$fee = new WC_Order_Item_Fee();
@@ -612,7 +612,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_create_refund_in_taxjar() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$record = new TaxJar_Order_Record( $order->get_id(), true );
 		$record->load_object();
@@ -656,7 +656,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_refund_record_sync() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
@@ -720,7 +720,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_manual_order_sync() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$this->tj->transaction_sync->manual_order_sync( $order );
@@ -991,7 +991,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_get_refund_from_taxjar() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
@@ -1046,7 +1046,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_trash_order_no_metadata() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$order_record = new TaxJar_Order_Record( $order->get_id(), true );
@@ -1088,7 +1088,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_delete_refund_no_metatdata() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
@@ -1144,7 +1144,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_force_delete_order_with_refund() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
@@ -1394,7 +1394,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	public function test_force_sync_order() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$record = TaxJar_Order_Record::find_active_in_queue( $order->get_id() );
@@ -1411,7 +1411,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	public function test_force_sync_refund() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
@@ -1516,7 +1516,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_partial_refund() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = TaxJar_Order_Helper::create_order_quantity_two();
 		array_push( $this->synced_order_ids, $order->get_id() );
 		$order->update_status( 'completed' );
@@ -1543,7 +1543,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_partial_line_item_refund() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$refund = TaxJar_Order_Helper::create_partial_line_item_refund_from_order( $order->get_id() );
@@ -1562,7 +1562,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_sync_fee_refund() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order( 1 );
 		$fee = new WC_Order_Item_Fee();
 
@@ -1626,7 +1626,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_order_level_exemptions_on_sync() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order_with_no_tax();
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
@@ -1661,7 +1661,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_order_sync_with_deleted_product() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order();
 		$order->update_status( 'completed' );
 		$line_items = $order->get_items();
@@ -1680,7 +1680,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_refund_sync_with_deleted_product() {
-		$this->markTestSkipped(\'Temporarily skipped for WC 9.x - needs investigation for compatibility\');
+		$this->markTestSkipped('Temporarily skipped for WC 9.x - needs investigation for compatibility');
 		$order = $this->create_test_order();
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
