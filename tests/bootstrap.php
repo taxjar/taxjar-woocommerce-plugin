@@ -58,8 +58,10 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		if ( $major_version >= 8 && ! class_exists( 'ActionScheduler' ) ) {
 			// Try multiple possible ActionScheduler locations
 			$as_paths = array(
-				$this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php', // WC 8.x-9.x
-				$this->plugin_dir . 'woocommerce/vendor/woocommerce/action-scheduler/action-scheduler.php', // WC 10.x+
+				$this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php', // WC 8.x-9.x (symlink)
+				'/var/www/html/wp-content/plugins/woocommerce/packages/action-scheduler/action-scheduler.php', // WC 8.x-9.x (direct)
+				$this->plugin_dir . 'woocommerce/vendor/woocommerce/action-scheduler/action-scheduler.php', // WC 10.x+ (symlink)
+				'/var/www/html/wp-content/plugins/woocommerce/vendor/woocommerce/action-scheduler/action-scheduler.php', // WC 10.x+ (direct)
 			);
 
 			foreach ( $as_paths as $as_bootstrap ) {
