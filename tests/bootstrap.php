@@ -51,14 +51,11 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function load_wc() {
-		// load woocommerce
-		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
-
-		// For WC 8.x+, ActionScheduler is bundled but may not have Store class loaded
-		// Load ActionScheduler classes if they're not yet loaded
+		// For WC 8.x+, ActionScheduler must be loaded BEFORE WooCommerce
+		// because WC 8.x uses ActionScheduler internally during product operations
 		$wc_version    = getenv( 'WC_VERSION' ) ?: '7.9.0';
 		$major_version = (int) explode( '.', $wc_version )[0];
-		if ( $major_version >= 8 && ! class_exists( 'ActionScheduler_Store' ) ) {
+		if ( $major_version >= 8 && ! class_exists( 'ActionScheduler' ) ) {
 			// Try multiple possible ActionScheduler locations
 			$as_paths = array(
 				$this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php', // WC 8.x-9.x
@@ -72,6 +69,9 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 				}
 			}
 		}
+
+		// load woocommerce
+		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
 		// load taxjar core
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
