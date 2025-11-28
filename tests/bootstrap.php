@@ -54,31 +54,30 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// load woocommerce
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
-		// For WC 8.x+, ActionScheduler is bundled but may not have all classes/functions loaded
-		// Load ActionScheduler if Store class or functions are missing
+		// For WC 8.x+, ActionScheduler is bundled but needs explicit initialization in test environment
+		// WC expects ActionScheduler to be loaded via its package autoloader or included files
 		$wc_version    = getenv( 'WC_VERSION' ) ?: '7.9.0';
 		$major_version = (int) explode( '.', $wc_version )[0];
 
-		if ( $major_version >= 8 && ( ! class_exists( 'ActionScheduler_Store' ) || ! function_exists( 'as_next_scheduled_action' ) ) ) {
-			// Try multiple possible ActionScheduler locations
-			$as_paths = array(
-				$this->plugin_dir . 'woocommerce/vendor/woocommerce/action-scheduler/action-scheduler.php',
-				$this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php',
-				$this->plugin_dir . 'woocommerce/lib/packages/League/Container/ActionScheduler/action-scheduler.php',
-			);
+		if ( $major_version >= 8 ) {
+			// Force WC to include ActionScheduler by triggering its package loading
+			// In normal WP environment, this happens automatically, but tests need explicit trigger
+			if ( class_exists( 'Automattic\WooCommerce' ) && method_exists( 'Automattic\WooCommerce', 'load_packages' ) ) {
+				\Automattic\WooCommerce::load_packages();
+			}
 
-			foreach ( $as_paths as $as_bootstrap ) {
-				if ( file_exists( $as_bootstrap ) ) {
-					require_once $as_bootstrap;
-					// ActionScheduler needs initialization to load all classes
-					if ( function_exists( 'action_scheduler_register_3_dot_0_dot_0' ) ) {
-						action_scheduler_register_3_dot_0_dot_0();
+			// If still not loaded, manually require ActionScheduler from WC packages
+			if ( ! function_exists( 'as_next_scheduled_action' ) ) {
+				$as_paths = array(
+					$this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php',
+					$this->plugin_dir . 'woocommerce/vendor/woocommerce/action-scheduler/action-scheduler.php',
+				);
+
+				foreach ( $as_paths as $as_bootstrap ) {
+					if ( file_exists( $as_bootstrap ) ) {
+						require_once $as_bootstrap;
+						break;
 					}
-					// Trigger ActionScheduler initialization
-					if ( class_exists( 'ActionScheduler' ) && method_exists( 'ActionScheduler', 'init' ) ) {
-						ActionScheduler::init( $as_bootstrap );
-					}
-					break;
 				}
 			}
 		}
