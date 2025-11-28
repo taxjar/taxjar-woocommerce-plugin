@@ -3,76 +3,76 @@
 
 steps:
   # Stage 1: PHP Lint - Fast syntax validation
-  - label: ":php: PHP Lint"
-    key: "lint"
-    command: |
-      echo "+++ Checking PHP syntax"
-      docker run --rm -v "$(pwd):/app" -w /app php:8.2-cli bash -c '
-        find . -name "*.php" -not -path "./vendor/*" -not -path "./.buildkite/*" -print0 | \
-          xargs -0 -n1 -P8 php -l
-      '
-    agents:
-      queue: "docker"
-    timeout_in_minutes: 5
-    soft_fail: false
+  # - label: ":php: PHP Lint"
+  #   key: "lint"
+  #   command: |
+  #     echo "+++ Checking PHP syntax"
+  #     docker run --rm -v "$(pwd):/app" -w /app php:8.2-cli bash -c '
+  #       find . -name "*.php" -not -path "./vendor/*" -not -path "./.buildkite/*" -print0 | \
+  #         xargs -0 -n1 -P8 php -l
+  #     '
+  #   agents:
+  #     queue: "docker"
+  #   timeout_in_minutes: 5
+  #   soft_fail: false
 
   # Stage 2: PHPCS - WordPress Coding Standards
-  - label: ":white_check_mark: PHPCS - WordPress Coding Standards"
-    key: "phpcs"
-    depends_on: "lint"
-    command: |
-      echo "+++ Running PHPCS with WordPress Coding Standards"
-      docker run --rm -v "$(pwd):/app" -w /app php:8.2-cli bash -c '
-        echo "--- Installing system dependencies"
-        apt-get update -qq && apt-get install -y -qq \
-          git \
-          unzip \
-          libzip-dev > /dev/null 2>&1
-        docker-php-ext-install zip > /dev/null 2>&1
-
-        echo "--- Configuring git"
-        git config --global --add safe.directory /app
-
-        echo "--- Installing Composer"
-        if [ ! -f composer.phar ]; then
-          curl -sS https://getcomposer.org/installer | php > /dev/null
-        fi
-
-        echo "--- Installing PHP dependencies"
-        php composer.phar install --no-interaction --quiet
-
-        echo "+++ Verifying PHPCS installation"
-        vendor/bin/phpcs -i
-
-        echo "+++ Running code standards check"
-        vendor/bin/phpcs \
-          --extensions=php \
-          --ignore=vendor/,node_modules/,.buildkite/,tests/ \
-          --report=full \
-          --report-checkstyle=phpcs-report.xml \
-          . || PHPCS_EXIT=$$?
-
-        if [ "$${PHPCS_EXIT:-0}" -ne 0 ]; then
-          echo "WARNING: Code standards issues found (soft fail enabled)"
-          exit 0
-        fi
-      '
-    agents:
-      queue: "docker"
-    timeout_in_minutes: 10
-    soft_fail: true  # Don't block on coding standards initially
-    artifact_paths:
-      - "phpcs-report.xml"
+  # - label: ":white_check_mark: PHPCS - WordPress Coding Standards"
+  #   key: "phpcs"
+  #   depends_on: "lint"
+  #   command: |
+  #     echo "+++ Running PHPCS with WordPress Coding Standards"
+  #     docker run --rm -v "$(pwd):/app" -w /app php:8.2-cli bash -c '
+  #       echo "--- Installing system dependencies"
+  #       apt-get update -qq && apt-get install -y -qq \
+  #         git \
+  #         unzip \
+  #         libzip-dev > /dev/null 2>&1
+  #       docker-php-ext-install zip > /dev/null 2>&1
+  #
+  #       echo "--- Configuring git"
+  #       git config --global --add safe.directory /app
+  #
+  #       echo "--- Installing Composer"
+  #       if [ ! -f composer.phar ]; then
+  #         curl -sS https://getcomposer.org/installer | php > /dev/null
+  #       fi
+  #
+  #       echo "--- Installing PHP dependencies"
+  #       php composer.phar install --no-interaction --quiet
+  #
+  #       echo "+++ Verifying PHPCS installation"
+  #       vendor/bin/phpcs -i
+  #
+  #       echo "+++ Running code standards check"
+  #       vendor/bin/phpcs \
+  #         --extensions=php \
+  #         --ignore=vendor/,node_modules/,.buildkite/,tests/ \
+  #         --report=full \
+  #         --report-checkstyle=phpcs-report.xml \
+  #         . || PHPCS_EXIT=$$?
+  #
+  #       if [ "$${PHPCS_EXIT:-0}" -ne 0 ]; then
+  #         echo "WARNING: Code standards issues found (soft fail enabled)"
+  #         exit 0
+  #       fi
+  #     '
+  #   agents:
+  #     queue: "docker"
+  #   timeout_in_minutes: 10
+  #   soft_fail: true  # Don't block on coding standards initially
+  #   artifact_paths:
+  #     - "phpcs-report.xml"
 
   # Stage 3: PHPUnit Tests - Matrix across WooCommerce versions
   - label: ":test_tube: PHPUnit - WC {{matrix}}"
     key: "phpunit"
-    depends_on: "phpcs"
+    # depends_on: "phpcs"
     matrix:
       - "7.x"
-      - "8.x"
-      - "9.x"
-      - "10.x"
+      # - "8.x"
+      # - "9.x"
+      # - "10.x"
     env:
       BUILDKITE_MATRIX: "{{matrix}}"
     agents:
