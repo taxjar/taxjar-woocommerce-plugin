@@ -51,36 +51,27 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function load_wc() {
-		// load woocommerce
-		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
-
-		// For WC 8.x+, ActionScheduler is bundled but needs explicit initialization in test environment
-		// WC expects ActionScheduler to be loaded via its package autoloader or included files
+		// For WC 8.x+, pre-load ActionScheduler BEFORE loading WooCommerce
+		// This prevents WC components from failing when they try to use ActionScheduler during init
 		$wc_version    = getenv( 'WC_VERSION' ) ?: '7.9.0';
 		$major_version = (int) explode( '.', $wc_version )[0];
 
 		if ( $major_version >= 8 ) {
-			// Force WC to include ActionScheduler by triggering its package loading
-			// In normal WP environment, this happens automatically, but tests need explicit trigger
-			if ( class_exists( 'Automattic\WooCommerce' ) && method_exists( 'Automattic\WooCommerce', 'load_packages' ) ) {
-				\Automattic\WooCommerce::load_packages();
-			}
+			$as_paths = array(
+				$this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php',
+				$this->plugin_dir . 'woocommerce/vendor/woocommerce/action-scheduler/action-scheduler.php',
+			);
 
-			// If still not loaded, manually require ActionScheduler from WC packages
-			if ( ! function_exists( 'as_next_scheduled_action' ) ) {
-				$as_paths = array(
-					$this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php',
-					$this->plugin_dir . 'woocommerce/vendor/woocommerce/action-scheduler/action-scheduler.php',
-				);
-
-				foreach ( $as_paths as $as_bootstrap ) {
-					if ( file_exists( $as_bootstrap ) ) {
-						require_once $as_bootstrap;
-						break;
-					}
+			foreach ( $as_paths as $as_bootstrap ) {
+				if ( file_exists( $as_bootstrap ) ) {
+					require_once $as_bootstrap;
+					break;
 				}
 			}
 		}
+
+		// load woocommerce
+		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
 		// load taxjar core
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
