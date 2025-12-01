@@ -361,7 +361,9 @@ final class WC_Taxjar {
 
 } // End WC_Taxjar.
 
+error_log( '[TaxJar Plugin] About to instantiate WC_Taxjar class...' );
 $WC_Taxjar = new WC_Taxjar( __FILE__ );
+error_log( '[TaxJar Plugin] WC_Taxjar instantiated successfully. Global set: ' . ( isset( $WC_Taxjar ) ? 'YES' : 'NO' ) );
 
 /**
  * Returns the main instance of TaxJar Integration.
