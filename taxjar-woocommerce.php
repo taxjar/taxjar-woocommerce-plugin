@@ -30,10 +30,17 @@ if ( is_multisite() ) {
 }
 $woocommerce_active = in_array( 'woocommerce/woocommerce.php', $active_plugins ) || array_key_exists( 'woocommerce/woocommerce.php', $active_plugins );
 
+error_log( '[TaxJar Plugin] WooCommerce active check: ' . ( $woocommerce_active ? 'YES' : 'NO' ) );
+error_log( '[TaxJar Plugin] woocommerce_db_version: ' . get_option( 'woocommerce_db_version' ) );
+error_log( '[TaxJar Plugin] About to check version_compare...' );
+
 if ( ! $woocommerce_active || version_compare( get_option( 'woocommerce_db_version' ), WC_Taxjar::$minimum_woocommerce_version, '<' ) ) {
+	error_log( '[TaxJar Plugin] EARLY RETURN: Version check failed or WooCommerce not active' );
 	add_action( 'admin_notices', 'WC_Taxjar::display_woocommmerce_inactive_notice' );
 	return;
 }
+
+error_log( '[TaxJar Plugin] Version checks passed, continuing to define class...' );
 
 /**
  * Main TaxJar WooCommerce Class.
