@@ -84,6 +84,7 @@ steps:
           run: wordpress
           config: .buildkite/docker-compose.test.yml
           command: ["/test-scripts/set-test-env.sh"]
+          rm: false  # Don't auto-remove container so we can capture logs
           environment:
             - BUILDKITE_MATRIX={{matrix}}
             - TAXJAR_API_TOKEN
