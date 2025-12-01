@@ -19,6 +19,17 @@ if [[ "$BUILDKITE_LABEL" == *"PHPUnit"* ]]; then
     else
         echo "✅ TAXJAR_API_TOKEN loaded successfully"
     fi
+
+    # Export Buildkite Analytics token from Chamber for test-collector plugin
+    export BUILDKITE_ANALYTICS_TOKEN=$(chamber read -q buildkite/taxjar-woocommerce-plugin buildkite_analytics_token || echo "")
+
+    if [ -z "$BUILDKITE_ANALYTICS_TOKEN" ]; then
+        echo "⚠️  Warning: BUILDKITE_ANALYTICS_TOKEN not found in Chamber"
+        echo "   Test analytics will not be collected"
+        echo "   Configure secret with: chamber write buildkite/taxjar-woocommerce-plugin buildkite_analytics_token <token>"
+    else
+        echo "✅ BUILDKITE_ANALYTICS_TOKEN loaded successfully"
+    fi
 fi
 
 # Set matrix-specific environment variables for docker-compose
