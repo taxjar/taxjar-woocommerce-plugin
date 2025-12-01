@@ -60,6 +60,9 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// load taxjar core
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
+		error_log( 'About to load TaxJar plugin. WC_VERSION: ' . WC_VERSION );
+		error_log( 'active_plugins option: ' . print_r( get_option( 'active_plugins' ), true ) );
+		error_log( 'woocommerce_db_version option: ' . get_option( 'woocommerce_db_version' ) );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
 		error_log( 'TaxJar plugin file loaded' );
 
