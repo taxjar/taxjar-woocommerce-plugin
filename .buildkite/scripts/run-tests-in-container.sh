@@ -247,37 +247,10 @@ if [ ! -f "/test-results/phpunit-results.xml" ]; then
 EOF
 fi
 
-# Capture Apache/WordPress logs
-print_status "Capturing WordPress logs"
-
-# Create empty log file first
-> /test-results/wordpress.log
-
-# Try multiple Apache log locations
-APACHE_LOGS=(
-    "/var/log/apache2/error.log"
-    "/var/log/httpd/error_log"
-    "/proc/self/fd/2"  # stderr from Apache process
-)
-
-for log_path in "${APACHE_LOGS[@]}"; do
-    if [ -f "$log_path" ] || [ -p "$log_path" ]; then
-        print_status "Found Apache log: $log_path"
-        cat "$log_path" >> /test-results/wordpress.log 2>/dev/null || true
-        break
-    fi
-done
-
-# Capture WordPress debug.log if it exists
-if [ -f "/var/www/html/wp-content/debug.log" ]; then
-    echo -e "\n=== WordPress Debug Log ===" >> /test-results/wordpress.log
-    cat /var/www/html/wp-content/debug.log >> /test-results/wordpress.log
-fi
-
-# If log is still empty, add a note
-if [ ! -s "/test-results/wordpress.log" ]; then
-    echo "No WordPress/Apache logs captured" > /test-results/wordpress.log
-fi
+# Note: WordPress and Apache logs are captured by the post-command hook
+# using docker-compose logs, which captures all stdout/stderr from the container.
+# This provides more complete logging than trying to find specific log files.
+print_status "WordPress logs will be captured by post-command hook"
 
 # Parse and display test summary
 echo ""

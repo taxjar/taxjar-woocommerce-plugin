@@ -4,6 +4,44 @@ set -euo pipefail
 # Post-command hook for TaxJar WooCommerce Plugin CI
 # Cleanup and post-processing after command execution
 
+# Capture WordPress container logs for PHPUnit tests
+if [[ "$BUILDKITE_LABEL" == *"PHPUnit"* ]]; then
+    echo "--- :docker: Capturing WordPress container logs"
+
+    # Ensure test-results directory exists
+    mkdir -p .buildkite/test-results
+
+    # Capture all container output (stdout/stderr from Apache, PHP, WordPress)
+    # This includes WordPress startup, plugin activation, test output, errors, etc.
+    if docker-compose -f .buildkite/docker-compose.test.yml logs wordpress > .buildkite/test-results/wordpress-container.log 2>&1; then
+        echo "Successfully captured WordPress container logs"
+
+        # Show log size
+        log_size=$(wc -l < .buildkite/test-results/wordpress-container.log || echo "0")
+        echo "Container log contains $log_size lines"
+
+        # Show last 20 lines as preview
+        if [ -s .buildkite/test-results/wordpress-container.log ]; then
+            echo ""
+            echo "Last 20 lines of WordPress container log:"
+            tail -n 20 .buildkite/test-results/wordpress-container.log
+        fi
+    else
+        echo "Warning: Failed to capture container logs (container may have been removed)"
+        echo "No WordPress container logs captured" > .buildkite/test-results/wordpress-container.log
+    fi
+
+    # Also try to copy WordPress debug.log from container if it exists
+    container_name=$(docker-compose -f .buildkite/docker-compose.test.yml ps -q wordpress 2>/dev/null || echo "")
+    if [ -n "$container_name" ]; then
+        if docker cp "$container_name":/var/www/html/wp-content/debug.log .buildkite/test-results/wordpress-debug.log 2>/dev/null; then
+            echo "Successfully captured WordPress debug.log"
+        else
+            echo "No WordPress debug.log found in container"
+        fi
+    fi
+fi
+
 # Clean up any sensitive data from logs
 if [ -n "${TAXJAR_API_TOKEN:-}" ]; then
     # Unset the token to prevent it from appearing in any debug output
