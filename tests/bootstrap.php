@@ -59,20 +59,17 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
 
-		// Manually initialize TaxJar plugin since plugins_loaded hook already fired
-		// The WC_Taxjar class registers init() to plugins_loaded, but that hook has already
-		// been triggered by the time we require the plugin file in tests. The init() method
-		// contains all 70+ include_once statements that load plugin classes, and it guards
-		// execution with class_exists('WC_Integration'). We need to ensure WooCommerce's
-		// integration classes are loaded before calling init().
-		if ( ! class_exists( 'WC_Integration' ) ) {
-			require_once $this->plugin_dir . 'woocommerce/includes/abstracts/abstract-wc-integration.php';
-		}
-
-		global $WC_Taxjar;
-		if ( isset( $WC_Taxjar ) && method_exists( $WC_Taxjar, 'init' ) ) {
-			$WC_Taxjar->init();
-		}
+		// Re-fire plugins_loaded hook to trigger TaxJar initialization
+		// The TaxJar plugin's constructor adds init() to the plugins_loaded hook, but that
+		// hook already fired before we loaded the plugin in the test environment. By manually
+		// firing plugins_loaded again, we trigger the init() callback which loads all 70+
+		// plugin class files.
+		//
+		// This is better than manually calling init() because:
+		// 1. It properly initializes WooCommerce integration classes first
+		// 2. It respects all the guards and checks in init()
+		// 3. It mimics the production plugin loading sequence
+		do_action( 'plugins_loaded' );
 
 		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
