@@ -223,6 +223,10 @@ fi
 
 echo "+++ :test_tube: Running PHPUnit tests"
 
+# Ensure test results directory exists with proper permissions
+mkdir -p /test-results
+chmod 777 /test-results
+
 vendor/bin/phpunit \
     --configuration "$PHPUNIT_CONFIG" \
     --log-junit /test-results/phpunit-results.xml \
@@ -231,20 +235,48 @@ vendor/bin/phpunit \
     2>&1 | tee /test-results/phpunit-output.log \
     || TEST_EXIT_CODE=$?
 
+# Ensure XML file exists even if PHPUnit failed before creating it
+if [ ! -f "/test-results/phpunit-results.xml" ]; then
+    print_warning "PHPUnit results XML not found, creating empty test suite"
+    cat > /test-results/phpunit-results.xml << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Empty" tests="0" assertions="0" failures="0" errors="0" skipped="0">
+  </testsuite>
+</testsuites>
+EOF
+fi
+
 # Capture Apache/WordPress logs
 print_status "Capturing WordPress logs"
 
-# Apache error log (contains WordPress/PHP errors)
-if [ -f "/var/log/apache2/error.log" ]; then
-    cp /var/log/apache2/error.log /test-results/wordpress.log
-else
-    print_warning "Apache error log not found"
-    touch /test-results/wordpress.log
+# Create empty log file first
+> /test-results/wordpress.log
+
+# Try multiple Apache log locations
+APACHE_LOGS=(
+    "/var/log/apache2/error.log"
+    "/var/log/httpd/error_log"
+    "/proc/self/fd/2"  # stderr from Apache process
+)
+
+for log_path in "${APACHE_LOGS[@]}"; do
+    if [ -f "$log_path" ] || [ -p "$log_path" ]; then
+        print_status "Found Apache log: $log_path"
+        cat "$log_path" >> /test-results/wordpress.log 2>/dev/null || true
+        break
+    fi
+done
+
+# Capture WordPress debug.log if it exists
+if [ -f "/var/www/html/wp-content/debug.log" ]; then
+    echo -e "\n=== WordPress Debug Log ===" >> /test-results/wordpress.log
+    cat /var/www/html/wp-content/debug.log >> /test-results/wordpress.log
 fi
 
-# Optionally capture WordPress debug.log if it exists
-if [ -f "/var/www/html/wp-content/debug.log" ]; then
-    cat /var/www/html/wp-content/debug.log >> /test-results/wordpress.log
+# If log is still empty, add a note
+if [ ! -s "/test-results/wordpress.log" ]; then
+    echo "No WordPress/Apache logs captured" > /test-results/wordpress.log
 fi
 
 # Parse and display test summary

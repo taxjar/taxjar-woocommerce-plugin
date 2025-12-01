@@ -90,9 +90,9 @@ steps:
             - BUILDKITE_ANALYTICS_TOKEN
       - artifacts#v1.9.0:
           upload:
-            - "test-results/*.xml"
-            - "test-results/*.log"
+            - ".buildkite/test-results/*.xml"
+            - ".buildkite/test-results/*.log"
       - test-collector#v1.10.0:
-          files: "test-results/*.xml"
+          files: ".buildkite/test-results/*.xml"
           format: "junit"
 
