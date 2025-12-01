@@ -25,14 +25,11 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 
 		require dirname( dirname( __FILE__ ) ) . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
-		// Use version-aware hook selection
-		// WC 8.x and 10.x require plugins_loaded (pluggable functions needed)
-		// WC 7.x and 9.x can use muplugins_loaded (faster, no pluggable dependencies)
-		$wc_version       = getenv( 'WC_VERSION' ) ?: '7.9.0';
-		$major_version    = (int) explode( '.', $wc_version )[0];
-		$use_plugins_hook = in_array( $major_version, array( 8, 10 ), true );
-		$hook             = $use_plugins_hook ? 'plugins_loaded' : 'muplugins_loaded';
-		tests_add_filter( $hook, array( $this, 'load_wc' ) );
+		// Use muplugins_loaded for all WooCommerce versions
+		// Testing with full debug logging to identify WC 8.x specific issues
+		$wc_version = getenv( 'WC_VERSION' ) ?: '7.9.0';
+		error_log( "TaxJar Bootstrap: WC_VERSION = $wc_version" );
+		tests_add_filter( 'muplugins_loaded', array( $this, 'load_wc' ) );
 
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
@@ -51,22 +48,38 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function load_wc() {
+		error_log( '=== TaxJar Bootstrap: load_wc() starting ===' );
+		error_log( 'Current hook: ' . current_filter() );
+		error_log( 'WordPress loaded: ' . ( defined( 'ABSPATH' ) ? 'YES' : 'NO' ) );
+
 		// load woocommerce
+		error_log( 'Loading WooCommerce...' );
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
+		error_log( 'WooCommerce loaded. WC_VERSION = ' . ( defined( 'WC_VERSION' ) ? WC_VERSION : 'UNDEFINED' ) );
+		error_log( 'WC_Integration class exists: ' . ( class_exists( 'WC_Integration' ) ? 'YES' : 'NO' ) );
 
 		// load taxjar core
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
+
+		error_log( 'Loading TaxJar plugin...' );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
+		error_log( 'TaxJar plugin file loaded' );
+		error_log( '$WC_Taxjar global exists: ' . ( isset( $GLOBALS['WC_Taxjar'] ) ? 'YES' : 'NO' ) );
+		error_log( 'WC_Taxjar class exists: ' . ( class_exists( 'WC_Taxjar' ) ? 'YES' : 'NO' ) );
 
 		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
+		error_log( 'WC_Taxjar_Install class loaded' );
 
 		// Load WooCommerce Subscriptions if available
 		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 		if ( file_exists( $subscriptions_file ) ) {
+			error_log( 'Loading WooCommerce Subscriptions...' );
 			include_once $subscriptions_file;
 		}
+
+		error_log( '=== TaxJar Bootstrap: load_wc() completed ===' );
 	}
 
 	public function install_wc() {
