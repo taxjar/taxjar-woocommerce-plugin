@@ -34,6 +34,12 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		$hook             = $use_plugins_hook ? 'plugins_loaded' : 'muplugins_loaded';
 		tests_add_filter( $hook, array( $this, 'load_wc' ) );
 
+		// For WC 8.x/10.x: After plugins are loaded, manually trigger TaxJar init() on 'init' hook
+		// This ensures all WordPress hooks are available when init() registers its actions
+		if ( $use_plugins_hook ) {
+			tests_add_filter( 'init', array( $this, 'ensure_taxjar_init' ), 1 ); // Very early priority
+		}
+
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
 
@@ -67,15 +73,18 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		if ( file_exists( $subscriptions_file ) ) {
 			include_once $subscriptions_file;
 		}
+	}
 
-		// Strategy 2: Re-fire plugins_loaded AFTER all plugins are loaded
-		// This allows TaxJar's init() hook (registered in constructor) to execute
-		// Use a flag to prevent infinite recursion
-		if ( ! did_action( 'taxjar_test_second_plugins_loaded' ) ) {
-			error_log( 'Re-firing plugins_loaded hook for TaxJar initialization' );
-			do_action( 'taxjar_test_second_plugins_loaded' ); // Track that we fired it
-			do_action( 'plugins_loaded' ); // Fire the hook again
-			error_log( 'Plugins_loaded re-fired. WC_Taxjar_Integration exists: ' . ( class_exists( 'WC_Taxjar_Integration' ) ? 'YES' : 'NO' ) );
+	/**
+	 * Ensure TaxJar init() is called for WC 8.x/10.x.
+	 * Called on 'init' hook which fires after 'plugins_loaded'.
+	 */
+	public function ensure_taxjar_init() {
+		if ( isset( $GLOBALS['WC_Taxjar'] ) && method_exists( $GLOBALS['WC_Taxjar'], 'init' ) ) {
+			// Check if already initialized
+			if ( ! class_exists( 'WC_Taxjar_Integration' ) ) {
+				$GLOBALS['WC_Taxjar']->init();
+			}
 		}
 	}
 
