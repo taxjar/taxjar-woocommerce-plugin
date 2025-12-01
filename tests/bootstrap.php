@@ -34,6 +34,12 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		$hook             = $use_plugins_hook ? 'plugins_loaded' : 'muplugins_loaded';
 		tests_add_filter( $hook, array( $this, 'load_wc' ) );
 
+		// Strategy 1: For WC 8.x/10.x, manually trigger TaxJar init() on 'init' hook
+		// This ensures TaxJar classes load even though plugins_loaded has already fired
+		if ( $use_plugins_hook ) {
+			tests_add_filter( 'init', array( $this, 'ensure_taxjar_initialized' ), 999 );
+		}
+
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
 
@@ -51,22 +57,55 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function load_wc() {
+		error_log( '=== load_wc() starting ===' );
+
 		// load woocommerce
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
+		error_log( 'WooCommerce loaded, WC_Integration exists: ' . ( class_exists( 'WC_Integration' ) ? 'YES' : 'NO' ) );
 
 		// load taxjar core
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
+		error_log( 'TaxJar plugin file loaded' );
 
 		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
+		error_log( 'WC_Taxjar_Install class loaded' );
 
 		// Load WooCommerce Subscriptions if available
 		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 		if ( file_exists( $subscriptions_file ) ) {
 			include_once $subscriptions_file;
 		}
+
+		error_log( '=== load_wc() completed ===' );
+	}
+
+	/**
+	 * Ensure TaxJar is initialized by manually calling init() method.
+	 * Used for WC 8.x/10.x where plugins_loaded has already fired during test bootstrap.
+	 */
+	public function ensure_taxjar_initialized() {
+		global $WC_Taxjar;
+		error_log( '=== ensure_taxjar_initialized() starting ===' );
+		error_log( 'WC_Integration exists: ' . ( class_exists( 'WC_Integration' ) ? 'YES' : 'NO' ) );
+		error_log( 'WC_Taxjar_Integration exists before init: ' . ( class_exists( 'WC_Taxjar_Integration' ) ? 'YES' : 'NO' ) );
+
+		if ( isset( $WC_Taxjar ) && method_exists( $WC_Taxjar, 'init' ) ) {
+			// Check if already initialized
+			if ( ! class_exists( 'WC_Taxjar_Integration' ) ) {
+				error_log( 'TaxJar not initialized, calling init() on init hook' );
+				$WC_Taxjar->init();
+				error_log( 'WC_Taxjar_Integration exists after init: ' . ( class_exists( 'WC_Taxjar_Integration' ) ? 'YES' : 'NO' ) );
+			} else {
+				error_log( 'TaxJar already initialized, skipping init() call' );
+			}
+		} else {
+			error_log( 'WARNING: $WC_Taxjar not set or init() method not found' );
+		}
+
+		error_log( '=== ensure_taxjar_initialized() completed ===' );
 	}
 
 	public function install_wc() {
