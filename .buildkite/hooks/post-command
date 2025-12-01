@@ -11,34 +11,48 @@ if [[ "$BUILDKITE_LABEL" == *"PHPUnit"* ]]; then
     # Ensure test-results directory exists
     mkdir -p .buildkite/test-results
 
-    # Capture all container output (stdout/stderr from Apache, PHP, WordPress)
-    # This includes WordPress startup, plugin activation, test output, errors, etc.
-    if docker-compose -f .buildkite/docker-compose.test.yml logs wordpress > .buildkite/test-results/wordpress-container.log 2>&1; then
-        echo "Successfully captured WordPress container logs"
+    # The docker-compose plugin uses 'run --rm' which removes containers after exit.
+    # We need to capture logs from the named container before it's removed.
+    # Container name pattern: buildkite{sanitized_job_id}_wordpress_build_{build_number}
 
-        # Show log size
-        log_size=$(wc -l < .buildkite/test-results/wordpress-container.log || echo "0")
-        echo "Container log contains $log_size lines"
+    # Try to find the WordPress container by label
+    container_id=$(docker ps -a --filter "label=com.buildkite.job_id=${BUILDKITE_JOB_ID}" \
+                              --filter "label=com.buildkite.build_number=${BUILDKITE_BUILD_NUMBER}" \
+                              --format "{{.ID}}" | head -1)
 
-        # Show last 20 lines as preview
-        if [ -s .buildkite/test-results/wordpress-container.log ]; then
-            echo ""
-            echo "Last 20 lines of WordPress container log:"
-            tail -n 20 .buildkite/test-results/wordpress-container.log
+    if [ -n "$container_id" ]; then
+        echo "Found WordPress container: $container_id"
+
+        # Capture all container logs (stdout/stderr from Apache, PHP, WordPress)
+        if docker logs "$container_id" > .buildkite/test-results/wordpress-container.log 2>&1; then
+            log_size=$(wc -l < .buildkite/test-results/wordpress-container.log || echo "0")
+            echo "Successfully captured container logs ($log_size lines)"
+
+            # Show preview of interesting parts
+            if [ -s .buildkite/test-results/wordpress-container.log ]; then
+                echo ""
+                echo "First 20 lines (startup):"
+                head -n 20 .buildkite/test-results/wordpress-container.log
+                echo ""
+                echo "Last 20 lines (test completion):"
+                tail -n 20 .buildkite/test-results/wordpress-container.log
+            fi
+        else
+            echo "Warning: Failed to capture container logs"
+            echo "No WordPress container logs captured" > .buildkite/test-results/wordpress-container.log
         fi
-    else
-        echo "Warning: Failed to capture container logs (container may have been removed)"
-        echo "No WordPress container logs captured" > .buildkite/test-results/wordpress-container.log
-    fi
 
-    # Also try to copy WordPress debug.log from container if it exists
-    container_name=$(docker-compose -f .buildkite/docker-compose.test.yml ps -q wordpress 2>/dev/null || echo "")
-    if [ -n "$container_name" ]; then
-        if docker cp "$container_name":/var/www/html/wp-content/debug.log .buildkite/test-results/wordpress-debug.log 2>/dev/null; then
+        # Try to copy WordPress debug.log from container if it exists
+        if docker cp "$container_id":/var/www/html/wp-content/debug.log .buildkite/test-results/wordpress-debug.log 2>/dev/null; then
             echo "Successfully captured WordPress debug.log"
+            debug_size=$(wc -l < .buildkite/test-results/wordpress-debug.log || echo "0")
+            echo "Debug log contains $debug_size lines"
         else
             echo "No WordPress debug.log found in container"
         fi
+    else
+        echo "Warning: Could not find WordPress container (already removed by --rm)"
+        echo "No WordPress container logs captured" > .buildkite/test-results/wordpress-container.log
     fi
 fi
 
