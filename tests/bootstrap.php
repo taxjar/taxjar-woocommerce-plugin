@@ -51,44 +51,29 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function load_wc() {
-		error_log( '=== load_wc() starting ===' );
-
 		// load woocommerce
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
-		error_log( 'WooCommerce loaded, WC_Integration exists: ' . ( class_exists( 'WC_Integration' ) ? 'YES' : 'NO' ) );
 
 		// load taxjar core
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
-		error_log( 'About to load TaxJar plugin. WC_VERSION: ' . WC_VERSION );
-		error_log( 'active_plugins option: ' . print_r( get_option( 'active_plugins' ), true ) );
-		error_log( 'woocommerce_db_version option: ' . get_option( 'woocommerce_db_version' ) );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
-		error_log( 'TaxJar plugin file loaded' );
 
 		// Strategy 3: Directly call init() after loading the plugin
 		// The global $WC_Taxjar is created at the end of taxjar-woocommerce.php
-		global $WC_Taxjar;
-		error_log( '$WC_Taxjar global variable set: ' . ( isset( $WC_Taxjar ) ? 'YES' : 'NO' ) );
-		if ( isset( $WC_Taxjar ) && method_exists( $WC_Taxjar, 'init' ) ) {
-			error_log( 'Calling WC_Taxjar->init() directly' );
-			$WC_Taxjar->init();
-			error_log( 'WC_Taxjar_Integration exists after init: ' . ( class_exists( 'WC_Taxjar_Integration' ) ? 'YES' : 'NO' ) );
-		} else {
-			error_log( 'ERROR: Cannot call init() - $WC_Taxjar not set or init() method missing' );
+		// IMPORTANT: Must use $GLOBALS superglobal to access it from method scope
+		if ( isset( $GLOBALS['WC_Taxjar'] ) && method_exists( $GLOBALS['WC_Taxjar'], 'init' ) ) {
+			$GLOBALS['WC_Taxjar']->init();
 		}
 
 		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
-		error_log( 'WC_Taxjar_Install class loaded' );
 
 		// Load WooCommerce Subscriptions if available
 		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 		if ( file_exists( $subscriptions_file ) ) {
 			include_once $subscriptions_file;
 		}
-
-		error_log( '=== load_wc() completed ===' );
 	}
 
 	public function install_wc() {
