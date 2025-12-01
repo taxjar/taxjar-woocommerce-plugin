@@ -228,7 +228,16 @@ vendor/bin/phpunit \
     --log-junit /test-results/phpunit-results.xml \
     --testdox \
     --colors=always \
+    2>&1 | tee /test-results/phpunit-output.log \
     || TEST_EXIT_CODE=$?
+
+# Capture WordPress debug log if it exists
+if [ -f "/var/www/html/wp-content/debug.log" ]; then
+    print_status "Capturing WordPress debug log"
+    cp /var/www/html/wp-content/debug.log /test-results/wordpress-debug.log
+else
+    print_warning "WordPress debug.log not found (no debug output was generated)"
+fi
 
 # Parse and display test summary
 echo ""
