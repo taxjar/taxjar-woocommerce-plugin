@@ -59,6 +59,16 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
 
+		// Manually initialize TaxJar plugin since plugins_loaded hook already fired
+		// The WC_Taxjar class registers init() to plugins_loaded, but that hook has already
+		// been triggered by the time we require the plugin file in tests. The init() method
+		// contains all 70+ include_once statements that load plugin classes, so we must call
+		// it manually to make classes available to tests.
+		global $WC_Taxjar;
+		if ( isset( $WC_Taxjar ) && method_exists( $WC_Taxjar, 'init' ) ) {
+			$WC_Taxjar->init();
+		}
+
 		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
 
