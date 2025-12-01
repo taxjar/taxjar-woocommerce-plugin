@@ -62,8 +62,13 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// Manually initialize TaxJar plugin since plugins_loaded hook already fired
 		// The WC_Taxjar class registers init() to plugins_loaded, but that hook has already
 		// been triggered by the time we require the plugin file in tests. The init() method
-		// contains all 70+ include_once statements that load plugin classes, so we must call
-		// it manually to make classes available to tests.
+		// contains all 70+ include_once statements that load plugin classes, and it guards
+		// execution with class_exists('WC_Integration'). We need to ensure WooCommerce's
+		// integration classes are loaded before calling init().
+		if ( ! class_exists( 'WC_Integration' ) ) {
+			require_once $this->plugin_dir . 'woocommerce/includes/abstracts/abstract-wc-integration.php';
+		}
+
 		global $WC_Taxjar;
 		if ( isset( $WC_Taxjar ) && method_exists( $WC_Taxjar, 'init' ) ) {
 			$WC_Taxjar->init();
