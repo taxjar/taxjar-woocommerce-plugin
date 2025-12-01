@@ -64,10 +64,8 @@ final class WC_Taxjar {
 	 * Initialize the plugin.
 	 */
 	public function init() {
-		error_log( '[TaxJar init()] Starting init() method' );
 		// Checks if WooCommerce is installed.
 		if ( class_exists( 'WC_Integration' ) ) {
-			error_log( '[TaxJar init()] WC_Integration exists, loading TaxJar classes...' );
 
 			include_once 'includes/utilities/class-constants-manager.php';
 
@@ -139,12 +137,7 @@ final class WC_Taxjar {
 
 			// Display notices if applicable.
 			add_action( 'admin_notices', array( $this, 'maybe_display_admin_notices' ) );
-
-			error_log( '[TaxJar init()] Finished loading all TaxJar classes' );
-		} else {
-			error_log( '[TaxJar init()] WC_Integration does NOT exist, skipping class loading' );
 		}
-		error_log( '[TaxJar init()] Exiting init() method' );
 	}
 
 	/**

@@ -59,15 +59,6 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
 
-		// Strategy 3: Directly call init() after loading the plugin
-		// The global $WC_Taxjar is created at the end of taxjar-woocommerce.php
-		// IMPORTANT: Must use $GLOBALS superglobal to access it from method scope
-		error_log( 'Before calling init(): WC_Integration exists: ' . ( class_exists( 'WC_Integration' ) ? 'YES' : 'NO' ) );
-		if ( isset( $GLOBALS['WC_Taxjar'] ) && method_exists( $GLOBALS['WC_Taxjar'], 'init' ) ) {
-			$GLOBALS['WC_Taxjar']->init();
-			error_log( 'After calling init(): WC_Taxjar_Integration exists: ' . ( class_exists( 'WC_Taxjar_Integration' ) ? 'YES' : 'NO' ) );
-		}
-
 		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
 
@@ -75,6 +66,16 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 		if ( file_exists( $subscriptions_file ) ) {
 			include_once $subscriptions_file;
+		}
+
+		// Strategy 2: Re-fire plugins_loaded AFTER all plugins are loaded
+		// This allows TaxJar's init() hook (registered in constructor) to execute
+		// Use a flag to prevent infinite recursion
+		if ( ! did_action( 'taxjar_test_second_plugins_loaded' ) ) {
+			error_log( 'Re-firing plugins_loaded hook for TaxJar initialization' );
+			do_action( 'taxjar_test_second_plugins_loaded' ); // Track that we fired it
+			do_action( 'plugins_loaded' ); // Fire the hook again
+			error_log( 'Plugins_loaded re-fired. WC_Taxjar_Integration exists: ' . ( class_exists( 'WC_Taxjar_Integration' ) ? 'YES' : 'NO' ) );
 		}
 	}
 
