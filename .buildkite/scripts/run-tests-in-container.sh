@@ -231,12 +231,20 @@ vendor/bin/phpunit \
     2>&1 | tee /test-results/phpunit-output.log \
     || TEST_EXIT_CODE=$?
 
-# Capture WordPress debug log if it exists
-if [ -f "/var/www/html/wp-content/debug.log" ]; then
-    print_status "Capturing WordPress debug log"
-    cp /var/www/html/wp-content/debug.log /test-results/wordpress-debug.log
+# Capture Apache/WordPress logs
+print_status "Capturing WordPress logs"
+
+# Apache error log (contains WordPress/PHP errors)
+if [ -f "/var/log/apache2/error.log" ]; then
+    cp /var/log/apache2/error.log /test-results/wordpress.log
 else
-    print_warning "WordPress debug.log not found (no debug output was generated)"
+    print_warning "Apache error log not found"
+    touch /test-results/wordpress.log
+fi
+
+# Optionally capture WordPress debug.log if it exists
+if [ -f "/var/www/html/wp-content/debug.log" ]; then
+    cat /var/www/html/wp-content/debug.log >> /test-results/wordpress.log
 fi
 
 # Parse and display test summary
