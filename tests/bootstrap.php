@@ -62,8 +62,10 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// Strategy 3: Directly call init() after loading the plugin
 		// The global $WC_Taxjar is created at the end of taxjar-woocommerce.php
 		// IMPORTANT: Must use $GLOBALS superglobal to access it from method scope
+		error_log( 'Before calling init(): WC_Integration exists: ' . ( class_exists( 'WC_Integration' ) ? 'YES' : 'NO' ) );
 		if ( isset( $GLOBALS['WC_Taxjar'] ) && method_exists( $GLOBALS['WC_Taxjar'], 'init' ) ) {
 			$GLOBALS['WC_Taxjar']->init();
+			error_log( 'After calling init(): WC_Taxjar_Integration exists: ' . ( class_exists( 'WC_Taxjar_Integration' ) ? 'YES' : 'NO' ) );
 		}
 
 		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
