@@ -1,3 +1,8 @@
+# 4.2.6 (2025-11-28)
+* WooCommerce tested up to 10.3.5
+* #276 Fix WooCommerce Checkout Block compatibility for tax calculation
+* #277 Fix incorrect shipping tax on exempt products when using saved rates
+
 # 4.2.5 (2025-10-06)
 * WooCommerce tested up to 10.2.2
 * WordPress 6.8.3 tested
