@@ -70,9 +70,9 @@ steps:
     depends_on: "phpcs"
     matrix:
       - "7.x"
-      # - "8.x"  # Disabled: ActionScheduler_Store errors
+      - "8.x"
       - "9.x"
-      # - "10.x"  # Disabled: ActionScheduler_Store errors
+      - "10.x"
     env:
       BUILDKITE_MATRIX: "{{matrix}}"
     agents:
