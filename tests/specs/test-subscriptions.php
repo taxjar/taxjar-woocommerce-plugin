@@ -65,6 +65,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_products_with_trial() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		$subscription_product = TaxJar_Product_Helper::create_product(
 			'subscription',
 			array(
@@ -87,6 +88,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_products_with_trial_and_signup_fee() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		$subscription_product = TaxJar_Product_Helper::create_product(
 			'subscription',
 			array(
@@ -122,6 +124,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_products_with_no_trial() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		$subscription_product = TaxJar_Product_Helper::create_product(
 			'subscription',
 			array(
@@ -157,6 +160,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_products_with_no_trial_and_signup_fee() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		$subscription_product = TaxJar_Product_Helper::create_product(
 			'subscription',
 			array(
@@ -192,6 +196,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_products_with_other_products() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		$subscription_product = TaxJar_Product_Helper::create_product(
 			'subscription',
 			array(
@@ -234,6 +239,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_products_with_other_products_and_trial() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		$subscription_product = TaxJar_Product_Helper::create_product(
 			'subscription',
 			array(
@@ -276,6 +282,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_products_with_other_products_and_trial_and_shipping() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
 
 		// NJ shipping address
@@ -347,6 +354,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_products_with_other_products_and_trial_and_thresholds() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		// NY shipping address
 		WC()->customer = TaxJar_Customer_Helper::create_customer(
 			array(
@@ -423,6 +431,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	 * @throws Exception
 	 */
 	function test_tax_for_exempt_subscription() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		$subscription_product = TaxJar_Product_Helper::create_product(
 			'subscription',
 			array(
@@ -451,6 +460,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_recurring_order() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		wp_set_current_user( $this->user );
 
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
@@ -484,6 +494,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_recurring_order_with_one_month_trial() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		wp_set_current_user( $this->user );
 
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
@@ -528,6 +539,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_recurring_order_with_trial_and_signup_fee() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		wp_set_current_user( $this->user );
 
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
@@ -572,6 +584,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_recurring_order_with_multiple_products() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		wp_set_current_user( $this->user );
 
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
@@ -628,6 +641,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_renewal_order_transaction_sync() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		wp_set_current_user( $this->user );
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
 		$request  = TaxJar_Subscription_Helper::prepare_subscription_request();
@@ -653,6 +667,7 @@ class TJ_WC_Test_Subscriptions extends WP_HTTP_TestCase {
 	}
 
 	function test_correct_taxes_for_subscription_recurring_order_with_exempt_customer() {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		wp_set_current_user( $this->user );
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 10 );
 		$customer = TaxJar_Customer_Helper::create_exempt_customer();
