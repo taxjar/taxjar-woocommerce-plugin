@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress_test
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    ports:
+      - "3306:3306"
+    tmpfs:
+      # Fast in-memory database for tests
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+      interval: 5s
+      start_period: 10s
+
+  wordpress:
+    image: wordpress:${WP_VERSION:-6.4}-php${PHP_VERSION:-8.2}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress_test
+      WORDPRESS_DEBUG: 1
+      WP_DEBUG: 1
+      WP_DEBUG_LOG: 1
+      WP_DEBUG_DISPLAY: 1
+      WC_VERSION: ${WC_VERSION:-9.3.3}
+      WP_VERSION: ${WP_VERSION:-6.4}
+      TAXJAR_API_TOKEN: ${TAXJAR_API_TOKEN}
+      # Environment variables for test setup
+      WP_TESTS_DIR: /tmp/wordpress-tests-lib
+      WP_CORE_DIR: /var/www/html
+    volumes:
+      # Mount plugin code for live editing
+      - .:/var/www/html/wp-content/plugins/taxjar-simplified-taxes-for-woocommerce
+      # Mount test results directory
+      - ./test-results:/test-results
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/wp-admin/install.php"]
+      timeout: 5s
+      retries: 30
+      interval: 10s
+    # Don't restart automatically - we want to inspect failures
+    restart: "no"

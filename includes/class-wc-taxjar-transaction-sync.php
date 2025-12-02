@@ -438,6 +438,13 @@ class WC_Taxjar_Transaction_Sync {
 
 		$should_delete = false;
 		$order = wc_get_order( $order_id );
+		if ( is_wp_error( $order ) ) {
+			TaxJar_Woocommerce_Helper::log( 'TaxJar: Failed to load order ' . $order_id . ' in order_cancelled: ' . $order->get_error_message() );
+			return;
+		}
+		if ( ! $order ) {
+			return;
+		}
 
 		if ( $record->get_object_hash() || $record->get_last_sync_time() ) {
 			$should_delete = true;

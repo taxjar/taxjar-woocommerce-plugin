@@ -16,6 +16,10 @@ class TaxJar_Order_Record extends TaxJar_Record {
 			$this->object = $object;
 		} else {
 			$order = wc_get_order( $this->get_record_id() );
+			if ( is_wp_error( $order ) ) {
+				TaxJar_Woocommerce_Helper::log( 'TaxJar: Failed to load order ' . $this->get_record_id() . ': ' . $order->get_error_message() );
+				return;
+			}
 			if ( $order instanceof WC_Order && get_class( $order ) != 'WC_Subscription' ) {
 				$this->object = $order;
 			} else {
