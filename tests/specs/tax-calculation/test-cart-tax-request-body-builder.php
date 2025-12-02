@@ -143,6 +143,7 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 		// Skip if any product requires subscriptions
 		foreach( $products as $product ) {
 			if ( $product['product']['type'] === 'subscription' && ! class_exists( 'WC_Product_Subscription' ) ) {
+				$this->markTestSkipped( 'WooCommerce Subscriptions plugin is required' );
 				return;
 			}
 		}
