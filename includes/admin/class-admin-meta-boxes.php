@@ -36,7 +36,7 @@ class Admin_Meta_Boxes {
 	public function add_order_meta_box( $post_type, $post ) {
 		$wc_order = wc_get_order( $post->ID );
 
-		if ( ! $wc_order ) {
+		if ( is_wp_error( $wc_order ) || ! $wc_order ) {
 			return;
 		}
 

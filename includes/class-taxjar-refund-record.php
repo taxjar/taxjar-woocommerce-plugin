@@ -11,6 +11,10 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 
 	public function load_object() {
 		$refund =  wc_get_order( $this->get_record_id() );
+		if ( is_wp_error( $refund ) ) {
+			TaxJar_Woocommerce_Helper::log( 'TaxJar: Failed to load refund ' . $this->get_record_id() . ': ' . $refund->get_error_message() );
+			return;
+		}
 		if ( $refund instanceof WC_Order_Refund ) {
 			$this->object = $refund;
 		} else {
@@ -88,7 +92,12 @@ class TaxJar_Refund_Record extends TaxJar_Record {
 
 		$order_id = $this->object->get_parent_id();
 		$order = wc_get_order( $order_id );
-		if ( $order === false ) {
+		if ( is_wp_error( $order ) ) {
+			TaxJar_Woocommerce_Helper::log( 'TaxJar: Failed to load parent order ' . $order_id . ' for refund: ' . $order->get_error_message() );
+			$this->data = array();
+			return array();
+		}
+		if ( $order === false || ! $order ) {
 			$this->data = array();
 			return array();
 		}
