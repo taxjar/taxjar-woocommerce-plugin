@@ -67,7 +67,7 @@ steps:
   # Stage 3: PHPUnit Tests - Sequential across WooCommerce versions to avoid race conditions
   - label: ":test_tube: PHPUnit - WC 7.x"
     key: "phpunit-wc7"
-    depends_on: "phpcs"
+    depends_on: "lint"  # Only wait for lint, not PHPCS
     env:
       BUILDKITE_MATRIX: "7.x"
     agents:
