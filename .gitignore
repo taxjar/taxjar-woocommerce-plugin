@@ -1,6 +1,7 @@
 /tmp
 /vendor
 composer.phar
+.worktrees/
 
 # Test artifacts
 .buildkite/test-results/
