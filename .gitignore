@@ -5,6 +5,7 @@ composer.phar
 # Test artifacts
 .buildkite/test-results/
 test-results/
+tests/.phpunit.result.cache
 
 # WordPress core files (from Docker testing)
 wp-admin/
