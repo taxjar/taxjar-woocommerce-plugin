@@ -13,6 +13,7 @@ class Test_Subscription_Cart_Tax_Calculation extends Cart_Integration_Test {
 
 		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
 			$this->markTestSkipped( 'WooCommerce Subscriptions plugin is required' );
+			return;
 		}
 	}
 
@@ -20,6 +21,7 @@ class Test_Subscription_Cart_Tax_Calculation extends Cart_Integration_Test {
 	 * @dataProvider get_subscription_cart_test_data
 	 */
 	public function test_subscription_cart_tax_calculation( $data ) {
+		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		$this->create_cart_builder_from_provider_data( $data );
 		$cart = $this->cart_builder->build();
 

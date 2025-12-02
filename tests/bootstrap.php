@@ -25,8 +25,14 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 
 		require dirname( dirname( __FILE__ ) ) . '/vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
-		// load WC
-		tests_add_filter( 'muplugins_loaded', array( $this, 'load_wc' ) );
+		// Use version-aware hook selection
+		// WC 8.x and 10.x require plugins_loaded (pluggable functions needed)
+		// WC 7.x and 9.x can use muplugins_loaded (faster, no pluggable dependencies)
+		$wc_version       = getenv( 'WC_VERSION' ) ?: '7.9.0';
+		$major_version    = (int) explode( '.', $wc_version )[0];
+		$use_plugins_hook = in_array( $major_version, array( 8, 10 ), true );
+		$hook             = $use_plugins_hook ? 'plugins_loaded' : 'muplugins_loaded';
+		tests_add_filter( $hook, array( $this, 'load_wc' ) );
 
 		// install WC
 		tests_add_filter( 'setup_theme', array( $this, 'install_wc' ) );
@@ -52,6 +58,9 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
+
+		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
+		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
 
 		// Load WooCommerce Subscriptions if available
 		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';

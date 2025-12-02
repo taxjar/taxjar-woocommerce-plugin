@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress_test
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    tmpfs:
+      - /var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+      interval: 5s
+      start_period: 10s
+
+  wordpress:
+    image: wordpress:${WP_VERSION:-6.4}-php${PHP_VERSION:-8.2}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress_test
+      WORDPRESS_DEBUG: 1
+      WP_DEBUG: 1
+      WP_DEBUG_LOG: 1
+      WP_DEBUG_DISPLAY: 1
+      # WooCommerce version set via environment
+      WC_VERSION: ${WC_VERSION:-9.3.3}
+      # TaxJar API token from Chamber/SSM
+      TAXJAR_API_TOKEN: ${TAXJAR_API_TOKEN}
+    volumes:
+      # Mount the plugin code
+      - ../:/var/www/html/wp-content/plugins/taxjar-simplified-taxes-for-woocommerce
+      # Mount test scripts
+      - ./scripts:/test-scripts
+      # Mount test results directory
+      - ./test-results:/test-results
+    # IMPORTANT: Don't set working_dir - let WordPress entrypoint run from /var/www/html
+    # The test script will change directory as needed
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/wp-admin/install.php"]
+      timeout: 5s
+      retries: 30
+      interval: 10s

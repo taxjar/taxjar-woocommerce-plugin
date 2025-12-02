@@ -1,2 +1,29 @@
 /tmp
 /vendor
+composer.phar
+.worktrees/
+
+# Test artifacts
+.buildkite/test-results/
+test-results/
+tests/.phpunit.result.cache
+
+# WordPress core files (from Docker testing)
+wp-admin/
+wp-includes/
+wp-content/
+*.php
+*.html
+!taxjar-*.php
+!includes/**/*.php
+!classes/**/*.php
+!tests/**/*.php
+!.buildkite/**/*.php
+
+# WordPress configuration
+wp-config.php
+wp-config-*.php
+
+# Logs and temp files
+*.log
+.htaccess

@@ -1,0 +1,65 @@
+#!/bin/bash
+set -euo pipefail
+
+# Pre-command hook for TaxJar WooCommerce Plugin CI
+# Loads secrets from Chamber/SSM for test execution
+
+echo "--- :key: Loading secrets from Chamber"
+
+# Check if we're running a test step that needs secrets
+if [[ "$BUILDKITE_LABEL" == *"PHPUnit"* ]]; then
+    # Export TaxJar API token from Chamber
+    # Format: chamber read -q <service>/<project> <key>
+    export TAXJAR_API_TOKEN=$(chamber read -q buildkite/taxjar-woocommerce-plugin taxjar_api_token || echo "")
+
+    if [ -z "$TAXJAR_API_TOKEN" ]; then
+        echo "⚠️  Warning: TAXJAR_API_TOKEN not found in Chamber"
+        echo "   Tests requiring API access may fail"
+        echo "   Configure secret with: chamber write buildkite/taxjar-woocommerce-plugin taxjar_api_token <token>"
+    else
+        echo "✅ TAXJAR_API_TOKEN loaded successfully"
+    fi
+
+    # Export Buildkite Analytics token from Chamber for test-collector plugin
+    export BUILDKITE_ANALYTICS_TOKEN=$(chamber read -q buildkite/taxjar-woocommerce-plugin buildkite_analytics_token || echo "")
+
+    if [ -z "$BUILDKITE_ANALYTICS_TOKEN" ]; then
+        echo "⚠️  Warning: BUILDKITE_ANALYTICS_TOKEN not found in Chamber"
+        echo "   Test analytics will not be collected"
+        echo "   Configure secret with: chamber write buildkite/taxjar-woocommerce-plugin buildkite_analytics_token <token>"
+    else
+        echo "✅ BUILDKITE_ANALYTICS_TOKEN loaded successfully"
+    fi
+fi
+
+# Set matrix-specific environment variables for docker-compose
+# These must be set before docker-compose runs so it can select the correct image
+if [ -n "${BUILDKITE_MATRIX:-}" ]; then
+  case "${BUILDKITE_MATRIX}" in
+    "7.x")
+      export WC_VERSION="7.9.0"
+      export PHP_VERSION="8.2"
+      export WP_VERSION="6.4"
+      ;;
+    "8.x")
+      export WC_VERSION="8.9.1"
+      export PHP_VERSION="8.1"
+      export WP_VERSION="6.2"
+      ;;
+    "9.x")
+      export WC_VERSION="9.3.3"
+      export PHP_VERSION="8.2"
+      export WP_VERSION="6.4"
+      ;;
+    "10.x")
+      export WC_VERSION="10.2.2"
+      export PHP_VERSION="8.3"
+      export WP_VERSION="6.7"
+      ;;
+  esac
+  echo "📦 Matrix ${BUILDKITE_MATRIX}: WC ${WC_VERSION}, PHP ${PHP_VERSION}, WP ${WP_VERSION}"
+fi
+
+# Additional environment setup if needed
+export BUILDKITE_PLUGIN_DOCKER_COMPOSE_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1

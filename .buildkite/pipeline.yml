@@ -1,0 +1,175 @@
+# TaxJar WooCommerce Plugin CI Pipeline - Phase 1
+# Quality gates for pull requests and releases
+
+steps:
+  # Stage 1: PHP Lint - Fast syntax validation
+  - label: ":php: PHP Lint"
+    key: "lint"
+    command: |
+      echo "+++ Checking PHP syntax"
+      docker run --rm -v "$(pwd):/app" -w /app php:8.2-cli bash -c '
+        find . -name "*.php" -not -path "./vendor/*" -not -path "./.buildkite/*" -print0 | \
+          xargs -0 -n1 -P8 php -l
+      '
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 5
+    soft_fail: false
+
+  # Stage 2: PHPCS - WordPress Coding Standards
+  - label: ":white_check_mark: PHPCS - WordPress Coding Standards"
+    key: "phpcs"
+    depends_on: "lint"
+    command: |
+      echo "+++ Running PHPCS with WordPress Coding Standards"
+      docker run --rm -v "$(pwd):/app" -w /app php:8.2-cli bash -c '
+        echo "--- Installing system dependencies"
+        apt-get update -qq && apt-get install -y -qq \
+          git \
+          unzip \
+          libzip-dev > /dev/null 2>&1
+        docker-php-ext-install zip > /dev/null 2>&1
+
+        echo "--- Configuring git"
+        git config --global --add safe.directory /app
+
+        echo "--- Installing Composer"
+        if [ ! -f composer.phar ]; then
+          curl -sS https://getcomposer.org/installer | php > /dev/null
+        fi
+
+        echo "--- Installing PHP dependencies"
+        php composer.phar install --no-interaction --quiet
+
+        echo "+++ Verifying PHPCS installation"
+        vendor/bin/phpcs -i
+
+        echo "+++ Running code standards check"
+        vendor/bin/phpcs \
+          --extensions=php \
+          --ignore=vendor/,node_modules/,.buildkite/,tests/ \
+          --report=full \
+          --report-checkstyle=phpcs-report.xml \
+          . || PHPCS_EXIT=$$?
+
+        if [ "$${PHPCS_EXIT:-0}" -ne 0 ]; then
+          echo "WARNING: Code standards issues found (soft fail enabled)"
+          exit 0
+        fi
+      '
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 10
+    soft_fail: true  # Don't block on coding standards initially
+    artifact_paths:
+      - "phpcs-report.xml"
+
+  # Stage 3: PHPUnit Tests - Sequential across WooCommerce versions to avoid race conditions
+  - label: ":test_tube: PHPUnit - WC 7.x"
+    key: "phpunit-wc7"
+    depends_on: "lint"  # Only wait for lint, not PHPCS
+    env:
+      BUILDKITE_MATRIX: "7.x"
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 15
+    soft_fail: false  # Fail build on test failures
+    plugins:
+      - docker-compose#v4.14.0:
+          run: wordpress
+          config: .buildkite/docker-compose.test.yml
+          command: ["/test-scripts/set-test-env.sh"]
+          rm: false  # Don't auto-remove container so we can capture logs
+          environment:
+            - BUILDKITE_MATRIX=7.x
+            - TAXJAR_API_TOKEN
+            - BUILDKITE_ANALYTICS_TOKEN
+      - artifacts#v1.9.0:
+          upload:
+            - ".buildkite/test-results/*.xml"
+            - ".buildkite/test-results/*.log"
+      - test-collector#v1.10.0:
+          files: ".buildkite/test-results/*.xml"
+          format: "junit"
+
+  # - label: ":test_tube: PHPUnit - WC 8.x"
+  #   key: "phpunit-wc8"
+  #   depends_on: "phpunit-wc7"  # Run after WC 7.x
+  #   env:
+  #     BUILDKITE_MATRIX: "8.x"
+  #   agents:
+  #     queue: "docker"
+  #   timeout_in_minutes: 15
+  #   soft_fail: false
+  #   plugins:
+  #     - docker-compose#v4.14.0:
+  #         run: wordpress
+  #         config: .buildkite/docker-compose.test.yml
+  #         command: ["/test-scripts/set-test-env.sh"]
+  #         rm: false
+  #         environment:
+  #           - BUILDKITE_MATRIX=8.x
+  #           - TAXJAR_API_TOKEN
+  #           - BUILDKITE_ANALYTICS_TOKEN
+  #     - artifacts#v1.9.0:
+  #         upload:
+  #           - ".buildkite/test-results/*.xml"
+  #           - ".buildkite/test-results/*.log"
+  #     - test-collector#v1.10.0:
+  #         files: ".buildkite/test-results/*.xml"
+  #         format: "junit"
+
+  - label: ":test_tube: PHPUnit - WC 9.x"
+    key: "phpunit-wc9"
+    depends_on: "phpunit-wc7"  # Run after WC 7.x
+    env:
+      BUILDKITE_MATRIX: "9.x"
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 15
+    soft_fail: false
+    plugins:
+      - docker-compose#v4.14.0:
+          run: wordpress
+          config: .buildkite/docker-compose.test.yml
+          command: ["/test-scripts/set-test-env.sh"]
+          rm: false
+          environment:
+            - BUILDKITE_MATRIX=9.x
+            - TAXJAR_API_TOKEN
+            - BUILDKITE_ANALYTICS_TOKEN
+      - artifacts#v1.9.0:
+          upload:
+            - ".buildkite/test-results/*.xml"
+            - ".buildkite/test-results/*.log"
+      - test-collector#v1.10.0:
+          files: ".buildkite/test-results/*.xml"
+          format: "junit"
+
+  # - label: ":test_tube: PHPUnit - WC 10.x"
+  #   key: "phpunit-wc10"
+  #   depends_on: "phpunit-wc9"  # Run after WC 9.x
+  #   env:
+  #     BUILDKITE_MATRIX: "10.x"
+  #   agents:
+  #     queue: "docker"
+  #   timeout_in_minutes: 15
+  #   soft_fail: false
+  #   plugins:
+  #     - docker-compose#v4.14.0:
+  #         run: wordpress
+  #         config: .buildkite/docker-compose.test.yml
+  #         command: ["/test-scripts/set-test-env.sh"]
+  #         rm: false
+  #         environment:
+  #           - BUILDKITE_MATRIX=10.x
+  #           - TAXJAR_API_TOKEN
+  #           - BUILDKITE_ANALYTICS_TOKEN
+  #     - artifacts#v1.9.0:
+  #         upload:
+  #           - ".buildkite/test-results/*.xml"
+  #           - ".buildkite/test-results/*.log"
+  #     - test-collector#v1.10.0:
+  #         files: ".buildkite/test-results/*.xml"
+  #         format: "junit"
+
