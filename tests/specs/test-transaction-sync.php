@@ -77,6 +77,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	 */
 	function create_test_refund( $order_id ) {
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order_id );
+		if ( is_wp_error( $refund ) ) {
+			return $refund;
+		}
 		array_push( $this->synced_refund_ids, $refund->get_id() );
 		return $refund;
 	}
@@ -614,6 +617,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$result = $record->create_in_taxjar();
 
 		$refund = $this->create_test_refund( $order->get_id() );
+		$this->assertFalse( is_wp_error( $refund ), 'Failed to create refund: ' . ( is_wp_error( $refund ) ? $refund->get_error_message() : '' ) );
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$refund_record->load_object();
 		$refund_delete = $refund_record->delete_in_taxjar();
@@ -633,6 +637,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$result = $record->create_in_taxjar();
 
 		$refund = $this->create_test_refund( $order->get_id() );
+		$this->assertFalse( is_wp_error( $refund ), 'Failed to create refund: ' . ( is_wp_error( $refund ) ? $refund->get_error_message() : '' ) );
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$refund_record->load_object();
 		$refund_record->delete_in_taxjar();
@@ -909,6 +914,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		update_option( 'woocommerce_currency', 'GBP' );
 		$order = $this->create_test_order( 1 );
 		$refund = $this->create_test_refund( $order->get_id() );
+		$this->assertFalse( is_wp_error( $refund ), 'Failed to create refund: ' . ( is_wp_error( $refund ) ? $refund->get_error_message() : '' ) );
 		$refund_record = new TaxJar_Refund_Record( $refund->get_id(), true );
 		$refund_record->load_object();
 		update_option( 'woocommerce_currency', 'USD' );
