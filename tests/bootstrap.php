@@ -79,6 +79,26 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
 
+		// For WC 8.x and 10.x: Manually initialize TaxJar plugin classes
+		// TaxJar's WC_Taxjar::init() method loads all 70+ plugin classes but is hooked to plugins_loaded
+		// Since we're already IN the plugins_loaded callback, that hook won't fire
+		// Solution: Manually instantiate WC_Taxjar and call init() to load all plugin classes
+		if ( in_array( $major_version, array( 8, 10 ), true ) ) {
+			// The taxjar-woocommerce.php file creates a local $WC_Taxjar variable but not a global
+			// We need to create a global instance and call its init() method
+			global $WC_Taxjar;
+
+			// Create WC_Taxjar instance if not already present
+			if ( ! isset( $WC_Taxjar ) && class_exists( 'WC_Taxjar' ) ) {
+				$WC_Taxjar = new WC_Taxjar();
+			}
+
+			// Call init() to load all TaxJar plugin classes
+			if ( isset( $WC_Taxjar ) && method_exists( $WC_Taxjar, 'init' ) ) {
+				$WC_Taxjar->init();
+			}
+		}
+
 		// Load WooCommerce Subscriptions if available
 		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
 		if ( file_exists( $subscriptions_file ) ) {
