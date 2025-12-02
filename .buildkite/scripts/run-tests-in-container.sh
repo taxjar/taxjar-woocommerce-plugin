@@ -223,6 +223,10 @@ fi
 
 echo "+++ :test_tube: Running PHPUnit tests"
 
+# Ensure test results directory exists with proper permissions
+mkdir -p /test-results
+chmod 777 /test-results
+
 vendor/bin/phpunit \
     --configuration "$PHPUNIT_CONFIG" \
     --log-junit /test-results/phpunit-results.xml \
@@ -231,13 +235,22 @@ vendor/bin/phpunit \
     2>&1 | tee /test-results/phpunit-output.log \
     || TEST_EXIT_CODE=$?
 
-# Capture WordPress debug log if it exists
-if [ -f "/var/www/html/wp-content/debug.log" ]; then
-    print_status "Capturing WordPress debug log"
-    cp /var/www/html/wp-content/debug.log /test-results/wordpress-debug.log
-else
-    print_warning "WordPress debug.log not found (no debug output was generated)"
+# Ensure XML file exists even if PHPUnit failed before creating it
+if [ ! -f "/test-results/phpunit-results.xml" ]; then
+    print_warning "PHPUnit results XML not found, creating empty test suite"
+    cat > /test-results/phpunit-results.xml << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="Empty" tests="0" assertions="0" failures="0" errors="0" skipped="0">
+  </testsuite>
+</testsuites>
+EOF
 fi
+
+# Note: WordPress and Apache logs are captured by the post-command hook
+# using docker-compose logs, which captures all stdout/stderr from the container.
+# This provides more complete logging than trying to find specific log files.
+print_status "WordPress logs will be captured by post-command hook"
 
 # Parse and display test summary
 echo ""
