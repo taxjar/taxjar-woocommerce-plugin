@@ -54,6 +54,23 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		// load woocommerce
 		require_once $this->plugin_dir . 'woocommerce/woocommerce.php';
 
+		// For WC 8.x and 10.x: Manually initialize ActionScheduler
+		// WooCommerce loads ActionScheduler but registers initialization hooks to plugins_loaded
+		// Since we're already IN the plugins_loaded callback, those hooks won't fire
+		// We need to manually call the initialization functions to load ActionScheduler classes
+		$wc_version    = getenv( 'WC_VERSION' ) ?: '7.9.0';
+		$major_version = (int) explode( '.', $wc_version )[0];
+		if ( in_array( $major_version, array( 8, 10 ), true ) ) {
+			// Call the version-specific initialization function
+			if ( function_exists( 'action_scheduler_initialize_3_dot_7_dot_4' ) ) {
+				action_scheduler_initialize_3_dot_7_dot_4();
+			}
+			// Initialize the latest registered version
+			if ( class_exists( 'ActionScheduler_Versions' ) ) {
+				ActionScheduler_Versions::initialize_latest_version();
+			}
+		}
+
 		// load taxjar core
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
