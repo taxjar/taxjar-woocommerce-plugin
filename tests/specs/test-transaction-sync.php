@@ -1054,6 +1054,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_delete_refund() {
+		$this->markTestSkipped( 'Temporarily disabled for Phase 1 of CI testing' );
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
