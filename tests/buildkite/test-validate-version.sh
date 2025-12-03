@@ -135,4 +135,55 @@ else
     exit 1
 fi
 
+# Test 4: Missing optional fields should warn but not block
+echo ""
+echo "Test 4: Missing optional fields should warn but not block"
+
+mkdir -p "$TEST_DIR/pr-branch-warnings"
+mkdir -p "$TEST_DIR/master-warnings"
+
+# Create PR branch with only required fields (missing optional fields)
+cat > "$TEST_DIR/pr-branch-warnings/taxjar-woocommerce.php" << 'EOF'
+<?php
+/**
+ * Version: 4.2.0
+ */
+class WC_Taxjar_Integration {
+    public $version = '4.2.0';
+}
+EOF
+
+cat > "$TEST_DIR/pr-branch-warnings/readme.txt" << 'EOF'
+Stable tag: 4.2.0
+
+== Changelog ==
+
+= 4.2.0 - 2025-12-03 =
+* New version
+EOF
+
+cat > "$TEST_DIR/pr-branch-warnings/CHANGELOG.md" << 'EOF'
+# 4.2.0 - 2025-12-03
+New version
+EOF
+
+# Create master version
+cp "$PROJECT_ROOT/tests/fixtures/sample-plugin.php" "$TEST_DIR/master-warnings/taxjar-woocommerce.php"
+
+export PR_DIR="$TEST_DIR/pr-branch-warnings"
+export MASTER_DIR="$TEST_DIR/master-warnings"
+
+OUTPUT=$("$PROJECT_ROOT/.buildkite/scripts/validate-version.sh" 2>&1)
+if echo "$OUTPUT" | grep -q "⚠️.*WC tested up to"; then
+    if echo "$OUTPUT" | grep -q "All critical checks passed"; then
+        echo "✓ PASS: Warns on optional fields but doesn't block"
+    else
+        echo "✗ FAIL: Should not block on optional field warnings"
+        exit 1
+    fi
+else
+    echo "✗ FAIL: Should warn about missing optional fields"
+    exit 1
+fi
+
 echo "=== All tests passed ==="

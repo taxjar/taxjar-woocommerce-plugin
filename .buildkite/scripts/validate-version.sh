@@ -117,11 +117,62 @@ else
     echo "✓ readme.txt has changelog entry for $PR_VERSION"
 fi
 
+# Optional field checks (warnings only)
+echo ""
+echo "--- Checking Optional Fields"
+
+WARNINGS=0
+
+check_optional_field() {
+    local file="$1"
+    local pattern="$2"
+    local description="$3"
+    local extracted
+
+    if [[ -n "$PR_DIR" ]]; then
+        extracted=$(sed -n "s/.*${pattern}.*/\1/p" "$PR_DIR/$file" 2>/dev/null | head -1)
+    else
+        extracted=$(sed -n "s/.*${pattern}.*/\1/p" "$file" 2>/dev/null | head -1)
+    fi
+
+    if [[ -z "$extracted" ]]; then
+        echo "⚠️  WARNING: $description not set"
+        WARNINGS=$((WARNINGS + 1))
+    else
+        echo "✓ $description: $extracted"
+    fi
+}
+
+# Check WC tested up to in readme.txt
+check_optional_field "readme.txt" "WC tested up to: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)" "readme.txt WC tested up to"
+
+# Check WP tested up to in readme.txt
+check_optional_field "readme.txt" "Tested up to: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)" "readme.txt WP tested up to"
+
+# Check WC requires at least in readme.txt
+check_optional_field "readme.txt" "WC requires at least: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)" "readme.txt WC requires at least"
+
+# Check WC tested up to in PHP file
+check_optional_field "taxjar-woocommerce.php" "\* WC tested up to: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)" "PHP file WC tested up to"
+
+# Check WC requires at least in PHP file
+check_optional_field "taxjar-woocommerce.php" "\* WC requires at least: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)" "PHP file WC requires at least"
+
+# Check minimum_woocommerce_version property
+check_optional_field "taxjar-woocommerce.php" "public \\\$minimum_woocommerce_version = '\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)'" "PHP \$minimum_woocommerce_version property"
+
+if [[ $WARNINGS -gt 0 ]]; then
+    echo ""
+    echo "⚠️  $WARNINGS optional field(s) not set (non-blocking)"
+fi
+
 # Exit with failure if validation failed
 if [[ $VALIDATION_FAILED -eq 1 ]]; then
-    echo "ERROR: Version validation failed"
+    echo ""
+    echo "❌ VALIDATION FAILED - Version consistency check failed"
     exit 1
 fi
 
-echo "+++ Version validation passed"
+echo ""
+echo "+++ All critical checks passed"
 exit 0
