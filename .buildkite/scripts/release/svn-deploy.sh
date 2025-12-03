@@ -55,7 +55,74 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# Step 1: Checkout SVN repository
 echo ""
-echo "Script structure ready"
+echo "--- Checking out SVN repository"
+
+mkdir -p "$SVN_DIR"
+cd "$SVN_DIR"
+
+if ! svn checkout "$SVN_URL" . --depth immediates; then
+    echo "ERROR: Failed to checkout SVN repository"
+    exit 1
+fi
+
+# Get trunk
+svn update trunk --set-depth infinity
+
+echo "✓ SVN repository checked out"
+
+# Step 2: Clear trunk
 echo ""
-echo "+++ Placeholder: SVN deployment logic will be implemented in next task"
+echo "--- Clearing SVN trunk"
+
+cd trunk
+rm -rf * .[^.]* 2>/dev/null || true
+svn status | grep "^!" | awk '{print $2}' | xargs -r svn delete --force
+
+echo "✓ Trunk cleared"
+
+# Step 3: Clone git tag into trunk
+echo ""
+echo "--- Cloning Git repository (tag $VERSION)"
+
+if ! git clone --depth 1 --branch "$VERSION" https://github.com/taxjar/taxjar-woocommerce-plugin.git .; then
+    echo "ERROR: Failed to clone git repository at tag $VERSION"
+    echo "Make sure the GitHub release was created first"
+    exit 1
+fi
+
+# Remove git metadata
+rm -rf .git .gitignore .gitattributes
+
+echo "✓ Git repository cloned into trunk"
+
+# Step 4: Handle file changes in SVN
+echo ""
+echo "--- Handling file changes"
+
+# Add new files
+NEW_FILES=$(svn status | grep "^?" | awk '{print $2}' || true)
+if [[ -n "$NEW_FILES" ]]; then
+    echo "Adding new files:"
+    echo "$NEW_FILES"
+    echo "$NEW_FILES" | xargs -I {} svn add "{}"
+fi
+
+# Delete removed files (already done above, but check again)
+DELETED_FILES=$(svn status | grep "^!" | awk '{print $2}' || true)
+if [[ -n "$DELETED_FILES" ]]; then
+    echo "Deleting removed files:"
+    echo "$DELETED_FILES"
+    echo "$DELETED_FILES" | xargs -I {} svn delete "{}"
+fi
+
+echo ""
+echo "SVN Status:"
+svn status
+
+echo "✓ File changes handled"
+
+echo ""
+echo "+++ SVN trunk prepared successfully"
+echo "Ready for commit"
