@@ -7,7 +7,7 @@ echo "--- Validating Version Consistency"
 extract_version() {
     local file="$1"
     # Use sed for macOS compatibility (grep -P not available on macOS)
-    sed -n 's/.*\* Version: \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p' "$file" | head -1
+    sed -n 's/.*\* Version: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' "$file" | head -1
 }
 
 # Compare versions between branches
@@ -18,7 +18,7 @@ if [[ -n "$PR_DIR" && -n "$MASTER_DIR" ]]; then
 else
     # Real mode - compare git branches
     PR_VERSION=$(extract_version "taxjar-woocommerce.php")
-    MASTER_VERSION=$(git show origin/master:taxjar-woocommerce.php | sed -n 's/.*\* Version: \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p' | head -1 || echo "")
+    MASTER_VERSION=$(git show origin/master:taxjar-woocommerce.php | sed -n 's/.*\* Version: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' | head -1 || echo "")
 fi
 
 echo "Master version: $MASTER_VERSION"
@@ -32,5 +32,54 @@ fi
 echo "+++ Version change detected: $MASTER_VERSION → $PR_VERSION"
 echo "Proceeding with validation..."
 
-# Validation logic will go here in next task
+# Track validation failures
+VALIDATION_FAILED=0
+
+# Function to check a version field
+check_version_field() {
+    local field_name="$1"
+    local expected="$2"
+    local actual="$3"
+
+    if [[ "$actual" != "$expected" ]]; then
+        echo "ERROR: $field_name mismatch - expected $expected, found $actual"
+        VALIDATION_FAILED=1
+    else
+        echo "✓ $field_name: $actual"
+    fi
+}
+
+# Extract PHP version tag from header comment
+if [[ -n "$PR_DIR" ]]; then
+    PHP_VERSION=$(sed -n 's/.*\* Version: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' "$PR_DIR/taxjar-woocommerce.php" | head -1)
+else
+    PHP_VERSION=$(sed -n 's/.*\* Version: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' "taxjar-woocommerce.php" | head -1)
+fi
+
+# Extract PHP $version property from class
+if [[ -n "$PR_DIR" ]]; then
+    PHP_PROPERTY_VERSION=$(sed -n 's/.*public \$version = '\''\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)'\'';.*/\1/p' "$PR_DIR/taxjar-woocommerce.php" | head -1)
+else
+    PHP_PROPERTY_VERSION=$(sed -n 's/.*public \$version = '\''\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)'\'';.*/\1/p' "taxjar-woocommerce.php" | head -1)
+fi
+
+# Extract readme.txt stable tag
+if [[ -n "$PR_DIR" ]]; then
+    README_VERSION=$(sed -n 's/^Stable tag: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' "$PR_DIR/readme.txt" | head -1)
+else
+    README_VERSION=$(sed -n 's/^Stable tag: \([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p' "readme.txt" | head -1)
+fi
+
+echo "Checking version consistency (critical checks):"
+check_version_field "PHP header Version tag" "$PR_VERSION" "$PHP_VERSION"
+check_version_field "PHP \$version property" "$PR_VERSION" "$PHP_PROPERTY_VERSION"
+check_version_field "readme.txt Stable tag" "$PR_VERSION" "$README_VERSION"
+
+# Exit with failure if validation failed
+if [[ $VALIDATION_FAILED -eq 1 ]]; then
+    echo "ERROR: Version validation failed"
+    exit 1
+fi
+
+echo "+++ Version validation passed"
 exit 0

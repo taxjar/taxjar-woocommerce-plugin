@@ -38,4 +38,56 @@ else
     exit 1
 fi
 
-echo "=== Test infrastructure ready ==="
+# Test 2: Version change with mismatched versions - should fail validation
+echo "Test 2: Version mismatch should fail validation"
+
+mkdir -p "$TEST_DIR/pr-branch-mismatch"
+mkdir -p "$TEST_DIR/master-mismatch"
+
+# Create PR branch with mismatched versions (4.2.0 in header, 4.1.0 in property)
+cat > "$TEST_DIR/pr-branch-mismatch/taxjar-woocommerce.php" << 'EOF'
+<?php
+/**
+ * Plugin Name: TaxJar - Sales Tax Automation for WooCommerce
+ * Version: 4.2.0
+ * WC requires at least: 7.0.0
+ * WC tested up to: 9.0.0
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+class WC_Taxjar_Integration {
+    public $version = '4.1.0';
+    public $minimum_woocommerce_version = '7.0.0';
+}
+EOF
+
+# Create readme.txt with different version
+cat > "$TEST_DIR/pr-branch-mismatch/readme.txt" << 'EOF'
+=== TaxJar ===
+Stable tag: 4.3.0
+Tested up to: 6.6.0
+WC requires at least: 7.0.0
+WC tested up to: 9.0.0
+
+== Changelog ==
+
+= 4.2.0 - 2025-12-01 =
+* Updated version
+EOF
+
+# Copy master version
+cp "$PROJECT_ROOT/tests/fixtures/sample-plugin.php" "$TEST_DIR/master-mismatch/taxjar-woocommerce.php"
+cp "$PROJECT_ROOT/tests/fixtures/sample-readme.txt" "$TEST_DIR/master-mismatch/readme.txt"
+
+export PR_DIR="$TEST_DIR/pr-branch-mismatch"
+export MASTER_DIR="$TEST_DIR/master-mismatch"
+
+if "$PROJECT_ROOT/.buildkite/scripts/validate-version.sh" 2>&1 | grep -q "ERROR"; then
+    echo "✓ PASS: Detects version mismatch and fails validation"
+else
+    echo "✗ FAIL: Should detect version mismatch and fail"
+    exit 1
+fi
+
+echo "=== All tests passed ==="
