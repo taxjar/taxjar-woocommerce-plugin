@@ -75,6 +75,48 @@ check_version_field "PHP header Version tag" "$PR_VERSION" "$PHP_VERSION"
 check_version_field "PHP \$version property" "$PR_VERSION" "$PHP_PROPERTY_VERSION"
 check_version_field "readme.txt Stable tag" "$PR_VERSION" "$README_VERSION"
 
+# Check CHANGELOG.md entry exists
+echo ""
+echo "Checking CHANGELOG.md for version $PR_VERSION:"
+
+if [[ -n "$PR_DIR" ]]; then
+    CHANGELOG_FILE="$PR_DIR/CHANGELOG.md"
+else
+    CHANGELOG_FILE="CHANGELOG.md"
+fi
+
+if [[ ! -f "$CHANGELOG_FILE" ]]; then
+    echo "ERROR: CHANGELOG.md not found"
+    VALIDATION_FAILED=1
+elif ! grep -q "^# $PR_VERSION" "$CHANGELOG_FILE"; then
+    echo "ERROR: CHANGELOG.md missing entry for version $PR_VERSION"
+    echo "   Expected to find: # $PR_VERSION"
+    VALIDATION_FAILED=1
+else
+    echo "✓ CHANGELOG.md has entry for $PR_VERSION"
+fi
+
+# Check readme.txt changelog entry
+echo ""
+echo "Checking readme.txt changelog for version $PR_VERSION:"
+
+if [[ -n "$PR_DIR" ]]; then
+    README_FILE="$PR_DIR/readme.txt"
+else
+    README_FILE="readme.txt"
+fi
+
+if [[ ! -f "$README_FILE" ]]; then
+    echo "ERROR: readme.txt not found"
+    VALIDATION_FAILED=1
+elif ! grep -q "^= $PR_VERSION" "$README_FILE"; then
+    echo "ERROR: readme.txt missing changelog entry for version $PR_VERSION"
+    echo "   Expected to find: = $PR_VERSION"
+    VALIDATION_FAILED=1
+else
+    echo "✓ readme.txt has changelog entry for $PR_VERSION"
+fi
+
 # Exit with failure if validation failed
 if [[ $VALIDATION_FAILED -eq 1 ]]; then
     echo "ERROR: Version validation failed"

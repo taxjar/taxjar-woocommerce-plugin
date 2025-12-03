@@ -90,4 +90,49 @@ else
     exit 1
 fi
 
+# Test 3: Missing CHANGELOG entry should fail
+echo ""
+echo "Test 3: Missing CHANGELOG entry should block merge"
+
+mkdir -p "$TEST_DIR/pr-branch-changelog"
+mkdir -p "$TEST_DIR/master-changelog"
+
+# Create PR branch with matching versions but WRONG CHANGELOG version
+cat > "$TEST_DIR/pr-branch-changelog/taxjar-woocommerce.php" << 'EOF'
+<?php
+/**
+ * Version: 4.2.0
+ */
+class WC_Taxjar_Integration {
+    public $version = '4.2.0';
+}
+EOF
+
+cat > "$TEST_DIR/pr-branch-changelog/readme.txt" << 'EOF'
+Stable tag: 4.2.0
+Tested up to: 6.6.0
+WC requires at least: 7.0.0
+WC tested up to: 9.0.0
+EOF
+
+# CHANGELOG with WRONG version (4.1.0 instead of 4.2.0)
+cat > "$TEST_DIR/pr-branch-changelog/CHANGELOG.md" << 'EOF'
+# 4.1.0 - 2025-12-01
+
+Old version
+EOF
+
+# Create master version
+cp "$PROJECT_ROOT/tests/fixtures/sample-plugin.php" "$TEST_DIR/master-changelog/taxjar-woocommerce.php"
+
+export PR_DIR="$TEST_DIR/pr-branch-changelog"
+export MASTER_DIR="$TEST_DIR/master-changelog"
+
+if "$PROJECT_ROOT/.buildkite/scripts/validate-version.sh" 2>&1 | grep -q "CHANGELOG.md.*4.2.0"; then
+    echo "✓ PASS: Detects missing CHANGELOG entry"
+else
+    echo "✗ FAIL: Should detect missing CHANGELOG entry"
+    exit 1
+fi
+
 echo "=== All tests passed ==="
