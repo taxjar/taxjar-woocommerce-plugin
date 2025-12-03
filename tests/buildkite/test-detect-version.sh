@@ -30,4 +30,24 @@ else
     exit 1
 fi
 
+# Test 2: Check WordPress.org has version
+echo ""
+echo "Test 2: WordPress.org API check"
+
+# Known existing version
+if "$PROJECT_ROOT/.buildkite/scripts/release/detect-version.sh" check-wporg "4.2.6"; then
+    echo "✓ PASS: Detects existing version on WordPress.org"
+else
+    echo "✗ FAIL: Should detect existing version"
+    exit 1
+fi
+
+# Version that doesn't exist yet
+if ! "$PROJECT_ROOT/.buildkite/scripts/release/detect-version.sh" check-wporg "99.99.99"; then
+    echo "✓ PASS: Detects non-existing version"
+else
+    echo "✗ FAIL: Should detect version doesn't exist"
+    exit 1
+fi
+
 echo "=== All detection tests passed ==="
