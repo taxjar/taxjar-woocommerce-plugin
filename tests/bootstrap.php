@@ -52,11 +52,12 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		$timestamp = time();
 
 		// Format: WOOTEST-{wc_version}-{build_id}-{order_id}-{timestamp}
+		// Replace periods with dashes in version - TaxJar API treats periods as URL delimiters
 		// This ensures unique transaction IDs across parallel CI builds, preventing
 		// collisions when multiple WooCommerce versions test simultaneously
 		return sprintf(
 			'WOOTEST-%s-%s-%s-%d',
-			$wc_version,
+			str_replace( '.', '-', $wc_version ),
 			$build_id,
 			$transaction_id,
 			$timestamp
