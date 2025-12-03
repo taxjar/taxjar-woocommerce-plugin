@@ -63,7 +63,11 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
 
 		// Load WooCommerce Subscriptions if available
-		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';
+		// NOTE: In CI we use the archived woocommerce-subscriptions-core library (v8.2.0)
+		// which has filename 'woocommerce-subscriptions-core.php' instead of the full
+		// plugin's 'woocommerce-subscriptions.php'. Local dev environments may use the
+		// full plugin. This enables subscription tests to run in CI rather than skip.
+		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions-core.php';
 		if ( file_exists( $subscriptions_file ) ) {
 			include_once $subscriptions_file;
 		}

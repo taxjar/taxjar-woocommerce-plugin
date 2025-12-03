@@ -114,12 +114,43 @@ else
     cd /var/www/html
 fi
 
+# Install WooCommerce Subscriptions Core if needed
+#
+# IMPORTANT: We use the ARCHIVED woocommerce-subscriptions-core v8.2.0 library
+# (archived May 2025) instead of the full WooCommerce Subscriptions plugin because:
+# - We lack access to the paid WooCommerce Subscriptions plugin
+# - Testing with core library is better than no subscription testing in CI
+# - This enables 16 subscription tests to run instead of being skipped
+#
+# TECHNICAL DEBT: This is a temporary solution. When WooCommerce Subscriptions
+# plugin becomes available, replace this archived core library with the full plugin.
+# The archived core provides the necessary WC_Product_Subscription class for tests
+# but may not include all features of the full plugin.
+if [ -d "/var/www/html/wp-content/plugins/woocommerce-subscriptions" ]; then
+    print_status "WooCommerce Subscriptions Core already installed"
+else
+    print_status "Downloading WooCommerce Subscriptions Core"
+    SUBS_VERSION="8.2.0"
+    SUBS_DOWNLOAD_URL="https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/${SUBS_VERSION}"
+
+    cd /var/www/html/wp-content/plugins
+    curl -sS -L -o woocommerce-subscriptions.zip "$SUBS_DOWNLOAD_URL"
+    unzip -q woocommerce-subscriptions.zip
+    # Rename the extracted directory to woocommerce-subscriptions
+    mv Automattic-woocommerce-subscriptions-core-* woocommerce-subscriptions
+    rm woocommerce-subscriptions.zip
+    cd /var/www/html
+fi
+
 # Activate plugins
 print_status "Activating WooCommerce"
 wp plugin activate woocommerce --allow-root > /dev/null 2>&1 || true
 
 print_status "Activating TaxJar plugin"
 wp plugin activate taxjar-simplified-taxes-for-woocommerce --allow-root > /dev/null 2>&1 || true
+
+print_status "Activating WooCommerce Subscriptions Core"
+wp plugin activate woocommerce-subscriptions --allow-root > /dev/null 2>&1 || true
 
 # Configure TaxJar if API token available
 if [ -n "${TAXJAR_API_TOKEN:-}" ]; then
@@ -146,6 +177,12 @@ fi
 if [ ! -e "$PLUGIN_DIR/woocommerce" ]; then
     ln -s /var/www/html/wp-content/plugins/woocommerce \
           "$PLUGIN_DIR/woocommerce"
+fi
+
+# Create woocommerce-subscriptions symlink inside the plugin directory for bootstrap
+if [ ! -e "$PLUGIN_DIR/woocommerce-subscriptions" ]; then
+    ln -s /var/www/html/wp-content/plugins/woocommerce-subscriptions \
+          "$PLUGIN_DIR/woocommerce-subscriptions"
 fi
 
 cd "$PLUGIN_DIR"
