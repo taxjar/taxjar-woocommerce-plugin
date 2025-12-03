@@ -1,8 +1,25 @@
 # Release Automation
 
+> **Status**: Phase 1 Complete (December 2024)
+> This documentation describes the automated release system implemented in Phase 1. Full WC version matrix testing (8.x, 10.x) is planned for Phase 2.
+
 ## Overview
 
 The TaxJar WooCommerce plugin uses automated Buildkite pipelines for releases to WordPress.org. Engineers manually create version bump PRs, and automation handles validation, testing, and deployment.
+
+## Architecture
+
+The release automation uses two Buildkite pipelines configured with GitHub webhooks:
+
+1. **CI Pipeline** - Triggers on all PRs and branches
+   - Runs linting and tests
+   - Validates version consistency for version-changing PRs
+
+2. **Release Pipeline** - Triggers only on master branch commits
+   - Automatically detects new versions
+   - Deploys to GitHub and WordPress.org
+
+**Pipeline Configuration**: Both pipelines are configured in the Buildkite dashboard to automatically trigger on GitHub events (no GitHub Actions workflows required).
 
 ## How It Works
 
@@ -18,20 +35,24 @@ When you create a PR, Buildkite automatically runs `.buildkite/scripts/validate-
    - ✅ `CHANGELOG.md` has entry for new version
    - ✅ `readme.txt` has changelog entry
 
-3. Checks optional fields (warnings only):
+3. Checks optional fields (validated but non-blocking):
    - ⚠️ WC tested up to
    - ⚠️ WP tested up to
    - ⚠️ WC requires at least
    - ⚠️ `$minimum_woocommerce_version` property
 
+   **Optional fields show warnings but won't block the merge.**
+
 **Critical checks BLOCK merge. Warnings don't.**
 
 ### Automatic Release (Master Builds)
 
-When a version bump PR merges to master, Buildkite automatically:
+When a version bump PR merges to master, the Buildkite Release pipeline automatically triggers via GitHub webhook and:
 
 1. **Detects** if version is new (checks WordPress.org API)
-2. **Tests** - runs full test suite (all WC versions)
+   - If version already exists, pipeline skips with success annotation
+   - If version is new, continues with deployment
+2. **Tests** - runs full test suite (WC 7.x and 9.x; 8.x and 10.x planned)
 3. **GitHub** - creates release and tag
 4. **SVN** - deploys to WordPress.org trunk and creates tag
 5. **Verifies** - checks WordPress.org shows new version
@@ -137,6 +158,21 @@ Watch Buildkite "Release" pipeline on master:
 - Verify credentials in Buildkite secrets
 - Retry build (will resume from GitHub release)
 
+**Diagnosing failures:**
+
+Check Buildkite logs for specific error messages. Common issues:
+
+```bash
+# Check detected version
+buildkite-agent meta-data get "release-version"
+
+# Verify GitHub token permissions
+GH_HOST=github.com gh auth status
+
+# Test SVN credentials
+svn info https://plugins.svn.wordpress.org/taxjar-simplified-taxes-for-woocommerce/trunk
+```
+
 ### Version Already Exists
 
 If you see "Version already exists on WordPress.org":
@@ -146,12 +182,45 @@ If you see "Version already exists on WordPress.org":
 
 ## Manual Release (Emergency Fallback)
 
-If automation is down, follow manual process:
-https://confluence.corp.stripe.com/spaces/PI/pages/362618363/WooCommerce+Release+Process
+If automation is completely down, you can release manually:
+
+**1. Create GitHub release:**
+```bash
+GH_HOST=github.com gh release create 4.2.0 --target master --title "4.2.0" --notes ""
+```
+
+**2. Deploy to WordPress.org SVN:**
+```bash
+# Checkout SVN repository
+svn checkout https://plugins.svn.wordpress.org/taxjar-simplified-taxes-for-woocommerce
+
+# Follow remaining manual steps from Confluence
+```
+
+**Full manual process:** https://confluence.corp.stripe.com/spaces/PI/pages/362618363/WooCommerce+Release+Process
 
 ## Buildkite Configuration
 
-**Pipelines:**
+### Pipeline Setup in Buildkite
+
+**CI Pipeline** (taxjar-woocommerce-plugin):
+- Repository: `github.com/taxjar/taxjar-woocommerce-plugin`
+- Upload pipeline from: `.buildkite/pipeline.yml`
+- Branch filter: All branches
+- Webhooks: Enable for pull requests and branch commits
+- Provides: Linting, testing, version validation
+
+**Release Pipeline** (taxjar-woocommerce-plugin-release):
+- Repository: `github.com/taxjar/taxjar-woocommerce-plugin`
+- Upload pipeline from: `.buildkite/pipeline-release.yml`
+- Branch filter: `master` only
+- Webhooks: Enable for branch commits (not PRs)
+- Provides: Automated deployment to GitHub and WordPress.org
+
+Both pipelines require GitHub webhook integration configured in Buildkite dashboard settings.
+
+### Pipelines
+
 - **CI** (`.buildkite/pipeline.yml`) - Runs on all PRs and branches
 - **Release** (`.buildkite/pipeline-release.yml`) - Runs on master only
 
