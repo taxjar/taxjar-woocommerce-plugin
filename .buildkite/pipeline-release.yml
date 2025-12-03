@@ -1,6 +1,11 @@
 # TaxJar WooCommerce Plugin - Automated Release Pipeline
 # Triggers automatically on master builds when new version detected
 # Deploys to GitHub and WordPress.org
+#
+# Required Buildkite Secrets:
+#   - WORDPRESS_SVN_USERNAME: WordPress.org account username
+#   - WORDPRESS_SVN_PASSWORD: WordPress.org account password
+#   - GITHUB_TOKEN: GitHub personal access token for gh CLI
 
 env:
   # These will be set by detect-version script
@@ -13,18 +18,21 @@ steps:
     command: |
       .buildkite/scripts/release/detect-version.sh
 
-      # If version already on WordPress.org, skip pipeline
-      if [[ $? -eq 0 ]]; then
-        if grep -q "already exists" <<< "$BUILDKITE_COMMAND_OUTPUT"; then
-          echo "Skipping release - version already deployed"
-          buildkite-agent pipeline upload <<YAML
+      # Check if script set SKIP_RELEASE meta-data
+      if buildkite-agent meta-data exists "SKIP_RELEASE" 2>/dev/null; then
+        echo "+++ Version already deployed - skipping release"
+        buildkite-agent annotate "Version already exists on WordPress.org - skipping release" --style "info" --context "version-check"
+
+        # Upload a minimal success pipeline
+        buildkite-agent pipeline upload <<YAML
       steps:
         - label: ":white_check_mark: Release Already Deployed"
-          command: echo "Version already on WordPress.org"
+          command: echo "Version already exists on WordPress.org"
       YAML
-          exit 0
-        fi
+        exit 0
       fi
+
+      echo "+++ New version detected - proceeding with release"
     agents:
       queue: "docker"
     timeout_in_minutes: 5
@@ -40,7 +48,7 @@ steps:
       buildkite-agent pipeline upload .buildkite/pipeline.yml
     agents:
       queue: "docker"
-    timeout_in_minutes: 2
+    timeout_in_minutes: 60
 
   - wait
 
@@ -48,7 +56,12 @@ steps:
   - label: ":github: Create GitHub Release"
     key: "github-release"
     depends_on: "test-suite"
-    command: .buildkite/scripts/release/github-release.sh
+    command: |
+      # Ensure VERSION is available
+      if [[ -z "$VERSION" ]]; then
+        export VERSION=$(buildkite-agent meta-data get "release-version")
+      fi
+      .buildkite/scripts/release/github-release.sh
     agents:
       queue: "docker"
     timeout_in_minutes: 10
@@ -57,7 +70,12 @@ steps:
   - label: ":package: Deploy to WordPress.org"
     key: "svn-deploy"
     depends_on: "github-release"
-    command: .buildkite/scripts/release/svn-deploy.sh
+    command: |
+      # Ensure VERSION is available
+      if [[ -z "$VERSION" ]]; then
+        export VERSION=$(buildkite-agent meta-data get "release-version")
+      fi
+      .buildkite/scripts/release/svn-deploy.sh
     agents:
       queue: "docker"
     timeout_in_minutes: 15
@@ -67,6 +85,11 @@ steps:
     key: "verify"
     depends_on: "svn-deploy"
     command: |
+      # Ensure VERSION is available
+      if [[ -z "$VERSION" ]]; then
+        export VERSION=$(buildkite-agent meta-data get "release-version")
+      fi
+
       echo "--- Waiting for WordPress.org to update"
       sleep 30
 

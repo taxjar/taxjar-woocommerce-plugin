@@ -68,13 +68,22 @@ echo "--- Checking WordPress.org"
 if check_wporg_version "$VERSION"; then
     echo "+++ Version $VERSION already exists on WordPress.org"
     echo "Skipping release pipeline"
+
+    # Set meta-data for pipeline to check
+    if command -v buildkite-agent &> /dev/null; then
+        buildkite-agent meta-data set "SKIP_RELEASE" "true"
+    fi
+
     exit 0
 fi
 
 echo "+++ Version $VERSION not on WordPress.org - proceeding with release"
 
-# Export for downstream steps
+# Export for downstream steps (both methods for compatibility)
 echo "VERSION=$VERSION" >> "$BUILDKITE_ENV_FILE" 2>/dev/null || true
+if command -v buildkite-agent &> /dev/null; then
+    buildkite-agent meta-data set "release-version" "$VERSION"
+fi
 echo "Exported VERSION=$VERSION"
 
 exit 0
