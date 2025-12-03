@@ -8,6 +8,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Test_Subscription_Cart_Tax_Calculation extends Cart_Integration_Test {
 
+	/**
+	 * Test setup - skips entire test class if WooCommerce Subscriptions is not available
+	 */
 	public function setUp(): void {
 		parent::setUp();
 
@@ -21,7 +24,6 @@ class Test_Subscription_Cart_Tax_Calculation extends Cart_Integration_Test {
 	 * @dataProvider get_subscription_cart_test_data
 	 */
 	public function test_subscription_cart_tax_calculation( $data ) {
-		$this->markTestSkipped('Temporarily disabled for Phase 1 of CI testing');
 		$this->create_cart_builder_from_provider_data( $data );
 		$cart = $this->cart_builder->build();
 
