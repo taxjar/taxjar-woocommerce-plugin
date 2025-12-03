@@ -78,7 +78,7 @@ echo "--- Clearing SVN trunk"
 
 cd trunk || { echo "ERROR: Failed to cd into trunk"; exit 1; }
 rm -rf * .[^.]* 2>/dev/null || true
-svn status | grep "^!" | awk '{print $2}' | tr '\n' '\0' | xargs -0 -r svn delete --force
+svn status | grep "^!" | awk '{print $2}' | tr '\n' '\0' | xargs -0 -I {} svn delete --force "{}" || true
 
 echo "✓ Trunk cleared"
 
@@ -127,10 +127,16 @@ echo "✓ File changes handled"
 echo ""
 echo "--- Committing to SVN trunk"
 
+# Check if there are changes to commit
+if [[ -z "$(svn status)" ]]; then
+    echo "✓ No changes to commit - trunk already up to date"
+    echo "Proceeding to tag creation..."
+fi
+
 commit_trunk() {
-    svn commit \
+    echo "$WORDPRESS_SVN_PASSWORD" | svn commit \
         --username "$WORDPRESS_SVN_USERNAME" \
-        --password "$WORDPRESS_SVN_PASSWORD" \
+        --password-from-stdin \
         --non-interactive \
         --quiet \
         -m "Preparing for $VERSION release"
@@ -147,14 +153,14 @@ fi
 echo ""
 echo "--- Creating SVN tag"
 
-cd "$SVN_DIR"  # Go back to repo root
+cd "$SVN_DIR" || { echo "ERROR: Failed to cd back to $SVN_DIR"; exit 1; }
 
 create_tag() {
-    svn copy \
+    echo "$WORDPRESS_SVN_PASSWORD" | svn copy \
         "$SVN_URL/trunk" \
         "$SVN_URL/tags/$VERSION" \
         --username "$WORDPRESS_SVN_USERNAME" \
-        --password "$WORDPRESS_SVN_PASSWORD" \
+        --password-from-stdin \
         --non-interactive \
         --quiet \
         -m "Tagging version $VERSION"
