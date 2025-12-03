@@ -1,6 +1,16 @@
 #!/bin/bash
 set -e
 
+# Buildkite annotation helper
+annotate() {
+    local style="$1"
+    local message="$2"
+
+    if command -v buildkite-agent &> /dev/null; then
+        echo "$message" | buildkite-agent annotate --style "$style" --context "version-validation"
+    fi
+}
+
 echo "--- Validating Version Consistency"
 
 # Extract version from taxjar-woocommerce.php
@@ -170,9 +180,31 @@ fi
 if [[ $VALIDATION_FAILED -eq 1 ]]; then
     echo ""
     echo "❌ VALIDATION FAILED - Version consistency check failed"
+
+    # Create Buildkite annotation
+    annotate "error" "## Version Validation Failed
+
+Version $PR_VERSION has consistency errors. Please fix before merging.
+
+See build log for details."
+
     exit 1
 fi
 
 echo ""
 echo "+++ All critical checks passed"
+
+# Create success annotation with warnings if any
+if [[ $WARNINGS -gt 0 ]]; then
+    annotate "warning" "## Version Validation Passed (with warnings)
+
+Version $PR_VERSION is consistent but has $WARNINGS optional field(s) not set.
+
+Consider updating optional metadata fields."
+else
+    annotate "success" "## Version Validation Passed
+
+Version $PR_VERSION is fully validated."
+fi
+
 exit 0
