@@ -64,7 +64,7 @@ steps:
     artifact_paths:
       - "phpcs-report.xml"
 
-  # Stage 3: PHPUnit Tests - Sequential across WooCommerce versions to avoid race conditions
+  # Stage 3: PHPUnit Tests - Parallel execution with unique transaction IDs
   - label: ":test_tube: PHPUnit - WC 7.x"
     key: "phpunit-wc7"
     depends_on: "lint"  # Only wait for lint, not PHPCS
@@ -92,36 +92,36 @@ steps:
           files: ".buildkite/test-results/*.xml"
           format: "junit"
 
-  # - label: ":test_tube: PHPUnit - WC 8.x"
-  #   key: "phpunit-wc8"
-  #   depends_on: "phpunit-wc7"  # Run after WC 7.x
-  #   env:
-  #     BUILDKITE_MATRIX: "8.x"
-  #   agents:
-  #     queue: "docker"
-  #   timeout_in_minutes: 15
-  #   soft_fail: false
-  #   plugins:
-  #     - docker-compose#v4.14.0:
-  #         run: wordpress
-  #         config: .buildkite/docker-compose.test.yml
-  #         command: ["/test-scripts/set-test-env.sh"]
-  #         rm: false
-  #         environment:
-  #           - BUILDKITE_MATRIX=8.x
-  #           - TAXJAR_API_TOKEN
-  #           - BUILDKITE_ANALYTICS_TOKEN
-  #     - artifacts#v1.9.0:
-  #         upload:
-  #           - ".buildkite/test-results/*.xml"
-  #           - ".buildkite/test-results/*.log"
-  #     - test-collector#v1.10.0:
-  #         files: ".buildkite/test-results/*.xml"
-  #         format: "junit"
+  - label: ":test_tube: PHPUnit - WC 8.x"
+    key: "phpunit-wc8"
+    depends_on: "lint"  # Parallel execution with other versions
+    env:
+      BUILDKITE_MATRIX: "8.x"
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 15
+    soft_fail: false
+    plugins:
+      - docker-compose#v4.14.0:
+          run: wordpress
+          config: .buildkite/docker-compose.test.yml
+          command: ["/test-scripts/set-test-env.sh"]
+          rm: false
+          environment:
+            - BUILDKITE_MATRIX=8.x
+            - TAXJAR_API_TOKEN
+            - BUILDKITE_ANALYTICS_TOKEN
+      - artifacts#v1.9.0:
+          upload:
+            - ".buildkite/test-results/*.xml"
+            - ".buildkite/test-results/*.log"
+      - test-collector#v1.10.0:
+          files: ".buildkite/test-results/*.xml"
+          format: "junit"
 
   - label: ":test_tube: PHPUnit - WC 9.x"
     key: "phpunit-wc9"
-    depends_on: "phpunit-wc7"  # Run after WC 7.x
+    depends_on: "lint"  # Parallel execution with other versions
     env:
       BUILDKITE_MATRIX: "9.x"
     agents:
@@ -146,30 +146,30 @@ steps:
           files: ".buildkite/test-results/*.xml"
           format: "junit"
 
-  # - label: ":test_tube: PHPUnit - WC 10.x"
-  #   key: "phpunit-wc10"
-  #   depends_on: "phpunit-wc9"  # Run after WC 9.x
-  #   env:
-  #     BUILDKITE_MATRIX: "10.x"
-  #   agents:
-  #     queue: "docker"
-  #   timeout_in_minutes: 15
-  #   soft_fail: false
-  #   plugins:
-  #     - docker-compose#v4.14.0:
-  #         run: wordpress
-  #         config: .buildkite/docker-compose.test.yml
-  #         command: ["/test-scripts/set-test-env.sh"]
-  #         rm: false
-  #         environment:
-  #           - BUILDKITE_MATRIX=10.x
-  #           - TAXJAR_API_TOKEN
-  #           - BUILDKITE_ANALYTICS_TOKEN
-  #     - artifacts#v1.9.0:
-  #         upload:
-  #           - ".buildkite/test-results/*.xml"
-  #           - ".buildkite/test-results/*.log"
-  #     - test-collector#v1.10.0:
-  #         files: ".buildkite/test-results/*.xml"
-  #         format: "junit"
+  - label: ":test_tube: PHPUnit - WC 10.x"
+    key: "phpunit-wc10"
+    depends_on: "lint"  # Parallel execution with other versions
+    env:
+      BUILDKITE_MATRIX: "10.x"
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 15
+    soft_fail: false
+    plugins:
+      - docker-compose#v4.14.0:
+          run: wordpress
+          config: .buildkite/docker-compose.test.yml
+          command: ["/test-scripts/set-test-env.sh"]
+          rm: false
+          environment:
+            - BUILDKITE_MATRIX=10.x
+            - TAXJAR_API_TOKEN
+            - BUILDKITE_ANALYTICS_TOKEN
+      - artifacts#v1.9.0:
+          upload:
+            - ".buildkite/test-results/*.xml"
+            - ".buildkite/test-results/*.log"
+      - test-collector#v1.10.0:
+          files: ".buildkite/test-results/*.xml"
+          format: "junit"
 
