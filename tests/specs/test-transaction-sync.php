@@ -603,6 +603,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 	}
 
@@ -976,6 +977,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 	}
 
@@ -990,6 +992,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 	}
 
@@ -1002,10 +1005,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$order->delete();
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 
 		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
@@ -1021,10 +1026,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$order->delete( true );
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 
 		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
@@ -1040,6 +1047,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$order_record->object->delete_meta_data( '_taxjar_last_sync' );
@@ -1047,6 +1055,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$order_record->object->save();
 		$order->delete();
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 
 		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
@@ -1054,7 +1063,6 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	}
 
 	function test_delete_refund() {
-		$this->markTestSkipped( 'Temporarily disabled for Phase 1 of CI testing' );
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
 		$refund = $this->create_test_refund( $order->get_id() );
@@ -1065,10 +1073,12 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$refund->delete();
 		$result = $record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error after delete: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 	}
 
@@ -1083,6 +1093,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$record->object->delete_meta_data( '_taxjar_last_sync' );
@@ -1090,6 +1101,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$record->object->save();
 		$refund->delete();
 		$result = $record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 	}
 
@@ -1109,15 +1121,19 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$result = $refund_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$order->delete();
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error after delete: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 		$result = $refund_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error after delete: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 
 		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
@@ -1142,15 +1158,19 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$result = $refund_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$order->delete( true );
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error after force delete: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 		$result = $refund_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error after force delete: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 
 		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
@@ -1175,15 +1195,19 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$result = $refund_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 200, $result[ 'response' ][ 'code'] );
 
 		$order->update_status( 'cancelled' );
 		$result = $order_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error after cancel: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 		$result = $refund_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $result ), 'get_from_taxjar() returned WP_Error after cancel: ' . ( is_wp_error( $result ) ? $result->get_error_message() : '' ) );
 		$this->assertEquals( 404, $result[ 'response' ][ 'code'] );
 
 		$record_check = TaxJar_Order_Record::find_active_in_queue( $order_record->get_record_id() );
@@ -1513,6 +1537,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$tj_refund = $refund_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $tj_refund ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $tj_refund ) ? $tj_refund->get_error_message() : '' ) );
 		$response = json_decode( $tj_refund[ 'body' ] );
 		$this->assertEquals( "-100.0", $response->refund->amount );
 		$this->assertEquals( "-7.25", $response->refund->sales_tax );
@@ -1568,6 +1593,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $result );
 
 		$tj_refund = $refund_record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $tj_refund ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $tj_refund ) ? $tj_refund->get_error_message() : '' ) );
 		$response = json_decode( $tj_refund[ 'body' ] );
 		$this->assertEquals( "-10.0", $response->refund->amount );
 		$this->assertEquals( "0.0", $response->refund->sales_tax );
@@ -1631,6 +1657,7 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertTrue( $refund_result );
 
 		$order_data = $record->get_from_taxjar();
+		$this->assertFalse( is_wp_error( $order_data ), 'get_from_taxjar() returned WP_Error: ' . ( is_wp_error( $order_data ) ? $order_data->get_error_message() : '' ) );
 		$body = json_decode( $order_data[ 'body' ] );
 		$this->assertEquals( 'wholesale', $body->order->exemption_type );
 	}
