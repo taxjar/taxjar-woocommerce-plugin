@@ -47,7 +47,20 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function add_tests_prefix( $transaction_id ) {
-		return 'WOOTEST' . $transaction_id;
+		$wc_version = getenv( 'WC_VERSION' ) ?: '0.0.0';
+		$build_id = getenv( 'BUILDKITE_BUILD_ID' ) ?: getenv( 'BUILDKITE_BUILD_NUMBER' ) ?: 'local';
+		$timestamp = time();
+
+		// Format: WOOTEST-{wc_version}-{build_id}-{order_id}-{timestamp}
+		// This ensures unique transaction IDs across parallel CI builds, preventing
+		// collisions when multiple WooCommerce versions test simultaneously
+		return sprintf(
+			'WOOTEST-%s-%s-%s-%d',
+			$wc_version,
+			$build_id,
+			$transaction_id,
+			$timestamp
+		);
 	}
 
 	public function load_wc() {
