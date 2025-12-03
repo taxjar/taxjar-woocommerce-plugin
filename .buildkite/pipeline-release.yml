@@ -1,0 +1,89 @@
+# TaxJar WooCommerce Plugin - Automated Release Pipeline
+# Triggers automatically on master builds when new version detected
+# Deploys to GitHub and WordPress.org
+
+env:
+  # These will be set by detect-version script
+  VERSION: ""
+
+steps:
+  # Stage 1: Detect if there's a new version to release
+  - label: ":mag: Detect New Version"
+    key: "detect-version"
+    command: |
+      .buildkite/scripts/release/detect-version.sh
+
+      # If version already on WordPress.org, skip pipeline
+      if [[ $? -eq 0 ]]; then
+        if grep -q "already exists" <<< "$BUILDKITE_COMMAND_OUTPUT"; then
+          echo "Skipping release - version already deployed"
+          buildkite-agent pipeline upload <<YAML
+      steps:
+        - label: ":white_check_mark: Release Already Deployed"
+          command: echo "Version already on WordPress.org"
+      YAML
+          exit 0
+        fi
+      fi
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 5
+
+  - wait
+
+  # Stage 2: Run full test suite on master
+  - label: ":test_tube: Full Test Suite"
+    key: "test-suite"
+    depends_on: "detect-version"
+    command: |
+      echo "+++ Running full test suite on master"
+      buildkite-agent pipeline upload .buildkite/pipeline.yml
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 2
+
+  - wait
+
+  # Stage 3: Create GitHub release (automatically creates git tag)
+  - label: ":github: Create GitHub Release"
+    key: "github-release"
+    depends_on: "test-suite"
+    command: .buildkite/scripts/release/github-release.sh
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 10
+
+  # Stage 4: Deploy to WordPress.org SVN
+  - label: ":package: Deploy to WordPress.org"
+    key: "svn-deploy"
+    depends_on: "github-release"
+    command: .buildkite/scripts/release/svn-deploy.sh
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 15
+
+  # Stage 5: Verify and notify
+  - label: ":mag: Verify Release"
+    key: "verify"
+    depends_on: "svn-deploy"
+    command: |
+      echo "--- Waiting for WordPress.org to update"
+      sleep 30
+
+      echo "--- Checking WordPress.org"
+      PLUGIN_URL="https://wordpress.org/plugins/taxjar-simplified-taxes-for-woocommerce/"
+
+      if curl -sf "$PLUGIN_URL" | grep -q "$VERSION"; then
+        echo "+++ ✓ Version $VERSION is live on WordPress.org"
+      else
+        echo "⚠️  Version not yet visible on WordPress.org (may take a few minutes)"
+      fi
+
+      echo ""
+      echo "+++ Release Complete"
+      echo "Version: $VERSION"
+      echo "GitHub: https://github.com/taxjar/taxjar-woocommerce-plugin/releases/tag/$VERSION"
+      echo "WordPress.org: $PLUGIN_URL"
+    agents:
+      queue: "docker"
+    timeout_in_minutes: 5
