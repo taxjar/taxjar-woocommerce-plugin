@@ -123,6 +123,51 @@ svn status
 
 echo "✓ File changes handled"
 
+# Step 5: Commit to trunk
 echo ""
-echo "+++ SVN trunk prepared successfully"
-echo "Ready for commit"
+echo "--- Committing to SVN trunk"
+
+commit_trunk() {
+    svn commit \
+        --username "$WORDPRESS_SVN_USERNAME" \
+        --password "$WORDPRESS_SVN_PASSWORD" \
+        --non-interactive \
+        --quiet \
+        -m "Preparing for $VERSION release"
+}
+
+if retry_with_backoff commit_trunk; then
+    echo "✓ Committed to trunk"
+else
+    echo "ERROR: Failed to commit to trunk"
+    exit 1
+fi
+
+# Step 6: Create SVN tag
+echo ""
+echo "--- Creating SVN tag"
+
+cd "$SVN_DIR"  # Go back to repo root
+
+create_tag() {
+    svn copy \
+        "$SVN_URL/trunk" \
+        "$SVN_URL/tags/$VERSION" \
+        --username "$WORDPRESS_SVN_USERNAME" \
+        --password "$WORDPRESS_SVN_PASSWORD" \
+        --non-interactive \
+        --quiet \
+        -m "Tagging version $VERSION"
+}
+
+if retry_with_backoff create_tag; then
+    echo "✓ Tagged version $VERSION"
+else
+    echo "ERROR: Failed to create tag"
+    exit 1
+fi
+
+echo ""
+echo "+++ SVN deployment completed successfully"
+echo "Trunk committed and tagged as $VERSION"
+echo "WordPress.org will update shortly"
