@@ -62,13 +62,13 @@ echo "--- Checking out SVN repository"
 mkdir -p "$SVN_DIR"
 cd "$SVN_DIR"
 
-if ! svn checkout "$SVN_URL" . --depth immediates; then
+if ! svn checkout "$SVN_URL" . --depth immediates --quiet; then
     echo "ERROR: Failed to checkout SVN repository"
     exit 1
 fi
 
 # Get trunk
-svn update trunk --set-depth infinity
+svn update trunk --set-depth infinity --quiet
 
 echo "✓ SVN repository checked out"
 
@@ -76,9 +76,9 @@ echo "✓ SVN repository checked out"
 echo ""
 echo "--- Clearing SVN trunk"
 
-cd trunk
+cd trunk || { echo "ERROR: Failed to cd into trunk"; exit 1; }
 rm -rf * .[^.]* 2>/dev/null || true
-svn status | grep "^!" | awk '{print $2}' | xargs -r svn delete --force
+svn status | grep "^!" | awk '{print $2}' | tr '\n' '\0' | xargs -0 -r svn delete --force
 
 echo "✓ Trunk cleared"
 
@@ -106,7 +106,7 @@ NEW_FILES=$(svn status | grep "^?" | awk '{print $2}' || true)
 if [[ -n "$NEW_FILES" ]]; then
     echo "Adding new files:"
     echo "$NEW_FILES"
-    echo "$NEW_FILES" | xargs -I {} svn add "{}"
+    echo "$NEW_FILES" | tr '\n' '\0' | xargs -0 -I {} svn add "{}"
 fi
 
 # Delete removed files (already done above, but check again)
@@ -114,7 +114,7 @@ DELETED_FILES=$(svn status | grep "^!" | awk '{print $2}' || true)
 if [[ -n "$DELETED_FILES" ]]; then
     echo "Deleting removed files:"
     echo "$DELETED_FILES"
-    echo "$DELETED_FILES" | xargs -I {} svn delete "{}"
+    echo "$DELETED_FILES" | tr '\n' '\0' | xargs -0 -I {} svn delete "{}"
 fi
 
 echo ""
