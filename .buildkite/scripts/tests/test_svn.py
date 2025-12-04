@@ -72,3 +72,49 @@ class TestSVNDeployManager:
 
                     # Cleanup should still be called
                     mock_rmtree.assert_called()
+
+    def test_checkout_uses_correct_depth(self, mock_runner):
+        """Test checkout uses correct SVN depth flags."""
+        manager = SVNDeployManager(runner=mock_runner)
+        manager._temp_dir = '/tmp/test-dir'
+
+        manager._checkout_repo()
+
+        # Should be called twice: initial checkout and trunk update
+        assert mock_runner.run.call_count == 2
+
+        # First call: checkout with immediates depth
+        first_call = mock_runner.run.call_args_list[0][0][0]
+        assert 'checkout' in first_call
+        assert '--depth' in first_call
+        assert 'immediates' in first_call
+
+        # Second call: update trunk with infinity depth
+        second_call = mock_runner.run.call_args_list[1][0][0]
+        assert 'update' in second_call
+        assert 'trunk' in second_call
+        assert '--set-depth' in second_call
+        assert 'infinity' in second_call
+
+    def test_update_trunk_copies_files(self, mock_runner):
+        """Test trunk update copies files from source."""
+        manager = SVNDeployManager(runner=mock_runner)
+
+        with patch('tempfile.mkdtemp', return_value='/tmp/svn-test'):
+            with patch('os.listdir') as mock_listdir:
+                with patch('shutil.copytree') as mock_copytree:
+                    with patch('shutil.copy2') as mock_copy:
+                        with patch('os.path.isdir') as mock_isdir:
+                            # Setup: trunk has .svn dir, source has files
+                            mock_listdir.side_effect = [
+                                ['.svn'],  # trunk contents
+                                ['taxjar-woocommerce.php', 'includes'],  # source contents
+                            ]
+                            mock_isdir.side_effect = [False, True]  # php file, includes dir
+
+                            manager._temp_dir = '/tmp/svn-test'
+                            manager._update_trunk('4.2.0', source_dir='/src')
+
+                            # Verify files copied
+                            mock_copy.assert_called_once()
+                            mock_copytree.assert_called_once()

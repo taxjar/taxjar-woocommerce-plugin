@@ -30,6 +30,7 @@ class SVNDeployManager:
         version: str,
         username: str,
         password: str,
+        source_dir: str = '.',
     ) -> None:
         """
         Deploy version to WordPress.org SVN.
@@ -38,6 +39,7 @@ class SVNDeployManager:
             version: Version to deploy
             username: WordPress.org SVN username
             password: WordPress.org SVN password
+            source_dir: Directory containing plugin files to deploy
 
         Raises:
             SVNDeployError: If deployment fails
@@ -51,7 +53,7 @@ class SVNDeployManager:
             print(f'+++ Deploying {version} to WordPress.org SVN')
 
             self._checkout_repo()
-            self._update_trunk(version)
+            self._update_trunk(version, source_dir)
             self._commit_changes(version, username, password)
             self._create_tag(version, username, password)
 
@@ -78,8 +80,14 @@ class SVNDeployManager:
         )
         print('✓ SVN checkout complete')
 
-    def _update_trunk(self, version: str) -> None:
-        """Update trunk with new version files."""
+    def _update_trunk(self, version: str, source_dir: str = '.') -> None:
+        """
+        Update trunk with new version files.
+
+        Args:
+            version: Version being deployed (for logging)
+            source_dir: Directory containing plugin files to deploy
+        """
         print('--- Updating trunk')
         trunk_dir = os.path.join(self._temp_dir, 'trunk')
 
@@ -92,8 +100,17 @@ class SVNDeployManager:
                 else:
                     os.remove(item_path)
 
-        # Copy current files to trunk
-        # In real implementation, this would clone from git tag
+        # Copy plugin files to trunk
+        for item in os.listdir(source_dir):
+            if item.startswith('.'):  # Skip hidden files/dirs
+                continue
+            src = os.path.join(source_dir, item)
+            dst = os.path.join(trunk_dir, item)
+            if os.path.isdir(src):
+                shutil.copytree(src, dst)
+            else:
+                shutil.copy2(src, dst)
+
         print('✓ Trunk updated')
 
     @retry(
@@ -148,7 +165,7 @@ class SVNDeployManager:
             '-m', f'Tagging version {version}',
         ]
 
-        self.runner.run(cmd, check=True, input=password)
+        self.runner.run(cmd, cwd=self._temp_dir, check=True, input=password)
         print(f'✓ Tagged version {version}')
 
     def _cleanup(self) -> None:
