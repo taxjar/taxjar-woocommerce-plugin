@@ -18,7 +18,7 @@ class TestPluginFileFixture:
         """Test version is configurable."""
         content = generate_plugin_header(version='5.0.0')
         assert '* Version: 5.0.0' in content
-        assert "public static $version = '5.0.0'" in content
+        assert "static $version = '5.0.0'" in content
 
     def test_wc_fields_configurable(self):
         """Test WC fields are configurable."""
@@ -28,7 +28,7 @@ class TestPluginFileFixture:
         )
         assert 'WC tested up to: 9.5.0' in content
         assert 'WC requires at least: 8.0.0' in content
-        assert "minimum_woocommerce_version = '8.0.0'" in content
+        assert "public static $minimum_woocommerce_version = '8.0.0'" in content
 
 
 class TestReadmeFixture:

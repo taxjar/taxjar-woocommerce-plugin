@@ -40,6 +40,12 @@ class TestVersionExtraction:
         version = VersionValidator._extract_wc_requires(content)
         assert version == '8.0.0'
 
+    def test_extract_minimum_wc_property(self):
+        """Test extracting minimum WooCommerce version property."""
+        content = generate_plugin_header(wc_requires='8.0.0')
+        version = VersionValidator._extract_minimum_wc_property(content)
+        assert version == '8.0.0'
+
     def test_extract_missing_version(self):
         """Test extracting from content without version."""
         content = '<?php // empty file'

@@ -47,7 +47,7 @@ class VersionValidator:
     @staticmethod
     def _extract_version_property(content: str) -> Optional[str]:
         """Extract $version property."""
-        match = re.search(r"static \$version = '(\d+\.\d+\.\d+)'", content)
+        match = re.search(r"(?:public\s+)?static \$version = '(\d+\.\d+\.\d+)'", content)
         return match.group(1) if match else None
 
     @staticmethod
@@ -71,5 +71,5 @@ class VersionValidator:
     @staticmethod
     def _extract_minimum_wc_property(content: str) -> Optional[str]:
         """Extract $minimum_woocommerce_version property."""
-        match = re.search(r"minimum_woocommerce_version = '(\d+\.\d+\.\d+)'", content)
+        match = re.search(r"(?:public\s+)?static \$minimum_woocommerce_version = '(\d+\.\d+\.\d+)'", content)
         return match.group(1) if match else None

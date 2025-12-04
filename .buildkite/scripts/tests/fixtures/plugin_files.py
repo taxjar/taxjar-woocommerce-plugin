@@ -28,8 +28,8 @@ if ( ! defined( 'ABSPATH' ) ) {{
 }}
 
 class WC_Taxjar {{
-    public static $version = '{version}';
-    public $minimum_woocommerce_version = '{wc_requires}';
+    static $version = '{version}';
+    public static $minimum_woocommerce_version = '{wc_requires}';
 
     public function __construct() {{
         // Plugin initialization
