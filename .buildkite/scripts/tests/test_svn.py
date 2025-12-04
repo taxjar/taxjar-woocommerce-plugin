@@ -113,8 +113,49 @@ class TestSVNDeployManager:
                             mock_isdir.side_effect = [False, True]  # php file, includes dir
 
                             manager._temp_dir = '/tmp/svn-test'
-                            manager._update_trunk('4.2.0', source_dir='/src')
+                            with patch.object(manager, '_stage_svn_changes'):
+                                manager._update_trunk('4.2.0', source_dir='/src')
 
                             # Verify files copied
                             mock_copy.assert_called_once()
                             mock_copytree.assert_called_once()
+
+    def test_stage_svn_changes_adds_and_deletes(self, mock_runner):
+        """Test SVN staging correctly adds new files and deletes removed files."""
+        # Mock svn status output showing:
+        # - new_file.php: unversioned (?)
+        # - old_file.php: missing/deleted (!)
+        # - modified.php: modified (M) - should be ignored
+        mock_runner.run.return_value = Mock(
+            stdout='?       new_file.php\n!       old_file.php\nM       modified.php\n',
+            returncode=0
+        )
+
+        manager = SVNDeployManager(runner=mock_runner)
+        manager._stage_svn_changes('/tmp/trunk')
+
+        # Verify svn status was called
+        assert mock_runner.run.call_count >= 1
+        status_call = mock_runner.run.call_args_list[0]
+        assert 'svn' in status_call[0][0]
+        assert 'status' in status_call[0][0]
+
+        # Verify svn add was called for new file
+        add_calls = [c for c in mock_runner.run.call_args_list if 'add' in c[0][0]]
+        assert len(add_calls) == 1
+        assert 'new_file.php' in add_calls[0][0][0]
+
+        # Verify svn delete was called for removed file
+        delete_calls = [c for c in mock_runner.run.call_args_list if 'delete' in c[0][0]]
+        assert len(delete_calls) == 1
+        assert 'old_file.php' in delete_calls[0][0][0]
+
+    def test_stage_svn_changes_handles_empty_status(self, mock_runner):
+        """Test SVN staging handles no changes gracefully."""
+        mock_runner.run.return_value = Mock(stdout='', returncode=0)
+
+        manager = SVNDeployManager(runner=mock_runner)
+        manager._stage_svn_changes('/tmp/trunk')
+
+        # Only svn status should be called, no add/delete
+        assert mock_runner.run.call_count == 1

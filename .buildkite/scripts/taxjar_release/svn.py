@@ -111,7 +111,47 @@ class SVNDeployManager:
             else:
                 shutil.copy2(src, dst)
 
+        # Stage SVN changes (add new files, delete removed files)
+        self._stage_svn_changes(trunk_dir)
+
         print('✓ Trunk updated')
+
+    def _stage_svn_changes(self, trunk_dir: str) -> None:
+        """
+        Stage SVN changes by adding new files and deleting removed files.
+
+        Args:
+            trunk_dir: Path to the trunk directory
+        """
+        # Get SVN status to find unversioned (?) and deleted (!) files
+        result = self.runner.run(
+            ['svn', 'status'],
+            cwd=trunk_dir,
+            check=True,
+        )
+
+        for line in result.stdout.splitlines():
+            if not line.strip():
+                continue
+
+            status = line[0]
+            # Path starts after status flags (first 8 chars in svn status output)
+            file_path = line[7:].strip() if len(line) > 7 else line[1:].strip()
+
+            if status == '?':
+                # Unversioned file - add it
+                self.runner.run(
+                    ['svn', 'add', file_path],
+                    cwd=trunk_dir,
+                    check=True,
+                )
+            elif status == '!':
+                # Missing file - delete it
+                self.runner.run(
+                    ['svn', 'delete', file_path],
+                    cwd=trunk_dir,
+                    check=True,
+                )
 
     @retry(
         max_attempts=3,
