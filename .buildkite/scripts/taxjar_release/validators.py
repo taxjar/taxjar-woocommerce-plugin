@@ -73,3 +73,87 @@ class VersionValidator:
         """Extract $minimum_woocommerce_version property."""
         match = re.search(r"(?:public\s+)?static \$minimum_woocommerce_version = '(\d+\.\d+\.\d+)'", content)
         return match.group(1) if match else None
+
+    def validate(self) -> ValidationResult:
+        """
+        Run all validation checks.
+
+        Returns:
+            ValidationResult with success status, errors, and warnings
+        """
+        errors = []
+        warnings = []
+
+        # Check if version changed
+        if not self._version_changed():
+            print('✓ Version unchanged - skipping validation')
+            return ValidationResult(success=True)
+
+        print('Version change detected - running validation...')
+
+        # Get current file contents
+        plugin_content = self.git.get_file_content(self.PLUGIN_FILE)
+        readme_content = self.git.get_file_content(self.README_FILE)
+
+        try:
+            changelog_content = self.git.get_file_content(self.CHANGELOG_FILE)
+        except Exception:
+            changelog_content = ''
+
+        # Extract versions
+        plugin_version = self._extract_plugin_version(plugin_content)
+        version_property = self._extract_version_property(plugin_content)
+        readme_stable = self._extract_readme_stable(readme_content)
+
+        # Critical checks
+        if version_property and version_property != plugin_version:
+            errors.append(
+                f'Version mismatch: header={plugin_version}, '
+                f'$version property={version_property}'
+            )
+
+        if readme_stable != plugin_version:
+            errors.append(
+                f'Version mismatch: header={plugin_version}, '
+                f'readme stable tag={readme_stable}'
+            )
+
+        # Changelog checks
+        if plugin_version and f'# {plugin_version}' not in changelog_content:
+            errors.append(f'Missing CHANGELOG.md entry for version {plugin_version}')
+
+        if plugin_version and f'= {plugin_version}' not in readme_content:
+            errors.append(f'Missing readme.txt changelog entry for version {plugin_version}')
+
+        # Report via Buildkite
+        self._report_results(errors, warnings)
+
+        return ValidationResult(
+            success=len(errors) == 0,
+            errors=errors,
+            warnings=warnings,
+        )
+
+    def _version_changed(self) -> bool:
+        """Check if version changed compared to master."""
+        try:
+            current = self.git.get_file_content(self.PLUGIN_FILE, 'HEAD')
+            master = self.git.get_file_content(self.PLUGIN_FILE, 'origin/master')
+
+            current_version = self._extract_plugin_version(current)
+            master_version = self._extract_plugin_version(master)
+
+            return current_version != master_version
+        except Exception:
+            return True
+
+    def _report_results(self, errors: List[str], warnings: List[str]) -> None:
+        """Report results via Buildkite annotations."""
+        if errors:
+            message = '## ❌ Version Validation Failed\n\n'
+            for error in errors:
+                message += f'- {error}\n'
+            self.buildkite.annotate(message, style='error', context='version-validation')
+
+        if not errors:
+            print('✓ Version validation passed')

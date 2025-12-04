@@ -51,3 +51,78 @@ class TestVersionExtraction:
         content = '<?php // empty file'
         version = VersionValidator._extract_plugin_version(content)
         assert version is None
+
+
+class TestVersionValidation:
+    """Tests for validation logic."""
+
+    @pytest.fixture
+    def mock_git(self):
+        """Create mock git client."""
+        return Mock()
+
+    @pytest.fixture
+    def mock_buildkite(self):
+        """Create mock buildkite client."""
+        return Mock()
+
+    def test_skip_when_version_unchanged(self, mock_git, mock_buildkite):
+        """Test validation skipped when version hasn't changed."""
+        plugin_content = generate_plugin_header(version='4.1.0')
+        mock_git.get_file_content.return_value = plugin_content
+
+        validator = VersionValidator(mock_git, mock_buildkite)
+        result = validator.validate()
+
+        assert result.success is True
+        assert len(result.errors) == 0
+
+    def test_version_mismatch_fails(self, mock_git, mock_buildkite):
+        """Test validation fails on version mismatch."""
+        plugin_content = generate_plugin_header(version='4.2.0')
+        readme_content = generate_readme(stable_tag='4.1.0')
+        changelog_content = generate_changelog(version='4.2.0')
+
+        def get_content(filepath, ref='HEAD'):
+            if ref == 'origin/master':
+                return generate_plugin_header(version='4.1.0')
+            if 'taxjar-woocommerce.php' in filepath:
+                return plugin_content
+            if 'readme.txt' in filepath:
+                return readme_content
+            if 'CHANGELOG' in filepath:
+                return changelog_content
+            return ''
+
+        mock_git.get_file_content.side_effect = get_content
+
+        validator = VersionValidator(mock_git, mock_buildkite)
+        result = validator.validate()
+
+        assert result.success is False
+        assert any('mismatch' in e.lower() for e in result.errors)
+
+    def test_all_versions_match_passes(self, mock_git, mock_buildkite):
+        """Test validation passes when all versions match."""
+        plugin_content = generate_plugin_header(version='4.2.0')
+        readme_content = generate_readme(stable_tag='4.2.0')
+        changelog_content = generate_changelog(version='4.2.0')
+
+        def get_content(filepath, ref='HEAD'):
+            if ref == 'origin/master':
+                return generate_plugin_header(version='4.1.0')
+            if 'taxjar-woocommerce.php' in filepath:
+                return plugin_content
+            if 'readme.txt' in filepath:
+                return readme_content
+            if 'CHANGELOG' in filepath:
+                return changelog_content
+            return ''
+
+        mock_git.get_file_content.side_effect = get_content
+
+        validator = VersionValidator(mock_git, mock_buildkite)
+        result = validator.validate()
+
+        assert result.success is True
+        assert len(result.errors) == 0
