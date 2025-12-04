@@ -47,7 +47,19 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 	}
 
 	public function add_tests_prefix( $transaction_id ) {
-		return 'WOOTEST' . $transaction_id;
+		$wc_version = getenv( 'WC_VERSION' ) ?: '0.0.0';
+		$build_id = getenv( 'BUILDKITE_BUILD_ID' ) ?: getenv( 'BUILDKITE_BUILD_NUMBER' ) ?: 'local';
+
+		// Format: WOOTEST-{wc_version}-{build_id}-{order_id}
+		// No timestamp - same order must have same ID for multiple sync operations
+		// Replace periods with dashes in version - TaxJar API treats periods as URL delimiters
+		// This ensures unique IDs across parallel CI builds while maintaining ID stability within tests
+		return sprintf(
+			'WOOTEST-%s-%s-%s',
+			str_replace( '.', '-', $wc_version ),
+			$build_id,
+			$transaction_id
+		);
 	}
 
 	public function load_wc() {
