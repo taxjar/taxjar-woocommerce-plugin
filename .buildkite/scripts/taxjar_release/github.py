@@ -22,7 +22,7 @@ class GitHubReleaseManager:
     @retry(
         max_attempts=3,
         backoff=[2, 4, 8],
-        exceptions=(subprocess.CalledProcessError,),
+        exceptions=(GitHubReleaseError,),
     )
     def create_release(
         self,
@@ -42,7 +42,7 @@ class GitHubReleaseManager:
             Release URL
 
         Raises:
-            subprocess.CalledProcessError: If gh command fails
+            GitHubReleaseError: If gh command fails after retries
         """
         cmd = [
             'gh', 'release', 'create', version,
@@ -55,6 +55,9 @@ class GitHubReleaseManager:
         else:
             cmd.append('--generate-notes')
 
-        result = self.runner.run(cmd, check=True)
-        print(f'✓ GitHub release {version} created')
-        return result.stdout.strip()
+        try:
+            result = self.runner.run(cmd, check=True)
+            print(f'✓ GitHub release {version} created')
+            return result.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            raise GitHubReleaseError(f"Failed to create release {version}: {e}") from e
