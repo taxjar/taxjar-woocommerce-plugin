@@ -129,10 +129,12 @@ export VERSION=4.2.0
 
 ## Local Development
 
-### Install Dependencies
+### Setup Virtual Environment
 ```bash
 cd .buildkite/scripts
-pip3 install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ### Required Tools
@@ -143,7 +145,15 @@ pip3 install -r requirements.txt
 ### Run Tests
 ```bash
 cd .buildkite/scripts
+source .venv/bin/activate
 PYTHONPATH=. pytest tests/ -v
+```
+
+### Run Release Tool Locally
+```bash
+cd /path/to/taxjar-woocommerce-plugin
+source .buildkite/scripts/.venv/bin/activate
+.buildkite/scripts/release-tool validate-version
 ```
 
 ## Troubleshooting
@@ -182,9 +192,3 @@ The version is already on WordPress.org. Either:
 Network operations retry automatically:
 - GitHub: 3 attempts (2, 4, 8 second delays)
 - SVN: 3 attempts (5, 10, 20 second delays)
-
-## Security Notes
-
-- SVN password passed via stdin, never in command line
-- Credentials not logged in output
-- Temporary directories cleaned up after use
