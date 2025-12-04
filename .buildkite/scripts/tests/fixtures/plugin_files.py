@@ -27,8 +27,8 @@ if ( ! defined( 'ABSPATH' ) ) {{
     exit;
 }}
 
-class WC_Taxjar_Integration {{
-    public $version = '{version}';
+class WC_Taxjar {{
+    public static $version = '{version}';
     public $minimum_woocommerce_version = '{wc_requires}';
 
     public function __construct() {{

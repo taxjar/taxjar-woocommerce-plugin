@@ -18,7 +18,7 @@ class TestPluginFileFixture:
         """Test version is configurable."""
         content = generate_plugin_header(version='5.0.0')
         assert '* Version: 5.0.0' in content
-        assert "public $version = '5.0.0'" in content
+        assert "public static $version = '5.0.0'" in content
 
     def test_wc_fields_configurable(self):
         """Test WC fields are configurable."""
