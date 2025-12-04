@@ -186,9 +186,3 @@ gh auth status
 The version is already on WordPress.org. Either:
 - Bump to a new version
 - Delete the existing SVN tag if re-releasing
-
-## Retry Behavior
-
-Network operations retry automatically:
-- GitHub: 3 attempts (2, 4, 8 second delays)
-- SVN: 3 attempts (5, 10, 20 second delays)
