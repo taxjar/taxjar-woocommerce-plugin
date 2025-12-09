@@ -93,8 +93,10 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 			if ( file_exists( $as_file ) ) {
 				require_once $as_file;
 				// Manually trigger registration (normally done via plugins_loaded hook)
-				if ( function_exists( 'action_scheduler_register_3_dot_7_dot_4' ) ) {
-					action_scheduler_register_3_dot_7_dot_4();
+				// Function name varies by version, so find it dynamically
+				$as_register_funcs = preg_grep( '/^action_scheduler_register_\d+/', get_defined_functions()['user'] );
+				foreach ( $as_register_funcs as $func ) {
+					$func();
 				}
 				if ( class_exists( 'ActionScheduler_Versions' ) ) {
 					ActionScheduler_Versions::initialize_latest_version();
