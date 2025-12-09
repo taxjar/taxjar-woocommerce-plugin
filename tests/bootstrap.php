@@ -87,6 +87,19 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 			if ( ! class_exists( 'WC_Integration' ) ) {
 				require_once $this->plugin_dir . 'woocommerce/includes/abstracts/abstract-wc-integration.php';
 			}
+			// Load ActionScheduler - required for TaxJar queue functionality
+			// ActionScheduler registers to plugins_loaded which already fired
+			$as_file = $this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php';
+			if ( file_exists( $as_file ) ) {
+				require_once $as_file;
+				// Manually trigger registration (normally done via plugins_loaded hook)
+				if ( function_exists( 'action_scheduler_register_3_dot_7_dot_4' ) ) {
+					action_scheduler_register_3_dot_7_dot_4();
+				}
+				if ( class_exists( 'ActionScheduler_Versions' ) ) {
+					ActionScheduler_Versions::initialize_latest_version();
+				}
+			}
 			if ( isset( $GLOBALS['WC_Taxjar'] ) && method_exists( $GLOBALS['WC_Taxjar'], 'init' ) ) {
 				$GLOBALS['WC_Taxjar']->init();
 			}
