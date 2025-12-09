@@ -3,7 +3,7 @@
 case "${BUILDKITE_MATRIX}" in
   "7.x")
     export WC_VERSION="7.9.1"
-    export PHP_VERSION="7.4"
+    export PHP_VERSION="8.1"
     export WP_VERSION="6.1"
     ;;
   "8.x")
