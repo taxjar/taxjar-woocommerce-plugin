@@ -77,6 +77,9 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 	 */
 	function create_test_refund( $order_id ) {
 		$refund = TaxJar_Order_Helper::create_refund_from_order( $order_id );
+		if ( is_wp_error( $refund ) ) {
+			$this->fail( 'Failed to create test refund: ' . $refund->get_error_message() );
+		}
 		array_push( $this->synced_refund_ids, $refund->get_id() );
 		return $refund;
 	}

@@ -138,7 +138,15 @@ class TaxJar_Order_Helper {
 	}
 
 	static function create_refund_from_order( $order_id ) {
-		$order       = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
+
+		// Ensure order is in a valid status for refunds (WC 8.x+ requirement)
+		$valid_statuses = array( 'processing', 'completed', 'on-hold' );
+		if ( ! in_array( $order->get_status(), $valid_statuses, true ) ) {
+			$order->set_status( 'completed' );
+			$order->save();
+		}
+
 		$order_items = $order->get_items( array( 'line_item', 'shipping', 'fee' ) );
 
 		$line_items = array();
@@ -163,7 +171,15 @@ class TaxJar_Order_Helper {
 	}
 
 	static function create_partial_refund_from_order( $order_id ) {
-		$order       = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
+
+		// Ensure order is in a valid status for refunds (WC 8.x+ requirement)
+		$valid_statuses = array( 'processing', 'completed', 'on-hold' );
+		if ( ! in_array( $order->get_status(), $valid_statuses, true ) ) {
+			$order->set_status( 'completed' );
+			$order->save();
+		}
+
 		$order_items = $order->get_items( array( 'line_item', 'shipping', 'fee' ) );
 
 		$line_items = array();
@@ -196,7 +212,15 @@ class TaxJar_Order_Helper {
 	}
 
 	static function create_fee_refund_from_order( $order_id ) {
-		$order       = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
+
+		// Ensure order is in a valid status for refunds (WC 8.x+ requirement)
+		$valid_statuses = array( 'processing', 'completed', 'on-hold' );
+		if ( ! in_array( $order->get_status(), $valid_statuses, true ) ) {
+			$order->set_status( 'completed' );
+			$order->save();
+		}
+
 		$order_items = $order->get_items( array( 'line_item', 'shipping', 'fee' ) );
 
 		$line_items = array();
@@ -236,7 +260,15 @@ class TaxJar_Order_Helper {
 	}
 
 	static function create_partial_line_item_refund_from_order( $order_id ) {
-		$order       = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
+
+		// Ensure order is in a valid status for refunds (WC 8.x+ requirement)
+		$valid_statuses = array( 'processing', 'completed', 'on-hold' );
+		if ( ! in_array( $order->get_status(), $valid_statuses, true ) ) {
+			$order->set_status( 'completed' );
+			$order->save();
+		}
+
 		$order_items = $order->get_items( array( 'line_item', 'shipping', 'fee' ) );
 
 		$line_items = array();
