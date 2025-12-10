@@ -161,25 +161,20 @@ class TaxJar_Order_Helper {
 		// Disable WC emails to prevent fatal errors in WC 8.x+ (test orders lack valid email template data)
 		self::disable_wc_emails();
 
-		try {
-			$refund = wc_create_refund(
-				array(
-					'amount'         => $order->get_total(),
-					'reason'         => 'Refund Reason',
-					'order_id'       => $order_id,
-					'line_items'     => $line_items,
-				)
-			);
+		$refund = wc_create_refund(
+			array(
+				'amount'         => $order->get_total(),
+				'reason'         => 'Refund Reason',
+				'order_id'       => $order_id,
+				'line_items'     => $line_items,
+			)
+		);
 
-			if ( is_wp_error( $refund ) ) {
-				throw new Exception( 'create_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ', total=' . $order->get_total() . ')' );
-			}
-
-			return $refund;
-		} finally {
-			// Re-enable WC emails
-			self::enable_wc_emails();
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( 'create_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ', total=' . $order->get_total() . ')' );
 		}
+
+		return $refund;
 	}
 
 	static function create_partial_refund_from_order( $order_id ) {
@@ -214,25 +209,20 @@ class TaxJar_Order_Helper {
 		// Disable WC emails to prevent fatal errors in WC 8.x+ (test orders lack valid email template data)
 		self::disable_wc_emails();
 
-		try {
-			$refund = wc_create_refund(
-				array(
-					'amount'         => $refund_total,
-					'reason'         => 'Refund Reason',
-					'order_id'       => $order_id,
-					'line_items'     => $line_items,
-				)
-			);
+		$refund = wc_create_refund(
+			array(
+				'amount'         => $refund_total,
+				'reason'         => 'Refund Reason',
+				'order_id'       => $order_id,
+				'line_items'     => $line_items,
+			)
+		);
 
-			if ( is_wp_error( $refund ) ) {
-				throw new Exception( 'create_partial_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ')' );
-			}
-
-			return $refund;
-		} finally {
-			// Re-enable WC emails
-			self::enable_wc_emails();
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( 'create_partial_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ')' );
 		}
+
+		return $refund;
 	}
 
 	static function create_fee_refund_from_order( $order_id ) {
@@ -274,25 +264,20 @@ class TaxJar_Order_Helper {
 		// Disable WC emails to prevent fatal errors in WC 8.x+ (test orders lack valid email template data)
 		self::disable_wc_emails();
 
-		try {
-			$refund = wc_create_refund(
-				array(
-					'amount'         => $refund_total,
-					'reason'         => 'Refund Reason',
-					'order_id'       => $order_id,
-					'line_items'     => $line_items,
-				)
-			);
+		$refund = wc_create_refund(
+			array(
+				'amount'         => $refund_total,
+				'reason'         => 'Refund Reason',
+				'order_id'       => $order_id,
+				'line_items'     => $line_items,
+			)
+		);
 
-			if ( is_wp_error( $refund ) ) {
-				throw new Exception( 'create_fee_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ')' );
-			}
-
-			return $refund;
-		} finally {
-			// Re-enable WC emails
-			self::enable_wc_emails();
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( 'create_fee_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ')' );
 		}
+
+		return $refund;
 	}
 
 	static function create_partial_line_item_refund_from_order( $order_id ) {
@@ -327,53 +312,32 @@ class TaxJar_Order_Helper {
 		// Disable WC emails to prevent fatal errors in WC 8.x+ (test orders lack valid email template data)
 		self::disable_wc_emails();
 
-		try {
-			$refund = wc_create_refund(
-				array(
-					'amount'         => $refund_total,
-					'reason'         => 'Refund Reason',
-					'order_id'       => $order_id,
-					'line_items'     => $line_items,
-				)
-			);
+		$refund = wc_create_refund(
+			array(
+				'amount'         => $refund_total,
+				'reason'         => 'Refund Reason',
+				'order_id'       => $order_id,
+				'line_items'     => $line_items,
+			)
+		);
 
-			if ( is_wp_error( $refund ) ) {
-				throw new Exception( 'create_partial_line_item_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ')' );
-			}
-
-			return $refund;
-		} finally {
-			// Re-enable WC emails
-			self::enable_wc_emails();
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( 'create_partial_line_item_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ')' );
 		}
+
+		return $refund;
 	}
 
 	/**
-	 * Temporarily disable WooCommerce transactional emails.
-	 * WC 8.x+ triggers emails on refund creation that fail in test environment.
-	 *
-	 * @return array The removed email actions for later restoration
+	 * Disable WooCommerce transactional emails during test execution.
+	 * WC 8.x+ triggers emails on refund creation that fail in test environment
+	 * because test orders lack valid customer/billing data for email templates.
 	 */
 	private static function disable_wc_emails() {
-		// Remove the main email action that triggers all transactional emails
-		remove_action( 'woocommerce_order_status_completed', array( WC()->mailer(), 'email_order_status' ) );
-		remove_action( 'woocommerce_order_fully_refunded', array( WC()->mailer(), 'email_order_fully_refunded' ) );
-		remove_action( 'woocommerce_order_partially_refunded', array( WC()->mailer(), 'email_order_partially_refunded' ) );
-
-		// Disable all email notifications by unhooking the email init
-		remove_action( 'woocommerce_email', array( WC()->mailer(), 'send' ) );
+		// Remove all hooks that trigger refund-related emails
+		remove_all_actions( 'woocommerce_order_fully_refunded' );
+		remove_all_actions( 'woocommerce_order_partially_refunded' );
+		remove_all_actions( 'woocommerce_refund_created' );
 	}
 
-	/**
-	 * Re-enable WooCommerce transactional emails after refund creation.
-	 */
-	private static function enable_wc_emails() {
-		// Re-add the main email actions
-		add_action( 'woocommerce_order_status_completed', array( WC()->mailer(), 'email_order_status' ) );
-		add_action( 'woocommerce_order_fully_refunded', array( WC()->mailer(), 'email_order_fully_refunded' ) );
-		add_action( 'woocommerce_order_partially_refunded', array( WC()->mailer(), 'email_order_partially_refunded' ) );
-
-		// Re-enable email sending
-		add_action( 'woocommerce_email', array( WC()->mailer(), 'send' ) );
-	}
 }
