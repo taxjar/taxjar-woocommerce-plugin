@@ -167,6 +167,10 @@ class TaxJar_Order_Helper {
 			)
 		);
 
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( 'create_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ', total=' . $order->get_total() . ')' );
+		}
+
 		return $refund;
 	}
 
@@ -207,6 +211,10 @@ class TaxJar_Order_Helper {
 				'line_items'     => $line_items,
 			)
 		);
+
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( 'create_partial_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ')' );
+		}
 
 		return $refund;
 	}
@@ -256,6 +264,10 @@ class TaxJar_Order_Helper {
 			)
 		);
 
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( 'create_fee_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ')' );
+		}
+
 		return $refund;
 	}
 
@@ -296,6 +308,10 @@ class TaxJar_Order_Helper {
 				'line_items'     => $line_items,
 			)
 		);
+
+		if ( is_wp_error( $refund ) ) {
+			throw new Exception( 'create_partial_line_item_refund_from_order failed: ' . $refund->get_error_message() . ' (order_id=' . $order_id . ', status=' . $order->get_status() . ')' );
+		}
 
 		return $refund;
 	}
