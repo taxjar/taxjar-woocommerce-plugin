@@ -37,22 +37,22 @@ fi
 if [ -n "${BUILDKITE_MATRIX:-}" ]; then
   case "${BUILDKITE_MATRIX}" in
     "7.x")
-      export WC_VERSION="7.9.0"
-      export PHP_VERSION="8.2"
-      export WP_VERSION="6.4"
+      export WC_VERSION="7.9.1"
+      export PHP_VERSION="8.1"
+      export WP_VERSION="6.1"
       ;;
     "8.x")
-      export WC_VERSION="8.9.1"
+      export WC_VERSION="8.9.3"
       export PHP_VERSION="8.1"
-      export WP_VERSION="6.2"
+      export WP_VERSION="6.3"
       ;;
     "9.x")
-      export WC_VERSION="9.3.3"
+      export WC_VERSION="9.9.5"
       export PHP_VERSION="8.2"
-      export WP_VERSION="6.4"
+      export WP_VERSION="6.6"
       ;;
     "10.x")
-      export WC_VERSION="10.2.2"
+      export WC_VERSION="10.3.6"
       export PHP_VERSION="8.3"
       export WP_VERSION="6.7"
       ;;

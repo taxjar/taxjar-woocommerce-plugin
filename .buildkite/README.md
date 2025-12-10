@@ -16,10 +16,10 @@ The pipeline tests against multiple WooCommerce versions in parallel:
 
 | WooCommerce | PHP | WordPress | Status |
 |-------------|-----|-----------|--------|
-| 7.9.0 | 8.0 | 6.0 | Oldest supported |
-| 8.9.1 | 8.1 | 6.2 | Previous major |
-| 9.3.3 | 8.2 | 6.4 | Current stable |
-| 10.2.2 | 8.3 | 6.7 | Latest version |
+| 7.9.1 | 8.1 | 6.1 | Oldest supported |
+| 8.9.3 | 8.1 | 6.3 | Previous major |
+| 9.9.5 | 8.2 | 6.6 | Current stable |
+| 10.3.6 | 8.3 | 6.7 | Latest version |
 
 ## Directory Structure
 
