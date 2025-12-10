@@ -31,7 +31,7 @@ The pipeline tests against multiple WooCommerce versions in parallel:
 │   ├── pre-command           # Loads secrets from Chamber, sets version matrix
 │   └── post-command          # Cleanup and diagnostics
 ├── scripts/
-│   ├── version-matrix.sh     # ⭐ SINGLE SOURCE OF TRUTH for WC/PHP/WP versions
+│   ├── version-matrix.sh     # Configuration for WC/PHP/WP version matrix for testing
 │   ├── run-tests.sh          # Test execution script
 │   ├── set-test-env.sh       # Container environment setup (sources version-matrix.sh)
 │   └── test-locally.sh       # Local validation script
