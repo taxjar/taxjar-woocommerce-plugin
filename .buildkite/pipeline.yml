@@ -16,6 +16,22 @@ steps:
     timeout_in_minutes: 5
     soft_fail: false
 
+  # Validate version consistency in PRs
+  - label: ":clipboard: Validate Version"
+    key: "validate-version"
+    depends_on: "lint"
+    command: ".buildkite/scripts/release-tool validate-version"
+    agents:
+      queue: docker
+    plugins:
+      - docker#v5.1.0:
+          image: 708017133719.dkr.ecr.us-east-1.amazonaws.com/taxjar/ops-tools:latest
+          propagate-environment: true
+          mount-buildkite-agent: true
+          always-pull: true
+    timeout_in_minutes: 5
+    soft_fail: true  # Don't block PRs on validation during initial rollout
+
   # Stage 2: PHPCS - WordPress Coding Standards
   - label: ":white_check_mark: PHPCS - WordPress Coding Standards"
     key: "phpcs"
