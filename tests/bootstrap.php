@@ -70,9 +70,42 @@ class TaxJar_WC_Unit_Tests_Bootstrap {
 		update_option( 'active_plugins', array( 'woocommerce/woocommerce.php' ) );
 		update_option( 'woocommerce_db_version', WC_VERSION );
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/taxjar-woocommerce.php';
+		// The $WC_Taxjar variable is created in file scope, capture it for global access
+		if ( isset( $WC_Taxjar ) ) {
+			$GLOBALS['WC_Taxjar'] = $WC_Taxjar;
+		}
 
 		// Manually load Install class since it's normally loaded via 'plugins_loaded' hook
 		require_once $this->plugin_dir . 'taxjar-woocommerce-plugin/includes/class-wc-taxjar-install.php';
+
+		// WC 8.x/10.x: Manually initialize TaxJar classes
+		// The plugins_loaded hook fires before plugin loads in test environment
+		$wc_version    = getenv( 'WC_VERSION' ) ?: '7.9.0';
+		$major_version = (int) explode( '.', $wc_version )[0];
+		if ( in_array( $major_version, array( 8, 10 ), true ) ) {
+			// Ensure WC_Integration class is available (TaxJar init() checks for it)
+			if ( ! class_exists( 'WC_Integration' ) ) {
+				require_once $this->plugin_dir . 'woocommerce/includes/abstracts/abstract-wc-integration.php';
+			}
+			// Load ActionScheduler - required for TaxJar queue functionality
+			// ActionScheduler registers to plugins_loaded which already fired
+			$as_file = $this->plugin_dir . 'woocommerce/packages/action-scheduler/action-scheduler.php';
+			if ( file_exists( $as_file ) ) {
+				require_once $as_file;
+				// Manually trigger registration (normally done via plugins_loaded hook)
+				// Function name varies by version, so find it dynamically
+				$as_register_funcs = preg_grep( '/^action_scheduler_register_\d+/', get_defined_functions()['user'] );
+				foreach ( $as_register_funcs as $func ) {
+					$func();
+				}
+				if ( class_exists( 'ActionScheduler_Versions' ) ) {
+					ActionScheduler_Versions::initialize_latest_version();
+				}
+			}
+			if ( isset( $GLOBALS['WC_Taxjar'] ) && method_exists( $GLOBALS['WC_Taxjar'], 'init' ) ) {
+				$GLOBALS['WC_Taxjar']->init();
+			}
+		}
 
 		// Load WooCommerce Subscriptions if available
 		$subscriptions_file = $this->plugin_dir . 'woocommerce-subscriptions/woocommerce-subscriptions.php';

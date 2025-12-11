@@ -35,28 +35,9 @@ fi
 # Set matrix-specific environment variables for docker-compose
 # These must be set before docker-compose runs so it can select the correct image
 if [ -n "${BUILDKITE_MATRIX:-}" ]; then
-  case "${BUILDKITE_MATRIX}" in
-    "7.x")
-      export WC_VERSION="7.9.0"
-      export PHP_VERSION="8.2"
-      export WP_VERSION="6.4"
-      ;;
-    "8.x")
-      export WC_VERSION="8.9.1"
-      export PHP_VERSION="8.1"
-      export WP_VERSION="6.2"
-      ;;
-    "9.x")
-      export WC_VERSION="9.3.3"
-      export PHP_VERSION="8.2"
-      export WP_VERSION="6.4"
-      ;;
-    "10.x")
-      export WC_VERSION="10.2.2"
-      export PHP_VERSION="8.3"
-      export WP_VERSION="6.7"
-      ;;
-  esac
+  # Source the single version matrix config
+  # Use BUILDKITE_BUILD_CHECKOUT_PATH since $0 may be a temp wrapper script
+  source "${BUILDKITE_BUILD_CHECKOUT_PATH}/.buildkite/scripts/version-matrix.sh"
   echo "📦 Matrix ${BUILDKITE_MATRIX}: WC ${WC_VERSION}, PHP ${PHP_VERSION}, WP ${WP_VERSION}"
 fi
 

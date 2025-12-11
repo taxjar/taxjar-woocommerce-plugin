@@ -16,25 +16,26 @@ The pipeline tests against multiple WooCommerce versions in parallel:
 
 | WooCommerce | PHP | WordPress | Status |
 |-------------|-----|-----------|--------|
-| 7.9.0 | 8.0 | 6.0 | Oldest supported |
-| 8.9.1 | 8.1 | 6.2 | Previous major |
-| 9.3.3 | 8.2 | 6.4 | Current stable |
-| 10.2.2 | 8.3 | 6.7 | Latest version |
+| 7.9.1 | 8.1 | 6.1 | Oldest supported |
+| 8.9.3 | 8.1 | 6.3 | Previous major |
+| 9.9.5 | 8.2 | 6.6 | Current stable |
+| 10.3.6 | 8.3 | 6.7 | Latest version |
 
 ## Directory Structure
 
 ```
 .buildkite/
-├── pipeline.yml           # Main pipeline configuration
-├── docker-compose.test.yml # Docker test environment
+├── pipeline.yml              # Main pipeline configuration
+├── docker-compose.test.yml   # Docker test environment
 ├── hooks/
-│   ├── pre-command        # Loads secrets from Chamber
-│   └── post-command       # Cleanup and diagnostics
+│   ├── pre-command           # Loads secrets from Chamber, sets version matrix
+│   └── post-command          # Cleanup and diagnostics
 ├── scripts/
-│   ├── run-tests.sh       # Test execution script
-│   └── test-locally.sh    # Local validation script
-├── matrix-config.json     # Test matrix configuration
-└── README.md             # This file
+│   ├── version-matrix.sh     # Configuration for WC/PHP/WP version matrix for testing
+│   ├── run-tests.sh          # Test execution script
+│   ├── set-test-env.sh       # Container environment setup (sources version-matrix.sh)
+│   └── test-locally.sh       # Local validation script
+└── README.md                 # This file
 ```
 
 ## Local Testing
@@ -132,21 +133,32 @@ docker-compose -f .buildkite/docker-compose.test.yml logs
 
 ### Updating Test Matrix
 
-Edit `.buildkite/matrix-config.json` to update versions:
+Edit `.buildkite/scripts/version-matrix.sh` to update versions. This is the **single source of truth** for all WC/PHP/WP version combinations:
 
-```json
-{
-  "test_matrix": [
-    {
-      "woocommerce": "x.x.x",
-      "php": "x.x",
-      "wordpress": "x.x"
-    }
-  ]
-}
+```bash
+# In version-matrix.sh, update the case statement:
+case "${BUILDKITE_MATRIX:-}" in
+  "7.x")
+    export WC_VERSION="7.9.1"
+    export PHP_VERSION="8.1"
+    export WP_VERSION="6.1"
+    ;;
+  # ... other versions
+esac
 ```
 
-Then update the matrix in `pipeline.yml` to match.
+Both `hooks/pre-command` and `scripts/set-test-env.sh` source this file, so you only need to update it in one place.
+
+To add a new WC version to the matrix, also update `pipeline.yml`:
+
+```yaml
+matrix:
+  - "7.x"
+  - "8.x"
+  - "9.x"
+  - "10.x"
+  - "11.x"  # Add new version here
+```
 
 ### Adding New Test Stages
 

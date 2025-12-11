@@ -64,13 +64,15 @@ steps:
     artifact_paths:
       - "phpcs-report.xml"
 
-  # Stage 3: PHPUnit Tests - Parallel execution with unique transaction IDs - WC 7.x and 9.x
+  # Stage 3: PHPUnit Tests - Parallel execution with unique transaction IDs
   - label: ":test_tube: PHPUnit - WC {{matrix}}"
     key: "phpunit"
     depends_on: "lint"
     matrix:
       - "7.x"
+      - "8.x"
       - "9.x"
+      - "10.x"
     env:
       BUILDKITE_MATRIX: "{{matrix}}"
     agents:
