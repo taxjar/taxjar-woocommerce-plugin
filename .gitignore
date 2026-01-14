@@ -28,3 +28,4 @@ wp-config-*.php
 # Logs and temp files
 *.log
 .htaccess
+.claude/

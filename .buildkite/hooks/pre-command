@@ -2,15 +2,14 @@
 set -euo pipefail
 
 # Pre-command hook for TaxJar WooCommerce Plugin CI
-# Loads secrets from Chamber/SSM for test execution
-# Note: Release secrets (GITHUB_TOKEN, WORDPRESS_SVN_*) are loaded in the
-# environment hook so they're available to Docker plugins
+# Loads secrets from Chamber/SSM for test execution and releases
 
 CHAMBER_PATH="buildkite/taxjar-woocommerce-plugin"
 
+echo "--- :key: Loading secrets from Chamber"
+
 # PHPUnit test steps
 if [[ "$BUILDKITE_LABEL" == *"PHPUnit"* ]]; then
-    echo "--- :key: Loading test secrets from Chamber"
     export TAXJAR_API_TOKEN=$(chamber read -q "$CHAMBER_PATH" taxjar_api_token || echo "")
 
     if [ -z "$TAXJAR_API_TOKEN" ]; then
@@ -29,6 +28,37 @@ if [[ "$BUILDKITE_LABEL" == *"PHPUnit"* ]]; then
         echo "   Configure secret with: chamber write $CHAMBER_PATH buildkite_analytics_token <token>"
     else
         echo "✅ BUILDKITE_ANALYTICS_TOKEN loaded successfully"
+    fi
+fi
+
+# GitHub Release step
+if [[ "$BUILDKITE_LABEL" == *"GitHub Release"* ]]; then
+    export GITHUB_TOKEN=$(chamber read -q "$CHAMBER_PATH" github_token || echo "")
+
+    if [ -z "$GITHUB_TOKEN" ]; then
+        echo "❌ Error: GITHUB_TOKEN not found in Chamber"
+        echo "   GitHub release will fail"
+        echo "   Configure secret with: chamber write $CHAMBER_PATH github_token <token>"
+        exit 1
+    else
+        echo "✅ GITHUB_TOKEN loaded successfully"
+    fi
+fi
+
+# WordPress.org SVN Deploy step
+if [[ "$BUILDKITE_LABEL" == *"WordPress.org"* ]]; then
+    export WORDPRESS_SVN_USERNAME=$(chamber read -q "$CHAMBER_PATH" wordpress_svn_username || echo "")
+    export WORDPRESS_SVN_PASSWORD=$(chamber read -q "$CHAMBER_PATH" wordpress_svn_password || echo "")
+
+    if [ -z "$WORDPRESS_SVN_USERNAME" ] || [ -z "$WORDPRESS_SVN_PASSWORD" ]; then
+        echo "❌ Error: WordPress SVN credentials not found in Chamber"
+        echo "   SVN deploy will fail"
+        echo "   Configure secrets with:"
+        echo "     chamber write $CHAMBER_PATH wordpress_svn_username <username>"
+        echo "     chamber write $CHAMBER_PATH wordpress_svn_password <password>"
+        exit 1
+    else
+        echo "✅ WordPress SVN credentials loaded successfully"
     fi
 fi
 
