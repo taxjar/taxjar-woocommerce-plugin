@@ -1,3 +1,7 @@
+# 4.2.7 (2026-01-13)
+* WooCommerce tested up to 10.4.3
+* WordPres 6.9 tested
+
 # 4.2.6 (2025-11-28)
 * WooCommerce tested up to 10.3.5
 * #276 Fix WooCommerce Checkout Block compatibility for tax calculation
