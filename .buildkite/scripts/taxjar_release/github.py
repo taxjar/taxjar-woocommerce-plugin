@@ -7,17 +7,22 @@ from .clients.subprocess_runner import SubprocessRunner
 from .exceptions import GitHubReleaseError
 
 
+GITHUB_REPO = 'taxjar/taxjar-woocommerce-plugin'
+
+
 class GitHubReleaseManager:
     """Manages GitHub release creation."""
 
-    def __init__(self, runner: Optional[SubprocessRunner] = None):
+    def __init__(self, runner: Optional[SubprocessRunner] = None, repo: str = GITHUB_REPO):
         """
         Initialize GitHubReleaseManager.
 
         Args:
             runner: SubprocessRunner instance
+            repo: GitHub repository in owner/repo format
         """
         self.runner = runner or SubprocessRunner()
+        self.repo = repo
 
     @retry(
         max_attempts=3,
@@ -46,6 +51,7 @@ class GitHubReleaseManager:
         """
         cmd = [
             'gh', 'release', 'create', version,
+            '--repo', self.repo,
             '--target', target,
             '--title', version,
         ]
@@ -60,4 +66,9 @@ class GitHubReleaseManager:
             print(f'✓ GitHub release {version} created')
             return result.stdout.strip()
         except subprocess.CalledProcessError as e:
-            raise GitHubReleaseError(f"Failed to create release {version}: {e}") from e
+            error_msg = f"Failed to create release {version}: {e}"
+            if e.stderr:
+                error_msg += f"\nGitHub CLI error: {e.stderr.strip()}"
+            if e.stdout:
+                error_msg += f"\nGitHub CLI output: {e.stdout.strip()}"
+            raise GitHubReleaseError(error_msg) from e
