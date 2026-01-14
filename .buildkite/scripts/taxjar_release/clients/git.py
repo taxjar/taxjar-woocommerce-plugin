@@ -1,4 +1,6 @@
 """GitPython wrapper for git operations."""
+import os
+import subprocess
 from typing import Optional
 import git
 
@@ -14,7 +16,27 @@ class GitClient:
             repo_path: Path to git repository
             repo: GitPython Repo instance (for testing)
         """
+        if repo is None:
+            self._configure_safe_directory(repo_path)
         self.repo = repo or git.Repo(repo_path)
+
+    @staticmethod
+    def _configure_safe_directory(repo_path: str) -> None:
+        """
+        Configure git safe.directory for CI environments.
+
+        In Docker containers (e.g., Buildkite), the repo may be owned by
+        a different user. Git 2.35.2+ requires safe.directory config.
+        """
+        abs_path = os.path.abspath(repo_path)
+        try:
+            subprocess.run(
+                ['git', 'config', '--global', '--add', 'safe.directory', abs_path],
+                check=False,
+                capture_output=True,
+            )
+        except FileNotFoundError:
+            pass
 
     def get_file_content(self, filepath: str, ref: str = 'HEAD') -> str:
         """
