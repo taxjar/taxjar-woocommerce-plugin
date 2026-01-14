@@ -137,6 +137,11 @@ class VersionValidator:
     def _version_changed(self) -> bool:
         """Check if version changed compared to master."""
         try:
+            # On master branch, always run validation (release pipeline case)
+            current_branch = self.git.get_current_branch()
+            if current_branch == 'master':
+                return True
+
             current = self.git.get_file_content(self.PLUGIN_FILE, 'HEAD')
             master = self.git.get_file_content(self.PLUGIN_FILE, 'origin/master')
 
