@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+
+# Environment hook for TaxJar WooCommerce Plugin CI
+# Loads secrets that need to be available to Docker plugins
+# This hook runs BEFORE plugins initialize, ensuring env vars are propagated
+
+CHAMBER_PATH="buildkite/taxjar-woocommerce-plugin"
+
+# GitHub Release step - load token early so Docker plugin can pass it through
+if [[ "${BUILDKITE_LABEL:-}" == *"GitHub Release"* ]]; then
+    echo "--- :key: Loading GitHub token from Chamber"
+    export GITHUB_TOKEN=$(chamber read -q "$CHAMBER_PATH" github_token || echo "")
+
+    if [ -z "$GITHUB_TOKEN" ]; then
+        echo "❌ Error: GITHUB_TOKEN not found in Chamber"
+        echo "   Configure secret with: chamber write $CHAMBER_PATH github_token <token>"
+        exit 1
+    else
+        echo "✅ GITHUB_TOKEN loaded successfully"
+    fi
+fi
+
+# WordPress.org SVN Deploy step - load credentials early
+if [[ "${BUILDKITE_LABEL:-}" == *"WordPress.org"* ]]; then
+    echo "--- :key: Loading WordPress SVN credentials from Chamber"
+    export WORDPRESS_SVN_USERNAME=$(chamber read -q "$CHAMBER_PATH" wordpress_svn_username || echo "")
+    export WORDPRESS_SVN_PASSWORD=$(chamber read -q "$CHAMBER_PATH" wordpress_svn_password || echo "")
+
+    if [ -z "$WORDPRESS_SVN_USERNAME" ] || [ -z "$WORDPRESS_SVN_PASSWORD" ]; then
+        echo "❌ Error: WordPress SVN credentials not found in Chamber"
+        echo "   Configure secrets with:"
+        echo "     chamber write $CHAMBER_PATH wordpress_svn_username <username>"
+        echo "     chamber write $CHAMBER_PATH wordpress_svn_password <password>"
+        exit 1
+    else
+        echo "✅ WordPress SVN credentials loaded successfully"
+    fi
+fi
