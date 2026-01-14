@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""
+TaxJar WooCommerce Release Automation Tool
+
+Usage:
+    release-tool validate-version
+    release-tool detect-version
+    release-tool github-release [--version VERSION]
+    release-tool svn-deploy [--version VERSION]
+"""
+
+import os
+import sys
+
+# Add script directory to Python path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, script_dir)
+
+from taxjar_release.cli import main
+
+if __name__ == '__main__':
+    sys.exit(main())

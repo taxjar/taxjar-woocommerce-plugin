@@ -7,6 +7,7 @@ composer.phar
 .buildkite/test-results/
 test-results/
 tests/.phpunit.result.cache
+**/__pycache__/
 
 # WordPress core files (from Docker testing)
 wp-admin/
