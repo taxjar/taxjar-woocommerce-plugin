@@ -95,6 +95,10 @@ steps:
       queue: "docker"
     timeout_in_minutes: 15
     soft_fail: false  # Fail build on test failures
+    retry:
+      automatic:
+        - exit_status: "*"
+          limit: 2
     plugins:
       - docker-compose#v4.14.0:
           run: wordpress
@@ -112,4 +116,97 @@ steps:
       - test-collector#v1.10.0:
           files: ".buildkite/test-results/*.xml"
           format: "junit"
+
+  # Stage 4: Release trigger (master only)
+  - label: ":rocket: Check Release"
+    key: "check-release"
+    depends_on:
+      - "validate-version"
+      - "phpunit"
+    if: build.branch == "master"
+    command: |
+      .buildkite/scripts/release-tool detect-version
+
+      if buildkite-agent meta-data exists "SKIP_RELEASE" 2>/dev/null; then
+        echo "Version already deployed - skipping release"
+        exit 0
+      fi
+
+      echo "+++ New version detected - adding release steps"
+      cat <<'RELEASE_PIPELINE' | buildkite-agent pipeline upload
+      steps:
+        - label: ":github: Create GitHub Release"
+          key: "github-release"
+          command: |
+            export VERSION=$$(buildkite-agent meta-data get "release-version")
+            .buildkite/scripts/release-tool github-release
+          agents:
+            queue: docker
+          plugins:
+            - docker#v5.1.0:
+                image: 708017133719.dkr.ecr.us-east-1.amazonaws.com/taxjar/ops-tools:latest
+                propagate-environment: true
+                mount-buildkite-agent: true
+                always-pull: true
+                environment:
+                  - GITHUB_TOKEN
+          timeout_in_minutes: 10
+
+        - wait
+
+        - label: ":package: Deploy to WordPress.org"
+          key: "svn-deploy"
+          command: |
+            export VERSION=$$(buildkite-agent meta-data get "release-version")
+            .buildkite/scripts/release-tool svn-deploy
+          agents:
+            queue: docker
+          plugins:
+            - docker#v5.1.0:
+                image: 708017133719.dkr.ecr.us-east-1.amazonaws.com/taxjar/ops-tools:latest
+                propagate-environment: true
+                mount-buildkite-agent: true
+                always-pull: true
+                environment:
+                  - WORDPRESS_SVN_USERNAME
+                  - WORDPRESS_SVN_PASSWORD
+          timeout_in_minutes: 15
+
+        - wait
+
+        - label: ":white_check_mark: Verify Release"
+          key: "verify-release"
+          command: |
+            export VERSION=$$(buildkite-agent meta-data get "release-version")
+            echo "--- Waiting for WordPress.org to update"
+            sleep 30
+
+            PLUGIN_URL="https://wordpress.org/plugins/taxjar-simplified-taxes-for-woocommerce/"
+            if curl -sf "$$PLUGIN_URL" | grep -q "$$VERSION"; then
+              echo "+++ Version $$VERSION is live on WordPress.org"
+            else
+              echo "Version not yet visible (may take a few minutes)"
+            fi
+
+            echo "+++ Release Complete"
+            echo "GitHub: https://github.com/taxjar/taxjar-woocommerce-plugin/releases/tag/$$VERSION"
+            echo "WordPress.org: $$PLUGIN_URL"
+          agents:
+            queue: docker
+          plugins:
+            - docker#v5.1.0:
+                image: 708017133719.dkr.ecr.us-east-1.amazonaws.com/taxjar/ops-tools:latest
+                propagate-environment: true
+                always-pull: true
+          timeout_in_minutes: 5
+      RELEASE_PIPELINE
+    agents:
+      queue: docker
+    plugins:
+      - docker#v5.1.0:
+          image: 708017133719.dkr.ecr.us-east-1.amazonaws.com/taxjar/ops-tools:latest
+          propagate-environment: true
+          mount-buildkite-agent: true
+          always-pull: true
+    timeout_in_minutes: 5
 
