@@ -17,7 +17,7 @@ class TaxJar_API_Request {
 	private $content_type;
 
 	public static $x_api_version = '2020-08-07';
-	public static $base_url = 'https://api.taxjar.com/v2/';
+	public static $base_url;
 
 	/**
 	 * TaxJar_API_Request constructor.
@@ -28,6 +28,8 @@ class TaxJar_API_Request {
 	 * @param string $content_type - content type header for request
 	 */
 	public function __construct( $endpoint, $body = null, $type = 'post', $content_type = 'application/json' ) {
+		self::$base_url = apply_filters( 'taxjar_set_base_url', 'https://api.taxjar.com/v2/' );
+
 		$this->set_api_token( TaxJar()->settings['api_token'] );
 		$this->set_user_agent( self::create_ua_header() );
 		$this->set_request_type( $type );
