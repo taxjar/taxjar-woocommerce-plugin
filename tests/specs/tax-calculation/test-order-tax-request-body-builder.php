@@ -101,6 +101,32 @@ class Test_Order_Tax_Request_Body_Builder extends WP_UnitTestCase {
 		$this->assertNotEmpty( $line_items[1]['id'] );
 	}
 
+	public function test_negative_fee_line_items_excluded() {
+		$test_order_factory = new TaxJar_Test_Order_Factory();
+		$test_order_factory->create_order_from_options( TaxJar_Test_Order_Factory::$default_options );
+
+		$positive_fee = TaxJar_Test_Order_Factory::$default_fee_details;
+		$test_order_factory->add_fee( $positive_fee );
+
+		$negative_fee = array(
+			'name'       => 'Gift Card Discount',
+			'amount'     => -25,
+			'tax_class'  => '',
+			'tax_status' => 'none',
+		);
+		$test_order_factory->add_fee( $negative_fee );
+
+		$this->order = $test_order_factory->get_order();
+		$this->order->calculate_totals( false );
+
+		$request_body = $this->create_request_body();
+		$line_items   = $request_body->get_line_items();
+
+		// Should contain product + positive fee only, negative fee excluded
+		$this->assertEquals( 2, count( $line_items ) );
+		$this->assertEquals( $positive_fee['amount'], $line_items[1]['unit_price'] );
+	}
+
 	private function create_request_body() {
 		$order_tax_request_body_factory = new Order_Tax_Request_Body_Builder( $this->order );
 		return $order_tax_request_body_factory->create();
