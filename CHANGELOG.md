@@ -1,3 +1,6 @@
+# 4.2.8 (2026-06-23)
+* WooCommerce tested up to 10.9.0
+
 # 4.2.7 (2026-01-13)
 * WooCommerce tested up to 10.4.3
 * WordPres 6.9 tested
