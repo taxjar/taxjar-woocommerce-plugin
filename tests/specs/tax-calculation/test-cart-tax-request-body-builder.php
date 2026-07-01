@@ -415,6 +415,37 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 		];
 	}
 
+	public function test_negative_fee_excluded_from_request_body() {
+		$cart_builder = Cart_Builder::a_cart();
+		$cart_builder->with_product( TaxJar_Product_Helper::create_product()->get_id(), 1 );
+		$cart_builder->with_fee( array(
+			'name'      => 'positive-fee',
+			'amount'    => 10,
+			'taxable'   => true,
+			'tax_class' => '',
+		) );
+		$cart_builder->with_fee( array(
+			'name'      => 'gift-card-discount',
+			'amount'    => -25,
+			'taxable'   => false,
+			'tax_class' => '',
+		) );
+		$cart = $cart_builder->build();
+		$totals = new WC_Cart_Totals( $cart );
+		$cart_tax_request_body_builder = new Cart_Tax_Request_Body_Builder( $cart );
+
+		$tax_request_body = $cart_tax_request_body_builder->create();
+		$line_items = $tax_request_body->get_line_items();
+
+		$fee_items = array_filter( $line_items, function( $item ) {
+			return in_array( $item['id'], array( 'positive-fee', 'gift-card-discount' ) );
+		} );
+
+		$this->assertEquals( 1, count( $fee_items ) );
+		$this->assertNotNull( $this->get_fee_item_from_tax_request_body( $tax_request_body, array( 'name' => 'positive-fee' ) ) );
+		$this->assertNull( $this->get_fee_item_from_tax_request_body( $tax_request_body, array( 'name' => 'gift-card-discount' ) ) );
+	}
+
 	private function get_fee_item_from_tax_request_body( $tax_request_body, $fee ) {
 		foreach( $tax_request_body->get_line_items() as $item ) {
 			if ( $item['id'] === $fee['name'] ) {
