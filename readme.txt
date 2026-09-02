@@ -2,7 +2,7 @@
 Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxjar, tax, taxes, sales tax, tax calculation, sales tax compliance, sales tax filing
 Requires at least: 5.4
-Tested up to: 6.9
+Tested up to: 7.1
 Stable tag: 4.2.9
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -97,6 +97,7 @@ Our plans come with filings included, with additional filings available for purc
 
 = 4.2.9 (2026-09-02) =
 * WooCommerce tested up to 11.0.1
+* WordPress 7.1 tested
 
 = 4.2.8 (2026-06-23) =
 * WooCommerce tested up to 10.9.0

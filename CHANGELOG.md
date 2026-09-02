@@ -1,5 +1,6 @@
 # 4.2.9 (2026-09-02)
 * WooCommerce tested up to 11.0.1
+* WordPress 7.1 tested
 
 # 4.2.8 (2026-06-23)
 * WooCommerce tested up to 10.9.0
