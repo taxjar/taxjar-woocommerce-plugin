@@ -28,11 +28,11 @@ class Admin_Order_Tax_Request_Body_Builder extends Order_Tax_Request_Body_Builde
 		}
 
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		$to_country = isset( $_POST['country'] ) ? $this->prepare_field( $_POST['country'] ) : false;
-		$to_state   = isset( $_POST['state'] ) ? $this->prepare_field( $_POST['state'] ) : false;
-		$to_zip     = isset( $_POST['postcode'] ) ? $this->prepare_field( $_POST['postcode'] ) : false;
-		$to_city    = isset( $_POST['city'] ) ? $this->prepare_field( $_POST['city'] ) : false;
-		$to_street  = isset( $_POST['street'] ) ? $this->prepare_field( $_POST['street'] ) : false;
+		$to_country = isset( $_POST['country'] ) ? $this->prepare_field( sanitize_text_field( wp_unslash( $_POST['country'] ) ) ) : false;
+		$to_state   = isset( $_POST['state'] ) ? $this->prepare_field( sanitize_text_field( wp_unslash( $_POST['state'] ) ) ) : false;
+		$to_zip     = isset( $_POST['postcode'] ) ? $this->prepare_field( sanitize_text_field( wp_unslash( $_POST['postcode'] ) ) ) : false;
+		$to_city    = isset( $_POST['city'] ) ? $this->prepare_field( sanitize_text_field( wp_unslash( $_POST['city'] ) ) ) : false;
+		$to_street  = isset( $_POST['street'] ) ? $this->prepare_field( sanitize_text_field( wp_unslash( $_POST['street'] ) ) ) : false;
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 
 		$this->tax_request_body->set_to_country( $to_country );
@@ -43,14 +43,14 @@ class Admin_Order_Tax_Request_Body_Builder extends Order_Tax_Request_Body_Builde
 	}
 
 	/**
-	 * Sanitize, uppercase and remove + signs from the field.
+	 * Uppercase and remove + signs from the field.
 	 *
 	 * @param string $field Field to prepare.
 	 *
 	 * @return string
 	 */
 	private function prepare_field( $field ) {
-		$sanitized_field = strtoupper( sanitize_text_field( wp_unslash( $field ) ) );
+		$sanitized_field = strtoupper( $field );
 		return str_replace( '+', ' ', $sanitized_field );
 	}
 

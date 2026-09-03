@@ -152,7 +152,7 @@ final class WC_Taxjar {
 			$admin_notice_content = sprintf( esc_html__( '%1$sTaxJar is inactive.%2$s This version of TaxJar requires WooCommerce %3$s or newer. Please install or update WooCommerce to version %3$s or newer.', 'wc-taxjar' ), '<strong>', '</strong>', self::$minimum_woocommerce_version );
 			?>
 			<div class="error">
-				<p><?php echo $admin_notice_content; ?></p>
+				<p><?php echo wp_kses_post( $admin_notice_content ); ?></p>
 			</div>
 			<?php
 		}
@@ -186,19 +186,17 @@ final class WC_Taxjar {
 		 *
 		 * Based on code inside core's upgrade_network() function.
 		 */
-		$sql = "DELETE a, b FROM $wpdb->options a, $wpdb->options b
+		$rows = $wpdb->query( $wpdb->prepare( "DELETE a, b FROM $wpdb->options a, $wpdb->options b
 			WHERE a.option_name LIKE %s
 			AND a.option_name NOT LIKE %s
 			AND b.option_name = CONCAT( '_transient_timeout_', SUBSTRING( a.option_name, 12 ) )
-			AND b.option_value < %d";
-		$rows = $wpdb->query( $wpdb->prepare( $sql, $wpdb->esc_like( '_transient_' ) . '%', $wpdb->esc_like( '_transient_timeout_' ) . '%', time() ) );
+			AND b.option_value < %d", $wpdb->esc_like( '_transient_' ) . '%', $wpdb->esc_like( '_transient_timeout_' ) . '%', time() ) );
 
-		$sql = "DELETE a, b FROM $wpdb->options a, $wpdb->options b
+		$rows2 = $wpdb->query( $wpdb->prepare( "DELETE a, b FROM $wpdb->options a, $wpdb->options b
 			WHERE a.option_name LIKE %s
 			AND a.option_name NOT LIKE %s
 			AND b.option_name = CONCAT( '_site_transient_timeout_', SUBSTRING( a.option_name, 17 ) )
-			AND b.option_value < %d";
-		$rows2 = $wpdb->query( $wpdb->prepare( $sql, $wpdb->esc_like( '_site_transient_' ) . '%', $wpdb->esc_like( '_site_transient_timeout_' ) . '%', time() ) );
+			AND b.option_value < %d", $wpdb->esc_like( '_site_transient_' ) . '%', $wpdb->esc_like( '_site_transient_timeout_' ) . '%', time() ) );
 
 		// Export Tax Rates
 		$current_class = '';
@@ -224,6 +222,7 @@ final class WC_Taxjar {
 			__( 'Shipping', 'woocommerce' ) . ',' .
 			__( 'Tax Class', 'woocommerce' ) . "\n";
 
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV export data, not HTML output.
 		echo $header;
 
 		foreach ( $rates as $rate ) {
@@ -328,7 +327,7 @@ final class WC_Taxjar {
 		if ( '' == $api_token && apply_filters( 'taxjar_should_display_connect_notice', true ) ) {
 			$url = $this->get_settings_url();
 			// translators: Installation admin notice
-			echo '<div class="updated fade"><p>' . sprintf( __( '%1$sTaxJar for WooCommerce is almost ready. %2$sTo get started, %3$sconnect your TaxJar account%4$s.', 'wc-taxjar' ), '<strong>', '</strong>', '<a href="' . esc_url( $url ) . '">', '</a>' ) . '</p></div>' . "\n";
+			echo wp_kses_post( '<div class="updated fade"><p>' . sprintf( __( '%1$sTaxJar for WooCommerce is almost ready. %2$sTo get started, %3$sconnect your TaxJar account%4$s.', 'wc-taxjar' ), '<strong>', '</strong>', '<a href="' . esc_url( $url ) . '">', '</a>' ) . '</p></div>' . "\n" );
 		}
 	}
 

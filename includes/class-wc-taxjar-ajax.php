@@ -50,7 +50,7 @@ class WC_Taxjar_AJAX {
 
 		$start_date = current_time( $date_format );
 		if ( isset( $_POST[ 'start_date' ] ) ) {
-			$start_datetime = DateTime::createFromFormat( $date_format, $_POST[ 'start_date' ] );
+			$start_datetime = DateTime::createFromFormat( $date_format, sanitize_text_field( wp_unslash( $_POST[ 'start_date' ] ) ) );
 			if ( $start_datetime ) {
 				$start_date = $start_datetime->format( $date_format ) . ' 00:00:00';
 			} else {
@@ -60,7 +60,7 @@ class WC_Taxjar_AJAX {
 
 		$end_date = date( $date_format, strtotime( '+1 day', current_time( 'timestamp' ) ) );
 		if ( isset( $_POST[ 'end_date' ] ) ) {
-			$end_datetime = DateTime::createFromFormat( $date_format, $_POST[ 'end_date' ] );
+			$end_datetime = DateTime::createFromFormat( $date_format, sanitize_text_field( wp_unslash( $_POST[ 'end_date' ] ) ) );
 			if ( $end_datetime ) {
 				$end_date = date( $date_format, strtotime( $end_datetime->format( $date_format ) . ' + 1 day' ) ) .' 00:00:00';
 			} else {

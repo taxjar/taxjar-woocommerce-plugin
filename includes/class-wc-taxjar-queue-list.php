@@ -200,38 +200,50 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 		global $wpdb;
 		$table_name = WC_Taxjar_Record_Queue::get_queue_table_name();
 		$where = " WHERE 1=1 " ;
-		$query = "SELECT * FROM {$table_name}";
+		$where_args = array();
 
 		if ( isset( $_REQUEST[ 'taxjar_record_status' ] ) ) {
-			if ( $_REQUEST[ 'taxjar_record_status' ] == 'completed' ) {
+			$record_status = sanitize_text_field( wp_unslash( $_REQUEST[ 'taxjar_record_status' ] ) );
+			if ( $record_status == 'completed' ) {
 				$where .= "AND status = 'completed' ";
-			} else if ( $_REQUEST[ 'taxjar_record_status' ] == 'awaiting' ) {
+			} else if ( $record_status == 'awaiting' ) {
 				$where .= "AND status IN ( 'new', 'awaiting' ) ";
-			} else if ( $_REQUEST[ 'taxjar_record_status' ] == 'failed' ) {
+			} else if ( $record_status == 'failed' ) {
 				$where .= "AND status = 'failed' ";
 			}
         }
 
 		if ( isset( $_REQUEST[ 'taxjar_record_type' ] ) ) {
-			if ( $_REQUEST[ 'taxjar_record_type' ] == 'order' ) {
+			$record_type = sanitize_text_field( wp_unslash( $_REQUEST[ 'taxjar_record_type' ] ) );
+			if ( $record_type == 'order' ) {
 				$where .= "AND record_type = 'order' ";
-			} else if ( $_REQUEST[ 'taxjar_record_type' ] == 'refund' ) {
+			} else if ( $record_type == 'refund' ) {
 				$where .= "AND record_type = 'refund' ";
-			} else if ( $_REQUEST[ 'taxjar_record_type' ] == 'customer' ) {
+			} else if ( $record_type == 'customer' ) {
 				$where .= "AND record_type = 'customer' ";
 			}
 		}
 
 		if ( isset( $_REQUEST[ 's' ] ) && ! empty( $_REQUEST[ 's' ] ) ) {
-		    $search = sanitize_text_field(  $_REQUEST[ 's' ] );
-			$where .= "AND record_id = '{$search}' ";
+		    $search = sanitize_text_field( wp_unslash( $_REQUEST[ 's' ] ) );
+			$where .= 'AND record_id = %s ';
+			$where_args[] = $search;
 		}
 
-        $query .= $where . "ORDER BY queue_id DESC LIMIT {$offset}, {$per_page}";
-		$this->items = $wpdb->get_results( $query );
+		$total_query_args = $where_args;
+		$where_args[] = $offset;
+		$where_args[] = $per_page;
 
-		$total_query = "SELECT COUNT(*) FROM {$table_name}" . $where;
-		$total_records = $wpdb->get_var( $total_query );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $table_name and $where are not user input; $where only contains hardcoded SQL fragments and a %s placeholder for the sanitized search term.
+		$this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name}" . $where . "ORDER BY queue_id DESC LIMIT %d, %d", $where_args ) );
+
+		if ( empty( $total_query_args ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $table_name and $where are not user input; $where only contains hardcoded SQL fragments.
+			$total_records = $wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" . $where );
+		} else {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $table_name and $where are not user input; $where only contains hardcoded SQL fragments and a %s placeholder for the sanitized search term.
+			$total_records = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table_name}" . $where, $total_query_args ) );
+		}
 
 		$this->set_pagination_args(
 			array(
@@ -263,11 +275,13 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 				'customer'      => _x( 'Customers', 'A record type', 'wc-taxjar' ),
 			) );
 
+			$current_record_type = isset( $_REQUEST['taxjar_record_type'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['taxjar_record_type'] ) ) : '';
+
 			foreach ( $record_types as $record_type_key => $record_type_description ) {
 				echo '<option value="' . esc_attr( $record_type_key ) . '"';
 
-				if ( isset( $_REQUEST['taxjar_record_type'] ) && $_REQUEST['taxjar_record_type'] ) {
-					selected( $record_type_key, $_REQUEST['taxjar_record_type'] );
+				if ( $current_record_type ) {
+					selected( $record_type_key, $current_record_type );
 				}
 
 				echo '>' . esc_html( $record_type_description ) . '</option>';
@@ -284,11 +298,13 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 				'failed'      => _x( 'Failed', 'A sync status', 'wc-taxjar' ),
 			) );
 
+			$current_record_status = isset( $_REQUEST['taxjar_record_status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['taxjar_record_status'] ) ) : '';
+
 			foreach ( $record_statuses as $record_status_key => $record_status_description ) {
 				echo '<option value="' . esc_attr( $record_status_key ) . '"';
 
-				if ( isset( $_REQUEST['taxjar_record_status'] ) && $_REQUEST['taxjar_record_status'] ) {
-					selected( $record_status_key, $_REQUEST['taxjar_record_status'] );
+				if ( $current_record_status ) {
+					selected( $record_status_key, $current_record_status );
 				}
 
 				echo '>' . esc_html( $record_status_description ) . '</option>';

@@ -31,8 +31,8 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 
-		$query = "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )";
-		$results = $wpdb->get_results( $query, ARRAY_A );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, it is derived from a hardcoded table name.
+		$results = $wpdb->get_results( "SELECT queue_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )", ARRAY_A );
 
 		return $results;
 	}
@@ -48,8 +48,8 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 
-		$query = "SELECT * FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) LIMIT {$number_to_process}";
-		$results = $wpdb->get_results( $query, ARRAY_A );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, it is derived from a hardcoded table name.
+		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) LIMIT %d", $number_to_process ), ARRAY_A );
 
 		return $results;
 	}
@@ -64,8 +64,8 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 
-		$query = "SELECT COUNT(*) FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )";
-		$results = $wpdb->get_var( $query );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, it is derived from a hardcoded table name.
+		$results = $wpdb->get_var( "SELECT COUNT(*) FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )" );
 
 		return $results;
 	}
@@ -80,8 +80,8 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 
-		$query = "SELECT * FROM {$table_name} ORDER BY queue_id DESC LIMIT 0, 20";
-		$results = $wpdb->get_results( $query );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, it is derived from a hardcoded table name.
+		$results = $wpdb->get_results( "SELECT * FROM {$table_name} ORDER BY queue_id DESC LIMIT 0, 20" );
 		return $results;
 	}
 
@@ -95,8 +95,8 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 
-		$query = "SELECT queue_id, record_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )";
-		$results = $wpdb->get_results( $query, ARRAY_A );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, it is derived from a hardcoded table name.
+		$results = $wpdb->get_results( "SELECT queue_id, record_id FROM {$table_name} WHERE status IN ( 'new', 'awaiting' )", ARRAY_A );
 
 		return $results;
 	}
@@ -110,10 +110,11 @@ class WC_Taxjar_Record_Queue {
 		global $wpdb;
 
 		$table_name = self::get_queue_table_name();
-		$queue_ids_string = join( "','", $queue_ids );
+		$ids_for_query = empty( $queue_ids ) ? array( '' ) : $queue_ids;
+		$placeholders = implode( ',', array_fill( 0, count( $ids_for_query ), '%s' ) );
 
-		$query = "SELECT * FROM {$table_name} WHERE queue_id IN ('{$queue_ids_string}')";
-		$results = $wpdb->get_results( $query, ARRAY_A );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, and $placeholders only contains %s placeholders.
+		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE queue_id IN ({$placeholders})", $ids_for_query ), ARRAY_A );
 
 		return $results;
 	}
@@ -126,8 +127,8 @@ class WC_Taxjar_Record_Queue {
 	static function clear_queue() {
 		global $wpdb;
 		$table_name = self::get_queue_table_name();
-		$query = "TRUNCATE TABLE {$table_name}";
-		$result = $wpdb->query( $query );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, it is derived from a hardcoded table name.
+		$result = $wpdb->query( "TRUNCATE TABLE {$table_name}" );
 		return $result;
 	}
 
@@ -139,8 +140,8 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name = self::get_queue_table_name();
 
-		$query = "DELETE FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) AND record_type IN ( 'order', 'refund' )";
-		$results = $wpdb->query( $query );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, it is derived from a hardcoded table name.
+		$results = $wpdb->query( "DELETE FROM {$table_name} WHERE status IN ( 'new', 'awaiting' ) AND record_type IN ( 'order', 'refund' )" );
 
 		return $results;
 	}
@@ -159,10 +160,10 @@ class WC_Taxjar_Record_Queue {
 		);
 		$active_batches = as_get_scheduled_actions( $args, 'ids' );
 		$active_batches[] = 0;
-		$active_batches_string = join( "','", $active_batches );
+		$placeholders = implode( ',', array_fill( 0, count( $active_batches ), '%d' ) );
 
-		$query = "UPDATE {$table_name} SET batch_id = 0 WHERE batch_id NOT IN ('{$active_batches_string}') AND status IN ('new', 'awaiting')";
-		$results = $wpdb->get_results( $query );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, and $placeholders only contains %d placeholders.
+		$results = $wpdb->get_results( $wpdb->prepare( "UPDATE {$table_name} SET batch_id = 0 WHERE batch_id NOT IN ({$placeholders}) AND status IN ('new', 'awaiting')", $active_batches ) );
 	}
 
 }
