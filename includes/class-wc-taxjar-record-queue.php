@@ -111,9 +111,9 @@ class WC_Taxjar_Record_Queue {
 
 		$table_name    = self::get_queue_table_name();
 		$ids_for_query = empty( $queue_ids ) ? array( '' ) : $queue_ids;
-		$placeholders  = implode( ',', array_fill( 0, count( $ids_for_query ), '%s' ) );
+		$placeholders  = implode( ',', array_fill( 0, count( $ids_for_query ), '%d' ) );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $table_name is not user input, and $placeholders only contains %s placeholders.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $table_name is not user input, and $placeholders only contains %d placeholders.
 		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE queue_id IN ({$placeholders})", $ids_for_query ), ARRAY_A );
 
 		return $results;
