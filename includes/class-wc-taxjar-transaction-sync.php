@@ -520,7 +520,7 @@ class WC_Taxjar_Transaction_Sync {
 				? '(record_id, record_type, force_push, status, created_datetime)'
 				: '(record_id, record_type, status, created_datetime)';
 
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $queue_table is not user input, and $values only contains %d/%s placeholders, not data.
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $queue_table is not user input, and $values only contains %d/%s placeholders, not data.
 			$wpdb->query( $wpdb->prepare( "INSERT INTO {$queue_table} {$columns} VALUES " . implode( ', ', $values ), $args ) );
 
 			if ( $wpdb->last_error === "Table 'wordpress.wp_taxjar_record_queue' doesn't exist" ) {
@@ -550,7 +550,7 @@ class WC_Taxjar_Transaction_Sync {
 				? '(record_id, record_type, force_push, status, created_datetime)'
 				: '(record_id, record_type, status, created_datetime)';
 
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $queue_table is not user input, and $values only contains %d/%s placeholders, not data.
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $queue_table is not user input, and $values only contains %d/%s placeholders, not data.
 			$wpdb->query( $wpdb->prepare( "INSERT INTO {$queue_table} {$columns} VALUES " . implode( ', ', $values ), $args ) );
 		}
 
@@ -563,7 +563,7 @@ class WC_Taxjar_Transaction_Sync {
 			$in_queue = array_values( array_intersect_key( $records, array_flip( $transaction_ids ) ) );
 			if ( ! empty( $in_queue ) ) {
 				$placeholders = implode( ', ', array_fill( 0, count( $in_queue ), '%d' ) );
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $queue_table is not user input, and $placeholders only contains %d placeholders.
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $queue_table is not user input, and $placeholders only contains %d placeholders.
 				$wpdb->query( $wpdb->prepare( "UPDATE {$queue_table} SET force_push = 1 WHERE queue_id in ( {$placeholders} )", $in_queue ) );
 			}
 		}
@@ -589,9 +589,9 @@ class WC_Taxjar_Transaction_Sync {
 			$end_date = date( 'Y-m-d H:i:s', strtotime( '+1 day, midnight', current_time( 'timestamp' ) ) );
 		}
 
-		$valid_post_statuses = apply_filters( 'taxjar_valid_post_statuses_for_sync', array( 'wc-completed', 'wc-refunded' ) );
+		$valid_post_statuses      = apply_filters( 'taxjar_valid_post_statuses_for_sync', array( 'wc-completed', 'wc-refunded' ) );
 		$post_status_placeholders = implode( ', ', array_fill( 0, count( $valid_post_statuses ), '%s' ) );
-		$args = array_merge( $valid_post_statuses, array( $start_date, $end_date ) );
+		$args                     = array_merge( $valid_post_statuses, array( $start_date, $end_date ) );
 
 		$should_validate_completed_date = WC_Taxjar_Transaction_Sync::should_validate_order_completed_date();
 
@@ -686,11 +686,11 @@ class WC_Taxjar_Transaction_Sync {
 
 		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			// HPOS usage is enabled.
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $wpdb->wc_orders is not user input, and $placeholders only contains %d placeholders.
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $wpdb->wc_orders is not user input, and $placeholders only contains %d placeholders.
 			$posts = $wpdb->get_results( $wpdb->prepare( "SELECT o.id FROM {$wpdb->wc_orders} AS o WHERE o.type = 'shop_order_refund' AND o.status = 'wc-completed' AND o.parent IN ( {$placeholders} ) ORDER BY o.date_created_gmt ASC", $order_ids ), ARRAY_N );
 		} else {
 			// Traditional CPT-based orders are in use.
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $wpdb->posts is not user input, and $placeholders only contains %d placeholders.
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $wpdb->posts is not user input, and $placeholders only contains %d placeholders.
 			$posts = $wpdb->get_results( $wpdb->prepare( "SELECT p.id FROM {$wpdb->posts} AS p WHERE p.post_type = 'shop_order_refund' AND p.post_status = 'wc-completed' AND p.post_parent IN ( {$placeholders} ) ORDER BY p.post_date ASC", $order_ids ), ARRAY_N );
 		}
 

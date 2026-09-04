@@ -191,11 +191,14 @@ class WC_Taxjar_Download_Orders {
 	 */
 	private function existing_api_key() {
 		global $wpdb;
-		return ( $wpdb->get_var( "SELECT count(key_id)
+		$count = $wpdb->get_var(
+			"SELECT count(key_id)
 			FROM {$wpdb->prefix}woocommerce_api_keys
 			LEFT JOIN $wpdb->users
 			ON {$wpdb->prefix}woocommerce_api_keys.user_id={$wpdb->users}.ID
-			WHERE ({$wpdb->users}.user_login LIKE '%taxjar%' OR {$wpdb->prefix}woocommerce_api_keys.description LIKE '%taxjar%');" ) > 0 );
+			WHERE ({$wpdb->users}.user_login LIKE '%taxjar%' OR {$wpdb->prefix}woocommerce_api_keys.description LIKE '%taxjar%');"
+		);
+		return ( $count > 0 );
 	}
 
 	/**

@@ -225,23 +225,23 @@ class WC_Taxjar_Queue_List extends WP_List_Table {
 		}
 
 		if ( isset( $_REQUEST[ 's' ] ) && ! empty( $_REQUEST[ 's' ] ) ) {
-		    $search = sanitize_text_field( wp_unslash( $_REQUEST[ 's' ] ) );
-			$where .= 'AND record_id = %s ';
+		    $search       = sanitize_text_field( wp_unslash( $_REQUEST[ 's' ] ) );
+			$where       .= 'AND record_id = %s ';
 			$where_args[] = $search;
 		}
 
 		$total_query_args = $where_args;
-		$where_args[] = $offset;
-		$where_args[] = $per_page;
+		$where_args[]     = $offset;
+		$where_args[]     = $per_page;
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $table_name and $where are not user input; $where only contains hardcoded SQL fragments and a %s placeholder for the sanitized search term.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $table_name and $where are not user input; $where_args is an array of replacements for the %s placeholder in $where plus %d, %d for LIMIT, which $wpdb->prepare() accepts as a single array argument.
 		$this->items = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name}" . $where . "ORDER BY queue_id DESC LIMIT %d, %d", $where_args ) );
 
 		if ( empty( $total_query_args ) ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $table_name and $where are not user input; $where only contains hardcoded SQL fragments.
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $table_name and $where are not user input; $where only contains hardcoded SQL fragments.
 			$total_records = $wpdb->get_var( "SELECT COUNT(*) FROM {$table_name}" . $where );
 		} else {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- $table_name and $where are not user input; $where only contains hardcoded SQL fragments and a %s placeholder for the sanitized search term.
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $table_name and $where are not user input; $where only contains hardcoded SQL fragments and a %s placeholder for the sanitized search term.
 			$total_records = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table_name}" . $where, $total_query_args ) );
 		}
 

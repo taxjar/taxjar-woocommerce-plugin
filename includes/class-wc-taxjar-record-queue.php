@@ -109,11 +109,11 @@ class WC_Taxjar_Record_Queue {
 	static function get_data_for_batch( $queue_ids ) {
 		global $wpdb;
 
-		$table_name = self::get_queue_table_name();
+		$table_name    = self::get_queue_table_name();
 		$ids_for_query = empty( $queue_ids ) ? array( '' ) : $queue_ids;
-		$placeholders = implode( ',', array_fill( 0, count( $ids_for_query ), '%s' ) );
+		$placeholders  = implode( ',', array_fill( 0, count( $ids_for_query ), '%s' ) );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, and $placeholders only contains %s placeholders.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $table_name is not user input, and $placeholders only contains %s placeholders.
 		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE queue_id IN ({$placeholders})", $ids_for_query ), ARRAY_A );
 
 		return $results;
@@ -153,7 +153,7 @@ class WC_Taxjar_Record_Queue {
 		global $wpdb;
 		$table_name = self::get_queue_table_name();
 
-		$args = array(
+		$args             = array(
 			'hook' => WC_Taxjar_Transaction_Sync::PROCESS_BATCH_HOOK,
 			'status' => ActionScheduler_Store::STATUS_PENDING,
 			'per_page' => 0,
@@ -162,7 +162,7 @@ class WC_Taxjar_Record_Queue {
 		$active_batches[] = 0;
 		$placeholders = implode( ',', array_fill( 0, count( $active_batches ), '%d' ) );
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, and $placeholders only contains %d placeholders.
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $table_name is not user input, and $placeholders only contains %d placeholders.
 		$results = $wpdb->get_results( $wpdb->prepare( "UPDATE {$table_name} SET batch_id = 0 WHERE batch_id NOT IN ({$placeholders}) AND status IN ('new', 'awaiting')", $active_batches ) );
 	}
 

@@ -252,6 +252,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		private function on_edit_order_page() {
 			global $pagenow;
 			if ( 'post.php' === $pagenow ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page-type detection, no data is processed or saved.
 				if ( isset( $_GET['post'] ) && $this->is_order_post_type( OrderUtil::get_order_type( absint( $_GET['post'] ) ) ) ) {
 					return true;
 				}

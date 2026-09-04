@@ -167,7 +167,7 @@ class WC_Taxjar_Nexus {
 		$placeholders     = implode( ',', array_fill( 0, count( $states_for_query ), '%s' ) );
 		$results          = $wpdb->query(
 			$wpdb->prepare(
-				"DELETE FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = 'US' AND tax_rate_state NOT IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $placeholders only contains %s placeholders, not user input.
+				"DELETE FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = 'US' AND tax_rate_state NOT IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $placeholders only contains %s placeholders, not user input.
 				$states_for_query
 			)
 		);
