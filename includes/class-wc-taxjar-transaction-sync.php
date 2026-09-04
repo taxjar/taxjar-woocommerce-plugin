@@ -589,7 +589,12 @@ class WC_Taxjar_Transaction_Sync {
 			$end_date = date( 'Y-m-d H:i:s', strtotime( '+1 day, midnight', current_time( 'timestamp' ) ) );
 		}
 
-		$valid_post_statuses      = apply_filters( 'taxjar_valid_post_statuses_for_sync', array( 'wc-completed', 'wc-refunded' ) );
+		$valid_post_statuses = apply_filters( 'taxjar_valid_post_statuses_for_sync', array( 'wc-completed', 'wc-refunded' ) );
+
+		if ( empty( $valid_post_statuses ) ) {
+			return array();
+		}
+
 		$post_status_placeholders = implode( ', ', array_fill( 0, count( $valid_post_statuses ), '%s' ) );
 		$args                     = array_merge( $valid_post_statuses, array( $start_date, $end_date ) );
 
