@@ -48,7 +48,8 @@ service apache2 start > /dev/null 2>&1
 
 # Install necessary tools
 print_status "Installing system tools"
-apt-get update -qq && apt-get install -qq -y unzip > /dev/null 2>&1
+apt-get update -qq > /dev/null 2>&1 || true
+apt-get install -qq -y unzip > /dev/null 2>&1
 
 # Wait for WordPress to be ready
 print_status "Waiting for WordPress to be ready"
