@@ -101,8 +101,10 @@ steps:
           limit: 2
     plugins:
       - docker-compose#v4.14.0:
+          build: wordpress
           run: wordpress
           config: .buildkite/docker-compose.test.yml
+          skip-pull: true
           command: ["/test-scripts/set-test-env.sh"]
           rm: false  # Don't auto-remove container so we can capture logs
           environment:
@@ -209,4 +211,3 @@ steps:
           mount-buildkite-agent: true
           always-pull: true
     timeout_in_minutes: 5
-
