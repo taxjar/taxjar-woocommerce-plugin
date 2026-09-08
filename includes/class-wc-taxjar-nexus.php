@@ -163,9 +163,14 @@ class WC_Taxjar_Nexus {
 			}
 		}
 
-		$nexus_states_string = join( "','", $nexus_states );
-		$query = "DELETE FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = 'US' AND tax_rate_state NOT IN ('{$nexus_states_string}')";
-		$results = $wpdb->query( $query );
+		$states_for_query = empty( $nexus_states ) ? array( '' ) : $nexus_states;
+		$placeholders     = implode( ',', array_fill( 0, count( $states_for_query ), '%s' ) );
+		$results          = $wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->prefix}woocommerce_tax_rates WHERE tax_rate_country = 'US' AND tax_rate_state NOT IN ({$placeholders})", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $placeholders only contains %s placeholders, not user input.
+				$states_for_query
+			)
+		);
 	}
 
 } // End WC_Taxjar_Nexus.

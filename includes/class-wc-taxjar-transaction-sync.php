@@ -502,31 +502,26 @@ class WC_Taxjar_Transaction_Sync {
 		$diff = array_diff( $order_ids, $record_ids );
 
 		if ( ! empty( $diff ) ) {
-			if ( $force ) {
-				$query = "INSERT INTO {$queue_table} (record_id, record_type, force_push, status, created_datetime) VALUES";
-				$count = 0;
-				foreach( $diff as $order_id ) {
-					if ( ! $count ) {
-						$query .= " ( {$order_id}, 'order', 1, 'awaiting', '{$current_datetime}' )";
-					} else {
-						$query .= ", ( {$order_id}, 'order', 1,  'awaiting', '{$current_datetime}' )";
-					}
-					$count++;
+			$values = array();
+			$args   = array();
+			foreach ( $diff as $order_id ) {
+				if ( $force ) {
+					$values[] = '( %d, %s, 1, %s, %s )';
+				} else {
+					$values[] = '( %d, %s, %s, %s )';
 				}
-			} else {
-				$query = "INSERT INTO {$queue_table} (record_id, record_type, status, created_datetime) VALUES";
-				$count = 0;
-				foreach( $diff as $order_id ) {
-					if ( ! $count ) {
-						$query .= " ( {$order_id}, 'order', 'awaiting', '{$current_datetime}' )";
-					} else {
-						$query .= ", ( {$order_id}, 'order', 'awaiting', '{$current_datetime}' )";
-					}
-					$count++;
-				}
+				$args[] = $order_id;
+				$args[] = 'order';
+				$args[] = 'awaiting';
+				$args[] = $current_datetime;
 			}
 
-			$wpdb->query( $query );
+			$columns = $force
+				? '(record_id, record_type, force_push, status, created_datetime)'
+				: '(record_id, record_type, status, created_datetime)';
+
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $queue_table is not user input, and $values only contains %d/%s placeholders, not data.
+			$wpdb->query( $wpdb->prepare( "INSERT INTO {$queue_table} {$columns} VALUES " . implode( ', ', $values ), $args ) );
 
 			if ( $wpdb->last_error === "Table 'wordpress.wp_taxjar_record_queue' doesn't exist" ) {
 				return 'record queue table does not exist';
@@ -537,30 +532,26 @@ class WC_Taxjar_Transaction_Sync {
 		$refunds_diff = array_diff( $refund_ids, $record_ids );
 
 		if ( ! empty( $refunds_diff ) ) {
-			if ( $force ) {
-				$query = "INSERT INTO {$queue_table} (record_id, record_type, force_push, status, created_datetime) VALUES";
-				$count = 0;
-				foreach( $refunds_diff as $refund_id ) {
-					if ( ! $count ) {
-						$query .= " ( {$refund_id}, 'refund', 1, 'awaiting', '{$current_datetime}' )";
-					} else {
-						$query .= ", ( {$refund_id}, 'refund', 1,  'awaiting', '{$current_datetime}' )";
-					}
-					$count++;
+			$values = array();
+			$args   = array();
+			foreach ( $refunds_diff as $refund_id ) {
+				if ( $force ) {
+					$values[] = '( %d, %s, 1, %s, %s )';
+				} else {
+					$values[] = '( %d, %s, %s, %s )';
 				}
-			} else {
-				$query = "INSERT INTO {$queue_table} (record_id, record_type, status, created_datetime) VALUES";
-				$count = 0;
-				foreach( $refunds_diff as $refund_id ) {
-					if ( ! $count ) {
-						$query .= " ( {$refund_id}, 'refund', 'awaiting', '{$current_datetime}' )";
-					} else {
-						$query .= ", ( {$refund_id}, 'refund', 'awaiting', '{$current_datetime}' )";
-					}
-					$count++;
-				}
+				$args[] = $refund_id;
+				$args[] = 'refund';
+				$args[] = 'awaiting';
+				$args[] = $current_datetime;
 			}
-			$wpdb->query( $query );
+
+			$columns = $force
+				? '(record_id, record_type, force_push, status, created_datetime)'
+				: '(record_id, record_type, status, created_datetime)';
+
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $queue_table is not user input, and $values only contains %d/%s placeholders, not data.
+			$wpdb->query( $wpdb->prepare( "INSERT INTO {$queue_table} {$columns} VALUES " . implode( ', ', $values ), $args ) );
 		}
 
 		if ( $force ) {
@@ -571,9 +562,9 @@ class WC_Taxjar_Transaction_Sync {
 
 			$in_queue = array_values( array_intersect_key( $records, array_flip( $transaction_ids ) ) );
 			if ( ! empty( $in_queue ) ) {
-				$in_queue_string = implode( ', ', $in_queue );
-				$query = "UPDATE {$queue_table} SET force_push = 1 WHERE queue_id in ( {$in_queue_string} )";
-				$wpdb->query( $query );
+				$placeholders = implode( ', ', array_fill( 0, count( $in_queue ), '%d' ) );
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $queue_table is not user input, and $placeholders only contains %d placeholders.
+				$wpdb->query( $wpdb->prepare( "UPDATE {$queue_table} SET force_push = 1 WHERE queue_id in ( {$placeholders} )", $in_queue ) );
 			}
 		}
 
@@ -599,7 +590,13 @@ class WC_Taxjar_Transaction_Sync {
 		}
 
 		$valid_post_statuses = apply_filters( 'taxjar_valid_post_statuses_for_sync', array( 'wc-completed', 'wc-refunded' ) );
-		$post_status_string = "( '" . implode( "', '", $valid_post_statuses ) . " ')";
+
+		if ( empty( $valid_post_statuses ) ) {
+			return array();
+		}
+
+		$post_status_placeholders = implode( ', ', array_fill( 0, count( $valid_post_statuses ), '%s' ) );
+		$args                     = array_merge( $valid_post_statuses, array( $start_date, $end_date ) );
 
 		$should_validate_completed_date = WC_Taxjar_Transaction_Sync::should_validate_order_completed_date();
 
@@ -612,7 +609,7 @@ class WC_Taxjar_Transaction_Sync {
 					$query .= "INNER JOIN {$wpdb->wc_orders_meta} AS order_meta_completed_date ON ( o.id = order_meta_completed_date.order_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
 				}
 
-				$query .= "WHERE o.type = 'shop_order' AND o.status IN {$post_status_string} AND o.date_created_gmt >= '{$start_date}' AND o.date_created_gmt < '{$end_date}' ";
+				$query .= "WHERE o.type = 'shop_order' AND o.status IN ( {$post_status_placeholders} ) AND o.date_created_gmt >= %s AND o.date_created_gmt < %s ";
 
 				if ( $should_validate_completed_date ) {
 					$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
@@ -627,7 +624,7 @@ class WC_Taxjar_Transaction_Sync {
 				}
 
 				$query .= "LEFT JOIN {$wpdb->wc_order_meta} AS order_meta_last_sync ON ( o.id = order_meta_last_sync.order_id ) AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' ) ";
-				$query .= "WHERE o.type = 'shop_order' AND o.status IN {$post_status_string} AND o.date_created_gmt >= '{$start_date}' AND o.date_created_gmt < '{$end_date}' ";
+				$query .= "WHERE o.type = 'shop_order' AND o.status IN ( {$post_status_placeholders} ) AND o.date_created_gmt >= %s AND o.date_created_gmt < %s ";
 
 				if ( $should_validate_completed_date ) {
 					$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
@@ -644,7 +641,7 @@ class WC_Taxjar_Transaction_Sync {
 					$query .= "INNER JOIN {$wpdb->postmeta} AS order_meta_completed_date ON ( p.id = order_meta_completed_date.post_id ) AND ( order_meta_completed_date.meta_key = '_completed_date' ) ";
 				}
 
-				$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
+				$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN ( {$post_status_placeholders} ) AND p.post_date >= %s AND p.post_date < %s ";
 
 				if ( $should_validate_completed_date ) {
 					$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
@@ -659,7 +656,7 @@ class WC_Taxjar_Transaction_Sync {
 				}
 
 				$query .= "LEFT JOIN {$wpdb->postmeta} AS order_meta_last_sync ON ( p.id = order_meta_last_sync.post_id ) AND ( order_meta_last_sync.meta_key = '_taxjar_last_sync' ) ";
-				$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN {$post_status_string} AND p.post_date >= '{$start_date}' AND p.post_date < '{$end_date}' ";
+				$query .= "WHERE p.post_type = 'shop_order' AND p.post_status IN ( {$post_status_placeholders} ) AND p.post_date >= %s AND p.post_date < %s ";
 
 				if ( $should_validate_completed_date ) {
 					$query .= "AND order_meta_completed_date.meta_value IS NOT NULL AND order_meta_completed_date.meta_value != '' ";
@@ -669,7 +666,8 @@ class WC_Taxjar_Transaction_Sync {
 			}
 		}
 
-		$posts = $wpdb->get_results( $query, ARRAY_N );
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $query is built from static fragments and table names are wpdb properties, not user input; $post_status_placeholders only contains %s placeholders.
+		$posts = $wpdb->get_results( $wpdb->prepare( $query, $args ), ARRAY_N );
 
 		if ( empty( $posts ) ) {
 			return array();
@@ -689,32 +687,16 @@ class WC_Taxjar_Transaction_Sync {
 		}
 
 		global $wpdb;
-		$order_ids_string = implode( ',', $order_ids );
+		$placeholders = implode( ',', array_fill( 0, count( $order_ids ), '%d' ) );
 
 		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			// HPOS usage is enabled.
-			$posts = $wpdb->get_results(
-				"
-			SELECT o.id
-			FROM {$wpdb->wc_orders} AS o
-			WHERE o.type = 'shop_order_refund'
-			AND o.status = 'wc-completed'
-			AND o.parent IN ( {$order_ids_string} )
-			ORDER BY o.date_created_gmt ASC
-			", ARRAY_N
-			);
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $wpdb->wc_orders is not user input, and $placeholders only contains %d placeholders.
+			$posts = $wpdb->get_results( $wpdb->prepare( "SELECT o.id FROM {$wpdb->wc_orders} AS o WHERE o.type = 'shop_order_refund' AND o.status = 'wc-completed' AND o.parent IN ( {$placeholders} ) ORDER BY o.date_created_gmt ASC", $order_ids ), ARRAY_N );
 		} else {
 			// Traditional CPT-based orders are in use.
-			$posts = $wpdb->get_results(
-				"
-			SELECT p.id
-			FROM {$wpdb->posts} AS p
-			WHERE p.post_type = 'shop_order_refund'
-			AND p.post_status = 'wc-completed'
-			AND p.post_parent IN ( {$order_ids_string} )
-			ORDER BY p.post_date ASC
-			", ARRAY_N
-			);
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $wpdb->posts is not user input, and $placeholders only contains %d placeholders.
+			$posts = $wpdb->get_results( $wpdb->prepare( "SELECT p.id FROM {$wpdb->posts} AS p WHERE p.post_type = 'shop_order_refund' AND p.post_status = 'wc-completed' AND p.post_parent IN ( {$placeholders} ) ORDER BY p.post_date ASC", $order_ids ), ARRAY_N );
 		}
 
 		if ( empty( $posts ) ) {
@@ -748,7 +730,7 @@ class WC_Taxjar_Transaction_Sync {
 		$notice .= '<a target="_blank" href="https://support.taxjar.com/article/309-overriding-tax-rates-and-exempting-products-in-woocommerce">';
 		$notice .= __( 'this article', 'wc-taxjar' );
 		$notice .= '</a>.</p>';
-		echo $notice;
+		echo wp_kses_post( $notice );
 	}
 
 	/**

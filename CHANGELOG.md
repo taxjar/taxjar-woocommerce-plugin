@@ -1,3 +1,6 @@
+# 4.2.10 (2026-09-04)
+* Fix phpcs errors surfaced from external Quality Insights Toolkit run
+
 # 4.2.9 (2026-09-02)
 * WooCommerce tested up to 11.0.1
 * WordPress 7.1 tested

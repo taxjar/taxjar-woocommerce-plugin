@@ -52,8 +52,8 @@ abstract class TaxJar_Record {
 		}
 
 		$table_name = self::get_queue_table_name();
-		$query = "SELECT * FROM {$table_name} WHERE queue_id = {$queue_id}";
-		$results = $wpdb->get_results( $query,  ARRAY_A );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, it is derived from a hardcoded table name.
+		$results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table_name} WHERE queue_id = %d", $queue_id ), ARRAY_A );
 
 		if ( empty( $results ) || ! is_array( $results ) ) {
 			return false;
@@ -359,8 +359,8 @@ abstract class TaxJar_Record {
 
 		$table_name = self::get_queue_table_name();
 		$record_type = static::get_record_type();
-		$query = "SELECT queue_id FROM {$table_name} WHERE record_id = {$record_id} AND record_type = '{$record_type}' AND status IN ( 'new', 'awaiting' )";
-		$results = $wpdb->get_results( $query,  ARRAY_A );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table_name is not user input, it is derived from a hardcoded table name.
+		$results = $wpdb->get_results( $wpdb->prepare( "SELECT queue_id FROM {$table_name} WHERE record_id = %d AND record_type = %s AND status IN ( 'new', 'awaiting' )", $record_id, $record_type ), ARRAY_A );
 
 		if ( empty( $results ) || ! is_array( $results ) ) {
 			return false;

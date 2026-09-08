@@ -177,13 +177,13 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 			<tr valign="top">
 				<th scope="row" class="titledesc">
 					<label for="<?php echo esc_attr( $field ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></label>
-					<?php echo $this->get_tooltip_html( $data ); ?>
+					<?php echo $this->get_tooltip_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_tooltip_html() already escapes its output. ?>
 				</th>
 				<td class="forminp">
 					<fieldset>
 						<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
-						<button class="<?php echo esc_attr( $data['class'] ); ?>" type="button" name="<?php echo esc_attr( $field ); ?>" id="<?php echo esc_attr( $field ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); ?>><?php echo wp_kses_post( $data['title'] ); ?></button>
-						<?php echo $this->get_description_html( $data ); ?>
+						<button class="<?php echo esc_attr( $data['class'] ); ?>" type="button" name="<?php echo esc_attr( $field ); ?>" id="<?php echo esc_attr( $field ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php echo $this->get_custom_attribute_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_custom_attribute_html() already escapes its output. ?>><?php echo wp_kses_post( $data['title'] ); ?></button>
+						<?php echo $this->get_description_html( $data ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_description_html() already escapes its output. ?>
 					</fieldset>
 				</td>
 			</tr>
@@ -199,7 +199,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		 */
 		public function get_value_from_post( $key ) {
 			if ( isset( $_POST[ $this->plugin_id . $this->id . '_settings' ][ $key ] ) ) {
-				return $_POST[ $this->plugin_id . $this->id . '_settings' ][ $key ];
+				return sanitize_text_field( wp_unslash( $_POST[ $this->plugin_id . $this->id . '_settings' ][ $key ] ) );
 			} else {
 				return false;
 			}
@@ -216,7 +216,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 
 			foreach ( $this->errors as $key => $value ) {
 				$message = $error_key_values[ $value ];
-				echo "<div class=\"error\"><p>$message</p></div>";
+				echo '<div class="error"><p>' . esc_html( $message ) . '</p></div>';
 			}
 		}
 
@@ -237,7 +237,7 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		private function on_new_order_page() {
 			global $pagenow;
 			if ( 'post-new.php' === $pagenow ) {
-				if ( isset( $_GET['post_type'] ) && $this->is_order_post_type( $_GET['post_type'] ) ) {
+				if ( isset( $_GET['post_type'] ) && $this->is_order_post_type( sanitize_text_field( wp_unslash( $_GET['post_type'] ) ) ) ) {
 					return true;
 				}
 			}
@@ -252,7 +252,8 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 		private function on_edit_order_page() {
 			global $pagenow;
 			if ( 'post.php' === $pagenow ) {
-				if ( $this->is_order_post_type( OrderUtil::get_order_type($_GET['post']) ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page-type detection, no data is processed or saved.
+				if ( isset( $_GET['post'] ) && $this->is_order_post_type( OrderUtil::get_order_type( absint( $_GET['post'] ) ) ) ) {
 					return true;
 				}
 			}

@@ -200,6 +200,7 @@ CREATE TABLE {$wpdb->prefix}taxjar_record_queue (
 		$tables = self::get_tables();
 
 		foreach ( $tables as $table ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $table is not user input, it comes from a hardcoded list of table names.
 			$wpdb->query( "DROP TABLE IF EXISTS {$table}" );
 		}
 	}
