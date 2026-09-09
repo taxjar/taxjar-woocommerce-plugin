@@ -46,9 +46,10 @@ fi
 print_status "Starting Apache web server"
 service apache2 start > /dev/null 2>&1
 
-# Install necessary tools
-print_status "Installing system tools"
-apt-get update -qq && apt-get install -qq -y unzip > /dev/null 2>&1
+# Verify tools installed by the test image
+print_status "Verifying system tools"
+command -v git > /dev/null
+command -v unzip > /dev/null
 
 # Wait for WordPress to be ready
 print_status "Waiting for WordPress to be ready"
@@ -80,6 +81,18 @@ if ! command -v wp &> /dev/null; then
 fi
 
 cd /var/www/html
+
+# The custom Bookworm image does not use the WordPress image entrypoint, so
+# create the database configuration before installing WordPress.
+if [ ! -f wp-config.php ]; then
+    print_status "Creating WordPress database configuration"
+    wp config create \
+        --dbname="${WORDPRESS_DB_NAME}" \
+        --dbuser="${WORDPRESS_DB_USER}" \
+        --dbpass="${WORDPRESS_DB_PASSWORD}" \
+        --dbhost="${WORDPRESS_DB_HOST}" \
+        --allow-root > /dev/null 2>&1
+fi
 
 # Install WordPress if needed
 if wp core is-installed --allow-root 2>/dev/null; then

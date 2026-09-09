@@ -1,0 +1,42 @@
+ARG PHP_VERSION=8.2
+FROM php:${PHP_VERSION}-apache-bookworm
+
+ARG WP_VERSION=6.4
+
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+        git \
+        libfreetype6-dev \
+        libicu-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        libwebp-dev \
+        libzip-dev \
+        unzip \
+    ; \
+    docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
+        --with-webp \
+    ; \
+    docker-php-ext-install -j "$(nproc)" \
+        bcmath \
+        exif \
+        gd \
+        intl \
+        mysqli \
+        zip \
+    ; \
+    rm -rf /var/lib/apt/lists/*
+
+RUN set -eux; \
+    curl -fL "https://wordpress.org/wordpress-${WP_VERSION}.tar.gz" -o wordpress.tar.gz; \
+    tar -xzf wordpress.tar.gz -C /usr/src/; \
+    rm wordpress.tar.gz; \
+    chown -R www-data:www-data /usr/src/wordpress; \
+    a2enmod rewrite expires
+
+CMD ["apache2-foreground"]
