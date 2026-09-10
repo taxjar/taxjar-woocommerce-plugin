@@ -114,6 +114,10 @@ class Order_Tax_Request_Body_Builder extends Tax_Request_Body_Builder {
 	 */
 	protected function get_fee_line_items() {
 		foreach ( $this->order->get_items( 'fee' ) as $fee_key => $fee ) {
+			if ( (float) $fee->get_total() < 0 ) {
+				continue;
+			}
+
 			$request_line_item = array(
 				'id'               => 'fee-' . $fee_key,
 				'quantity'         => 1,

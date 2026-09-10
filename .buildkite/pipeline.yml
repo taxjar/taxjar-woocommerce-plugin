@@ -80,10 +80,12 @@ steps:
     artifact_paths:
       - "phpcs-report.xml"
 
-  # Stage 3: PHPUnit Tests - Parallel execution with unique transaction IDs
+  # Stage 3: PHPUnit Tests - Serial execution across WC versions
   - label: ":test_tube: PHPUnit - WC {{matrix}}"
     key: "phpunit"
     depends_on: "lint"
+    concurrency: 1
+    concurrency_group: "taxjar-woocommerce-phpunit-$BUILDKITE_BUILD_ID"
     matrix:
       - "7.x"
       - "8.x"

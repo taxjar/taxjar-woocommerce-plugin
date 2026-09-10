@@ -305,6 +305,10 @@ class TaxJar_Order_Record extends TaxJar_Record {
 					$fee_amount = $fee->get_total();
 				}
 
+				if ( (float) $fee_amount < 0 ) {
+					continue;
+				}
+
 				$line_items_data[] = array(
 					'id' => $fee->get_id(),
 					'quantity' => $fee->get_quantity(),

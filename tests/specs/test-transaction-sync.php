@@ -583,6 +583,39 @@ class TJ_WC_Test_Sync extends WP_UnitTestCase {
 		$this->assertEquals( '', $fee_line_items[ 0 ][ 'product_tax_code' ] );
 	}
 
+	function test_order_record_excludes_negative_fee_line_items() {
+		$order = $this->create_test_order( 1 );
+
+		$positive_fee = new WC_Order_Item_Fee();
+		$positive_fee->set_defaults();
+		$positive_fee->set_name( 'positive fee' );
+		$positive_fee->set_total_tax( '0' );
+		if ( method_exists( $positive_fee, 'set_amount' ) ) {
+			$positive_fee->set_amount( '10.00' );
+		}
+		$positive_fee->set_total( '10.00' );
+		$order->add_item( $positive_fee );
+
+		$negative_fee = new WC_Order_Item_Fee();
+		$negative_fee->set_defaults();
+		$negative_fee->set_name( 'gift card discount' );
+		$negative_fee->set_total_tax( '0' );
+		if ( method_exists( $negative_fee, 'set_amount' ) ) {
+			$negative_fee->set_amount( '-25.00' );
+		}
+		$negative_fee->set_total( '-25.00' );
+		$order->add_item( $negative_fee );
+		$order->save();
+
+		$record = new TaxJar_Order_Record( $order->get_id(), true );
+		$record->load_object( $order );
+		$fee_line_items = $record->get_fee_line_items();
+
+		$this->assertEquals( 1, count( $fee_line_items ) );
+		$this->assertEquals( 'positive fee', $fee_line_items[ 0 ][ 'description' ] );
+		$this->assertEquals( '10.00', $fee_line_items[ 0 ][ 'unit_price' ] );
+	}
+
 	function test_order_with_fee_record_sync() {
 		$order = $this->create_test_order( 1 );
 		$order->update_status( 'completed' );
