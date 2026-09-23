@@ -74,10 +74,6 @@ div.taxjar-connected p {
 	margin-top: 20px;
 }
 
-.woocommerce table.form-table th label[for="woocommerce_taxjar-integration_settings[api_token]"] {
-	display: none;
-}
-
 #taxjar_order_data.panel-wrap {
 	overflow: hidden;
 }
