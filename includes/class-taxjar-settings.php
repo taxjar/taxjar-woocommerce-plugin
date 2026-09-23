@@ -194,7 +194,7 @@ class TaxJar_Settings {
 
 			$settings = array_merge( $settings, self::get_hidden_settings() );
 
-			if ( isset( $store_settings['api_token'] ) && ( ! $tj_connection->can_connect_to_api() || ! $tj_connection->is_api_token_valid() ) ) {
+			if ( self::post_or_setting( 'api_token' ) && ( ! $tj_connection->can_connect_to_api() || ! $tj_connection->is_api_token_valid() ) ) {
 				array_push( $settings, $tj_connection->get_form_settings_field() );
 				array_push( $settings, self::get_section_end_setting() );
 			}
