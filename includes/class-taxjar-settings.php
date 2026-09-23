@@ -190,13 +190,11 @@ class TaxJar_Settings {
 
 			if ( $tj_connection->is_api_token_valid() ) {
 				$settings = array_merge( $settings, self::get_connected_display_settings() );
-			} else {
-				array_push( $settings, self::get_connect_to_taxjar_setting() );
 			}
 
 			$settings = array_merge( $settings, self::get_hidden_settings() );
 
-			if ( isset( $store_settings['api_token'] ) && ( ! $tj_connection->can_connect_to_api() || ! $tj_connection->is_api_token_valid() ) ) {
+			if ( self::post_or_setting( 'api_token' ) && ( ! $tj_connection->can_connect_to_api() || ! $tj_connection->is_api_token_valid() ) ) {
 				array_push( $settings, $tj_connection->get_form_settings_field() );
 				array_push( $settings, self::get_section_end_setting() );
 			}
@@ -377,11 +375,10 @@ class TaxJar_Settings {
 	public static function get_hidden_settings() {
 		return array(
 			array(
-				'title'   => 'TaxJar API Token',
+				'title'   => __( 'TaxJar API Token', 'wc-taxjar' ),
 				'type'    => 'text',
-				'desc'    => '<p class="hidden tj-api-token-title"><a href="' . WC_Taxjar_Integration::$app_uri . 'account#api-access" target="_blank">' . __( 'Get API token', 'wc-taxjar' ) . '</a></p>',
+				'desc'    => '<p class="tj-api-token-title"><a href="' . WC_Taxjar_Integration::$app_uri . 'account#api-access" target="_blank">' . __( 'Get API token', 'wc-taxjar' ) . '</a></p>',
 				'default' => '',
-				'class'   => 'hidden',
 				'id'      => 'woocommerce_taxjar-integration_settings[api_token]',
 			),
 			self::get_section_end_setting(),
@@ -393,20 +390,6 @@ class TaxJar_Settings {
 				'id'    => 'woocommerce_taxjar-integration_settings[connected_email]',
 			),
 			self::get_section_end_setting(),
-		);
-	}
-
-	/**
-	 * Gets the connect to TaxJar field
-	 * Displays when no API token is stored
-	 *
-	 * @return array
-	 */
-	public static function get_connect_to_taxjar_setting() {
-		return array(
-			'title' => '',
-			'type'  => 'title',
-			'desc'  => '<button id="connect-to-taxjar" name="connect-to-taxjar" class="button-primary" type="submit" value="Connect">' . __( 'Connect To TaxJar', 'wc-taxjar' ) . '</button><p>' . __( 'Already have an API Token?', 'wc-taxjar' ) . ' <a href="#" id="connect-manual-edit">' . __( 'Edit API Token.', 'wc-taxjar' ) . '</a></p>',
 		);
 	}
 
@@ -447,7 +430,7 @@ class TaxJar_Settings {
 			array(
 				'title' => '',
 				'type'  => 'title',
-				'desc'  => '<button id="disconnect-from-taxjar" name="disconnect-from-taxjar" class="button-primary" type="submit" value="Disconnect">' . __( 'Disconnect From TaxJar', 'wc-taxjar' ) . '</button><p><a href="#" id="connect-manual-edit">' . __( 'Edit API Token', 'wc-taxjar' ) . '</a></p>',
+				'desc'  => '<button id="disconnect-from-taxjar" name="disconnect-from-taxjar" class="button-primary" type="submit" value="Disconnect">' . __( 'Disconnect From TaxJar', 'wc-taxjar' ) . '</button>',
 			)
 		);
 		return $settings;

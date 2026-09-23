@@ -304,8 +304,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 					'update_nexus_nonce'         => wp_create_nonce( 'taxjar-update-nexus' ),
 					'current_user'               => get_current_user_id(),
 					'integration_uri'            => $this->integration_uri,
-					'connect_url'                => $this->get_connect_url(),
-					'app_url'                    => untrailingslashit( self::$app_uri ),
 				)
 			);
 
@@ -313,17 +311,6 @@ if ( ! class_exists( 'WC_Taxjar_Integration' ) ) :
 
 			wp_enqueue_script( 'jquery-ui-datepicker' );
 			wp_enqueue_style( 'jquery-ui-datepicker' );
-		}
-
-		/**
-		 * Generates TaxJar connect popup url
-		 *
-		 * @return string - TaxJar connect popup url
-		 */
-		public function get_connect_url() {
-			$connect_url  = self::$app_uri . 'smartcalcs/connect/woo/?store=' . urlencode( get_bloginfo( 'url' ) );
-			$connect_url .= '&plugin=woo&version=' . WC_Taxjar::$version;
-			return esc_url( $connect_url );
 		}
 
 		/**
