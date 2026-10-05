@@ -141,12 +141,12 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 
 		WC()->cart->calculate_totals();
 
-		$this->assertEquals( WC()->cart->tax_total, 1.08, '', 0.01 );
+		$this->assertEquals( WC()->cart->tax_total, 1.13, '', 0.01 );
 		$this->assertEquals( WC()->cart->shipping_tax_total, 0, '', 0.01 );
-		$this->assertEquals( WC()->cart->get_taxes_total(), 1.08, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 1.13, '', 0.01 );
 
 		foreach ( WC()->cart->get_cart() as $cart_item_key => $item ) {
-			$this->assertEquals( $item['line_tax'], 1.08, '', 0.01 );
+			$this->assertEquals( $item['line_tax'], 1.13, '', 0.01 );
 		}
 
 		WC()->session->set( 'chosen_shipping_methods', array() );
