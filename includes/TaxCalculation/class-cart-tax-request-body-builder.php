@@ -161,6 +161,10 @@ class Cart_Tax_Request_Body_Builder extends Tax_Request_Body_Builder {
 	 */
 	protected function get_fee_line_items() {
 		foreach ( $this->cart->get_fees() as $fee_key => $fee ) {
+			if ( (float) $fee->total < 0 ) {
+				continue;
+			}
+
 			$request_line_item = array(
 				'id'               => $fee->id,
 				'quantity'         => 1,
