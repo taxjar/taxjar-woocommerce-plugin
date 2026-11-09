@@ -79,6 +79,26 @@ class Test_Tax_Request_Body extends WP_UnitTestCase {
 		$this->request_body->validate();
 	}
 
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_validate_with_no_zip_outside_us() {
+		$this->request_body->set_to_country( 'AE' );
+		$this->request_body->set_to_zip( '' );
+
+		$this->request_body->validate();
+	}
+
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function test_validate_with_country_prefixed_zip_outside_us() {
+		$this->request_body->set_to_country( 'DK' );
+		$this->request_body->set_to_zip( 'DK-2100' );
+
+		$this->request_body->validate();
+	}
+
 	public function test_to_array() {
 		$expected_array = array(
 			'from_country' => 'US',
