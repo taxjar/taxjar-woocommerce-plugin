@@ -2,12 +2,12 @@
 Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxjar, tax, taxes, sales tax, tax calculation, sales tax compliance, sales tax filing
 Requires at least: 5.4
-Tested up to: 7.1.2
-Stable tag: 4.2.11
+Tested up to: 7.1.4
+Stable tag: 4.2.12
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 7.0.0
-WC tested up to: 11.1.2
+WC tested up to: 11.2.2
 
 Trusted by more than 20,000 businesses, TaxJar’s award-winning solution makes it easy to automate sales tax reporting and filing, and determine economic nexus with a single click.
 
@@ -94,6 +94,11 @@ Our plans come with filings included, with additional filings available for purc
 3. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+
+= 4.2.12 (2026-11-12) =
+* Fix tax calculation being skipped for non-US postcodes that WooCommerce accepts, such as Danish postcodes formatted as DK-2100, and for non-US addresses without a postcode
+* WooCommerce tested up to 11.2.2
+* WordPress 7.1.4 tested
 
 = 4.2.11 (2026-10-05) =
 * WooCommerce tested up to 11.1.2

@@ -1,3 +1,8 @@
+# 4.2.12 (2026-11-12)
+* Fix tax calculation being skipped for non-US postcodes that WooCommerce accepts, such as Danish postcodes formatted as DK-2100, and for non-US addresses without a postcode
+* WooCommerce tested up to 11.2.2
+* WordPress 7.1.4 tested
+
 # 4.2.11 (2026-10-05)
 * WooCommerce tested up to 11.1.2
 * WordPress 7.1.2 tested
