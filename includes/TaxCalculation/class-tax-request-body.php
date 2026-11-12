@@ -143,12 +143,12 @@ class Tax_Request_Body {
 	}
 
 	/**
-	 * Ensures ship to zip code is set.
+	 * Ensures ship to zip code is set for US addresses. The TaxJar API only requires a zip code in the US.
 	 *
-	 * @throws Tax_Calculation_Exception When ship to zip code is not set.
+	 * @throws Tax_Calculation_Exception When ship to zip code is not set for a US address.
 	 */
 	private function validate_zip_code_is_present() {
-		if ( empty( $this->get_to_zip() ) ) {
+		if ( 'US' === $this->get_to_country() && empty( $this->get_to_zip() ) ) {
 			throw new Tax_Calculation_Exception(
 				'missing_required_field_zip',
 				__( 'Zip code is required to perform tax calculation.', 'taxjar' )

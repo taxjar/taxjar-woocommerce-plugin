@@ -970,6 +970,57 @@ class TJ_WC_Actions extends WP_UnitTestCase {
 		$this->assertEquals( WC()->cart->get_taxes_total(), 2.4, '', 0.01 );
 	}
 
+	function test_correct_taxes_for_dk_with_country_prefixed_postcode() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'DK',
+			'store_state' => '',
+			'store_postcode' => '1550',
+			'store_city' => 'København V',
+		) );
+
+		// WooCommerce formats Danish postcodes entered as "DK2100" to "DK-2100".
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'country' => 'DK',
+			'state' => '',
+			'zip' => 'DK-2100',
+			'city' => 'København Ø',
+		) );
+
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		WC()->cart->add_to_cart( $product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 2.5, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 2.5, '', 0.01 );
+	}
+
+	function test_correct_taxes_for_dk_without_postcode() {
+		TaxJar_Woocommerce_Helper::set_shipping_origin( $this->tj, array(
+			'store_country' => 'DK',
+			'store_state' => '',
+			'store_postcode' => '1550',
+			'store_city' => 'København V',
+		) );
+
+		WC()->customer = TaxJar_Customer_Helper::create_customer( array(
+			'country' => 'DK',
+			'state' => '',
+			'zip' => '',
+			'city' => 'København Ø',
+		) );
+
+		$product = TaxJar_Product_Helper::create_product( 'simple' )->get_id();
+		WC()->cart->add_to_cart( $product );
+		WC()->cart->calculate_totals();
+
+		$this->assertEquals( WC()->cart->tax_total, 2.5, '', 0.01 );
+		$this->assertEquals( WC()->cart->get_taxes_total(), 2.5, '', 0.01 );
+	}
+
+	/**
+	 * Only US zip codes are validated before calling the API. Postal codes for other countries,
+	 * including ones that were previously rejected by per-country patterns, are sent as entered.
+	 */
 	function test_is_postal_code_valid() {
 	    $postal_array = array(
             'US' => array(
@@ -989,112 +1040,155 @@ class TJ_WC_Actions extends WP_UnitTestCase {
               '12345-1234' => true
             ),
             'CA' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
-                '1' => false,
-                '12' => false,
-                '12345-1' => false,
-                'A1111' => false,
-                'ACDES' => false,
-                '12345' => false,
-                '12345-1234' => false,
+                '1' => true,
+                '12' => true,
+                '12345-1' => true,
+                'A1111' => true,
+                'ACDES' => true,
+                '12345' => true,
+                '12345-1234' => true,
                 'P1P 0G0' => true,
                 'J0T 0P2' => true
             ),
-            'UK' => array(
-                '60515630-968-2144' => false,
+            'GB' => array(
+                '60515630-968-2144' => true,
                 '' => true,
-                '12345' => false,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345' => true,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
                 'EC1A 1BB' => true,
                 'CR2 6XH' => true
             ),
             'FR' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
                 '12345' => true,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
                 '12 345' => true
             ),
             'IT' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
                 '12345' => true,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
             ),
             'DE' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
                 '12345' => true,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
             ),
             'NL' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
-                '12345' => false,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345' => true,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
                 '1234 AB' => true,
                 '1234AB' => true
             ),
             'ES' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
                 '12345' => true,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
             ),
             'DK' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
-                '12345' => false,
+                '12345' => true,
                 '1234' => true,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
+                'DK2100' => true,
+                'DK-2100' => true,
             ),
             'SE' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
                 '12345' => true,
                 '123 45' => true,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
             ),
             'BE' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
-                '12345' => false,
+                '12345' => true,
                 '1234' => true,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
             ),
             'IN' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
                 '123456' => true,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
             ),
             'AU' => array(
-                '60515630-968-2144' => false,
+                '60515630-968-2144' => true,
                 '' => true,
-                '12345' => false,
+                '12345' => true,
                 '1234' => true,
-                '12345-1234' => false,
-                'P1P 0G0' => false,
-            )
+                '200' => true,
+                '12345-1234' => true,
+                'P1P 0G0' => true,
+            ),
+            'AE' => array(
+                '' => true,
+            ),
         );
 
 	    foreach ( $postal_array as $country => $codes ) {
 	        foreach ( $codes as $code => $expected ) {
-                $this->assertEquals( TaxJar_Tax_Calculation::is_postal_code_valid( $country, null, $code ), $expected );
+                $this->assertEquals( TaxJar_Tax_Calculation::is_postal_code_valid( $country, null, (string) $code ), $expected, "{$country} postal code '{$code}'" );
             }
         }
     }
+
+	/**
+	 * A postal code that WooCommerce accepts at checkout must not be rejected before the API request,
+	 * otherwise the order is placed without TaxJar tax.
+	 */
+	function test_is_postal_code_valid_accepts_postcodes_woocommerce_accepts() {
+		$postcodes = array(
+			'US' => array( '84651', '84651-1234', '8465', 'ABCDE' ),
+			'CA' => array( 'K1A 0B1', 'k1a0b1' ),
+			'GB' => array( 'SW1A 1AA', 'sw1a1aa' ),
+			'FR' => array( '75001', '75 001' ),
+			'IT' => array( '00118' ),
+			'DE' => array( '10115' ),
+			'NL' => array( '1012 AB', '1012ab' ),
+			'ES' => array( '28001' ),
+			'DK' => array( '2100', 'DK2100', 'DK-2100', 'dk2100' ),
+			'SE' => array( '112 22', '11222' ),
+			'BE' => array( '1000' ),
+			'IN' => array( '110001', '110 001' ),
+			'AU' => array( '2000', '0800', '200' ),
+			'AE' => array( '' ),
+		);
+
+		foreach ( $postcodes as $country => $codes ) {
+			foreach ( $codes as $code ) {
+				$formatted = wc_format_postcode( $code, $country );
+				if ( '' !== $formatted && ! WC_Validation::is_postcode( $formatted, $country ) ) {
+					continue;
+				}
+
+				$this->assertTrue(
+					TaxJar_Tax_Calculation::is_postal_code_valid( $country, null, $formatted ),
+					"{$country} postal code '{$code}' (formatted as '{$formatted}') is accepted by WooCommerce but rejected before the API request"
+				);
+			}
+		}
+	}
 
 	function test_vat_exempt_customer_with_shipping() {
 		TaxJar_Shipping_Helper::create_simple_flat_rate( 5 );
