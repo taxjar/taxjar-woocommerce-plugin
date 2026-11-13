@@ -8,6 +8,7 @@
 namespace TaxJar;
 
 use Exception;
+use Throwable;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -189,6 +190,9 @@ class Tax_Calculator {
 			$this->success();
 		} catch ( Exception $exception ) {
 			$this->failure( $exception );
+		} catch ( Throwable $error ) {
+			// Errors (e.g. from a third-party filter callback) must not break the cart or order.
+			$this->failure( new Exception( $error->getMessage(), 0, $error ) );
 		} finally {
 			$this->result_data_store->update( $this->result );
 		}
@@ -292,7 +296,10 @@ class Tax_Calculator {
 		$this->result = new Tax_Calculation_Result();
 		$this->result->set_success( false );
 		$this->result->set_context( $this->get_context() );
-		$this->result->set_raw_request( $this->request_body->to_json() );
+
+		if ( $this->request_body ) {
+			$this->result->set_raw_request( $this->request_body->to_json() );
+		}
 
 		if ( $this->tax_details ) {
 			$this->result->set_raw_response( wp_json_encode( $this->tax_details->get_raw_response() ) );
