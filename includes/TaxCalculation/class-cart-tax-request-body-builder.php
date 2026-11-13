@@ -71,7 +71,7 @@ class Cart_Tax_Request_Body_Builder extends Tax_Request_Body_Builder {
 			$street   = WC()->customer->get_shipping_address();
 		}
 
-		$taxable_address = apply_filters( 'woocommerce_customer_taxable_address', array( $country, $state, $postcode, $city, $street ) );
+		$taxable_address = apply_filters( 'woocommerce_customer_taxable_address', array( $country, $state, $postcode, $city, $street ), WC()->customer );
 		$this->tax_request_body->set_to_country( $taxable_address[0] );
 		$this->tax_request_body->set_to_state( $taxable_address[1] );
 		$this->tax_request_body->set_to_zip( $taxable_address[2] );

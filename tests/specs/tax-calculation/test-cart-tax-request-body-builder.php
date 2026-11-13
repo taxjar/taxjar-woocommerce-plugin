@@ -72,6 +72,26 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 		];
 	}
 
+	public function test_taxable_address_filter_receives_customer() {
+		$cart = Cart_Builder::a_cart()->build();
+		$cart_tax_request_body_builder = new Cart_Tax_Request_Body_Builder( $cart );
+		$filter_customer = null;
+		$callback = function ( $address, $customer ) use ( &$filter_customer ) {
+			$filter_customer = $customer;
+			return $address;
+		};
+		add_filter( 'woocommerce_customer_taxable_address', $callback, 10, 2 );
+
+		try {
+			$tax_request_body = $cart_tax_request_body_builder->create();
+		} finally {
+			remove_filter( 'woocommerce_customer_taxable_address', $callback, 10 );
+		}
+
+		$this->assertSame( WC()->customer, $filter_customer );
+		$this->assertEquals( '84651', $tax_request_body->get_to_zip() );
+	}
+
 	public function test_shipping_amount() {
 		$cart = Cart_Builder::a_cart()->with_shipping_total( '20' )->build();
 		$cart_tax_request_body_builder = new Cart_Tax_Request_Body_Builder( $cart );

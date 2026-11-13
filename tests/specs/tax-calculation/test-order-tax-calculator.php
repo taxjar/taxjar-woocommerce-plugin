@@ -56,6 +56,40 @@ class Test_Order_Tax_Calculator extends WP_UnitTestCase {
 		$calculator->maybe_calculate_and_apply_tax();
 	}
 
+	public function test_error_building_request_is_logged_as_failure() {
+		$error = new \ArgumentCountError( 'Too few arguments' );
+		$this->mock_request_body_factory = $this->createMock( Tax_Request_Body_Builder::class );
+		$this->mock_request_body_factory->method( 'create' )->willThrowException( $error );
+		$this->mock_logger->expects( $this->once() )->method( 'log_failure' )->with(
+			$this->isInstanceOf( Tax_Calculation_Result::class ),
+			$this->callback(
+				function ( $exception ) use ( $error ) {
+					return $exception->getPrevious() === $error && 'Too few arguments' === $exception->getMessage();
+				}
+			)
+		);
+		$this->mock_tax_result_data_store->expects( $this->once() )->method( 'update' )->with(
+			$this->callback(
+				function ( $result ) {
+					return $result instanceof Tax_Calculation_Result && ! $result->get_success() && '' === $result->get_raw_request();
+				}
+			)
+		);
+
+		$calculator = $this->build_calculator();
+		$calculator->maybe_calculate_and_apply_tax();
+	}
+
+	public function test_exception_building_request_is_logged_as_failure() {
+		$this->mock_request_body_factory = $this->createMock( Tax_Request_Body_Builder::class );
+		$this->mock_request_body_factory->method( 'create' )->willThrowException( new Exception( 'test' ) );
+		$this->mock_logger->expects( $this->once() )->method( 'log_failure' );
+		$this->mock_tax_result_data_store->expects( $this->once() )->method( 'update' )->with( $this->isInstanceOf( Tax_Calculation_Result::class ) );
+
+		$calculator = $this->build_calculator();
+		$calculator->maybe_calculate_and_apply_tax();
+	}
+
 	private function build_calculator() {
 		$calculator = new Tax_Calculator();
 		$calculator->set_logger( $this->mock_logger );
