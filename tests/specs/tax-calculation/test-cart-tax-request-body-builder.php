@@ -72,6 +72,55 @@ class Test_Cart_Tax_Request_Body_Builder extends WP_UnitTestCase {
 		];
 	}
 
+	public function test_taxable_address_filter_receives_customer() {
+		$cart = Cart_Builder::a_cart()->build();
+		$cart_tax_request_body_builder = new Cart_Tax_Request_Body_Builder( $cart );
+		$filter_customer = null;
+		$callback = function ( $address, $customer ) use ( &$filter_customer ) {
+			$filter_customer = $customer;
+			return $address;
+		};
+		add_filter( 'woocommerce_customer_taxable_address', $callback, 10, 2 );
+
+		try {
+			$tax_request_body = $cart_tax_request_body_builder->create();
+		} finally {
+			remove_filter( 'woocommerce_customer_taxable_address', $callback, 10 );
+		}
+
+		$this->assertSame( WC()->customer, $filter_customer );
+		$this->assertEquals( '84651', $tax_request_body->get_to_zip() );
+		$this->assertEquals( '123 main st', $tax_request_body->get_to_street() );
+	}
+
+	/**
+	 * @dataProvider provide_four_element_taxable_address
+	 */
+	public function test_no_street_from_four_element_taxable_address( array $filtered_address ) {
+		$cart = Cart_Builder::a_cart()->build();
+		$cart_tax_request_body_builder = new Cart_Tax_Request_Body_Builder( $cart );
+		$callback = function () use ( $filtered_address ) {
+			return $filtered_address;
+		};
+		add_filter( 'woocommerce_customer_taxable_address', $callback );
+
+		try {
+			$tax_request_body = $cart_tax_request_body_builder->create();
+		} finally {
+			remove_filter( 'woocommerce_customer_taxable_address', $callback );
+		}
+
+		$this->assertEquals( $filtered_address[2], $tax_request_body->get_to_zip() );
+		$this->assertNull( $tax_request_body->get_to_street() );
+	}
+
+	public function provide_four_element_taxable_address(): array {
+		return [
+			'same city and postcode' => [ [ 'US', 'UT', '84651', 'Payson' ] ],
+			'different address'      => [ [ 'US', 'CO', '80014', 'Denver' ] ],
+		];
+	}
+
 	public function test_shipping_amount() {
 		$cart = Cart_Builder::a_cart()->with_shipping_total( '20' )->build();
 		$cart_tax_request_body_builder = new Cart_Tax_Request_Body_Builder( $cart );
