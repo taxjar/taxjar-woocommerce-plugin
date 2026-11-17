@@ -8,6 +8,7 @@
 namespace TaxJar;
 
 use Exception;
+use Throwable;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -185,13 +186,21 @@ class Tax_Calculator {
 			$this->create_request_body();
 			$this->validate();
 			$this->calculate_tax();
+		} catch ( Throwable $error ) {
+			// Nothing has been changed yet, so any error (e.g. from a third-party filter callback) only fails this calculation.
+			$this->failure( $error );
+			$this->result_data_store->update( $this->result );
+			return;
+		}
+
+		try {
 			$this->apply_tax();
 			$this->success();
 		} catch ( Exception $exception ) {
 			$this->failure( $exception );
-		} finally {
-			$this->result_data_store->update( $this->result );
 		}
+
+		$this->result_data_store->update( $this->result );
 	}
 
 	/**
@@ -286,13 +295,16 @@ class Tax_Calculator {
 	/**
 	 * Logs failure details.
 	 *
-	 * @param Exception $exception Exception that occurred during tax calculation.
+	 * @param Throwable $exception Exception or error that occurred during tax calculation.
 	 */
-	private function failure( Exception $exception ) {
+	private function failure( Throwable $exception ) {
 		$this->result = new Tax_Calculation_Result();
 		$this->result->set_success( false );
 		$this->result->set_context( $this->get_context() );
-		$this->result->set_raw_request( $this->request_body->to_json() );
+
+		if ( $this->request_body ) {
+			$this->result->set_raw_request( $this->request_body->to_json() );
+		}
 
 		if ( $this->tax_details ) {
 			$this->result->set_raw_response( wp_json_encode( $this->tax_details->get_raw_response() ) );

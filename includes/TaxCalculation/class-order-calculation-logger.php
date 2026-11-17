@@ -10,7 +10,7 @@ namespace TaxJar;
 use WC_Log_Levels;
 use WC_Logger_Interface;
 use WC_Order;
-use Exception;
+use Throwable;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -43,13 +43,13 @@ class Order_Calculation_Logger extends Tax_Calculation_Logger {
 	 * Logs failure event.
 	 *
 	 * @param Tax_Calculation_Result $result Tax calculation details.
-	 * @param Exception              $e Exception that indicates cause of failed calculation.
+	 * @param Throwable              $e Exception or error that indicates cause of failed calculation.
 	 */
-	public function log_failure( Tax_Calculation_Result $result, Exception $e ) {
+	public function log_failure( Tax_Calculation_Result $result, Throwable $e ) {
 		if ( $this->is_taxjar_calculation_exception( $e ) ) {
 			$this->log( WC_Log_Levels::NOTICE, $this->format_failed_calculation_message( $result ) );
 		} else {
-			$this->log( WC_Log_Levels::ERROR, $this->format_unexpected_exception_message( $result ) );
+			$this->log( WC_Log_Levels::ERROR, $this->format_unexpected_exception_message( $result, $e ) );
 		}
 	}
 
@@ -75,13 +75,15 @@ class Order_Calculation_Logger extends Tax_Calculation_Logger {
 	 * Formats log message for any unexpected errors during tax calculation.
 	 *
 	 * @param Tax_Calculation_Result $result Tax calculation details.
+	 * @param Throwable              $e Exception or error that caused the failure.
 	 *
 	 * @return string
 	 */
-	private function format_unexpected_exception_message( Tax_Calculation_Result $result ): string {
+	private function format_unexpected_exception_message( Tax_Calculation_Result $result, Throwable $e ): string {
 		$message  = 'TaxJar tax calculation on order #' . $this->order->get_id() . ' failed unexpectedly. ';
 		$message .= 'Reverting to default WooCommerce tax calculation.';
 		$message .= $this->format_message( $result->get_error_message() );
+		$message .= $this->format_error_source( $e );
 		$message .= $this->format_context( $result->get_context() );
 		$message .= $this->format_request_details( $result->get_raw_request() );
 		$message .= $this->format_response_details( $result->get_raw_response() );

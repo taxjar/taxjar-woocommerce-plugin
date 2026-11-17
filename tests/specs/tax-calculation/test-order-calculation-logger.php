@@ -41,6 +41,20 @@ class Test_Order_Calculation_Logger extends WP_UnitTestCase {
 		$calculation_logger->log_failure( $calculation_result, $exception_mock );
 	}
 
+	public function test_log_failure_with_error_includes_error_source() {
+		$calculation_logger = new Order_Calculation_Logger( $this->mock_wc_logger, $this->test_order );
+		$error_line         = __LINE__ + 1;
+		$error              = new \ArgumentCountError( 'test' );
+		$calculation_result = new Tax_Calculation_Result();
+		$calculation_result->set_context( 'context' );
+
+		$this->mock_wc_logger->expects( $this->once() )->method( 'log' )->with(
+			WC_Log_Levels::ERROR,
+			$this->stringContains( 'Error: ArgumentCountError in ' . __FILE__ . ':' . $error_line )
+		);
+		$calculation_logger->log_failure( $calculation_result, $error );
+	}
+
 	public function test_log_success_log_level() {
 		$calculation_logger = new Order_Calculation_Logger( $this->mock_wc_logger, $this->test_order );
 		$calculation_result = new Tax_Calculation_Result();

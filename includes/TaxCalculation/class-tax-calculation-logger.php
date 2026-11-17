@@ -7,7 +7,7 @@
 
 namespace TaxJar;
 
-use Exception, WC_Logger_Interface;
+use Throwable, WC_Logger_Interface;
 use TaxJar_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -37,9 +37,9 @@ abstract class Tax_Calculation_Logger {
 	 * Logs a message for a failure event.
 	 *
 	 * @param Tax_Calculation_Result $result Details of event.
-	 * @param Exception              $e Exception that indicates cause of failed calculation.
+	 * @param Throwable              $e Exception or error that indicates cause of failed calculation.
 	 */
-	abstract public function log_failure( Tax_Calculation_Result $result, Exception $e );
+	abstract public function log_failure( Tax_Calculation_Result $result, Throwable $e );
 
 	/**
 	 * Logger constructor.
@@ -83,11 +83,11 @@ abstract class Tax_Calculation_Logger {
 	/**
 	 * Determine if exception is a Tax_Calculation_Exception
 	 *
-	 * @param Exception $exception Exception thrown.
+	 * @param Throwable $exception Exception or error thrown.
 	 *
 	 * @return bool
 	 */
-	protected function is_taxjar_calculation_exception( Exception $exception ): bool {
+	protected function is_taxjar_calculation_exception( Throwable $exception ): bool {
 		return $exception instanceof Tax_Calculation_Exception;
 	}
 
@@ -100,6 +100,17 @@ abstract class Tax_Calculation_Logger {
 	 */
 	protected function format_message( string $error_message ): string {
 		return PHP_EOL . 'Message: ' . $error_message;
+	}
+
+	/**
+	 * Formats the class and location of an exception or error, so the code that caused it can be identified.
+	 *
+	 * @param Throwable $exception Exception or error thrown.
+	 *
+	 * @return string
+	 */
+	protected function format_error_source( Throwable $exception ): string {
+		return PHP_EOL . 'Error: ' . get_class( $exception ) . ' in ' . $exception->getFile() . ':' . $exception->getLine();
 	}
 
 	/**
