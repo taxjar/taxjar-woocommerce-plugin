@@ -3,7 +3,7 @@ Contributors: taxjar, tonkapark, fastdivision
 Tags: woocommerce, taxjar, tax, taxes, sales tax, tax calculation, sales tax compliance, sales tax filing
 Requires at least: 5.4
 Tested up to: 7.1.4
-Stable tag: 4.2.12
+Stable tag: 4.2.13
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-2.0.html
 WC requires at least: 7.0.0
@@ -94,6 +94,10 @@ Our plans come with filings included, with additional filings available for purc
 3. TaxJar for WooCommerce Plugin Settings
 
 == Changelog ==
+
+= 4.2.13 (2026-11-17) =
+* Fix a cart error with WooCommerce Subscriptions 9.4.0, and use the gift recipient's address for tax when resubscribing to a gifted subscription
+* Errors from other plugins while TaxJar prepares a tax calculation no longer break the cart or checkout
 
 = 4.2.12 (2026-11-12) =
 * Fix tax calculation being skipped for non-US postcodes that WooCommerce accepts, such as Danish postcodes formatted as DK-2100, and for non-US addresses without a postcode
